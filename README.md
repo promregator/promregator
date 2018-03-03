@@ -41,12 +41,12 @@ has certain limitations on client-side authentication mechanisms, which are base
 Cloud Foundry provides the capabilty to run nearly arbitrary HTTP-enabled applications (e.g. developed in Java) on a Platform-as-a-Service-enabled environment. 
 To provide fail-over of applications and to support scalability, multiple instances of the same application may be run behind a reverse proxy (a.k.a. web dispatcher).
 Requests are typically dispatched in a round-robin schedule.
-Detailed monitoring of these applications (esp. if talking about custom metrics such as Prometheus supports) is considered "an implementation detail".
+Detailed monitoring of these applications (esp. if talking about custom metrics such as Prometheus supports) is considered "an implementation detail" (besides logging facilities like the [ELK stack](https://www.elastic.co/de/elk-stack)).
 
 These two distinct worlds do not work together properly, due to the following obstacles:
 * CF apps are only reachable (from externally without having CF administrative privileges, which is not common on PaaS offerings) 
   via official, world-reachable URLs. The cells, on which on which the CF apps are running, are typically protected by a firewall and the reverse proxy. 
-  Developers do not have access via a side-channel to the cells, as this would bypass many security measures taken.
+  Application developers do not have access via a side-channel to the cells, as this would bypass many security measures taken by the platform.
   
   This means that reading the metrics must be performed via the world-reachable URLs, i.e. going through the reverse proxy.
   As the endpoints for retrieving the Prometheus metrics will be world-reachable, and exposing such internal information will be a major security risk for
@@ -54,8 +54,8 @@ These two distinct worlds do not work together properly, due to the following ob
   which is not supported (yet) by Prometheus natively.
 * For providing failure-safety and scalability, Clound Foundry supports to run multiple instances of an application, which are registered to the same
   world-reachable URL (see also [Routing](https://docs.cloudfoundry.org/devguide/deploy-apps/routes-domains.html)). As it is unpredictable for Prometheus
-  to which instance a request to an endpoint is dispached by the reverse proxy, the metrics retrieved by the pulling mechanism will hit instances by random each time.
-  Thus, a monitoring of all instances is not possible, yet alone a randomily-appearing set of metrics will be visible "once in a while" to Prometheus.
+  to which instance a request to an endpoint is dispatched by the reverse proxy, the metrics retrieved by the pulling mechanism will hit instances by random each time.
+  Thus, to prevent that a monitoring tool would see randomly-appearing sets of metrics, a monitoring solution must be aware of the application instances running on the platform.
 
 The Promregator wants to fix these both obstacles by providing a tool, which 
 * at the one side behaves like a Prometheus client to a Prometheus server,
