@@ -23,6 +23,7 @@ the Prometheus metrics of a set of Clound Foundry app instances. Here is the lis
   The Authentication schemes are easily extensible.
 * Configuration using standard Spring properties as defined by the Spring Framework (e.g. using `application.yaml` file).
 * Simple HTTP proxy support is available for contacting CF app endpoints.
+* Promregator's endpoint (`/metrics`) supports GZIP compression, if the clients accepts this.
 
 ## Use Case
 
