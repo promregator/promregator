@@ -67,8 +67,12 @@ It tries to hide the complexity of the multi-instance approach provided by Cloud
 ![Architecture of Promregator](docs/architecture.png)
 
 Promregator is sitting between your Prometheus server on the one hand and talks to your Cloud Foundry apps on the other hand. 
-It is converting the Prometheus' pull requests into queries targeting your instances of your apps which are running on Cloud Foundry. 
+It is converting the Prometheus' scraping requests into queries targeting your instances of your apps, which are running on Cloud Foundry. 
+
 For Prometheus, Promregator feels like a single client, whilst Promregator may request multiple targets.
+
+Promregator is also in contact with the Cloud Controller of the Cloud Foundry platform to able to detect changes in the Cloud Foundry platform environment. For example, scaling up the number of running instances of an application (due to high load) can then be detected automatically. Discovery of this new instance is then performed automatically and the metrics are replicated to the Prometheus server.
+
 
 ## Prerequisites
 
