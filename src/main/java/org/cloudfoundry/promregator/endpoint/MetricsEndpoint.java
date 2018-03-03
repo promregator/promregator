@@ -24,8 +24,11 @@ import org.cloudfoundry.promregator.auth.OAuth2XSUAAEnricher;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.config.Target;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcher;
+import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.MergableMetricFamilySamples;
-import org.cloudfoundry.promregator.rewrite.MetricFamilySamplesEnricher;
+import org.cloudfoundry.promregator.rewrite.PromregatorMetricFamilySamplesEnricher;
+import org.cloudfoundry.promregator.rewrite.CFMetricFamilySamplesEnricher;
+import org.cloudfoundry.promregator.rewrite.MFSUtils;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -71,6 +74,7 @@ public class MetricsEndpoint {
 	private PromregatorConfiguration promregatorConfiguration;
 	
 	private AuthenticationEnricher ae;
+	private PromregatorMetricFamilySamplesEnricher pmfse = new PromregatorMetricFamilySamplesEnricher();
 	
 	@PostConstruct
 	public void setupAuthenticationEnricher() {
@@ -126,8 +130,11 @@ public class MetricsEndpoint {
 		}
 
 		// also add our own metrics
-		mmfs.merge(this.collectorRegistry.metricFamilySamples());
+		Enumeration<MetricFamilySamples> rawMFS = this.collectorRegistry.metricFamilySamples();
+		HashMap<String, MetricFamilySamples> enrichedMFS = this.pmfse.determineEnumerationOfMetricFamilySamples(MFSUtils.convertToEMFSToHashMap(rawMFS));
+		mmfs.merge(enrichedMFS);
 		
+		// serialize
 		Enumeration<MetricFamilySamples> resultEMFS = mmfs.getEnumerationMetricFamilySamples();
 		Writer writer = new StringWriter();
 		try {
@@ -164,7 +171,7 @@ public class MetricsEndpoint {
 			for (String instance: instances) {
 				log.info(String.format("Instance %s", instance));
 				
-				MetricFamilySamplesEnricher mfse = new MetricFamilySamplesEnricher(orgName, spaceName, appName, instance);
+				AbstractMetricFamilySamplesEnricher mfse = new CFMetricFamilySamplesEnricher(orgName, spaceName, appName, instance);
 				
 				MetricsFetcher mf = null;
 				if (this.proxyHost != null && this.proxyPort != 0) {

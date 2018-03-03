@@ -8,7 +8,7 @@ import java.util.HashMap;
 import org.apache.http.client.methods.HttpGet;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.mockServer.MetricsEndpointMockServer;
-import org.cloudfoundry.promregator.rewrite.MetricFamilySamplesEnricher;
+import org.cloudfoundry.promregator.rewrite.CFMetricFamilySamplesEnricher;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -40,7 +40,7 @@ public class MetricsFetcherTest {
 		this.mems.stop();
 	}
 
-	private static class NullMetricFamilySamplesEnricher extends MetricFamilySamplesEnricher {
+	private static class NullMetricFamilySamplesEnricher extends CFMetricFamilySamplesEnricher {
 
 		public NullMetricFamilySamplesEnricher(String orgName, String spaceName, String appName, String instance) {
 			super(orgName, spaceName, appName, instance);

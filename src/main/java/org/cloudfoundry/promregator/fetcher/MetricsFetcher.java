@@ -14,7 +14,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
-import org.cloudfoundry.promregator.rewrite.MetricFamilySamplesEnricher;
+import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
 
@@ -38,11 +38,11 @@ public class MetricsFetcher implements Callable<HashMap<String, MetricFamilySamp
 	private final RequestConfig config;
 	private AuthenticationEnricher ae;
 	
-	private MetricFamilySamplesEnricher mfse;
+	private AbstractMetricFamilySamplesEnricher mfse;
 
 	final static CloseableHttpClient httpclient = HttpClients.createDefault();
 
-	public MetricsFetcher(String endpointUrl, String instanceId, AuthenticationEnricher ae, MetricFamilySamplesEnricher mfse, String proxyHost, int proxyPort) {
+	public MetricsFetcher(String endpointUrl, String instanceId, AuthenticationEnricher ae, AbstractMetricFamilySamplesEnricher mfse, String proxyHost, int proxyPort) {
 		this.endpointUrl = endpointUrl;
 		this.instanceId = instanceId;
 		this.ae = ae;
@@ -65,7 +65,7 @@ public class MetricsFetcher implements Callable<HashMap<String, MetricFamilySamp
 	 * @param ae (optional) an AuthenticationEnricher, which enriches the HTTP GET request for fetching the Prometheus metrics with additional authentication information.
 	 * May be <code>null</code> in which case no enriching takes place.
 	 */
-	public MetricsFetcher(String endpointUrl, String instanceId, AuthenticationEnricher ae, MetricFamilySamplesEnricher mfse) {
+	public MetricsFetcher(String endpointUrl, String instanceId, AuthenticationEnricher ae, AbstractMetricFamilySamplesEnricher mfse) {
 		this(endpointUrl, instanceId, ae, mfse, null, 0);
 	}
 
