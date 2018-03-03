@@ -2,6 +2,7 @@ package org.cloudfoundry.promregator.fetcher;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 import org.apache.http.HttpHost;
@@ -17,6 +18,9 @@ import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
+import io.prometheus.client.Gauge;
+import io.prometheus.client.Histogram;
+import io.prometheus.client.Histogram.Timer;
 
 /**
  * A MetricsFetcher is a class which retrieves Prometheus metrics at an endpoint URL, which is run
@@ -38,15 +42,25 @@ public class MetricsFetcher implements Callable<HashMap<String, MetricFamilySamp
 	private final RequestConfig config;
 	private AuthenticationEnricher ae;
 	
+	
 	private AbstractMetricFamilySamplesEnricher mfse;
 
 	final static CloseableHttpClient httpclient = HttpClients.createDefault();
 
-	public MetricsFetcher(String endpointUrl, String instanceId, AuthenticationEnricher ae, AbstractMetricFamilySamplesEnricher mfse, String proxyHost, int proxyPort) {
+	/* references to metrics which we create and expose by our own */
+	private String[] ownTelemetryLabels;
+	private Histogram latencyRequest;
+	private Gauge up;
+	
+	public MetricsFetcher(String endpointUrl, String instanceId, AuthenticationEnricher ae, AbstractMetricFamilySamplesEnricher mfse, 
+			String proxyHost, int proxyPort, String[] ownTelemetryLabels, Histogram latencyRequest, Gauge up) {
 		this.endpointUrl = endpointUrl;
 		this.instanceId = instanceId;
 		this.ae = ae;
 		this.mfse = mfse;
+		this.ownTelemetryLabels = ownTelemetryLabels;
+		this.latencyRequest = latencyRequest;
+		this.up = up;
 
 		if (proxyHost != null && proxyPort != 0) {
 			this.config = RequestConfig.custom().setProxy(new HttpHost(proxyHost, proxyPort, "http")).build();
@@ -65,12 +79,14 @@ public class MetricsFetcher implements Callable<HashMap<String, MetricFamilySamp
 	 * @param ae (optional) an AuthenticationEnricher, which enriches the HTTP GET request for fetching the Prometheus metrics with additional authentication information.
 	 * May be <code>null</code> in which case no enriching takes place.
 	 */
-	public MetricsFetcher(String endpointUrl, String instanceId, AuthenticationEnricher ae, AbstractMetricFamilySamplesEnricher mfse) {
-		this(endpointUrl, instanceId, ae, mfse, null, 0);
+	public MetricsFetcher(String endpointUrl, String instanceId, AuthenticationEnricher ae, AbstractMetricFamilySamplesEnricher mfse, 
+			String[] ownTelemetryLabels, Histogram latencyRequest, Gauge up) {
+		this(endpointUrl, instanceId, ae, mfse, null, 0, ownTelemetryLabels, latencyRequest, up);
 	}
 
 	@Override
 	public HashMap<String, MetricFamilySamples> call() throws Exception {
+		
 		HttpGet httpget = new HttpGet(this.endpointUrl);
 		
 		if (this.config != null) {
@@ -85,9 +101,19 @@ public class MetricsFetcher implements Callable<HashMap<String, MetricFamilySamp
 		}
 
 		CloseableHttpResponse response = null;
+		boolean available = false;
 		try {
+			Timer timer = null;
+			if (this.latencyRequest != null) {
+				timer = this.latencyRequest.labels(this.ownTelemetryLabels).startTimer();
+			}
+			
 			response = httpclient.execute(httpget);
 
+			if (timer != null) {
+				timer.observeDuration();
+			}
+			
 			if (response.getStatusLine().getStatusCode() != 200) {
 				log.warn(String.format("Target server at '%s' and instance '%s' responded with a non-200 status code: %d", this.endpointUrl, this.instanceId, response.getStatusLine().getStatusCode()));
 				return null;
@@ -97,6 +123,9 @@ public class MetricsFetcher implements Callable<HashMap<String, MetricFamilySamp
 			
 			TextFormat004Parser parser = new TextFormat004Parser(result);
 			HashMap<String, MetricFamilySamples> emfs = parser.parse();
+
+			// we got a proper response
+			available = true;
 			
 			emfs = this.mfse.determineEnumerationOfMetricFamilySamples(emfs);
 			
@@ -112,9 +141,13 @@ public class MetricsFetcher implements Callable<HashMap<String, MetricFamilySamp
 				try {
 					response.close();
 				} catch (IOException e) {
-					log.info("Unable to properly clos Metrics fetch HTTP connection", e);
+					log.info("Unable to properly close Metrics fetch HTTP connection", e);
 					// bad luck!
 				}
+			}
+			
+			if (this.up != null) {
+				this.up.labels(this.ownTelemetryLabels).set(available ? 1.0 : 0.0);
 			}
 		}
 	}

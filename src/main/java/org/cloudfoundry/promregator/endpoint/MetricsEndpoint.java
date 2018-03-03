@@ -25,10 +25,10 @@ import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.config.Target;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcher;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
-import org.cloudfoundry.promregator.rewrite.MergableMetricFamilySamples;
-import org.cloudfoundry.promregator.rewrite.PromregatorMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.CFMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.MFSUtils;
+import org.cloudfoundry.promregator.rewrite.MergableMetricFamilySamples;
+import org.cloudfoundry.promregator.rewrite.PromregatorMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,8 +36,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Collector.MetricFamilySamples;
+import io.prometheus.client.CollectorRegistry;
+import io.prometheus.client.Gauge;
+import io.prometheus.client.Histogram;
 import io.prometheus.client.exporter.common.TextFormat;
 
 /**
@@ -75,6 +77,15 @@ public class MetricsEndpoint {
 	
 	private AuthenticationEnricher ae;
 	private PromregatorMetricFamilySamplesEnricher pmfse = new PromregatorMetricFamilySamplesEnricher();
+	
+	/* own metrics */
+	private static Histogram requestLatency = Histogram.build("promregator_request_latency", "The latency, which the targets of the promregator produce")
+			.labelNames(CFMetricFamilySamplesEnricher.getEnrichingLabelNames())
+			.register();
+	
+	private static Gauge up = Gauge.build("promregator_up", "Indicator, whether the target of promregator is available")
+			.labelNames(CFMetricFamilySamplesEnricher.getEnrichingLabelNames())
+			.register();
 	
 	@PostConstruct
 	public void setupAuthenticationEnricher() {
@@ -173,11 +184,13 @@ public class MetricsEndpoint {
 				
 				AbstractMetricFamilySamplesEnricher mfse = new CFMetricFamilySamplesEnricher(orgName, spaceName, appName, instance);
 				
+				String[] labelNamesForOwnMetrics = { orgName, spaceName, appName, instance };
+				
 				MetricsFetcher mf = null;
 				if (this.proxyHost != null && this.proxyPort != 0) {
-					mf = new MetricsFetcher(accessURL, instance, this.ae, mfse, this.proxyHost, this.proxyPort);
+					mf = new MetricsFetcher(accessURL, instance, this.ae, mfse, this.proxyHost, this.proxyPort, labelNamesForOwnMetrics, requestLatency, up);
 				} else {
-					mf = new MetricsFetcher(accessURL, instance, this.ae, mfse);
+					mf = new MetricsFetcher(accessURL, instance, this.ae, mfse, labelNamesForOwnMetrics, requestLatency, up);
 				}
 				callablesPrep.add(mf);
 			}

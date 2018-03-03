@@ -4,10 +4,16 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class CFMetricFamilySamplesEnricher extends AbstractMetricFamilySamplesEnricher {
-	private static final String LABELNAME_ORGNAME = "org_name";
-	private static final String LABELNAME_SPACENAME = "space_name";
-	private static final String LABELNAME_APPNAME = "app_name";
-	private static final String LABELNAME_INSTANCE = "instance";
+	public static final String LABELNAME_ORGNAME = "org_name";
+	public static final String LABELNAME_SPACENAME = "space_name";
+	public static final String LABELNAME_APPNAME = "app_name";
+	public static final String LABELNAME_INSTANCE = "instance";
+	
+	private static String[] labelNames = new String[] { LABELNAME_ORGNAME, LABELNAME_SPACENAME, LABELNAME_APPNAME, LABELNAME_INSTANCE };
+	
+	public static String[] getEnrichingLabelNames() {
+		return labelNames;
+	}
 	
 	private String orgName;
 	private String spaceName;
