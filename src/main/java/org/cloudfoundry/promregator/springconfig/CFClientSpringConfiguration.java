@@ -1,5 +1,7 @@
 package org.cloudfoundry.promregator.springconfig;
 
+import java.util.Optional;
+
 import org.cloudfoundry.reactor.ConnectionContext;
 import org.cloudfoundry.reactor.DefaultConnectionContext;
 import org.cloudfoundry.reactor.DefaultConnectionContext.Builder;
@@ -14,10 +16,10 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class CFClientSpringConfiguration {
 	@Bean
-	public DefaultConnectionContext connectionContext(@Value("${cf.apiHost}") String apiHost, ProxyConfiguration proxyConfiguration) {
+	public DefaultConnectionContext connectionContext(@Value("${cf.apiHost}") String apiHost, Optional<ProxyConfiguration> proxyConfiguration) {
 		Builder connctx = DefaultConnectionContext.builder().apiHost(apiHost);
 		
-		if (proxyConfiguration != null) {
+		if (proxyConfiguration.isPresent()) {
 			connctx = connctx.proxyConfiguration(proxyConfiguration);
 		}
 		return connctx.build();
