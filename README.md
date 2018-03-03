@@ -130,6 +130,17 @@ The documentation of the configuration options can be found [here](docs/config.m
 
 
 ## Configuration of Prometheus Server
-TODO!
-[...] job-Tagging must be enabled -- trusted! 
-Example excerpt from Prometheus config
+
+From the perspective of Prometheus, Promregator behaves like any other target. 
+You may set up a scraping job for example like this:
+
+```yaml
+[...]
+scrape_configs:
+  - job_name: 'prometheus'
+    scheme: http
+    static_configs:
+      - targets: ['hostname-of-promregator:8080']
+```
+
+Note that the option `honor_labels: true` is not required. Authentication currently not required / not available (yet).
