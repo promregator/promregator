@@ -13,23 +13,24 @@ metrics *on platform level*, but support monitoring of metrics *on application l
 
 Here is the list of major features provided:
 
-* Standard Java-Application implemented using the Spring Framework. There is no need for administrative privileges on your Cloud Foundry installation!
-  You can even run this app outside of your Cloud Foundry environment (such as behind an internal firewall), as Promregator also supports proxy servers.
-* Multiple CF apps in multiple Orgs and multiple spaces supported
-* Automatic retrieval of App GUIDs and instance identifiers using the CF API (no need to install a CF CLI locally)
+* Standard Java-Application implemented using the Spring Framework. There is **no need for administrative privileges on your Cloud Foundry** installation!
+  You can even run Promregator **outside of your Cloud Foundry environment** (such as behind an internal firewall), as Promregator also supports proxy servers.
+* **Multiple CF apps** in **multiple Orgs** and **multiple spaces** supported
+* **Multiple instances** per app supported, **automatically detecting up- and downscaling**
+* Automatic retrieval of App GUIDs and instance identifiers using the CF API (**no need to install a CF CLI** locally)
 * Automatic update of App GUIDs, if newer versions of the monitored CF apps are deployed (delay up to five minutes possible)
-* Fetching of multiple Prometheus Metric endpoints is performed in parallel (number of concurrent threads used for retrieving metrics can be configured)
-* Support of Authentication Schemes at the CF app's endpoint. The following Authentication schemes are currently available:
+* Fetching of **multiple Prometheus Metric endpoints** is performed in **parallel** (number of concurrent threads used for retrieving metrics can be configured)
+* **Support of Authentication Schemes** at the CF app's endpoint. The following Authentication schemes are currently available:
   - Basic HTTP Authentication (as of [RFC2617](https://www.ietf.org/rfc/rfc2617.txt))
   - [JWT](https://jwt.io/)-based authentication (with retrieval of JWT from [OAuth2](https://oauth.net/2/) server, JWT is cached)
   - Null Authentication (not recommended for productive environments!)
   
   The Authentication schemes are easily extensible.
-* Configuration using standard Spring properties as defined by the Spring Framework (e.g. using `application.yaml` file).
-* Simple HTTP proxy support is available for contacting CF app endpoints.
-* All metrics provided from the Cloud Foundry applications are automatically [enriched with additional labels](docs/enrichment.md), indicating their origin (similar to the `job` and `instance` labels [created by Prometheus](https://prometheus.io/docs/concepts/jobs_instances/)).
-* [Additional metrics are provided](docs/enrichment.md) supporting you to monitor Promregator and the communication to the Cloud Foundry Applications.
-* Promregator's endpoint (`/metrics`) supports GZIP compression, if the clients accepts this.
+* **Configuration using standard Spring properties** as defined by the Spring Framework (e.g. using `application.yml` file).
+* Simple **HTTP proxy support** is available for contacting CF app endpoints.
+* All metrics provided from the Cloud Foundry applications are **automatically [enriched with additional labels](docs/enrichment.md)**, indicating their origin (similar to the `job` and `instance` labels [created by Prometheus](https://prometheus.io/docs/concepts/jobs_instances/)).
+* [Additional metrics are provided](docs/enrichment.md) supporting you to **monitor Promregator** and the **communication to the Cloud Foundry applications**.
+* Promregator's endpoint (`/metrics`) supports **GZIP compression**, if the clients indicates to accept it.
 
 ## Use Case
 
