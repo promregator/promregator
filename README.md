@@ -21,7 +21,7 @@ Here is the list of major features provided:
 * Fetching of multiple Prometheus Metric endpoints is performed in parallel (number of concurrent threads used for retrieving metrics can be configured)
 * Support of Authentication Schemes at the CF app's endpoint. The following Authentication schemes are currently available:
   - Basic HTTP Authentication (as of [RFC2617](https://www.ietf.org/rfc/rfc2617.txt))
-  - JWT-based token (with retrieval of JWT from OAuth2 server, JWT is cached)
+  - [JWT](https://jwt.io/)-based authentication (with retrieval of JWT from [OAuth2](https://oauth.net/2/) server, JWT is cached)
   - Null Authentication (not recommended for productive environments!)
   
   The Authentication schemes are easily extensible.
