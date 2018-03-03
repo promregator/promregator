@@ -146,4 +146,4 @@ scrape_configs:
       - targets: ['hostname-of-promregator:8080']
 ```
 
-Note that the option `honor_labels: true` is not required. Authentication currently not required / not available (yet).
+Note that the option `honor_labels: true` is not required. Authentication currently is not required / not available (yet).
