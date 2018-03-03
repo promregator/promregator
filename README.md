@@ -2,17 +2,19 @@
 
 The term "Promregator" is an artifical composite of the two terms "Prometheus" and "aggregator".
 
-Prometheus is referring to the [Prometheus project](https://prometheus.io/), which is toolset intended for retrieving telemetry data of running applications.
-It supports monitoring these metrics and triggering alerts based on thresholds.
+Prometheus is referring to the [Prometheus project](https://prometheus.io/), which is toolset intended for retrieving telemetry data of running applications. It supports monitoring these metrics and triggering alerts based on thresholds.
 
 Aggregator is referring to the aggregator concept, which you encounter several times in the Platform-as-a-Service offering of Cloud Foundry. 
 The most prominent case of an aggregator in Cloud Foundry most likely is the [Loggregator](https://docs.cloudfoundry.org/loggregator/architecture.html).
 
 The Promregator project intends to provide an aggregator-like tool for the Cloud Foundry environment, which allows fetching 
-the Prometheus metrics of a set of Clound Foundry app instances. Here is the list of major features provided:
+the Prometheus metrics of a set of *Cloud Foundry app instances*. Note that it is not the intention to facilitate scraping of
+metrics *on platform level*, but support monitoring of metrics *on application level*.
+
+Here is the list of major features provided:
 
 * Standard Java-Application implemented using the Spring Framework. There is no need for administrative privileges on your Cloud Foundry installation!
-  You can even run this app outside of your Cloud Foundry environment (such as behind an internal firewall)
+  You can even run this app outside of your Cloud Foundry environment (such as behind an internal firewall), as Promregator also supports proxy servers.
 * Multiple CF apps in multiple Orgs and multiple spaces supported
 * Automatic retrieval of App GUIDs and instance identifiers using the CF API (no need to install a CF CLI locally)
 * Automatic update of App GUIDs, if newer versions of the monitored CF apps are deployed (delay up to five minutes possible)
