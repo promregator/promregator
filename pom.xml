@@ -54,11 +54,6 @@
 			<artifactId>cloudfoundry-operations</artifactId>
 			<version>3.3.0.RELEASE</version>
 		</dependency>
-		<dependency>
-			<groupId>io.projectreactor</groupId>
-			<artifactId>reactor-core</artifactId>
-		</dependency>
-
 
 		<dependency>
 			<groupId>io.projectreactor.ipc</groupId>
@@ -70,8 +65,7 @@
 		<dependency>
 			<groupId>io.projectreactor</groupId>
 			<artifactId>reactor-core</artifactId>
-			<version>3.1.3.RELEASE</version>
-		</dependency>
+			</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-collections4 -->
 		<dependency>
