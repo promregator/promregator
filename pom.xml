@@ -48,7 +48,7 @@
 			<artifactId>log4j</artifactId>
 			<version>1.2.17</version>
 		</dependency>
-		
+
 		<!-- CF API -->
 		<dependency>
 			<groupId>org.cloudfoundry</groupId>
@@ -65,13 +65,13 @@
 		<dependency>
 			<groupId>io.projectreactor.ipc</groupId>
 			<artifactId>reactor-netty</artifactId>
-			</dependency>
+		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/io.projectreactor/reactor-core -->
 		<dependency>
 			<groupId>io.projectreactor</groupId>
 			<artifactId>reactor-core</artifactId>
-			</dependency>
+		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-collections4 -->
 		<dependency>
@@ -99,7 +99,7 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!--  Prometheus stuff -->
+		<!-- Prometheus stuff -->
 		<dependency>
 			<groupId>io.prometheus</groupId>
 			<artifactId>simpleclient</artifactId>
@@ -111,7 +111,12 @@
 			<artifactId>simpleclient_common</artifactId>
 			<version>${prometheus.version}</version>
 		</dependency>
-
+		<!-- Hotspot JVM metrics -->
+		<dependency>
+			<groupId>io.prometheus</groupId>
+			<artifactId>simpleclient_hotspot</artifactId>
+			<version>0.3.0</version>
+		</dependency>
 
 	</dependencies>
 

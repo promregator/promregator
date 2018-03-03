@@ -13,6 +13,9 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 
+import io.prometheus.client.CollectorRegistry;
+import io.prometheus.client.hotspot.DefaultExports;
+
 @SpringBootApplication
 @Import({ CFClientSpringConfiguration.class })
 public class PromregatorApplication {
@@ -26,6 +29,15 @@ public class PromregatorApplication {
 	@Bean
 	public AppInstanceScanner appInstanceScanner() {
 		return new AppInstanceScanner();
+	}
+	
+	@Bean
+	public CollectorRegistry collectorRegistry() {
+		CollectorRegistry cr = CollectorRegistry.defaultRegistry;
+		
+		DefaultExports.initialize();
+		
+		return cr;
 	}
 	
 	@Value("${promregator.endpoint.threads:5}")

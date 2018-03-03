@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.exporter.common.TextFormat;
 
@@ -53,6 +54,9 @@ public class MetricsEndpoint {
 	
 	@Autowired
 	private ExecutorService metricsFetcherPool;
+	
+	@Autowired
+	private CollectorRegistry collectorRegistry;
 	
 	@Value("${cf.proxyHost:@null}")
 	private String proxyHost;
@@ -121,6 +125,9 @@ public class MetricsEndpoint {
 			
 		}
 
+		// also add our own metrics
+		mmfs.merge(this.collectorRegistry.metricFamilySamples());
+		
 		Enumeration<MetricFamilySamples> resultEMFS = mmfs.getEnumerationMetricFamilySamples();
 		Writer writer = new StringWriter();
 		try {
