@@ -18,8 +18,10 @@ the Prometheus metrics of a set of Clound Foundry app instances. Here is the lis
 * Automatic update of App GUIDs, if newer versions of the monitored CF apps are deployed (delay up to five minutes possible)
 * Fetching of multiple Prometheus Metric endpoints is performed in parallel (number of concurrent threads used for retrieving metrics can be configured)
 * Support of Authentication Schemes at the CF app's endpoint. The following Authentication schemes are currently available:
+  - Basic HTTP Authentication (as of [RFC2617](https://www.ietf.org/rfc/rfc2617.txt))
   - JWT-based token (with retrieval of JWT from OAuth2 server, JWT is cached)
   - Null Authentication (not recommended for productive environments!)
+  
   The Authentication schemes are easily extensible.
 * Configuration using standard Spring properties as defined by the Spring Framework (e.g. using `application.yaml` file).
 * Simple HTTP proxy support is available for contacting CF app endpoints.
