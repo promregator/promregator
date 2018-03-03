@@ -1,7 +1,5 @@
 package org.cloudfoundry.promregator.fetcher;
 
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;

@@ -6,10 +6,10 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.cloudfoundry.promregator.rewrite.MFSUtils;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 
 import io.prometheus.client.Collector;
 import io.prometheus.client.Collector.MetricFamilySamples;
@@ -22,13 +22,13 @@ public class TextFormat004ParserTest {
 		HashMap<String, MetricFamilySamples> expectedMap = MFSUtils.convertToEMFSToHashMap(expected);
 		HashMap<String, MetricFamilySamples> actualMap = MFSUtils.convertToEMFSToHashMap(actual);
 		
-		Assert.assertThat(actualMap.keySet(), new ReflectionEquals(expectedMap.keySet()));
+		Assert.assertTrue(EqualsBuilder.reflectionEquals(actualMap.keySet(), expectedMap.keySet(), false));
 		
 		for (String metricName : expectedMap.keySet()) {
 			MetricFamilySamples actualMFS = actualMap.get(metricName);
 			MetricFamilySamples expectedMFS = expectedMap.get(metricName);
 			
-			Assert.assertThat(actualMFS, new ReflectionEquals(expectedMFS));
+			Assert.assertTrue(EqualsBuilder.reflectionEquals(actualMFS, expectedMFS));
 		}
 	}
 	
@@ -56,7 +56,6 @@ public class TextFormat004ParserTest {
 		// compare
 		compareEMFS(expected, result);
 	}
-
 
 	@Test
 	public void testSimpleWithTimestampAndEmptyLine() {
