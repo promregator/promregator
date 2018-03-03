@@ -61,6 +61,7 @@ The Promregator wants to fix these both obstacles by providing a tool, which
 It tries to hide the complexity of the multi-instance approach provided by Cloud Foundry from both the operator and the Prometheus server.
 
 ## Architecture
+![Architecture of Promregator](docs/architecture.png)
 
 Promregator is sitting between your Prometheus server on the one hand and talks to your Cloud Foundry apps on the other hand. 
 It is converting the Prometheus' pull requests into queries targeting your instances of your apps which are running on Cloud Foundry. 
