@@ -17,6 +17,7 @@ The following labels are automatically added to metrics, which are received from
 * The name of the Cloud Foundry space in which the application is running (`space_name`)
 * The name of the Cloud Foundry application which is running (`app_name`)
 * The instance identifier (GUID of the application plus its instance number separated by a colon) from where the data was fetched (`instanceId`).
+* The instance number from where the data was fetched (`instance`).
 
 For you this means that assuming that a target, 
 
@@ -33,8 +34,8 @@ metric_with_label{mylabel="myvalue"} 2.0
 ```
 Promregator returns the following metrics (amongst other) to the caller:
 ```
-metric_without_label{org_name="cforg",space_name="cfspace",app_name="cfapp",instanceId="707d58b2-00ce-435a-845c-79eff28afe8c:0"} 1.0
-metric_with_label{mylabel="myvalue",org_name="cforg",space_name="cfspace",app_name="cfapp",instanceId="707d58b2-00ce-435a-845c-79eff28afe8c:0"} 2.0
+metric_without_label{org_name="cforg",space_name="cfspace",app_name="cfapp",instanceId="707d58b2-00ce-435a-845c-79eff28afe8c:0",instance="0"} 1.0
+metric_with_label{mylabel="myvalue",org_name="cforg",space_name="cfspace",app_name="cfapp",instanceId="707d58b2-00ce-435a-845c-79eff28afe8c:0",instance="0"} 2.0
 ```
 By this, you may aggregate the metrics data in your Prometheus server according to your needs, allowing any drilldown you wish, even to the lowest level of a single instance.
 
@@ -61,40 +62,40 @@ promregator_up{org_name="cforg",space_name="dev",app_name="testapp",instanceId="
 
 # HELP promregator_request_latency The latency, which the targets of the promregator produce
 # TYPE promregator_request_latency histogram
-promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp",instanceId="262ec022-8366-4c49-ac13-f50b35a78154:0",le="0.005",promregator="true",} 0.0
-promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp",instanceId="262ec022-8366-4c49-ac13-f50b35a78154:0",le="0.01",promregator="true",} 0.0
-promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp",instanceId="262ec022-8366-4c49-ac13-f50b35a78154:0",le="0.025",promregator="true",} 0.0
-promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp",instanceId="262ec022-8366-4c49-ac13-f50b35a78154:0",le="0.05",promregator="true",} 0.0
-promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp",instanceId="262ec022-8366-4c49-ac13-f50b35a78154:0",le="0.075",promregator="true",} 0.0
-promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp",instanceId="262ec022-8366-4c49-ac13-f50b35a78154:0",le="0.1",promregator="true",} 0.0
-promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp",instanceId="262ec022-8366-4c49-ac13-f50b35a78154:0",le="0.25",promregator="true",} 1.0
-promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp",instanceId="262ec022-8366-4c49-ac13-f50b35a78154:0",le="0.5",promregator="true",} 1.0
-promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp",instanceId="262ec022-8366-4c49-ac13-f50b35a78154:0",le="0.75",promregator="true",} 1.0
-promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp",instanceId="262ec022-8366-4c49-ac13-f50b35a78154:0",le="1.0",promregator="true",} 1.0
-promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp",instanceId="262ec022-8366-4c49-ac13-f50b35a78154:0",le="2.5",promregator="true",} 1.0
-promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp",instanceId="262ec022-8366-4c49-ac13-f50b35a78154:0",le="5.0",promregator="true",} 1.0
-promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp",instanceId="262ec022-8366-4c49-ac13-f50b35a78154:0",le="7.5",promregator="true",} 1.0
-promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp",instanceId="262ec022-8366-4c49-ac13-f50b35a78154:0",le="10.0",promregator="true",} 1.0
-promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp",instanceId="262ec022-8366-4c49-ac13-f50b35a78154:0",le="+Inf",promregator="true",} 1.0
-promregator_request_latency_count{org_name="cforg",space_name="dev",app_name="testapp",instanceId="262ec022-8366-4c49-ac13-f50b35a78154:0",promregator="true",} 1.0
-promregator_request_latency_sum{org_name="cforg",space_name="dev",app_name="testapp",instanceId="262ec022-8366-4c49-ac13-f50b35a78154:0",promregator="true",} 0.21851916
-promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp2",instanceId="9897cda1-2673-4d75-adf2-3132eea90873:0",le="0.005",promregator="true",} 0.0
-promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp2",instanceId="9897cda1-2673-4d75-adf2-3132eea90873:0",le="0.01",promregator="true",} 0.0
-promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp2",instanceId="9897cda1-2673-4d75-adf2-3132eea90873:0",le="0.025",promregator="true",} 0.0
-promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp2",instanceId="9897cda1-2673-4d75-adf2-3132eea90873:0",le="0.05",promregator="true",} 0.0
-promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp2",instanceId="9897cda1-2673-4d75-adf2-3132eea90873:0",le="0.075",promregator="true",} 0.0
-promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp2",instanceId="9897cda1-2673-4d75-adf2-3132eea90873:0",le="0.1",promregator="true",} 0.0
-promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp2",instanceId="9897cda1-2673-4d75-adf2-3132eea90873:0",le="0.25",promregator="true",} 1.0
-promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp2",instanceId="9897cda1-2673-4d75-adf2-3132eea90873:0",le="0.5",promregator="true",} 1.0
-promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp2",instanceId="9897cda1-2673-4d75-adf2-3132eea90873:0",le="0.75",promregator="true",} 1.0
-promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp2",instanceId="9897cda1-2673-4d75-adf2-3132eea90873:0",le="1.0",promregator="true",} 1.0
-promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp2",instanceId="9897cda1-2673-4d75-adf2-3132eea90873:0",le="2.5",promregator="true",} 1.0
-promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp2",instanceId="9897cda1-2673-4d75-adf2-3132eea90873:0",le="5.0",promregator="true",} 1.0
-promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp2",instanceId="9897cda1-2673-4d75-adf2-3132eea90873:0",le="7.5",promregator="true",} 1.0
-promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp2",instanceId="9897cda1-2673-4d75-adf2-3132eea90873:0",le="10.0",promregator="true",} 1.0
-promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp2",instanceId="9897cda1-2673-4d75-adf2-3132eea90873:0",le="+Inf",promregator="true",} 1.0
-promregator_request_latency_count{org_name="cforg",space_name="dev",app_name="testapp2",instanceId="9897cda1-2673-4d75-adf2-3132eea90873:0",promregator="true",} 1.0
-promregator_request_latency_sum{org_name="cforg",space_name="dev",app_name="testapp2",instanceId="9897cda1-2673-4d75-adf2-3132eea90873:0",promregator="true",} 0.218502344
+promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp",instanceId="262ec022-8366-4c49-ac13-f50b35a78154:0",le="0.005",promregator="true",instance="0"} 0.0
+promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp",instanceId="262ec022-8366-4c49-ac13-f50b35a78154:0",le="0.01",promregator="true",instance="0"} 0.0
+promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp",instanceId="262ec022-8366-4c49-ac13-f50b35a78154:0",le="0.025",promregator="true",instance="0"} 0.0
+promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp",instanceId="262ec022-8366-4c49-ac13-f50b35a78154:0",le="0.05",promregator="true",instance="0"} 0.0
+promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp",instanceId="262ec022-8366-4c49-ac13-f50b35a78154:0",le="0.075",promregator="true",instance="0"} 0.0
+promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp",instanceId="262ec022-8366-4c49-ac13-f50b35a78154:0",le="0.1",promregator="true",instance="0"} 0.0
+promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp",instanceId="262ec022-8366-4c49-ac13-f50b35a78154:0",le="0.25",promregator="true",instance="0"} 1.0
+promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp",instanceId="262ec022-8366-4c49-ac13-f50b35a78154:0",le="0.5",promregator="true",instance="0"} 1.0
+promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp",instanceId="262ec022-8366-4c49-ac13-f50b35a78154:0",le="0.75",promregator="true",instance="0"} 1.0
+promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp",instanceId="262ec022-8366-4c49-ac13-f50b35a78154:0",le="1.0",promregator="true",instance="0"} 1.0
+promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp",instanceId="262ec022-8366-4c49-ac13-f50b35a78154:0",le="2.5",promregator="true",instance="0"} 1.0
+promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp",instanceId="262ec022-8366-4c49-ac13-f50b35a78154:0",le="5.0",promregator="true",instance="0"} 1.0
+promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp",instanceId="262ec022-8366-4c49-ac13-f50b35a78154:0",le="7.5",promregator="true",instance="0"} 1.0
+promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp",instanceId="262ec022-8366-4c49-ac13-f50b35a78154:0",le="10.0",promregator="true",instance="0"} 1.0
+promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp",instanceId="262ec022-8366-4c49-ac13-f50b35a78154:0",le="+Inf",promregator="true",instance="0"} 1.0
+promregator_request_latency_count{org_name="cforg",space_name="dev",app_name="testapp",instanceId="262ec022-8366-4c49-ac13-f50b35a78154:0",promregator="true",instance="0"} 1.0
+promregator_request_latency_sum{org_name="cforg",space_name="dev",app_name="testapp",instanceId="262ec022-8366-4c49-ac13-f50b35a78154:0",promregator="true",instance="0"} 0.21851916
+promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp2",instanceId="9897cda1-2673-4d75-adf2-3132eea90873:0",le="0.005",promregator="true",instance="0"} 0.0
+promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp2",instanceId="9897cda1-2673-4d75-adf2-3132eea90873:0",le="0.01",promregator="true",instance="0"} 0.0
+promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp2",instanceId="9897cda1-2673-4d75-adf2-3132eea90873:0",le="0.025",promregator="true",instance="0"} 0.0
+promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp2",instanceId="9897cda1-2673-4d75-adf2-3132eea90873:0",le="0.05",promregator="true",instance="0"} 0.0
+promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp2",instanceId="9897cda1-2673-4d75-adf2-3132eea90873:0",le="0.075",promregator="true",instance="0"} 0.0
+promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp2",instanceId="9897cda1-2673-4d75-adf2-3132eea90873:0",le="0.1",promregator="true",instance="0"} 0.0
+promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp2",instanceId="9897cda1-2673-4d75-adf2-3132eea90873:0",le="0.25",promregator="true",instance="0"} 1.0
+promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp2",instanceId="9897cda1-2673-4d75-adf2-3132eea90873:0",le="0.5",promregator="true",instance="0"} 1.0
+promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp2",instanceId="9897cda1-2673-4d75-adf2-3132eea90873:0",le="0.75",promregator="true",instance="0"} 1.0
+promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp2",instanceId="9897cda1-2673-4d75-adf2-3132eea90873:0",le="1.0",promregator="true",instance="0"} 1.0
+promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp2",instanceId="9897cda1-2673-4d75-adf2-3132eea90873:0",le="2.5",promregator="true",instance="0"} 1.0
+promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp2",instanceId="9897cda1-2673-4d75-adf2-3132eea90873:0",le="5.0",promregator="true",instance="0"} 1.0
+promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp2",instanceId="9897cda1-2673-4d75-adf2-3132eea90873:0",le="7.5",promregator="true",instance="0"} 1.0
+promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp2",instanceId="9897cda1-2673-4d75-adf2-3132eea90873:0",le="10.0",promregator="true",instance="0"} 1.0
+promregator_request_latency_bucket{org_name="cforg",space_name="dev",app_name="testapp2",instanceId="9897cda1-2673-4d75-adf2-3132eea90873:0",le="+Inf",promregator="true",instance="0"} 1.0
+promregator_request_latency_count{org_name="cforg",space_name="dev",app_name="testapp2",instanceId="9897cda1-2673-4d75-adf2-3132eea90873:0",promregator="true",instance="0"} 1.0
+promregator_request_latency_sum{org_name="cforg",space_name="dev",app_name="testapp2",instanceId="9897cda1-2673-4d75-adf2-3132eea90873:0",promregator="true",instance="0"} 0.218502344
 ```
 
 

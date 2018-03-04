@@ -188,7 +188,7 @@ public class MetricsEndpoint {
 				
 				AbstractMetricFamilySamplesEnricher mfse = new CFMetricFamilySamplesEnricher(orgName, spaceName, appName, instance);
 				
-				String[] labelNamesForOwnMetrics = { orgName, spaceName, appName, instance };
+				String[] labelNamesForOwnMetrics = { orgName, spaceName, appName, instance, CFMetricFamilySamplesEnricher.getInstanceFromInstanceId(instance) };
 				
 				MetricsFetcher mf = null;
 				if (this.proxyHost != null && this.proxyPort != 0) {
