@@ -9,7 +9,7 @@ The most prominent case of an aggregator in Cloud Foundry most likely is the [Lo
 
 The Promregator project intends to provide an aggregator-like tool for the Cloud Foundry environment, which allows fetching 
 the Prometheus metrics of a set of *Cloud Foundry app instances*. Note that it is not the intention to facilitate scraping of
-metrics *on platform level*, but support monitoring of metrics *on application level* (if you are looking for platform monitoring, you might find https://github.com/pivotal-cf/prometheus-on-PCF and https://github.com/bosh-prometheus/prometheus-boshrelease interesting).
+metrics *on platform level* (e.g. for monitoring services, which are exposed via BOSH containers on the Cloud Foundry platform), but support monitoring of metrics *on application level* (if you are looking for platform monitoring, you might find https://github.com/pivotal-cf/prometheus-on-PCF and https://github.com/bosh-prometheus/prometheus-boshrelease interesting).
 
 Here is the list of major features provided:
 
