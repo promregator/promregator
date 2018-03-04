@@ -15,11 +15,10 @@ Here is the list of major features provided:
 
 * Standard Java-Application implemented using the Spring Framework. There is **no need for administrative privileges on your Cloud Foundry** installation!
   You can even run Promregator **outside of your Cloud Foundry environment** (such as behind an internal firewall), as Promregator also supports proxy servers.
-* **Multiple CF apps** in **multiple Orgs** and **multiple spaces** supported
-* **Multiple instances** per app supported, **automatically detecting up- and downscaling**
-* Automatic retrieval of App GUIDs and instance identifiers using the CF API (**no need to install a CF CLI** locally)
-* Automatic update of App GUIDs, if newer versions of the monitored CF apps are deployed (delay up to five minutes possible)
-* Fetching of **multiple Prometheus Metric endpoints** is performed in **parallel** (number of concurrent threads used for retrieving metrics can be configured)
+* **Automatic discovery** of instances and hostnames of Cloud Foundry apps supported
+  * **Multiple CF apps** in **multiple Orgs** and **multiple spaces** supported
+  * **Multiple instances** per app supported, **automatically detecting up- and downscaling** (results are cached, timeout of caching can be configured)
+* Fetching of the **Prometheus Metric endpoints** of multiple app instances is performed in **parallel** (number of concurrent threads used for retrieving metrics can be configured)
 * **Support of Authentication Schemes** at the CF app's endpoint. The following Authentication schemes are currently available:
   - Basic HTTP Authentication (as of [RFC2617](https://www.ietf.org/rfc/rfc2617.txt))
   - [JWT](https://jwt.io/)-based authentication (with retrieval of JWT from [OAuth2](https://oauth.net/2/) server, JWT is cached)
