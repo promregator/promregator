@@ -7,9 +7,9 @@ public class CFMetricFamilySamplesEnricher extends AbstractMetricFamilySamplesEn
 	public static final String LABELNAME_ORGNAME = "org_name";
 	public static final String LABELNAME_SPACENAME = "space_name";
 	public static final String LABELNAME_APPNAME = "app_name";
-	public static final String LABELNAME_INSTANCE = "instance";
+	public static final String LABELNAME_INSTANCEID = "instanceId";
 	
-	private static String[] labelNames = new String[] { LABELNAME_ORGNAME, LABELNAME_SPACENAME, LABELNAME_APPNAME, LABELNAME_INSTANCE };
+	private static String[] labelNames = new String[] { LABELNAME_ORGNAME, LABELNAME_SPACENAME, LABELNAME_APPNAME, LABELNAME_INSTANCEID };
 	
 	public static String[] getEnrichingLabelNames() {
 		return labelNames;
@@ -34,7 +34,7 @@ public class CFMetricFamilySamplesEnricher extends AbstractMetricFamilySamplesEn
 		clone.add(LABELNAME_ORGNAME);
 		clone.add(LABELNAME_SPACENAME);
 		clone.add(LABELNAME_APPNAME);
-		clone.add(LABELNAME_INSTANCE);
+		clone.add(LABELNAME_INSTANCEID);
 		
 		return clone;
 	}
