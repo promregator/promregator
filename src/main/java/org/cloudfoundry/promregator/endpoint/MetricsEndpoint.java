@@ -140,7 +140,10 @@ public class MetricsEndpoint {
 					}
 				}
 				HashMap<String, MetricFamilySamples> emfs = future.get(maxWaitTime, TimeUnit.MILLISECONDS);
-				mmfs.merge(emfs);
+				
+				if (emfs != null) {
+					mmfs.merge(emfs);
+				}
 			} catch (InterruptedException e) {
 				continue;
 			} catch (ExecutionException e) {
