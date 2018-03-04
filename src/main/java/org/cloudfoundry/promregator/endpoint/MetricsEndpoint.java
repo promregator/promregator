@@ -3,6 +3,8 @@ package org.cloudfoundry.promregator.endpoint;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -92,6 +94,10 @@ public class MetricsEndpoint {
 			.labelNames(CFMetricFamilySamplesEnricher.getEnrichingLabelNames())
 			.register();
 	
+	// see also https://prometheus.io/docs/instrumenting/writing_exporters/#metrics-about-the-scrape-itself
+	private static Gauge scrape_duration = Gauge.build("promregator_scrape_duration_seconds", "Duration in seconds indicating how long scraping of all metrics took")
+			.register();
+	
 	@PostConstruct
 	public void setupAuthenticationEnricher() {
 		String type = promregatorConfiguration.getAuthenticator().getType();
@@ -108,6 +114,8 @@ public class MetricsEndpoint {
 	
 	@RequestMapping(method = RequestMethod.GET, produces=TextFormat.CONTENT_TYPE_004)
 	public String getMetrics() {
+		Instant start = Instant.now();
+		
 		List<MetricsFetcher> callablesPrep = this.createMetricFetchers();
 		
 		LinkedList<Future<HashMap<String,MetricFamilySamples>>> futures = new LinkedList<>();
@@ -144,7 +152,17 @@ public class MetricsEndpoint {
 			}
 			
 		}
-
+		Instant stop = Instant.now();
+		Duration duration = Duration.between(start, stop);
+		scrape_duration.set(duration.toMillis() / 1000.0);
+		// NB: We have to set this here now, otherwise it would not be added to the collectorRegistry properly.
+		/* 
+		 * NB: This is a little bit off w.r.t parallel requests: If two requests came
+		 * in and reached this pint exactly at the same point time, then the two values
+		 * could be mixed up. 
+		 * But: in practice this most likely would not have any major influence
+		 */
+		
 		// also add our own metrics
 		Enumeration<MetricFamilySamples> rawMFS = this.collectorRegistry.metricFamilySamples();
 		HashMap<String, MetricFamilySamples> enrichedMFS = this.gmfspr.determineEnumerationOfMetricFamilySamples(MFSUtils.convertToEMFSToHashMap(rawMFS));
