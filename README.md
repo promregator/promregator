@@ -11,8 +11,6 @@ The Promregator project intends to provide an aggregator-like tool for the Cloud
 the Prometheus metrics of a set of *Cloud Foundry app instances*. Note that it is not the intention to facilitate scraping of
 metrics *on platform level* (e.g. for monitoring services, which are exposed via BOSH containers on the Cloud Foundry platform), but support monitoring of metrics *on application level* (if you are looking for platform monitoring, you might find https://github.com/pivotal-cf/prometheus-on-PCF and https://github.com/bosh-prometheus/prometheus-boshrelease interesting).
 
-It is the "small proxy server" in the sense of the issue [prometheus/prometheus#2346](https://github.com/prometheus/prometheus/issues/2346) (NB: due to the rejection of this issue, Promregator also cannot be implemented as a Prometheus' discovery service).
-
 Here is the list of major features provided:
 
 * Standard Java-Application implemented using the Spring Framework. There is **no need for administrative privileges on your Cloud Foundry** installation!
@@ -33,36 +31,6 @@ Here is the list of major features provided:
 * [Additional metrics are provided](docs/enrichment.md) supporting you to **monitor Promregator** and the **communication to the Cloud Foundry applications**.
 * Promregator's endpoint (`/metrics`) supports **GZIP compression**, if the clients indicates to accept it.
 
-## Use Case
-
-Prometheus is a great tool to retrieve metrics at a constant rate from a set of targets. It is based on a pull-based fetching mechanism. However,
-it is quite simplistic (due to conceptual reasons) with regards to reaching out to endpoints which are not uniquely identified by its URL. Moreover, it
-has certain limitations on client-side authentication mechanisms, which are based on the [OAuth2](https://oauth.net/2/)/[JWT](https://jwt.io/) protocol family.
-
-Cloud Foundry provides the capabilty to run nearly arbitrary HTTP-enabled applications (e.g. developed in Java) on a Platform-as-a-Service-enabled environment. 
-To provide fail-over of applications and to support scalability, multiple instances of the same application may be run behind a reverse proxy (a.k.a. web dispatcher).
-Requests are typically dispatched in a round-robin schedule.
-Detailed monitoring of these applications (esp. if talking about custom metrics such as Prometheus supports) is considered "an implementation detail" (besides logging facilities like the [ELK stack](https://www.elastic.co/de/elk-stack)).
-
-These two distinct worlds do not work together properly, due to the following obstacles:
-* CF apps are only reachable (from externally without having CF administrative privileges, which is not common on PaaS offerings) 
-  via official, world-reachable URLs. The cells, on which on which the CF apps are running, are typically protected by a firewall and the reverse proxy. 
-  Application developers do not have access via a side-channel to the cells, as this would bypass many security measures taken by the platform.
-  
-  This means that reading the metrics must be performed via the world-reachable URLs, i.e. going through the reverse proxy.
-  As the endpoints for retrieving the Prometheus metrics will be world-reachable, and exposing such internal information will be a major security risk for
-  such applications, the Prometheus metrics endpoints must be authentication-protected in some way. Often, this is done using OAuth2/JWT-based authentication,
-  which is not supported (yet) by Prometheus natively.
-* For providing failure-safety and scalability, Clound Foundry supports to run multiple instances of an application, which are registered to the same
-  world-reachable URL (see also [Routing](https://docs.cloudfoundry.org/devguide/deploy-apps/routes-domains.html)). As it is unpredictable for Prometheus
-  to which instance a request to an endpoint is dispatched by the reverse proxy, the metrics retrieved by the pulling mechanism will hit instances by random each time.
-  Thus, to prevent that a monitoring tool would see randomly-appearing sets of metrics, a monitoring solution must be aware of the application instances running on the platform.
-
-The Promregator wants to fix these both obstacles by providing a tool, which 
-* at the one side behaves like a Prometheus client to a Prometheus server,
-* while retrieving the source metrics from multiple instances running Prometheus metrics endpoints which are compliant to the Prometheus client protocol.
-
-It tries to hide the complexity of the multi-instance approach provided by Cloud Foundry from both the operator and the Prometheus server.
 
 ## Architecture
 ![Architecture of Promregator](docs/architecture.png)
@@ -70,9 +38,7 @@ It tries to hide the complexity of the multi-instance approach provided by Cloud
 Promregator is sitting between your Prometheus server on the one hand and talks to your Cloud Foundry apps on the other hand. 
 It is converting the Prometheus' scraping requests into queries targeting your instances of your apps, which are running on Cloud Foundry. 
 
-For Prometheus, Promregator feels like a single client, whilst Promregator may request multiple targets.
-
-Promregator is also in contact with the Cloud Controller of the Cloud Foundry platform to able to detect changes in the Cloud Foundry platform environment. For example, scaling up the number of running instances of an application (due to high load) can then be detected automatically. Discovery of this new instance is then performed automatically and the metrics are replicated to the Prometheus server.
+For further details on the architecture of Promregator, please look at the [architecture page](docs/architecture.md).
 
 
 ## Prerequisites
@@ -152,4 +118,6 @@ scrape_configs:
       - targets: ['hostname-of-promregator:8080']
 ```
 
-Note that the option `honor_labels: true` is not required. Authentication currently is not required / not available (yet).
+Note that the option `honor_labels: true` is not required. 
+
+Authentication currently is not required / not available (yet).
