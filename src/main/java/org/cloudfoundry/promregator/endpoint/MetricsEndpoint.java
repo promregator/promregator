@@ -38,6 +38,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.CollectorRegistry;
+import io.prometheus.client.Counter;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.Histogram;
 import io.prometheus.client.exporter.common.TextFormat;
@@ -87,7 +88,7 @@ public class MetricsEndpoint {
 			.labelNames(CFMetricFamilySamplesEnricher.getEnrichingLabelNames())
 			.register();
 	
-	private static Gauge failedRequests = Gauge.build("promregator_request_failure", "Requests, which responded, but the HTTP code indicated an error or the connection dropped/timed out")
+	private static Counter failedRequests = Counter.build("promregator_request_failure", "Requests, which responded, but the HTTP code indicated an error or the connection dropped/timed out")
 			.labelNames(CFMetricFamilySamplesEnricher.getEnrichingLabelNames())
 			.register();
 	

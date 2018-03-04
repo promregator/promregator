@@ -17,6 +17,7 @@ import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
+import io.prometheus.client.Counter;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.Histogram;
 import io.prometheus.client.Histogram.Timer;
@@ -50,10 +51,10 @@ public class MetricsFetcher implements Callable<HashMap<String, MetricFamilySamp
 	private String[] ownTelemetryLabels;
 	private Histogram latencyRequest;
 	private Gauge up;
-	private Gauge failedRequests;
+	private Counter failedRequests;
 
 	public MetricsFetcher(String endpointUrl, String instanceId, AuthenticationEnricher ae, AbstractMetricFamilySamplesEnricher mfse, 
-			String proxyHost, int proxyPort, String[] ownTelemetryLabels, Histogram latencyRequest, Gauge up, Gauge failedRequests) {
+			String proxyHost, int proxyPort, String[] ownTelemetryLabels, Histogram latencyRequest, Gauge up, Counter failedRequests) {
 		this.endpointUrl = endpointUrl;
 		this.instanceId = instanceId;
 		this.ae = ae;
@@ -81,7 +82,7 @@ public class MetricsFetcher implements Callable<HashMap<String, MetricFamilySamp
 	 * May be <code>null</code> in which case no enriching takes place.
 	 */
 	public MetricsFetcher(String endpointUrl, String instanceId, AuthenticationEnricher ae, AbstractMetricFamilySamplesEnricher mfse, 
-			String[] ownTelemetryLabels, Histogram latencyRequest, Gauge up, Gauge failedRequests) {
+			String[] ownTelemetryLabels, Histogram latencyRequest, Gauge up, Counter failedRequests) {
 		this(endpointUrl, instanceId, ae, mfse, null, 0, ownTelemetryLabels, latencyRequest, up, failedRequests);
 	}
 
