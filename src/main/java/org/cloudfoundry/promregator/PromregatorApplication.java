@@ -4,6 +4,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.log4j.Logger;
+import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.springconfig.CFClientSpringConfiguration;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,6 +39,11 @@ public class PromregatorApplication {
 		DefaultExports.initialize();
 		
 		return cr;
+	}
+	
+	@Bean
+	public InternalMetrics internalMetrics() {
+		return new InternalMetrics();
 	}
 	
 	@Value("${promregator.endpoint.threads:5}")

@@ -26,6 +26,7 @@ import org.cloudfoundry.client.v3.processes.ProcessResource;
 import org.cloudfoundry.client.v3.spaces.ListSpacesRequest;
 import org.cloudfoundry.client.v3.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v3.spaces.SpaceResource;
+import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.cloudfoundry.reactor.client.ReactorCloudFoundryClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,6 +36,9 @@ import org.springframework.stereotype.Component;
 public class AppInstanceScanner {
 	@Autowired
 	private ReactorCloudFoundryClient cloudFoundryClient;
+	
+	@Autowired
+	private InternalMetrics internalMetrics;
 	
 	private PassiveExpiringMap<String, String> orgMap;
 	private PassiveExpiringMap<String, String> spaceMap;
@@ -73,12 +77,15 @@ public class AppInstanceScanner {
 		String cached = orgMap.get(orgName);
 		
 		if (cached == null) {
+			this.internalMetrics.countMiss("appinstancescanner.org");
 			ListOrganizationsRequest orgsRequest = ListOrganizationsRequest.builder().name(orgName).build();
 			ListOrganizationsResponse orgsList = this.cloudFoundryClient.organizationsV3().list(orgsRequest).block();
 			for (OrganizationResource organizationResource : orgsList.getResources()) {
 				cached = organizationResource.getId();
 				orgMap.put(orgName, cached);
 			}
+		} else {
+			this.internalMetrics.countHit("appinstancescanner.org");
 		}
 		
 		return cached;
@@ -89,6 +96,7 @@ public class AppInstanceScanner {
 		String cached = spaceMap.get(key);
 		
 		if (cached == null) {
+			this.internalMetrics.countMiss("appinstancescanner.space");
 			ListSpacesRequest spacesRequest = ListSpacesRequest.builder().organizationId(orgId).name(spaceName).build();
 			ListSpacesResponse spacesList = this.cloudFoundryClient.spacesV3().list(spacesRequest).block();
 			
@@ -96,6 +104,8 @@ public class AppInstanceScanner {
 				cached = spaceResource.getId();
 				spaceMap.put(key, cached);
 			}
+		} else {
+			this.internalMetrics.countHit("appinstancescanner.space");
 		}
 		
 		return cached;
@@ -107,6 +117,7 @@ public class AppInstanceScanner {
 		String cached = applicationMap.get(key);
 		
 		if (cached == null) {
+			this.internalMetrics.countMiss("appinstancescanner.app");
 			ListApplicationsRequest request = ListApplicationsRequest.builder().organizationId(orgId).spaceId(spaceId).name(applicationName).build();
 			ListApplicationsResponse response = this.cloudFoundryClient.applicationsV3().list(request).block();
 			
@@ -114,6 +125,8 @@ public class AppInstanceScanner {
 				cached =applicationResource.getId();
 				applicationMap.put(key, cached);
 			}
+		} else {
+			this.internalMetrics.countHit("appinstancescanner.app");
 		}
 		
 		return cached;
@@ -171,6 +184,7 @@ public class AppInstanceScanner {
 		String cached = hostnameMap.get(key);
 		
 		if (cached == null) {
+			this.internalMetrics.countMiss("appinstancescanner.route");
 			String orgId = this.getOrgId(orgName);
 			String spaceId = this.getSpaceId(orgId, spaceName);
 			String appId = this.getApplicationId(orgId, spaceId, appName);
@@ -204,6 +218,8 @@ public class AppInstanceScanner {
 			
 			cached = host+'.'+domain;
 			hostnameMap.put(key, cached);
+		} else {
+			this.internalMetrics.countHit("appinstancescanner.route");
 		}
 		
 		return cached;

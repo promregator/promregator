@@ -125,6 +125,14 @@ As an upper boundary, it does not make sense to allow more threads to run than y
 
 The default value of this option is 5.
 
+### Option "promregator.metrics.internal" (optional)
+Specifies, if additional internal metrics shall be exposed describing the internal state of Promregator.
+
+The default value of this option is `false`, which disables the exposure. 
+
+Note that these metrics are not meant for productive usage. As they are primarily meant for facilitating debugging issues in Promregator, their naming and labels may change at any point in time without further notice.
+
+
 ### Subgroup "promregator.authenticator"
 Configures the way how authentication shall happen between Promregator and the targets configured above.
 

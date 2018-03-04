@@ -102,7 +102,7 @@ promregator_request_latency_sum{org_name="cforg",space_name="dev",app_name="test
 The metrics provided by Promregator also supports you in monitoring Promregator itself. 
 Due to this, additional metrics, such as the [Hotspot's (Java Virtual Machine) metrics](https://github.com/prometheus/client_java) are also exposed to the caller.
 
-Note that, as these metrics also are originated in Promregator, they also carry the `promregator="true"` labelling. 
+Note that, as these metrics also are originated in Promregator, they also carry the `promregator="true"` labeling. 
 
 See here some examples, how this may look like:
 ```
@@ -114,5 +114,5 @@ jvm_memory_pool_bytes_max{pool="Compressed Class Space",promregator="true",} 1.0
 jvm_memory_pool_bytes_max{pool="PS Eden Space",promregator="true",} 1.358430208E9
 ```
 
-As of writing, the only metrics which are exposed like this, are the Java Hotspot's metrics. Further metrics may follow, if demand arises.
+By default, only the metrics of the the Java Hotspot are exposed like this. Using the [configuration option `promregator.metrics.internal`](./config.md) further internal metrics may be enabled.
 
