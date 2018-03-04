@@ -16,7 +16,7 @@ public class MetricFamilySamplesEnricherTest {
 
 	@Test
 	public void testSimple() {
-		AbstractMetricFamilySamplesEnricher subject = new CFMetricFamilySamplesEnricher("testOrgName", "testSpaceName", "testComponent", "testInstance");
+		AbstractMetricFamilySamplesEnricher subject = new CFMetricFamilySamplesEnricher("testOrgName", "testSpaceName", "testComponent", "testInstance:42");
 
 		List<Sample> samples = new LinkedList<>();
 		Sample s = new Sample("dummyname", Arrays.asList(new String[] { "labelName" }), Arrays.asList(new String[] {"labelValue"}), 1.0);
@@ -46,7 +46,8 @@ public class MetricFamilySamplesEnricherTest {
 		Assert.assertEquals("org_name", labelNames[1]);
 		Assert.assertEquals("space_name", labelNames[2]);
 		Assert.assertEquals("app_name", labelNames[3]);
-		Assert.assertEquals("instance", labelNames[4]);
+		Assert.assertEquals("cf_instance_id", labelNames[4]);
+		Assert.assertEquals("cf_instance_number", labelNames[5]);
 		
 		List<String> labelValuesList = testSample.labelValues;
 		String[] labelValues = labelValuesList.toArray(new String[0]);
@@ -55,7 +56,8 @@ public class MetricFamilySamplesEnricherTest {
 		Assert.assertEquals("testOrgName", labelValues[1]);
 		Assert.assertEquals("testSpaceName", labelValues[2]);
 		Assert.assertEquals("testComponent", labelValues[3]);
-		Assert.assertEquals("testInstance", labelValues[4]);
+		Assert.assertEquals("testInstance:42", labelValues[4]);
+		Assert.assertEquals("42", labelValues[5]);
 	}
 
 }
