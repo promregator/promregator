@@ -35,16 +35,16 @@ public class TextFormat004Parser {
 	private final static Pattern PATTERN_COMMENT = Pattern.compile("^#");
 	private final static Pattern PATTERN_EMPTYLINE = Pattern.compile("^[ \t]*$");
 	
-	private final static Pattern PATTERN_PARSE_HELP = Pattern.compile("^#[ \t]+HELP[ \t]+([a-zA-Z0-9_\\\"]+)[ \\t]+(.*)$");
-	private final static Pattern PATTERN_PARSE_TYPE = Pattern.compile("^#[ \t]+TYPE[ \t]+([a-zA-Z0-9_\\\"]+)[ \\t]+([a-zA-Z]*)$");
+	private final static Pattern PATTERN_PARSE_HELP = Pattern.compile("^#[ \t]+HELP[ \t]+([a-zA-Z0-9:_\\\"]+)[ \\t]+(.*)$");
+	private final static Pattern PATTERN_PARSE_TYPE = Pattern.compile("^#[ \t]+TYPE[ \t]+([a-zA-Z0-9:_\\\"]+)[ \\t]+([a-zA-Z]*)$");
 	
-	private final static Pattern PATTERN_TOKEN_WITH_SPACE_SEPARATOR = Pattern.compile("^([a-zA-Z0-9_\\\"]+)");
+	private final static Pattern PATTERN_TOKEN_WITH_SPACE_SEPARATOR = Pattern.compile("^([a-zA-Z0-9:_\\\"]+)");
 	private final static Pattern PATTERN_SKIP_SPACES = Pattern.compile("[ \\\\t]*");
 	private final static Pattern PATTERN_PARSE_LABELBLOCK = Pattern.compile("^\\{([^}]+)\\}");
 	private final static Pattern PATTERN_PARSE_VALUE = Pattern.compile("^([-+]?[0-9]*\\.?[0-9]+[eE]?[-+]?[0-9]*)[ \\\\t]*");
 	private final static Pattern PATTERN_PARSE_VALUETEXT = Pattern.compile("^(NaN|Nan|\\+Inf|-Inf)[ \\\\t]*");
 
-	private final static Pattern PATTERN_LABEL_WITH_STARTING_QUOTES = Pattern.compile("([a-zA-Z0-9_\\\"]+)=\"");
+	private final static Pattern PATTERN_LABEL_WITH_STARTING_QUOTES = Pattern.compile("([a-zA-Z0-9:_\\\"]+)=\"");
 
 	
 	public TextFormat004Parser(String textFormat004data) {
