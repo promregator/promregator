@@ -7,8 +7,8 @@ public class CFMetricFamilySamplesEnricher extends AbstractMetricFamilySamplesEn
 	public static final String LABELNAME_ORGNAME = "org_name";
 	public static final String LABELNAME_SPACENAME = "space_name";
 	public static final String LABELNAME_APPNAME = "app_name";
-	public static final String LABELNAME_INSTANCEID = "cfInstanceId";
-	public static final String LABELNAME_INSTANCE = "cfInstance";
+	public static final String LABELNAME_INSTANCEID = "cf_instance_id";
+	public static final String LABELNAME_INSTANCE = "cf_instance_number";
 	
 	private static String[] labelNames = new String[] { LABELNAME_ORGNAME, LABELNAME_SPACENAME, LABELNAME_APPNAME, LABELNAME_INSTANCEID, LABELNAME_INSTANCE };
 	
