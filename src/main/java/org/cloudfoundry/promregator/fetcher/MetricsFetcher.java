@@ -2,7 +2,6 @@ package org.cloudfoundry.promregator.fetcher;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.concurrent.Callable;
 
 import org.apache.http.HttpHost;
