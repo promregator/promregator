@@ -32,6 +32,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import io.prometheus.client.Histogram.Timer;
+
 @Component
 public class AppInstanceScanner {
 	@Autowired
@@ -78,12 +80,17 @@ public class AppInstanceScanner {
 		
 		if (cached == null) {
 			this.internalMetrics.countMiss("appinstancescanner.org");
+			
+			Timer t = this.internalMetrics.startTimerCFFetch("org");
 			ListOrganizationsRequest orgsRequest = ListOrganizationsRequest.builder().name(orgName).build();
 			ListOrganizationsResponse orgsList = this.cloudFoundryClient.organizationsV3().list(orgsRequest).block();
 			for (OrganizationResource organizationResource : orgsList.getResources()) {
 				cached = organizationResource.getId();
 				orgMap.put(orgName, cached);
 			}
+			
+			if (t != null) t.observeDuration();
+			
 		} else {
 			this.internalMetrics.countHit("appinstancescanner.org");
 		}
@@ -97,6 +104,8 @@ public class AppInstanceScanner {
 		
 		if (cached == null) {
 			this.internalMetrics.countMiss("appinstancescanner.space");
+			
+			Timer t = this.internalMetrics.startTimerCFFetch("space");
 			ListSpacesRequest spacesRequest = ListSpacesRequest.builder().organizationId(orgId).name(spaceName).build();
 			ListSpacesResponse spacesList = this.cloudFoundryClient.spacesV3().list(spacesRequest).block();
 			
@@ -104,6 +113,7 @@ public class AppInstanceScanner {
 				cached = spaceResource.getId();
 				spaceMap.put(key, cached);
 			}
+			if (t != null) t.observeDuration();
 		} else {
 			this.internalMetrics.countHit("appinstancescanner.space");
 		}
@@ -118,6 +128,8 @@ public class AppInstanceScanner {
 		
 		if (cached == null) {
 			this.internalMetrics.countMiss("appinstancescanner.app");
+			
+			Timer t = this.internalMetrics.startTimerCFFetch("app");
 			ListApplicationsRequest request = ListApplicationsRequest.builder().organizationId(orgId).spaceId(spaceId).name(applicationName).build();
 			ListApplicationsResponse response = this.cloudFoundryClient.applicationsV3().list(request).block();
 			
@@ -125,6 +137,7 @@ public class AppInstanceScanner {
 				cached =applicationResource.getId();
 				applicationMap.put(key, cached);
 			}
+			if (t != null) t.observeDuration();
 		} else {
 			this.internalMetrics.countHit("appinstancescanner.app");
 		}
@@ -185,6 +198,8 @@ public class AppInstanceScanner {
 		
 		if (cached == null) {
 			this.internalMetrics.countMiss("appinstancescanner.route");
+			
+			Timer t = this.internalMetrics.startTimerCFFetch("route");
 			String orgId = this.getOrgId(orgName);
 			String spaceId = this.getSpaceId(orgId, spaceName);
 			String appId = this.getApplicationId(orgId, spaceId, appName);
@@ -218,6 +233,8 @@ public class AppInstanceScanner {
 			
 			cached = host+'.'+domain;
 			hostnameMap.put(key, cached);
+			
+			if (t != null) t.observeDuration();
 		} else {
 			this.internalMetrics.countHit("appinstancescanner.route");
 		}
