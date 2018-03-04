@@ -26,9 +26,9 @@ import org.cloudfoundry.promregator.config.Target;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcher;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.CFMetricFamilySamplesEnricher;
+import org.cloudfoundry.promregator.rewrite.GenericMetricFamilySamplesPrefixRewriter;
 import org.cloudfoundry.promregator.rewrite.MFSUtils;
 import org.cloudfoundry.promregator.rewrite.MergableMetricFamilySamples;
-import org.cloudfoundry.promregator.rewrite.PromregatorMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -76,7 +76,7 @@ public class MetricsEndpoint {
 	private PromregatorConfiguration promregatorConfiguration;
 	
 	private AuthenticationEnricher ae;
-	private PromregatorMetricFamilySamplesEnricher pmfse = new PromregatorMetricFamilySamplesEnricher();
+	private GenericMetricFamilySamplesPrefixRewriter gmfspr = new GenericMetricFamilySamplesPrefixRewriter("promregator");
 	
 	/* own metrics */
 	private static Histogram requestLatency = Histogram.build("promregator_request_latency", "The latency, which the targets of the promregator produce")
@@ -146,7 +146,7 @@ public class MetricsEndpoint {
 
 		// also add our own metrics
 		Enumeration<MetricFamilySamples> rawMFS = this.collectorRegistry.metricFamilySamples();
-		HashMap<String, MetricFamilySamples> enrichedMFS = this.pmfse.determineEnumerationOfMetricFamilySamples(MFSUtils.convertToEMFSToHashMap(rawMFS));
+		HashMap<String, MetricFamilySamples> enrichedMFS = this.gmfspr.determineEnumerationOfMetricFamilySamples(MFSUtils.convertToEMFSToHashMap(rawMFS));
 		mmfs.merge(enrichedMFS);
 		
 		// serialize
