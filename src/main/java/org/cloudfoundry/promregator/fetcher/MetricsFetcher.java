@@ -50,9 +50,10 @@ public class MetricsFetcher implements Callable<HashMap<String, MetricFamilySamp
 	private String[] ownTelemetryLabels;
 	private Histogram latencyRequest;
 	private Gauge up;
-	
+	private Gauge failedRequests;
+
 	public MetricsFetcher(String endpointUrl, String instanceId, AuthenticationEnricher ae, AbstractMetricFamilySamplesEnricher mfse, 
-			String proxyHost, int proxyPort, String[] ownTelemetryLabels, Histogram latencyRequest, Gauge up) {
+			String proxyHost, int proxyPort, String[] ownTelemetryLabels, Histogram latencyRequest, Gauge up, Gauge failedRequests) {
 		this.endpointUrl = endpointUrl;
 		this.instanceId = instanceId;
 		this.ae = ae;
@@ -60,6 +61,7 @@ public class MetricsFetcher implements Callable<HashMap<String, MetricFamilySamp
 		this.ownTelemetryLabels = ownTelemetryLabels;
 		this.latencyRequest = latencyRequest;
 		this.up = up;
+		this.failedRequests = failedRequests;
 
 		if (proxyHost != null && proxyPort != 0) {
 			this.config = RequestConfig.custom().setProxy(new HttpHost(proxyHost, proxyPort, "http")).build();
@@ -79,8 +81,8 @@ public class MetricsFetcher implements Callable<HashMap<String, MetricFamilySamp
 	 * May be <code>null</code> in which case no enriching takes place.
 	 */
 	public MetricsFetcher(String endpointUrl, String instanceId, AuthenticationEnricher ae, AbstractMetricFamilySamplesEnricher mfse, 
-			String[] ownTelemetryLabels, Histogram latencyRequest, Gauge up) {
-		this(endpointUrl, instanceId, ae, mfse, null, 0, ownTelemetryLabels, latencyRequest, up);
+			String[] ownTelemetryLabels, Histogram latencyRequest, Gauge up, Gauge failedRequests) {
+		this(endpointUrl, instanceId, ae, mfse, null, 0, ownTelemetryLabels, latencyRequest, up, failedRequests);
 	}
 
 	@Override
@@ -146,7 +148,14 @@ public class MetricsFetcher implements Callable<HashMap<String, MetricFamilySamp
 			}
 			
 			if (this.up != null) {
-				this.up.labels(this.ownTelemetryLabels).set(available ? 1.0 : 0.0);
+				if (available) {
+					this.up.labels(this.ownTelemetryLabels).set(1.0);
+				} else {
+					if (this.failedRequests != null)
+						this.failedRequests.inc();
+					
+					this.up.labels(this.ownTelemetryLabels).set(0.0);
+				}
 			}
 		}
 	}

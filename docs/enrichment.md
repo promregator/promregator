@@ -48,6 +48,7 @@ the caller via Prometheus metrics. For this, the following metrics are exposed:
 * `promregator_request_latency`: a [Prometheus histogram](https://prometheus.io/docs/practices/histograms/), 
   which returns the latency which was necessary to retrieve the metrics from the target.
 * `promregator_up`: a [Prometheus Gauge](https://prometheus.io/docs/concepts/metric_types/) which indicates whether an instance was reachable or not (similar to the [gauge provided for Prometheus' own monitoring](https://prometheus.io/docs/concepts/jobs_instances/)).
+* `promregator_request_failure`: a [Prometheus Gauge](https://prometheus.io/docs/concepts/metric_types/) which indicates the number of requests sent to the target, which have failed.
 
 Note that additionally to the labels `org_name`, `space_name`, `app_name` and `instance` (which tells you the target, which the metric is referring to), the label `promregator` is set to `true` indicating that the value of the metric sample was created by Promregator itself and is not originated by any of the targets.
 

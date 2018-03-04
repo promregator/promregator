@@ -87,6 +87,10 @@ public class MetricsEndpoint {
 			.labelNames(CFMetricFamilySamplesEnricher.getEnrichingLabelNames())
 			.register();
 	
+	private static Gauge failedRequests = Gauge.build("promregator_request_failure", "Requests, which responded, but the HTTP code indicated an error or the connection dropped/timed out")
+			.labelNames(CFMetricFamilySamplesEnricher.getEnrichingLabelNames())
+			.register();
+	
 	@PostConstruct
 	public void setupAuthenticationEnricher() {
 		String type = promregatorConfiguration.getAuthenticator().getType();
@@ -188,9 +192,9 @@ public class MetricsEndpoint {
 				
 				MetricsFetcher mf = null;
 				if (this.proxyHost != null && this.proxyPort != 0) {
-					mf = new MetricsFetcher(accessURL, instance, this.ae, mfse, this.proxyHost, this.proxyPort, labelNamesForOwnMetrics, requestLatency, up);
+					mf = new MetricsFetcher(accessURL, instance, this.ae, mfse, this.proxyHost, this.proxyPort, labelNamesForOwnMetrics, requestLatency, up, failedRequests);
 				} else {
-					mf = new MetricsFetcher(accessURL, instance, this.ae, mfse, labelNamesForOwnMetrics, requestLatency, up);
+					mf = new MetricsFetcher(accessURL, instance, this.ae, mfse, labelNamesForOwnMetrics, requestLatency, up, failedRequests);
 				}
 				callablesPrep.add(mf);
 			}
