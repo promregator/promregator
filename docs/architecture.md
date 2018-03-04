@@ -60,6 +60,8 @@ In the world of Cloud Foundry, this would mean that exporters had to run on the 
 
 All this is quite some effort, requires maintenance, makes setup complicated and error-prone. The approach of [App Instance Routing as provided by Cloud Foundry](https://docs.cloudfoundry.org/concepts/http-routing.html) is much less complicated and can be easily protected using application-side authentication.
 
+The fact that Promregator is also no exporter is the reason why it did not apply for a [default port allocation](https://github.com/prometheus/prometheus/wiki/Default-port-allocations).
+
 ## Implications on Landscape Configuration
 
 The insight that scraping of Cloud Foundry application metrics neither is possible with a new discovery service alone nor with implementing an exporter leads to a major consequence: **The definition of the landscape configuration** (where the metrics are being retrieved from)**, which is considered *the* central task for the Prometheus configuration, is outsourced to the configuration of Promregator**, at least with regards to cases, where the metrics are being scraped from Cloud Foundry applications.
