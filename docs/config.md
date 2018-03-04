@@ -16,21 +16,26 @@ cf:
   proxyPort: 8080
 ```
 
-### Option "cf.apiHost" (mandatory)
+### Option "cf.api_host" (mandatory)
 Specifies the hostname of the API server of the Cloud Foundry platform to which Promregator shall connect.
 The API server is required to resolve the targets into instances which Prometheus then will connect to.
+
+Note that this compliant to how [cf-exporter](https://github.com/bosh-prometheus/cf_exporter) is being configured.
 
 ### Option "cf.username" (mandatory)
 Specifies the username, which shall be used when connecting to the API server. This is your "standard" username - the same one, which you also may use
 for connecting to Cloud Foundry, e.g. when issuing `cf login`.
 
+Note that this compliant to how [cf-exporter](https://github.com/bosh-prometheus/cf_exporter) is being configured.
+
 ### Option "cf.password" (mandatory)
 Specifies the password, which shall be used when connecting to the API server. This your "standard" password - the same one, which you also may use
 for connecting to Cloud Foundry, e.g. when issuing `cf login`.
 
+Note that this compliant to how [cf-exporter](https://github.com/bosh-prometheus/cf_exporter) is being configured.
+
 *WARNING!* 
-Due to security reasons, it is recommended *not* to store this value in your YAML file, but instead set the identically named environment variable 
-`cf.password` when starting the application.
+Due to security reasons, it is recommended *not* to store this value in your YAML file, but instead set the identically named environment variable `cf.password` when starting the application. Note that the environment variable `CF_EXPORTER_CF_PASSWORD`, which [cf-exporter](https://github.com/bosh-prometheus/cf_exporter) uses, is **not** supported by Promregator.
 
 Example:
 

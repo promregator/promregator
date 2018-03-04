@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class CFClientSpringConfiguration {
 	@Bean
-	public DefaultConnectionContext connectionContext(@Value("${cf.apiHost}") String apiHost, Optional<ProxyConfiguration> proxyConfiguration) {
+	public DefaultConnectionContext connectionContext(@Value("${cf.api_host}") String apiHost, Optional<ProxyConfiguration> proxyConfiguration) {
 		Builder connctx = DefaultConnectionContext.builder().apiHost(apiHost);
 		
 		if (proxyConfiguration.isPresent()) {
