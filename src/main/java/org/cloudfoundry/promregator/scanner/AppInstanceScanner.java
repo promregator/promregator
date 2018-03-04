@@ -4,6 +4,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.collections4.map.PassiveExpiringMap;
 import org.cloudfoundry.client.v2.routemappings.ListRouteMappingsRequest;
 import org.cloudfoundry.client.v2.routemappings.ListRouteMappingsResponse;
@@ -26,6 +28,7 @@ import org.cloudfoundry.client.v3.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v3.spaces.SpaceResource;
 import org.cloudfoundry.reactor.client.ReactorCloudFoundryClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -33,10 +36,38 @@ public class AppInstanceScanner {
 	@Autowired
 	private ReactorCloudFoundryClient cloudFoundryClient;
 	
-	private static PassiveExpiringMap<String, String> orgMap = new PassiveExpiringMap<String, String>(60, TimeUnit.MINUTES);
-	private static PassiveExpiringMap<String, String> spaceMap = new PassiveExpiringMap<String, String>(60, TimeUnit.MINUTES);
-	private static PassiveExpiringMap<String, String> applicationMap = new PassiveExpiringMap<String, String>(5, TimeUnit.MINUTES);
-	private static PassiveExpiringMap<String, String> hostnameMap = new PassiveExpiringMap<String, String>(5, TimeUnit.MINUTES);
+	private PassiveExpiringMap<String, String> orgMap;
+	private PassiveExpiringMap<String, String> spaceMap;
+	private PassiveExpiringMap<String, String> applicationMap;
+	private PassiveExpiringMap<String, String> hostnameMap;
+	
+	@Value("${cf.cache.timeout.application:300}")
+	private int timeoutCacheApplicationLevel;
+
+	@Value("${cf.cache.timeout.space:3600}")
+	private int timeoutCacheSpaceLevel;
+
+	@Value("${cf.cache.timeout.org:3600}")
+	private int timeoutCacheOrgLevel;
+	
+	@PostConstruct
+	public void setupMaps() {
+		this.orgMap = new PassiveExpiringMap<String, String>(this.timeoutCacheOrgLevel, TimeUnit.SECONDS);
+		this.spaceMap = new PassiveExpiringMap<String, String>(this.timeoutCacheSpaceLevel, TimeUnit.SECONDS);
+		
+		/*
+		 * NB: There is little point in separating the timeouts between applicationMap
+		 * and hostnameMap:
+		 * - changes to routes may come easily and thus need to be detected fast
+		 * - apps can start and stop, we need to see this, too
+		 * - instances can be added to apps
+		 * - Blue/green deployment may alter both of them
+		 * 
+		 * In short: both are very volatile and we need to query them often
+		 */
+		this.applicationMap = new PassiveExpiringMap<String, String>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
+		this.hostnameMap = new PassiveExpiringMap<String, String>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
+	}
 	
 	private String getOrgId(String orgName) {
 		String cached = orgMap.get(orgName);

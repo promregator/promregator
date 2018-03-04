@@ -59,6 +59,34 @@ of this server here.
 
 Please also make sure that you set "cf.proxyHost", too, as otherwise proxy support will be disabled.
 
+### Option "cf.cache.timeout.org" (optional)
+For performance reasons the metadata of the Cloud Foundry environment (organization, space, applications, routes) is cached locally in Promregator.
+
+This option allows you to specify how often the metadata of the organizations you have selected in your targets shall be verified after it has been fetched. The value is a timeout after which the metadata is retrieved again. Its unit is seconds.
+
+Note that organizations typically do not change often. That is why you should pick a high value here, as otherwise you would produce unnecessary network traffic for everyone.
+
+By default, this value is set to 3600 seconds, which means that the metadata is retrieved (again) after an hour.
+
+### Option "cf.cache.timeout.space" (optional)
+For performance reasons the metadata of the Cloud Foundry environment (organization, space, applications, routes) is cached locally in Promregator.
+
+This option allows you to specify how often the metadata of spaces you have selected in your targets shall be verified after it has been fetched. The value is a timeout after which the metadata is retrieved again. Its unit is seconds.
+
+Note that spaces typically do not change often. That is why you should pick a high value here, as otherwise you would produce unnecessary network traffic for everyone.
+
+By default, this value is set to 3600 seconds, which means that the metadata is retrieved (again) after an hour.
+
+
+### Option "cf.cache.timeout.application" (optional)
+For performance reasons the metadata of the Cloud Foundry environment (organization, space, applications, routes) is cached locally in Promregator.
+
+This option allows you to specify how often the metadata of the applications and routes you have selected in your targets shall be verified after they have been fetched. The value is a timeout after which the metadata is retrieved again. Its unit is seconds.
+
+Note that applications and routes *may* change often. That is why you should pick a quite *low* value here to ensure that you do not miss and update for long time. Otherwise, you might get metrics indicating that an app may be down, but in fact it is running, but you only deployed a new version of the app or you changed a route.
+
+By default, this value is set to 300 seconds, which means that the metadata is retrieved every five minutes.
+
 
 ## Group "promregator"
 This group configures the behavior of Promregator itself. It is mainly meant on how requests shall be handled, as soon as the Prometheus server starts to pull metrics.
