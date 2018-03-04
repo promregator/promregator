@@ -153,7 +153,7 @@ public class MetricsFetcher implements Callable<HashMap<String, MetricFamilySamp
 					this.up.labels(this.ownTelemetryLabels).set(1.0);
 				} else {
 					if (this.failedRequests != null)
-						this.failedRequests.inc();
+						this.failedRequests.labels(this.ownTelemetryLabels).inc();
 					
 					this.up.labels(this.ownTelemetryLabels).set(0.0);
 				}
