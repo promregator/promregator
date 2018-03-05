@@ -16,6 +16,17 @@ timestamps {
 				junit 'target/surefire-reports/*.xml'
 				
 				step([
+					$class: 'FindBugsPublisher',
+					pattern: '**/findbugsXml.xml',
+					failedTotalAll: 100
+				])
+				
+				step([
+					$class: 'PmdPublisher',
+					failedTotalAll: 100
+				])
+				
+				step([
 					$class: 'JacocoPublisher'
 				])
 			}
