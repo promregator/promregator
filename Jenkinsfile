@@ -6,9 +6,8 @@ timestamps {
 			git url: 'https://github.com/promregator/promregator.git'
 			
 			stage("Build") {
-				sh """
-				cf.password=dummypassword
-				export cf.password
+				sh """#!/bin/bash -xe
+				export cf.password=dummypassword
 				mvn -B clean package
 				"""
 			}
