@@ -16,7 +16,7 @@ timestamps {
 				junit 'target/surefire-reports/*.xml'
 				
 				step([
-					class: 'JacocoPublisher'
+					$class: 'JacocoPublisher'
 				])
 			}
 			
