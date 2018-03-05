@@ -2,8 +2,6 @@
 
 timestamps {
 	node("slave") {
-		sh "echo test"
-		
 		dir("build") {
 			git url: 'https://github.com/promregator/promregator.git'
 			
