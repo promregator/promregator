@@ -12,21 +12,18 @@ timestamps {
 				"""
 			}
 			
-			post {
-				always {
-					junit 'target/surefire-reports/*.xml'
-				}
+			stage("Post-processing quality data") {
+				junit 'target/surefire-reports/*.xml'
+				
+				step([
+					class: 'JacocoPublisher'
+				])
 			}
 			
 			stage("Archive") {
 				archiveArtifacts 'target/promregator*.jar'
 			}
 			
-			stage("Post-processing quality data") {
-				step([
-					class: 'JacocoPublisher'
-				])
-			}
 		}
 	}
 }
