@@ -7,7 +7,8 @@ timestamps {
 			
 			stage("Build") {
 				sh """
-				export cf.password=dummypassword 
+				cf.password=dummypassword
+				export cf.password
 				mvn -B clean package
 				"""
 			}
