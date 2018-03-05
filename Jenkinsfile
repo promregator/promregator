@@ -18,12 +18,12 @@ timestamps {
 				step([
 					$class: 'FindBugsPublisher',
 					pattern: '**/findbugsXml.xml',
-					failedTotalAll: 100
+					failedTotalAll: '100'
 				])
 				
 				step([
 					$class: 'PmdPublisher',
-					failedTotalAll: 100
+					failedTotalAll: '100'
 				])
 				
 				step([
