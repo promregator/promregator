@@ -12,6 +12,12 @@ timestamps {
 				"""
 			}
 			
+			post {
+				always {
+					junit 'target/surefire-reports/*.xml'
+				}
+			}
+			
 			stage("Archive") {
 				archiveArtifacts 'target/promregator*.jar'
 			}
