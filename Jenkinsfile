@@ -15,6 +15,12 @@ timestamps {
 			stage("Archive") {
 				archiveArtifacts 'target/promregator*.jar'
 			}
+			
+			stage("Post-processing quality data") {
+				step([
+					class: 'JacocoPublisher'
+				])
+			}
 		}
 	}
 }
