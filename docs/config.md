@@ -35,7 +35,7 @@ for connecting to Cloud Foundry, e.g. when issuing `cf login`.
 Note that this compliant to how [cf-exporter](https://github.com/bosh-prometheus/cf_exporter) is being configured.
 
 *WARNING!* 
-Due to security reasons, it is recommended *not* to store this value in your YAML file, but instead set the identically named environment variable `cf.password` when starting the application. Note that the environment variable `CF_EXPORTER_CF_PASSWORD`, which [cf-exporter](https://github.com/bosh-prometheus/cf_exporter) uses, is **not** supported by Promregator.
+Due to security reasons, it is recommended *not* to store this value in your YAML file, but instead set the special environment variable `CF_PASSWORD` when starting the application. Note that the environment variable `CF_EXPORTER_CF_PASSWORD`, which [cf-exporter](https://github.com/bosh-prometheus/cf_exporter) uses, is **not** supported by Promregator.
 
 Example:
 
