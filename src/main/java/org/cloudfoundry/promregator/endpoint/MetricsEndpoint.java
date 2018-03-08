@@ -198,10 +198,7 @@ public class MetricsEndpoint {
 			String accessURL = String.format("https://%s%s", hostname, target.getPath());
 			
 			Set<String> instances = this.appInstanceScanner.getInstanceIds(orgName, spaceName, appName);
-			if (instances == null) {
-				log.warn(String.format("Unable to retrieve instances for %s/%s/%s; skipping", orgName, spaceName, appName));
-				continue;
-			}
+			assert instances != null;
 			
 			log.info(String.format("Seeing the following instances for org '%s', space '%s', app '%s' for access URL '%s':", orgName, spaceName, appName, accessURL));
 			
