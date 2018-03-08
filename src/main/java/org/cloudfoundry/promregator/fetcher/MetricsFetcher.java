@@ -59,7 +59,7 @@ public class MetricsFetcher implements Callable<HashMap<String, MetricFamilySamp
 		this.instanceId = instanceId;
 		this.ae = ae;
 		this.mfse = mfse;
-		this.ownTelemetryLabels = ownTelemetryLabels;
+		this.ownTelemetryLabels = ownTelemetryLabels.clone();
 		this.latencyRequest = latencyRequest;
 		this.up = up;
 		this.failedRequests = failedRequests;

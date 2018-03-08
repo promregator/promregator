@@ -13,7 +13,7 @@ public class CFMetricFamilySamplesEnricher extends AbstractMetricFamilySamplesEn
 	private static String[] labelNames = new String[] { LABELNAME_ORGNAME, LABELNAME_SPACENAME, LABELNAME_APPNAME, LABELNAME_INSTANCEID, LABELNAME_INSTANCE };
 	
 	public static String[] getEnrichingLabelNames() {
-		return labelNames;
+		return labelNames.clone();
 	}
 	
 	private String orgName;
