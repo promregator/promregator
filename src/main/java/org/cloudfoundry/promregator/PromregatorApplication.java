@@ -24,7 +24,7 @@ public class PromregatorApplication {
 	private static final Logger log = Logger.getLogger(PromregatorApplication.class);
 	
 	public static void main(String[] args) {
-		ConfigurableApplicationContext context = SpringApplication.run(PromregatorApplication.class, args);
+		SpringApplication.run(PromregatorApplication.class, args);
 	}
 	
 	@Bean
