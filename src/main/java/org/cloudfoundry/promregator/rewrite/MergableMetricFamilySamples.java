@@ -3,6 +3,7 @@ package org.cloudfoundry.promregator.rewrite;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
@@ -25,8 +26,9 @@ public class MergableMetricFamilySamples {
 	}
 	
 	public void merge(HashMap<String,MetricFamilySamples> others) {
-		for (String metricName : others.keySet()) {
-			MetricFamilySamples otherMFS = others.get(metricName);
+		for (Entry<String, MetricFamilySamples> entry : others.entrySet()) {
+			String metricName = entry.getKey();
+			MetricFamilySamples otherMFS = entry.getValue();
 			
 			MetricFamilySamples mfs = this.map.get(metricName);
 			if (mfs == null) {
