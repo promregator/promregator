@@ -207,11 +207,10 @@ public class AppInstanceScanner {
 			ListRouteMappingsRequest mappingRequest = ListRouteMappingsRequest.builder().applicationId(appId).build();
 			ListRouteMappingsResponse routeMappingList = this.cloudFoundryClient.routeMappings().list(mappingRequest).block();
 			
-			String routeId = null;
-			for (RouteMappingResource routeMappingResource : routeMappingList.getResources()) {
-				routeId = routeMappingResource.getEntity().getRouteId();
-				break;
+			if (routeMappingList.getResources().isEmpty()) {
+				return null;
 			}
+			String routeId = routeMappingList.getResources().get(0).getEntity().getRouteId();
 			
 			if (routeId == null)
 				return null;
