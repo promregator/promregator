@@ -19,6 +19,8 @@ public class InternalMetrics {
 	private Histogram latencyCFFetch;
 
 	@PostConstruct
+	@SuppressWarnings("PMD.UnusedPrivateMethod")
+	// method is required and called by the Spring Framework
 	private void registerMetrics() {
 		if (!this.enabled)
 			return;
