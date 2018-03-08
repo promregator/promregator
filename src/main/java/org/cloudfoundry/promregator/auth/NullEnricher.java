@@ -12,7 +12,7 @@ public class NullEnricher implements AuthenticationEnricher {
 
 	@Override
 	public void enrichWithAuthentication(HttpGet httpget) {
-		return;
+		// left blank intentionally
 	}
 
 }
