@@ -210,11 +210,9 @@ public class TextFormat004Parser {
 		// try to get the baseMetricName
 		String baseMetricName = determineBaseMetricName(metricName);
 		type = this.mapTypes.get(baseMetricName);
-		if (type != null) {
-			// check that this also really makes sense and is a type, which requires baseMetricNames
-			if (type == Type.HISTOGRAM || type == Type.SUMMARY) {
-				return type;
-			}
+		// check that this also really makes sense and is a type, which requires baseMetricNames
+		if (type == Type.HISTOGRAM || type == Type.SUMMARY) {
+			return type;
 		}
 		
 		// we have no clue what this metric is all about
