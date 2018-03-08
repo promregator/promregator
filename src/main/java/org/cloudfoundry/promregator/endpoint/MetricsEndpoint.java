@@ -133,11 +133,9 @@ public class MetricsEndpoint {
 			long maxWaitTime = starttime + this.maxProcessingTime - System.currentTimeMillis();
 			
 			try {
-				if (maxWaitTime < 0) {
-					if (!future.isDone()) {
-						// only process those, which are already completed
-						continue;
-					}
+				if (maxWaitTime < 0 && !future.isDone()) {
+					// only process those, which are already completed
+					continue;
 				}
 				HashMap<String, MetricFamilySamples> emfs = future.get(maxWaitTime, TimeUnit.MILLISECONDS);
 				
