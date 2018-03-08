@@ -8,7 +8,7 @@ timestamps {
 			stage("Build") {
 				sh """#!/bin/bash -xe
 				export CF_PASSWORD=dummypassword
-				mvn -U -B clean package
+				mvn -U -B clean verify
 				"""
 			}
 			
