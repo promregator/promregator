@@ -58,6 +58,8 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
 	private Instant validUntil = null;
 	
 	private synchronized String getBufferedJWT(URI uri, RequestConfig config) {
+		// TODO: Buffering must happen based on the uri (there could be multiple one's!)
+		
 		if (this.bufferedJwt == null) {
 			this.bufferedJwt = getJWT(config);
 		} else if (Instant.now().isAfter(this.validUntil)) {
