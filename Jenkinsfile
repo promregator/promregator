@@ -7,7 +7,9 @@ def executeShell(command) {
 
 def getVersion() {
 	// for idea, see also https://stackoverflow.com/questions/3545292/how-to-get-maven-project-version-to-the-bash-command-line
-	def mvnOutput = executeShell "printf 'VERSION=\\${project.version}\n0\n' | mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate | egrep '^VERSION'"
+	def mvnOutput = executeShell """
+		printf 'VERSION=\${project.version}\n0\n' | mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate | egrep '^VERSION'
+	"""
 	return mvnOutput.substring(9) // trim prefix "VERSION="
 }
 
@@ -52,6 +54,10 @@ timestamps {
 				
 				dir("docker") {
 					sh "docker info"
+					
+					if (!currentVersion.contains("-SNAPSHOT")) {
+						// docker push
+					}
 				}
 			}
 			
