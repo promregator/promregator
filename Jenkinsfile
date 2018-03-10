@@ -10,7 +10,7 @@ def getVersion() {
 	def mvnOutput = executeShell """
 		printf 'VERSION=\${project.version}\n0\n' | mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate | egrep '^VERSION'
 	"""
-	return mvnOutput.substring(9) // trim prefix "VERSION="
+	return mvnOutput.substring(8) // trim prefix "VERSION="
 }
 
 timestamps {
