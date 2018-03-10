@@ -1,5 +1,16 @@
 #!groovy
 
+def executeShell(command) {
+	def result = sh returnStdout: true, script: command
+	return result.trim()
+}
+
+def getVersion() {
+	// for idea, see also https://stackoverflow.com/questions/3545292/how-to-get-maven-project-version-to-the-bash-command-line
+	def mvnOutput = executeShell "printf 'VERSION=${project.version}\n0\n' | mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate | egrep '^VERSION'"
+	return mvnOutput.substring(9) // trim prefix "VERSION="
+}
+
 timestamps {
 	node("slave") {
 		dir("build") {
@@ -35,6 +46,16 @@ timestamps {
 				archiveArtifacts 'target/promregator*.jar'
 			}
 			
+			stage("Create Docker Container") {
+				def currentVersion = getVersion()
+				println "Current version is ${currentVersion}"
+				
+				dir("docker") {
+					sh "docker info"
+				}
+			}
+			
 		}
+		
 	}
 }
