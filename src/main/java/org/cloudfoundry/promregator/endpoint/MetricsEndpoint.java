@@ -116,6 +116,8 @@ public class MetricsEndpoint {
 	public String getMetrics() {
 		Instant start = Instant.now();
 		
+		up.clear();
+		
 		List<MetricsFetcher> callablesPrep = this.createMetricFetchers();
 		
 		LinkedList<Future<HashMap<String,MetricFamilySamples>>> futures = new LinkedList<>();
