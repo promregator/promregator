@@ -17,7 +17,7 @@ RUN apt-get update && apt-get -y install -y \
 
 # Workaround for keystore.type bug in openjdk9
 # see also https://github.com/docker-library/openjdk/issues/145
-RUN sed -i '/keystore.type=pkcs12/keystore.type=jks/g' /docker-java-home/conf/security/java.security && \
+RUN sed -i 's/keystore.type=pkcs12/keystore.type=jks/g' /docker-java-home/conf/security/java.security && \
 	cat /docker-java-home/conf/security/java.security | grep keystore.type
 
 # Setup of promregator user
