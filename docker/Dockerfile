@@ -7,6 +7,14 @@ ARG gid=1000
 
 USER root
 
+# Install some very basic tools
+RUN apt-get update && apt-get -y install -y \
+	apt-transport-https \
+	less \
+	ca-certificates \
+	&& apt-get -q autoremove && apt-get -q clean -y && rm -rf /var/lib/apt/lists/*
+
+# Setup of promregator user
 RUN groupadd --gid $gid $group && useradd --gid $gid --uid $uid $user && \
 	mkdir -p /home/$user && \
 	chown $user.$group /home/$user && \
