@@ -3,7 +3,7 @@
 JAVACMD=/usr/bin/java
 
 if [ "$JAVA_MEM_OPTS" == "" ]; then
-	JAVA_MEM_OPTS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:+PrintFlagsFinal -XX:+PrintGCDetails"
+	JAVA_MEM_OPTS="-XX:+PrintFlagsFinal -Xmx300m -Xms300m -Xss600k"
 fi
 
 if [ "$JAVA_OPTS" == "" ]; then
