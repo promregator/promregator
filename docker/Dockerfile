@@ -22,6 +22,6 @@ RUN chown -R promregator.promregator /opt/promregator && \
 
 USER $user
 
-CMD ["/bin/bash", "-c /opt/promregator/promregator.sh"]
+CMD /opt/promregator/promregator.sh
 
 EXPOSE 8080
