@@ -53,7 +53,10 @@ timestamps {
 				println "Current version is ${currentVersion}"
 				
 				dir("docker") {
-					sh "docker info"
+					sh """
+						ln ../target/promregator-${currentVersion}.jar data/promregator.jar
+						ls -al data/
+					"""
 					
 					if (!currentVersion.contains("-SNAPSHOT")) {
 						// docker push
