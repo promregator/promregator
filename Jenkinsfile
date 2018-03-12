@@ -53,9 +53,14 @@ timestamps {
 				println "Current version is ${currentVersion}"
 				
 				dir("docker") {
+					def imageName = "promregator/promregator:${currentVersion}"
+				
 					sh """
 						ln ../target/promregator-${currentVersion}.jar data/promregator.jar
-						ls -al data/
+						
+						docker build --pull -t ${imageName} .
+						
+						docker history ${imageName}
 					"""
 					
 					if (!currentVersion.contains("-SNAPSHOT")) {
