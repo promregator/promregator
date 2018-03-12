@@ -15,6 +15,11 @@ RUN apt-get update && apt-get -y install -y \
 	ca-certificates-java \
 	&& apt-get -q autoremove && apt-get -q clean -y && rm -rf /var/lib/apt/lists/*
 
+# Workaround for keystore.type bug in openjdk9
+# see also https://github.com/docker-library/openjdk/issues/145
+RUN sed -i '/keystore.type=pkcs12/keystore.type=jks/g' /docker-java-home/conf/security/java.security && \
+	cat /docker-java-home/conf/security/java.security | grep keystore.type
+
 # Setup of promregator user
 RUN groupadd --gid $gid $group && useradd --gid $gid --uid $uid $user && \
 	mkdir -p /home/$user && \
