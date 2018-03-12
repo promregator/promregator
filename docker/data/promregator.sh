@@ -3,7 +3,7 @@
 JAVACMD=/usr/bin/java
 
 if [ "$JAVA_MEM_OPTS" == "" ]; then
-	JAVA_MEM_OPTS="-XX:+PrintFlagsFinal -Xmx300m -Xms300m -Xss600k"
+	JAVA_MEM_OPTS="-XX:+PrintFlagsFinal -Xmx300m -Xms300m -Xss600k -XX:ReservedCodeCacheSize=256m -XX:MaxMetaspaceSize=300m"
 fi
 
 if [ "$JAVA_OPTS" == "" ]; then
