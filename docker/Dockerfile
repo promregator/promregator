@@ -12,12 +12,11 @@ RUN groupadd --gid $gid $group && useradd --gid $gid --uid $uid $user && \
 	chown $user.$group /home/$user && \
 	chmod 0700 /home/$user && \
 	mkdir -p /opt/promregator /etc/promregator && \
-	chmod 0750 /opt/promregator /etc/promregator && \
-	chown $user.$group /opt/promregator /etc/promregator
+	chmod 0750 /opt/promregator /etc/promregator
 
 COPY data/* /opt/promregator/
 
-RUN chown -R promregator.promregator /opt/promregator && \
+RUN chown -R $user.$group /opt/promregator /etc/promregator && \
 	chmod 0640 /opt/promregator/* && \
 	chmod 0770 /opt/promregator/promregator.sh 
 
