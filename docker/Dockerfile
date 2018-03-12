@@ -8,11 +8,12 @@ ARG gid=1000
 USER root
 
 RUN groupadd --gid $gid $group && useradd --gid $gid --uid $uid $user && \
-	mkdir -p /home/promregator && \
-	chown promregator.promregator /home/promregator && \
-	chmod 0700 /home/promregator  && \
+	mkdir -p /home/$user && \
+	chown $user.$group /home/$user && \
+	chmod 0700 /home/$user && \
 	mkdir -p /opt/promregator /etc/promregator && \
-	chmod 0750 /opt/promregator /etc/promregator
+	chmod 0750 /opt/promregator /etc/promregator && \
+	chown $user.$group /opt/promregator /etc/promregator
 
 COPY data/* /opt/promregator/
 
