@@ -12,6 +12,7 @@ RUN apt-get update && apt-get -y install -y \
 	apt-transport-https \
 	less \
 	ca-certificates \
+	ca-certificates-java \
 	&& apt-get -q autoremove && apt-get -q clean -y && rm -rf /var/lib/apt/lists/*
 
 # Setup of promregator user
