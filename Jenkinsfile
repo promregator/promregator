@@ -63,9 +63,20 @@ timestamps {
 						docker history ${imageName}
 					"""
 					
-					if (!currentVersion.contains("-SNAPSHOT")) {
-						// docker push
-					}
+					//if (!currentVersion.contains("-SNAPSHOT")) {
+						withCredentials([usernamePassword(
+							credentialsId: 'hub.github.com', 
+							passwordVariable: 'DOCKER_PASSWORD', 
+							usernameVariable: 'DOCKER_USER'
+							)]) {
+							
+							sh """
+							echo "$DOCKER_PASSWORD" | docker login -u promregator --password-stdin 
+							
+							docker push ${imageName}
+							"""
+						}
+					//}
 				}
 			}
 			
