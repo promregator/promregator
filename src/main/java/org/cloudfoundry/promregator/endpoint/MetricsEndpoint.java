@@ -34,9 +34,11 @@ import org.cloudfoundry.promregator.rewrite.MergableMetricFamilySamples;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.WebApplicationContext;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.CollectorRegistry;
@@ -53,6 +55,7 @@ import io.prometheus.client.exporter.common.TextFormat;
  */
 @RestController
 @RequestMapping("/metrics")
+@Scope(value=WebApplicationContext.SCOPE_REQUEST)
 public class MetricsEndpoint {
 	
 	private static final Logger log = Logger.getLogger(MetricsEndpoint.class);
@@ -81,12 +84,8 @@ public class MetricsEndpoint {
 	private AuthenticationEnricher ae;
 	private GenericMetricFamilySamplesPrefixRewriter gmfspr = new GenericMetricFamilySamplesPrefixRewriter("promregator");
 	
-	/* own metrics */
+	/* own metrics --- static scope (e.g. across all requests) */
 	private static Histogram requestLatency = Histogram.build("promregator_request_latency", "The latency, which the targets of the promregator produce")
-			.labelNames(CFMetricFamilySamplesEnricher.getEnrichingLabelNames())
-			.register();
-	
-	private static Gauge up = Gauge.build("promregator_up", "Indicator, whether the target of promregator is available")
 			.labelNames(CFMetricFamilySamplesEnricher.getEnrichingLabelNames())
 			.register();
 	
@@ -94,9 +93,26 @@ public class MetricsEndpoint {
 			.labelNames(CFMetricFamilySamplesEnricher.getEnrichingLabelNames())
 			.register();
 	
+	
+	/* own metrics --- specific to this (scraping) request */
+	
+	private CollectorRegistry requestRegistry;
+	
 	// see also https://prometheus.io/docs/instrumenting/writing_exporters/#metrics-about-the-scrape-itself
-	private static Gauge scrape_duration = Gauge.build("promregator_scrape_duration_seconds", "Duration in seconds indicating how long scraping of all metrics took")
-			.register();
+	private Gauge scrape_duration;
+	private Gauge up;
+	
+	@PostConstruct
+	public void setupOwnRequestScopedMetrics() {
+		this.requestRegistry = new CollectorRegistry();
+		
+		this.scrape_duration = Gauge.build("promregator_scrape_duration_seconds", "Duration in seconds indicating how long scraping of all metrics took")
+				.register(this.requestRegistry);
+		
+		this.up = Gauge.build("promregator_up", "Indicator, whether the target of promregator is available")
+				.labelNames(CFMetricFamilySamplesEnricher.getEnrichingLabelNames())
+				.register(this.requestRegistry);
+	}
 	
 	@PostConstruct
 	public void setupAuthenticationEnricher() {
@@ -116,7 +132,7 @@ public class MetricsEndpoint {
 	public String getMetrics() {
 		Instant start = Instant.now();
 		
-		up.clear();
+		this.up.clear();
 		
 		List<MetricsFetcher> callablesPrep = this.createMetricFetchers();
 		
@@ -157,7 +173,7 @@ public class MetricsEndpoint {
 		}
 		Instant stop = Instant.now();
 		Duration duration = Duration.between(start, stop);
-		scrape_duration.set(duration.toMillis() / 1000.0);
+		this.scrape_duration.set(duration.toMillis() / 1000.0);
 		// NB: We have to set this here now, otherwise it would not be added to the collectorRegistry properly.
 		/* 
 		 * NB: This is a little bit off w.r.t parallel requests: If two requests came
@@ -169,6 +185,11 @@ public class MetricsEndpoint {
 		// also add our own metrics
 		Enumeration<MetricFamilySamples> rawMFS = this.collectorRegistry.metricFamilySamples();
 		HashMap<String, MetricFamilySamples> enrichedMFS = this.gmfspr.determineEnumerationOfMetricFamilySamples(MFSUtils.convertToEMFSToHashMap(rawMFS));
+		mmfs.merge(enrichedMFS);
+		
+		// add also our own request specific metrics
+		rawMFS = this.requestRegistry.metricFamilySamples();
+		enrichedMFS = this.gmfspr.determineEnumerationOfMetricFamilySamples(MFSUtils.convertToEMFSToHashMap(rawMFS));
 		mmfs.merge(enrichedMFS);
 		
 		// serialize
@@ -211,9 +232,9 @@ public class MetricsEndpoint {
 				
 				MetricsFetcher mf = null;
 				if (this.proxyHost != null && this.proxyPort != 0) {
-					mf = new MetricsFetcher(accessURL, instance, this.ae, mfse, this.proxyHost, this.proxyPort, labelNamesForOwnMetrics, requestLatency, up, failedRequests);
+					mf = new MetricsFetcher(accessURL, instance, this.ae, mfse, this.proxyHost, this.proxyPort, labelNamesForOwnMetrics, requestLatency, this.up, failedRequests);
 				} else {
-					mf = new MetricsFetcher(accessURL, instance, this.ae, mfse, labelNamesForOwnMetrics, requestLatency, up, failedRequests);
+					mf = new MetricsFetcher(accessURL, instance, this.ae, mfse, labelNamesForOwnMetrics, requestLatency, this.up, failedRequests);
 				}
 				callablesPrep.add(mf);
 			}
