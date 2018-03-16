@@ -409,8 +409,16 @@ public class ReactiveAppInstanceScanner {
 	}
 	
 	private Flux<Instance> getInstances(Flux<Instance> instancesFlux) {
+		
 		Flux<Instance> allInstances = instancesFlux.flatMap(instance -> {
+			ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, "instances");
+			
 			Mono<ListProcessesResponse> processesResponse = Mono.zip(instance.orgId, instance.spaceId, instance.applicationId)
+			// start the timer
+			.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+				tuple.getT2().start();
+				return tuple.getT1();
+			})
 			.flatMap(tuple -> {
 				String orgId = tuple.getT1();
 				String spaceId = tuple.getT2();
@@ -446,6 +454,11 @@ public class ReactiveAppInstanceScanner {
 				}
 				
 				return Flux.fromIterable(resultInstances);
+			})
+			// stop the timer
+			.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+				tuple.getT2().stop();
+				return tuple.getT1();
 			});
 			
 			return fluxInstances;
