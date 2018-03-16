@@ -59,8 +59,6 @@ public class ReactiveAppInstanceScanner {
 		public Mono<String> spaceId;
 		public Mono<String> applicationId;
 		
-		public Mono<Tuple3<String, String, String>> cfAppVector;
-		
 		public String instanceId;
 		
 		public Mono<String> accessUrl;
@@ -73,7 +71,6 @@ public class ReactiveAppInstanceScanner {
 			other.spaceId = this.spaceId;
 			other.applicationId = this.applicationId;
 			
-			other.cfAppVector = this.cfAppVector;
 			other.instanceId = this.instanceId;
 			
 			other.accessUrl = accessUrl;
@@ -115,8 +112,6 @@ public class ReactiveAppInstanceScanner {
 			i.spaceId = getSpaceId(i.orgId, i.target.getSpaceName());
 			i.applicationId = getApplicationId(i.orgId, i.spaceId, i.target.getApplicationName());
 			
-			i.cfAppVector = Mono.zip(i.orgId, i.spaceId, i.applicationId);
-			
 			return i;
 		});
 		
@@ -128,9 +123,15 @@ public class ReactiveAppInstanceScanner {
 			instance.accessUrl = Mono.zip(applUrlMono, Mono.just(instance.target.getPath()))
 			.map(tuple -> {
 				String applUrl = tuple.getT1();
-				String path = tuple.getT2();
+				if (!applUrl.endsWith("/")) {
+					applUrl += '/';
+				}
 				
-				return applUrl + "/" + path;
+				String path = tuple.getT2();
+				while (path.startsWith("/"))
+					path = path.substring(1);
+				
+				return applUrl + path;
 			});
 			
 			return instance;
@@ -147,7 +148,7 @@ public class ReactiveAppInstanceScanner {
 		
 		cached = Mono.just(orgNameString).flatMap(orgName -> {
 			ListOrganizationsRequest orgsRequest = ListOrganizationsRequest.builder().name(orgName).build();
-			return this.cloudFoundryClient.organizationsV3().list(orgsRequest).log();
+			return this.cloudFoundryClient.organizationsV3().list(orgsRequest).log("Query Org");
 		}).flatMap(response -> {
 			List<OrganizationResource> resources = response.getResources();
 			if (resources == null) {
@@ -156,7 +157,7 @@ public class ReactiveAppInstanceScanner {
 			
 			OrganizationResource organizationResource = resources.get(0);
 			return Mono.just(organizationResource.getId());
-		});
+		}).cache();
 		
 		this.orgMap.put(orgNameString, cached);
 		return cached;
@@ -171,7 +172,7 @@ public class ReactiveAppInstanceScanner {
 		
 		cached = Mono.zip(orgIdMono, Mono.just(spaceNameString)).flatMap(tuple -> {
 			ListSpacesRequest spacesRequest = ListSpacesRequest.builder().organizationId(tuple.getT1()).name(tuple.getT2()).build();
-			return this.cloudFoundryClient.spacesV3().list(spacesRequest).log();
+			return this.cloudFoundryClient.spacesV3().list(spacesRequest).log("Query Space");
 		}).flatMap(response -> {
 			List<SpaceResource> resources = response.getResources();
 			if (resources == null) {
@@ -180,7 +181,7 @@ public class ReactiveAppInstanceScanner {
 			
 			SpaceResource spaceResource = resources.get(0);
 			return Mono.just(spaceResource.getId());
-		});
+		}).cache();
 		
 		this.spaceMap.put(key, cached);
 		return cached;
@@ -200,7 +201,7 @@ public class ReactiveAppInstanceScanner {
 					.spaceId(triple.getT2())
 					.name(triple.getT3())
 					.build();
-			return this.cloudFoundryClient.applicationsV3().list(request).log();
+			return this.cloudFoundryClient.applicationsV3().list(request).log("Query App");
 		}).flatMap(response -> {
 			List<ApplicationResource> resources = response.getResources();
 			if (resources == null) {
@@ -209,7 +210,7 @@ public class ReactiveAppInstanceScanner {
 			
 			ApplicationResource applicationResource = resources.get(0);
 			return Mono.just(applicationResource.getId());
-		});
+		}).cache();
 		
 		this.applicationMap.put(key, cached);
 		return cached;
@@ -224,7 +225,7 @@ public class ReactiveAppInstanceScanner {
 		
 		Mono<RouteEntity> routeMono = applicationIdMono.flatMap(appId -> {
 			ListRouteMappingsRequest mappingRequest = ListRouteMappingsRequest.builder().applicationId(appId).build();
-			return this.cloudFoundryClient.routeMappings().list(mappingRequest).log();
+			return this.cloudFoundryClient.routeMappings().list(mappingRequest).log("Query Route Mapping");
 		}).flatMap(mappingResponse -> {
 			List<RouteMappingResource> resourceList = mappingResponse.getResources();
 			if (resourceList.isEmpty())
@@ -235,7 +236,7 @@ public class ReactiveAppInstanceScanner {
 				return Mono.empty();
 			
 			GetRouteRequest getRequest = GetRouteRequest.builder().routeId(routeId).build();
-			return this.cloudFoundryClient.routes().get(getRequest).log();
+			return this.cloudFoundryClient.routes().get(getRequest).log("Get Route");
 		}).flatMap(GetRouteResponse -> {
 			RouteEntity route = GetRouteResponse.getEntity();
 			if (route == null)
@@ -248,7 +249,7 @@ public class ReactiveAppInstanceScanner {
 		
 		Mono<String> domainMono = routeMono.flatMap(route -> {
 			GetSharedDomainRequest domainRequest = GetSharedDomainRequest.builder().sharedDomainId(route.getDomainId()).build();
-			return this.cloudFoundryClient.sharedDomains().get(domainRequest).log();
+			return this.cloudFoundryClient.sharedDomains().get(domainRequest).log("Get Domain");
 		}).map(domain -> {
 			SharedDomainEntity sharedDomain = domain.getEntity();
 			
@@ -266,7 +267,7 @@ public class ReactiveAppInstanceScanner {
 			}
 			
 			return url;
-		});
+		}).cache();
 		
 		this.hostnameMap.put(key, applicationUrlMono);
 		
@@ -276,13 +277,14 @@ public class ReactiveAppInstanceScanner {
 	
 	private Flux<Instance> getInstances(Flux<Instance> instancesFlux) {
 		Flux<Instance> allInstances = instancesFlux.flatMap(instance -> {
-			Mono<ListProcessesResponse> processesResponse = instance.cfAppVector.flatMap(tuple -> {
+			Mono<ListProcessesResponse> processesResponse = Mono.zip(instance.orgId, instance.spaceId, instance.applicationId)
+			.flatMap(tuple -> {
 				String orgId = tuple.getT1();
 				String spaceId = tuple.getT2();
 				String appId = tuple.getT3();
 				
 				ListProcessesRequest request = ListProcessesRequest.builder().organizationId(orgId).spaceId(spaceId).applicationId(appId).build();
-				return this.cloudFoundryClient.processes().list(request).log();
+				return this.cloudFoundryClient.processes().list(request).log("List Processes");
 			});
 			
 			Flux<Instance> fluxInstances = Mono.zip(Mono.just(instance), processesResponse, instance.applicationId)
