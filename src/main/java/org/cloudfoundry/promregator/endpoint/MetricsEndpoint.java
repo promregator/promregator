@@ -9,7 +9,6 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -24,14 +23,14 @@ import org.cloudfoundry.promregator.auth.BasicAuthenticationEnricher;
 import org.cloudfoundry.promregator.auth.NullEnricher;
 import org.cloudfoundry.promregator.auth.OAuth2XSUAAEnricher;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
-import org.cloudfoundry.promregator.config.Target;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcher;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.CFMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.GenericMetricFamilySamplesPrefixRewriter;
 import org.cloudfoundry.promregator.rewrite.MFSUtils;
 import org.cloudfoundry.promregator.rewrite.MergableMetricFamilySamples;
-import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
+import org.cloudfoundry.promregator.scanner.ReactiveAppInstanceScanner;
+import org.cloudfoundry.promregator.scanner.ReactiveAppInstanceScanner.Instance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
@@ -61,7 +60,7 @@ public class MetricsEndpoint {
 	private static final Logger log = Logger.getLogger(MetricsEndpoint.class);
 	
 	@Autowired
-	private AppInstanceScanner appInstanceScanner;
+	private ReactiveAppInstanceScanner reactiveAppInstanceScanner;
 	
 	@Autowired
 	private ExecutorService metricsFetcherPool;
@@ -205,40 +204,35 @@ public class MetricsEndpoint {
 	}
 
 	private List<MetricsFetcher> createMetricFetchers() {
+		
+		List<Instance> instanceList = this.reactiveAppInstanceScanner.determineInstancesFromTargets(this.promregatorConfiguration.getTargets());
+		
 		List<MetricsFetcher> callablesPrep = new LinkedList<MetricsFetcher>();
-		for (Target target : this.promregatorConfiguration.getTargets()) {
-			String orgName = target.getOrgName();
-			String spaceName = target.getSpaceName();
-			String appName = target.getApplicationName();
+		for (Instance instance : instanceList) {
+			log.info(String.format("Instance %s", instance.instanceId));
+			String orgName = instance.target.getOrgName();
+			String spaceName = instance.target.getSpaceName();
+			String appName = instance.target.getApplicationName();
 			
-			String hostname = this.appInstanceScanner.getFirstHostname(orgName, spaceName, appName);
-			if (hostname == null) {
+			String accessURL = instance.accessUrl.block();
+			
+			if (accessURL == null) {
 				log.warn(String.format("Unable to retrieve hostname for %s/%s/%s; skipping", orgName, spaceName, appName));
 				continue;
 			}
-			String accessURL = String.format("https://%s%s", hostname, target.getPath());
 			
-			Set<String> instances = this.appInstanceScanner.getInstanceIds(orgName, spaceName, appName);
-			assert instances != null;
-			
-			log.info(String.format("Seeing the following instances for org '%s', space '%s', app '%s' for access URL '%s':", orgName, spaceName, appName, accessURL));
-			
-			for (String instance: instances) {
-				log.info(String.format("Instance %s", instance));
-				
-				AbstractMetricFamilySamplesEnricher mfse = new CFMetricFamilySamplesEnricher(orgName, spaceName, appName, instance);
-				
-				String[] labelNamesForOwnMetrics = { orgName, spaceName, appName, instance, CFMetricFamilySamplesEnricher.getInstanceFromInstanceId(instance) };
-				
-				MetricsFetcher mf = null;
-				if (this.proxyHost != null && this.proxyPort != 0) {
-					mf = new MetricsFetcher(accessURL, instance, this.ae, mfse, this.proxyHost, this.proxyPort, labelNamesForOwnMetrics, requestLatency, this.up, failedRequests);
-				} else {
-					mf = new MetricsFetcher(accessURL, instance, this.ae, mfse, labelNamesForOwnMetrics, requestLatency, this.up, failedRequests);
-				}
-				callablesPrep.add(mf);
+			AbstractMetricFamilySamplesEnricher mfse = new CFMetricFamilySamplesEnricher(orgName, spaceName, appName, instance.instanceId);
+			String[] labelNamesForOwnMetrics = { orgName, spaceName, appName, instance.instanceId, CFMetricFamilySamplesEnricher.getInstanceFromInstanceId(instance.instanceId) };
+
+			MetricsFetcher mf = null;
+			if (this.proxyHost != null && this.proxyPort != 0) {
+				mf = new MetricsFetcher(accessURL, instance.instanceId, this.ae, mfse, this.proxyHost, this.proxyPort, labelNamesForOwnMetrics, requestLatency, this.up, failedRequests);
+			} else {
+				mf = new MetricsFetcher(accessURL, instance.instanceId, this.ae, mfse, labelNamesForOwnMetrics, requestLatency, this.up, failedRequests);
 			}
+			callablesPrep.add(mf);
 		}
+		
 		return callablesPrep;
 	}
 }

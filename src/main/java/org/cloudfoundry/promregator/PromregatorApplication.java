@@ -5,7 +5,7 @@ import java.util.concurrent.Executors;
 
 import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
-import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
+import org.cloudfoundry.promregator.scanner.ReactiveAppInstanceScanner;
 import org.cloudfoundry.promregator.springconfig.CFClientSpringConfiguration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -27,8 +27,8 @@ public class PromregatorApplication {
 	}
 	
 	@Bean
-	public AppInstanceScanner appInstanceScanner() {
-		return new AppInstanceScanner();
+	public ReactiveAppInstanceScanner reactiveAppInstanceScanner() {
+		return new ReactiveAppInstanceScanner();
 	}
 	
 	@Bean
