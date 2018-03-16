@@ -38,6 +38,7 @@ public class ReactiveAppInstanceScanner {
 	private PassiveExpiringMap<String, Mono<String>> spaceMap;
 	private PassiveExpiringMap<String, Mono<String>> applicationMap;
 	private PassiveExpiringMap<String, Mono<String>> hostnameMap;
+	private PassiveExpiringMap<String, Mono<String>> domainMap;
 	
 	@Value("${cf.cache.timeout.application:300}")
 	private int timeoutCacheApplicationLevel;
@@ -95,6 +96,7 @@ public class ReactiveAppInstanceScanner {
 		 */
 		this.applicationMap = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
 		this.hostnameMap = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
+		this.domainMap = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
 	}
 	
 	
@@ -247,13 +249,9 @@ public class ReactiveAppInstanceScanner {
 			return Mono.just(route);
 		});
 		
-		Mono<String> domainMono = routeMono.flatMap(route -> {
-			GetSharedDomainRequest domainRequest = GetSharedDomainRequest.builder().sharedDomainId(route.getDomainId()).build();
-			return this.cloudFoundryClient.sharedDomains().get(domainRequest).log("Get Domain");
-		}).map(domain -> {
-			SharedDomainEntity sharedDomain = domain.getEntity();
-			
-			return sharedDomain.getName();
+		Mono<String> domainMono = routeMono.map(route -> route.getDomainId())
+		.flatMap(domainId -> {
+			return this.getDomain(domainId);
 		});
 		
 		Mono<String> applicationUrlMono = Mono.zip(domainMono, routeMono)
@@ -274,6 +272,25 @@ public class ReactiveAppInstanceScanner {
 		return applicationUrlMono;
 	}
 
+	private Mono<String> getDomain(String domainIdString) {
+		String key = domainIdString;
+		Mono<String> cached = this.domainMap.get(key);
+		if (cached != null) {
+			return cached;
+		}
+		
+		cached = Mono.just(domainIdString).flatMap(domainId -> {
+			GetSharedDomainRequest domainRequest = GetSharedDomainRequest.builder().sharedDomainId(domainId).build();
+			return this.cloudFoundryClient.sharedDomains().get(domainRequest).log("Get Domain");
+		}).map(response -> {
+			SharedDomainEntity sharedDomain = response.getEntity();
+			
+			return sharedDomain.getName();
+		}).cache();
+		
+		this.domainMap.put(key, cached);
+		return cached;
+	}
 	
 	private Flux<Instance> getInstances(Flux<Instance> instancesFlux) {
 		Flux<Instance> allInstances = instancesFlux.flatMap(instance -> {
