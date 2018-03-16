@@ -187,12 +187,12 @@ public class ReactiveAppInstanceScanner {
 		ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, "org");
 		
 		cached = Mono.just(orgNameString)
-			// start the timer
-			.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
-				tuple.getT2().start();
-				return tuple.getT1();
-			})
-			.flatMap(orgName -> {
+		// start the timer
+		.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+			tuple.getT2().start();
+			return tuple.getT1();
+		})
+		.flatMap(orgName -> {
 			ListOrganizationsRequest orgsRequest = ListOrganizationsRequest.builder().name(orgName).build();
 			return this.cloudFoundryClient.organizationsV3().list(orgsRequest).log("Query Org");
 		}).flatMap(response -> {
@@ -228,12 +228,12 @@ public class ReactiveAppInstanceScanner {
 		ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, "space");
 		
 		cached = Mono.zip(orgIdMono, Mono.just(spaceNameString))
-			// start the timer
-			.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
-				tuple.getT2().start();
-				return tuple.getT1();
-			})
-			.flatMap(tuple -> {
+		// start the timer
+		.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+			tuple.getT2().start();
+			return tuple.getT1();
+		})
+		.flatMap(tuple -> {
 			ListSpacesRequest spacesRequest = ListSpacesRequest.builder().organizationId(tuple.getT1()).name(tuple.getT2()).build();
 			return this.cloudFoundryClient.spacesV3().list(spacesRequest).log("Query Space");
 		}).flatMap(response -> {
@@ -269,12 +269,12 @@ public class ReactiveAppInstanceScanner {
 		ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, "app");
 		
 		cached = Mono.zip(orgIdMono, spaceIdMono, Mono.just(applicationNameString))
-			// start the timer
-			.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
-				tuple.getT2().start();
-				return tuple.getT1();
-			})
-			.flatMap(triple -> {
+		// start the timer
+		.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+			tuple.getT2().start();
+			return tuple.getT1();
+		})
+		.flatMap(triple -> {
 			ListApplicationsRequest request = ListApplicationsRequest.builder()
 					.organizationId(triple.getT1())
 					.spaceId(triple.getT2())
