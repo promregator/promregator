@@ -30,7 +30,6 @@ import org.springframework.stereotype.Component;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple3;
 
 @Component
 public class ReactiveAppInstanceScanner {
@@ -62,7 +61,7 @@ public class ReactiveAppInstanceScanner {
 		
 		public String instanceId;
 		
-		public Mono<String> accessUrl;
+		public String accessUrl;
 
 		@Override
 		protected Object clone() throws CloneNotSupportedException {
@@ -119,10 +118,10 @@ public class ReactiveAppInstanceScanner {
 		
 		Flux<Instance> instancesOfApplications = this.getInstances(initialInstancesOnlyApplication);
 		
-		instancesOfApplications.map(instance -> {
+		instancesOfApplications.flatMap(instance -> {
 			Mono<String> applUrlMono = this.getApplicationUrl(instance.applicationId);
 			
-			instance.accessUrl = Mono.zip(applUrlMono, Mono.just(instance.target.getPath()))
+			Mono<String> accessUrlMono = Mono.zip(applUrlMono, Mono.just(instance.target.getPath()))
 			.map(tuple -> {
 				String applUrl = tuple.getT1();
 				if (!applUrl.endsWith("/")) {
@@ -136,7 +135,15 @@ public class ReactiveAppInstanceScanner {
 				return applUrl + path;
 			});
 			
-			return instance;
+			Mono<Instance> newInstance = Mono.zip(Mono.just(instance), accessUrlMono)
+			.map(tuple -> {
+				Instance i = tuple.getT1();
+				i.accessUrl = tuple.getT2();
+				
+				return i;
+			});
+			
+			return newInstance;
 		}).toIterable().forEach(result::add);
 		
 		return result;

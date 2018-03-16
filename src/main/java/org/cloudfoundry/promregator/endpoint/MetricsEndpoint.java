@@ -214,7 +214,7 @@ public class MetricsEndpoint {
 			String spaceName = instance.target.getSpaceName();
 			String appName = instance.target.getApplicationName();
 			
-			String accessURL = instance.accessUrl.block();
+			String accessURL = instance.accessUrl;
 			
 			if (accessURL == null) {
 				log.warn(String.format("Unable to retrieve hostname for %s/%s/%s; skipping", orgName, spaceName, appName));
