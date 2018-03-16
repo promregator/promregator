@@ -23,11 +23,13 @@ import org.cloudfoundry.client.v3.processes.ProcessResource;
 import org.cloudfoundry.client.v3.spaces.ListSpacesRequest;
 import org.cloudfoundry.client.v3.spaces.SpaceResource;
 import org.cloudfoundry.promregator.config.Target;
+import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.cloudfoundry.reactor.client.ReactorCloudFoundryClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import io.prometheus.client.Histogram.Timer;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -50,6 +52,9 @@ public class ReactiveAppInstanceScanner {
 
 	@Autowired
 	private ReactorCloudFoundryClient cloudFoundryClient;
+	
+	@Autowired
+	private InternalMetrics internalMetrics;
 
 	public static class Instance implements Cloneable {
 		
@@ -149,13 +154,45 @@ public class ReactiveAppInstanceScanner {
 		return result;
 	}
 
+	private static class ReactiveTimer {
+		private Timer t;
+		private final InternalMetrics im;
+		private final String requestType;
+		
+		public ReactiveTimer(final InternalMetrics im, final String requestType) {
+			this.im = im;
+			this.requestType = requestType;
+		}
+		
+		public void start() {
+			this.t = this.im.startTimerCFFetch(this.requestType);
+		}
+
+		public void stop() {
+			if (this.t != null) {
+				this.t.observeDuration();
+			}
+		}
+		
+	}
+	
 	private Mono<String> getOrgId(String orgNameString) {
 		Mono<String> cached = this.orgMap.get(orgNameString);
 		if (cached != null) {
+			this.internalMetrics.countHit("appinstancescanner.org");
 			return cached;
 		}
+		this.internalMetrics.countMiss("appinstancescanner.org");
 		
-		cached = Mono.just(orgNameString).flatMap(orgName -> {
+		ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, "org");
+		
+		cached = Mono.just(orgNameString)
+			// start the timer
+			.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+				tuple.getT2().start();
+				return tuple.getT1();
+			})
+			.flatMap(orgName -> {
 			ListOrganizationsRequest orgsRequest = ListOrganizationsRequest.builder().name(orgName).build();
 			return this.cloudFoundryClient.organizationsV3().list(orgsRequest).log("Query Org");
 		}).flatMap(response -> {
@@ -166,7 +203,13 @@ public class ReactiveAppInstanceScanner {
 			
 			OrganizationResource organizationResource = resources.get(0);
 			return Mono.just(organizationResource.getId());
-		}).cache();
+		})
+		// stop the timer
+		.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+			tuple.getT2().stop();
+			return tuple.getT1();
+		})
+		.cache();
 		
 		this.orgMap.put(orgNameString, cached);
 		return cached;
@@ -176,10 +219,21 @@ public class ReactiveAppInstanceScanner {
 		String key = String.format("%d|%s", orgIdMono.hashCode(), spaceNameString);
 		Mono<String> cached = this.spaceMap.get(key);
 		if (cached != null) {
+			this.internalMetrics.countHit("appinstancescanner.space");
 			return cached;
 		}
 		
-		cached = Mono.zip(orgIdMono, Mono.just(spaceNameString)).flatMap(tuple -> {
+		this.internalMetrics.countMiss("appinstancescanner.space");
+		
+		ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, "space");
+		
+		cached = Mono.zip(orgIdMono, Mono.just(spaceNameString))
+			// start the timer
+			.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+				tuple.getT2().start();
+				return tuple.getT1();
+			})
+			.flatMap(tuple -> {
 			ListSpacesRequest spacesRequest = ListSpacesRequest.builder().organizationId(tuple.getT1()).name(tuple.getT2()).build();
 			return this.cloudFoundryClient.spacesV3().list(spacesRequest).log("Query Space");
 		}).flatMap(response -> {
@@ -190,6 +244,11 @@ public class ReactiveAppInstanceScanner {
 			
 			SpaceResource spaceResource = resources.get(0);
 			return Mono.just(spaceResource.getId());
+		})
+		// stop the timer
+		.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+			tuple.getT2().stop();
+			return tuple.getT1();
 		}).cache();
 		
 		this.spaceMap.put(key, cached);
@@ -201,10 +260,21 @@ public class ReactiveAppInstanceScanner {
 		String key = String.format("%d|%d|%s", orgIdMono.hashCode(), spaceIdMono.hashCode(), applicationNameString);
 		Mono<String> cached = this.applicationMap.get(key);
 		if (cached != null) {
+			this.internalMetrics.countHit("appinstancescanner.app");
 			return cached;
 		}
 		
-		cached = Mono.zip(orgIdMono, spaceIdMono, Mono.just(applicationNameString)).flatMap(triple -> {
+		this.internalMetrics.countMiss("appinstancescanner.app");
+		
+		ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, "app");
+		
+		cached = Mono.zip(orgIdMono, spaceIdMono, Mono.just(applicationNameString))
+			// start the timer
+			.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+				tuple.getT2().start();
+				return tuple.getT1();
+			})
+			.flatMap(triple -> {
 			ListApplicationsRequest request = ListApplicationsRequest.builder()
 					.organizationId(triple.getT1())
 					.spaceId(triple.getT2())
@@ -219,6 +289,11 @@ public class ReactiveAppInstanceScanner {
 			
 			ApplicationResource applicationResource = resources.get(0);
 			return Mono.just(applicationResource.getId());
+		})
+		// stop the timer
+		.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+			tuple.getT2().stop();
+			return tuple.getT1();
 		}).cache();
 		
 		this.applicationMap.put(key, cached);
@@ -229,10 +304,22 @@ public class ReactiveAppInstanceScanner {
 		String key = String.format("%d", applicationIdMono.hashCode());
 
 		Mono<String> cached = this.hostnameMap.get(key);
-		if (cached != null)
+		if (cached != null) {
+			this.internalMetrics.countHit("appinstancescanner.route");
 			return cached;
+		}
 		
-		Mono<RouteEntity> routeMono = applicationIdMono.flatMap(appId -> {
+		this.internalMetrics.countMiss("appinstancescanner.route");
+
+		ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, "route");
+		
+		Mono<RouteEntity> routeMono = applicationIdMono
+		// start the timer
+		.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+			tuple.getT2().start();
+			return tuple.getT1();
+		})
+		.flatMap(appId -> {
 			ListRouteMappingsRequest mappingRequest = ListRouteMappingsRequest.builder().applicationId(appId).build();
 			return this.cloudFoundryClient.routeMappings().list(mappingRequest).log("Query Route Mapping");
 		}).flatMap(mappingResponse -> {
@@ -272,6 +359,11 @@ public class ReactiveAppInstanceScanner {
 			}
 			
 			return url;
+		})
+		// stop the timer
+		.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+			tuple.getT2().stop();
+			return tuple.getT1();
 		}).cache();
 		
 		this.hostnameMap.put(key, applicationUrlMono);
@@ -283,17 +375,34 @@ public class ReactiveAppInstanceScanner {
 		String key = domainIdString;
 		Mono<String> cached = this.domainMap.get(key);
 		if (cached != null) {
+			this.internalMetrics.countHit("appinstancescanner.domain");
 			return cached;
 		}
-		
-		cached = Mono.just(domainIdString).flatMap(domainId -> {
+
+		this.internalMetrics.countMiss("appinstancescanner.domain");
+
+		ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, "domain");
+
+		cached = Mono.just(domainIdString)
+		// start the timer
+		.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+			tuple.getT2().start();
+			return tuple.getT1();
+		})
+		.flatMap(domainId -> {
 			GetSharedDomainRequest domainRequest = GetSharedDomainRequest.builder().sharedDomainId(domainId).build();
 			return this.cloudFoundryClient.sharedDomains().get(domainRequest).log("Get Domain");
 		}).map(response -> {
 			SharedDomainEntity sharedDomain = response.getEntity();
 			
 			return sharedDomain.getName();
-		}).cache();
+		})
+		// stop the timer
+		.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+			tuple.getT2().stop();
+			return tuple.getT1();
+		})
+		.cache();
 		
 		this.domainMap.put(key, cached);
 		return cached;
