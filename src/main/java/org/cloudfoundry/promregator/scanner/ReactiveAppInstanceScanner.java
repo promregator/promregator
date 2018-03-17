@@ -216,195 +216,205 @@ public class ReactiveAppInstanceScanner {
 
 	private Mono<String> getSpaceId(Mono<String> orgIdMono, String spaceNameString) {
 		String key = String.format("%d|%s", orgIdMono.hashCode(), spaceNameString);
-		Mono<String> cached = this.spaceMap.get(key);
-		if (cached != null) {
-			this.internalMetrics.countHit("appinstancescanner.space");
-			return cached;
-		}
 		
-		this.internalMetrics.countMiss("appinstancescanner.space");
-		
-		ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, "space");
-		
-		cached = Mono.zip(orgIdMono, Mono.just(spaceNameString))
-		// start the timer
-		.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
-			tuple.getT2().start();
-			return tuple.getT1();
-		})
-		.flatMap(tuple -> {
-			ListSpacesRequest spacesRequest = ListSpacesRequest.builder().organizationId(tuple.getT1()).name(tuple.getT2()).build();
-			return this.cloudFoundryClient.spacesV3().list(spacesRequest).log("Query Space");
-		}).flatMap(response -> {
-			List<SpaceResource> resources = response.getResources();
-			if (resources == null) {
-				return Mono.empty();
+		synchronized(key.intern()) {
+			Mono<String> cached = this.spaceMap.get(key);
+			if (cached != null) {
+				this.internalMetrics.countHit("appinstancescanner.space");
+				return cached;
 			}
 			
-			SpaceResource spaceResource = resources.get(0);
-			return Mono.just(spaceResource.getId());
-		})
-		// stop the timer
-		.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
-			tuple.getT2().stop();
-			return tuple.getT1();
-		}).cache();
-		
-		this.spaceMap.put(key, cached);
-		return cached;
+			this.internalMetrics.countMiss("appinstancescanner.space");
+			
+			ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, "space");
+			
+			cached = Mono.zip(orgIdMono, Mono.just(spaceNameString))
+			// start the timer
+			.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+				tuple.getT2().start();
+				return tuple.getT1();
+			})
+			.flatMap(tuple -> {
+				ListSpacesRequest spacesRequest = ListSpacesRequest.builder().organizationId(tuple.getT1()).name(tuple.getT2()).build();
+				return this.cloudFoundryClient.spacesV3().list(spacesRequest).log("Query Space");
+			}).flatMap(response -> {
+				List<SpaceResource> resources = response.getResources();
+				if (resources == null) {
+					return Mono.empty();
+				}
+				
+				SpaceResource spaceResource = resources.get(0);
+				return Mono.just(spaceResource.getId());
+			})
+			// stop the timer
+			.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+				tuple.getT2().stop();
+				return tuple.getT1();
+			}).cache();
+			
+			this.spaceMap.put(key, cached);
+			return cached;
+		}
 	}
 
 
 	private Mono<String> getApplicationId(Mono<String> orgIdMono, Mono<String> spaceIdMono, String applicationNameString) {
 		String key = String.format("%d|%d|%s", orgIdMono.hashCode(), spaceIdMono.hashCode(), applicationNameString);
-		Mono<String> cached = this.applicationMap.get(key);
-		if (cached != null) {
-			this.internalMetrics.countHit("appinstancescanner.app");
-			return cached;
-		}
-		
-		this.internalMetrics.countMiss("appinstancescanner.app");
-		
-		ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, "app");
-		
-		cached = Mono.zip(orgIdMono, spaceIdMono, Mono.just(applicationNameString))
-		// start the timer
-		.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
-			tuple.getT2().start();
-			return tuple.getT1();
-		})
-		.flatMap(triple -> {
-			ListApplicationsRequest request = ListApplicationsRequest.builder()
-					.organizationId(triple.getT1())
-					.spaceId(triple.getT2())
-					.name(triple.getT3())
-					.build();
-			return this.cloudFoundryClient.applicationsV3().list(request).log("Query App");
-		}).flatMap(response -> {
-			List<ApplicationResource> resources = response.getResources();
-			if (resources == null) {
-				return Mono.empty();
+		synchronized(key.intern()) {
+			Mono<String> cached = this.applicationMap.get(key);
+			if (cached != null) {
+				this.internalMetrics.countHit("appinstancescanner.app");
+				return cached;
 			}
 			
-			ApplicationResource applicationResource = resources.get(0);
-			return Mono.just(applicationResource.getId());
-		})
-		// stop the timer
-		.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
-			tuple.getT2().stop();
-			return tuple.getT1();
-		}).cache();
-		
-		this.applicationMap.put(key, cached);
-		return cached;
+			this.internalMetrics.countMiss("appinstancescanner.app");
+			
+			ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, "app");
+			
+			cached = Mono.zip(orgIdMono, spaceIdMono, Mono.just(applicationNameString))
+			// start the timer
+			.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+				tuple.getT2().start();
+				return tuple.getT1();
+			})
+			.flatMap(triple -> {
+				ListApplicationsRequest request = ListApplicationsRequest.builder()
+						.organizationId(triple.getT1())
+						.spaceId(triple.getT2())
+						.name(triple.getT3())
+						.build();
+				return this.cloudFoundryClient.applicationsV3().list(request).log("Query App");
+			}).flatMap(response -> {
+				List<ApplicationResource> resources = response.getResources();
+				if (resources == null) {
+					return Mono.empty();
+				}
+				
+				ApplicationResource applicationResource = resources.get(0);
+				return Mono.just(applicationResource.getId());
+			})
+			// stop the timer
+			.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+				tuple.getT2().stop();
+				return tuple.getT1();
+			}).cache();
+			
+			this.applicationMap.put(key, cached);
+			return cached;
+		}
 	}
 	
 	private Mono<String> getApplicationUrl(Mono<String> applicationIdMono, String protocol) {
 		String key = String.format("%d", applicationIdMono.hashCode());
 
-		Mono<String> cached = this.hostnameMap.get(key);
-		if (cached != null) {
-			this.internalMetrics.countHit("appinstancescanner.route");
-			return cached;
-		}
-		
-		this.internalMetrics.countMiss("appinstancescanner.route");
-
-		ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, "route");
-		
-		Mono<RouteEntity> routeMono = applicationIdMono
-		// start the timer
-		.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
-			tuple.getT2().start();
-			return tuple.getT1();
-		})
-		.flatMap(appId -> {
-			ListRouteMappingsRequest mappingRequest = ListRouteMappingsRequest.builder().applicationId(appId).build();
-			return this.cloudFoundryClient.routeMappings().list(mappingRequest).log("Query Route Mapping");
-		}).flatMap(mappingResponse -> {
-			List<RouteMappingResource> resourceList = mappingResponse.getResources();
-			if (resourceList.isEmpty())
-				return Mono.empty();
-			
-			String routeId = resourceList.get(0).getEntity().getRouteId();
-			if (routeId == null)
-				return Mono.empty();
-			
-			GetRouteRequest getRequest = GetRouteRequest.builder().routeId(routeId).build();
-			return this.cloudFoundryClient.routes().get(getRequest).log("Get Route");
-		}).flatMap(GetRouteResponse -> {
-			RouteEntity route = GetRouteResponse.getEntity();
-			if (route == null)
-				return Mono.empty();
-			
-			// WARNING! route.getApplicationsUrl() is the URL back to the application
-			// and not the URL which points to the endpoint of the cell!
-			return Mono.just(route);
-		});
-		
-		Mono<String> domainMono = routeMono.map(route -> route.getDomainId())
-		.flatMap(domainId -> {
-			return this.getDomain(domainId);
-		});
-		
-		Mono<String> applicationUrlMono = Mono.zip(domainMono, routeMono)
-		.map(tuple -> {
-			String domain = tuple.getT1();
-			RouteEntity route = tuple.getT2();
-			
-			String url = String.format("%s://%s.%s", protocol, route.getHost(), domain);
-			if (route.getPath() != null) {
-				url += "/"+route.getPath();
+		synchronized(key.intern()) {
+			Mono<String> cached = this.hostnameMap.get(key);
+			if (cached != null) {
+				this.internalMetrics.countHit("appinstancescanner.route");
+				return cached;
 			}
 			
-			return url;
-		})
-		// stop the timer
-		.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
-			tuple.getT2().stop();
-			return tuple.getT1();
-		}).cache();
-		
-		this.hostnameMap.put(key, applicationUrlMono);
-		
-		return applicationUrlMono;
+			this.internalMetrics.countMiss("appinstancescanner.route");
+	
+			ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, "route");
+			
+			Mono<RouteEntity> routeMono = applicationIdMono
+			// start the timer
+			.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+				tuple.getT2().start();
+				return tuple.getT1();
+			})
+			.flatMap(appId -> {
+				ListRouteMappingsRequest mappingRequest = ListRouteMappingsRequest.builder().applicationId(appId).build();
+				return this.cloudFoundryClient.routeMappings().list(mappingRequest).log("Query Route Mapping");
+			}).flatMap(mappingResponse -> {
+				List<RouteMappingResource> resourceList = mappingResponse.getResources();
+				if (resourceList.isEmpty())
+					return Mono.empty();
+				
+				String routeId = resourceList.get(0).getEntity().getRouteId();
+				if (routeId == null)
+					return Mono.empty();
+				
+				GetRouteRequest getRequest = GetRouteRequest.builder().routeId(routeId).build();
+				return this.cloudFoundryClient.routes().get(getRequest).log("Get Route");
+			}).flatMap(GetRouteResponse -> {
+				RouteEntity route = GetRouteResponse.getEntity();
+				if (route == null)
+					return Mono.empty();
+				
+				// WARNING! route.getApplicationsUrl() is the URL back to the application
+				// and not the URL which points to the endpoint of the cell!
+				return Mono.just(route);
+			});
+			
+			Mono<String> domainMono = routeMono.map(route -> route.getDomainId())
+			.flatMap(domainId -> {
+				return this.getDomain(domainId);
+			});
+			
+			Mono<String> applicationUrlMono = Mono.zip(domainMono, routeMono)
+			.map(tuple -> {
+				String domain = tuple.getT1();
+				RouteEntity route = tuple.getT2();
+				
+				String url = String.format("%s://%s.%s", protocol, route.getHost(), domain);
+				if (route.getPath() != null) {
+					url += "/"+route.getPath();
+				}
+				
+				return url;
+			})
+			// stop the timer
+			.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+				tuple.getT2().stop();
+				return tuple.getT1();
+			}).cache();
+			
+			this.hostnameMap.put(key, applicationUrlMono);
+			
+			return applicationUrlMono;
+		}
 	}
 
 	private Mono<String> getDomain(String domainIdString) {
 		String key = domainIdString;
-		Mono<String> cached = this.domainMap.get(key);
-		if (cached != null) {
-			this.internalMetrics.countHit("appinstancescanner.domain");
+		
+		synchronized (key.intern()) {
+			Mono<String> cached = this.domainMap.get(key);
+			if (cached != null) {
+				this.internalMetrics.countHit("appinstancescanner.domain");
+				return cached;
+			}
+	
+			this.internalMetrics.countMiss("appinstancescanner.domain");
+	
+			ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, "domain");
+	
+			cached = Mono.just(domainIdString)
+			// start the timer
+			.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+				tuple.getT2().start();
+				return tuple.getT1();
+			})
+			.flatMap(domainId -> {
+				GetSharedDomainRequest domainRequest = GetSharedDomainRequest.builder().sharedDomainId(domainId).build();
+				return this.cloudFoundryClient.sharedDomains().get(domainRequest).log("Get Domain");
+			}).map(response -> {
+				SharedDomainEntity sharedDomain = response.getEntity();
+				
+				return sharedDomain.getName();
+			})
+			// stop the timer
+			.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+				tuple.getT2().stop();
+				return tuple.getT1();
+			})
+			.cache();
+			
+			this.domainMap.put(key, cached);
 			return cached;
 		}
-
-		this.internalMetrics.countMiss("appinstancescanner.domain");
-
-		ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, "domain");
-
-		cached = Mono.just(domainIdString)
-		// start the timer
-		.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
-			tuple.getT2().start();
-			return tuple.getT1();
-		})
-		.flatMap(domainId -> {
-			GetSharedDomainRequest domainRequest = GetSharedDomainRequest.builder().sharedDomainId(domainId).build();
-			return this.cloudFoundryClient.sharedDomains().get(domainRequest).log("Get Domain");
-		}).map(response -> {
-			SharedDomainEntity sharedDomain = response.getEntity();
-			
-			return sharedDomain.getName();
-		})
-		// stop the timer
-		.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
-			tuple.getT2().stop();
-			return tuple.getT1();
-		})
-		.cache();
-		
-		this.domainMap.put(key, cached);
-		return cached;
 	}
 	
 	private Flux<Instance> getInstances(Flux<Instance> instancesFlux) {
