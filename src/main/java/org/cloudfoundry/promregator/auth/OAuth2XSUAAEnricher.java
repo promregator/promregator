@@ -66,8 +66,10 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
 		 */
 		
 		if (this.bufferedJwt == null) {
+			// no JWT available
 			this.bufferedJwt = getJWT(config);
 		} else if (Instant.now().isAfter(this.validUntil)) {
+			// JWT is expired
 			this.bufferedJwt = getJWT(config);
 		}
 		
