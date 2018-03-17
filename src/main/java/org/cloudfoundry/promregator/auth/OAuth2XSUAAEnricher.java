@@ -58,7 +58,12 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
 	private Instant validUntil = null;
 	
 	private synchronized String getBufferedJWT(URI uri, RequestConfig config) {
-		// TODO: Buffering must happen based on the uri (there could be multiple one's!)
+		/* 
+		 * NB: Buffering does not happen based on the uri; so far the 
+		 * generation of the JWT does not depend on the targets, but only
+		 * on the configuration of this AuthenticationEnricher. That is also
+		 * why a single String-only field is sufficient for caching.
+		 */
 		
 		if (this.bufferedJwt == null) {
 			this.bufferedJwt = getJWT(config);
