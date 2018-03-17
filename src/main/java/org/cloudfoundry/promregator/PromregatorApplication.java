@@ -4,6 +4,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.log4j.Logger;
+import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
+import org.cloudfoundry.promregator.auth.BasicAuthenticationEnricher;
+import org.cloudfoundry.promregator.auth.NullEnricher;
+import org.cloudfoundry.promregator.auth.OAuth2XSUAAEnricher;
+import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.cloudfoundry.promregator.scanner.ReactiveAppInstanceScanner;
 import org.cloudfoundry.promregator.springconfig.CFClientSpringConfiguration;
@@ -52,5 +57,23 @@ public class PromregatorApplication {
 	public ExecutorService metricsFetcherPool() {
 		log.info(String.format("Thread Pool size is set to %d", this.threadPoolSize));
 		return Executors.newFixedThreadPool(this.threadPoolSize);
+	}
+	
+	@Bean
+	public AuthenticationEnricher authenticationEnricher(PromregatorConfiguration promregatorConfiguration) {
+		AuthenticationEnricher ae = null;
+		
+		String type = promregatorConfiguration.getAuthenticator().getType();
+		if ("OAuth2XSUAA".equalsIgnoreCase(type)) {
+			ae = new OAuth2XSUAAEnricher(promregatorConfiguration.getAuthenticator().getOauth2xsuaa());
+		} else if ("none".equalsIgnoreCase(type) || "null".equalsIgnoreCase(type)) {
+			ae = new NullEnricher();
+		} else if ("basic".equalsIgnoreCase(type)) {
+			ae = new BasicAuthenticationEnricher(promregatorConfiguration.getAuthenticator().getBasic());
+		} else {
+			log.warn(String.format("Authenticator type %s is unknown; skipping", type));
+		}
+
+		return ae;
 	}
 }

@@ -173,7 +173,6 @@ public class ReactiveAppInstanceScanner {
 				this.t.observeDuration();
 			}
 		}
-		
 	}
 	
 	private Mono<String> getOrgId(String orgNameString) {
@@ -409,7 +408,6 @@ public class ReactiveAppInstanceScanner {
 	}
 	
 	private Flux<Instance> getInstances(Flux<Instance> instancesFlux) {
-		
 		Flux<Instance> allInstances = instancesFlux.flatMap(instance -> {
 			ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, "instances");
 			

@@ -80,7 +80,9 @@ public class MetricsEndpoint {
 	@Autowired
 	private PromregatorConfiguration promregatorConfiguration;
 	
+	@Autowired
 	private AuthenticationEnricher ae;
+	
 	private GenericMetricFamilySamplesPrefixRewriter gmfspr = new GenericMetricFamilySamplesPrefixRewriter("promregator");
 	
 	/* own metrics --- static scope (e.g. across all requests) */
@@ -111,20 +113,6 @@ public class MetricsEndpoint {
 		this.up = Gauge.build("promregator_up", "Indicator, whether the target of promregator is available")
 				.labelNames(CFMetricFamilySamplesEnricher.getEnrichingLabelNames())
 				.register(this.requestRegistry);
-	}
-	
-	@PostConstruct
-	public void setupAuthenticationEnricher() {
-		String type = promregatorConfiguration.getAuthenticator().getType();
-		if ("OAuth2XSUAA".equalsIgnoreCase(type)) {
-			this.ae = new OAuth2XSUAAEnricher(this.promregatorConfiguration.getAuthenticator().getOauth2xsuaa());
-		} else if ("none".equalsIgnoreCase(type) || "null".equalsIgnoreCase(type)) {
-			this.ae = new NullEnricher();
-		} else if ("basic".equalsIgnoreCase(type)) {
-			this.ae = new BasicAuthenticationEnricher(this.promregatorConfiguration.getAuthenticator().getBasic());
-		} else {
-			log.warn(String.format("Authenticator type %s is unknown; skipping", type));
-		}
 	}
 	
 	@RequestMapping(method = RequestMethod.GET, produces=TextFormat.CONTENT_TYPE_004)
