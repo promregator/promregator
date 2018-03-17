@@ -19,9 +19,6 @@ import javax.annotation.PostConstruct;
 
 import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
-import org.cloudfoundry.promregator.auth.BasicAuthenticationEnricher;
-import org.cloudfoundry.promregator.auth.NullEnricher;
-import org.cloudfoundry.promregator.auth.OAuth2XSUAAEnricher;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcher;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
