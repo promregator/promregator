@@ -9,6 +9,8 @@ public class Target {
 
 	private String path;
 	
+	private String protocol;
+	
 	public String getOrgName() {
 		return orgName;
 	}
@@ -42,6 +44,17 @@ public class Target {
 
 	public void setPath(String path) {
 		this.path = path;
+	}
+
+	public String getProtocol() {
+		if (this.protocol == null)
+			return "https";
+		
+		return protocol;
+	}
+
+	public void setProtocol(String protocol) {
+		this.protocol = protocol;
 	}
 
 	

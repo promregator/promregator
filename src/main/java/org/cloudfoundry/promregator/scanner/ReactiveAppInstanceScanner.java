@@ -124,7 +124,7 @@ public class ReactiveAppInstanceScanner {
 		Flux<Instance> instancesOfApplications = this.getInstances(initialInstancesOnlyApplication);
 		
 		instancesOfApplications.flatMap(instance -> {
-			Mono<String> applUrlMono = this.getApplicationUrl(instance.applicationId);
+			Mono<String> applUrlMono = this.getApplicationUrl(instance.applicationId, instance.target.getProtocol());
 			
 			Mono<String> accessUrlMono = Mono.zip(applUrlMono, Mono.just(instance.target.getPath()))
 			.map(tuple -> {
@@ -300,7 +300,7 @@ public class ReactiveAppInstanceScanner {
 		return cached;
 	}
 	
-	private Mono<String> getApplicationUrl(Mono<String> applicationIdMono) {
+	private Mono<String> getApplicationUrl(Mono<String> applicationIdMono, String protocol) {
 		String key = String.format("%d", applicationIdMono.hashCode());
 
 		Mono<String> cached = this.hostnameMap.get(key);
@@ -353,7 +353,7 @@ public class ReactiveAppInstanceScanner {
 			String domain = tuple.getT1();
 			RouteEntity route = tuple.getT2();
 			
-			String url = String.format("http://%s.%s", route.getHost(), domain);
+			String url = String.format("%s://%s.%s", protocol, route.getHost(), domain);
 			if (route.getPath() != null) {
 				url += "/"+route.getPath();
 			}

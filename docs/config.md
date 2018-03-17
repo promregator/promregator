@@ -114,6 +114,12 @@ Specifies the path under which the application's endpoint provides its Prometheu
 
 Defaults to `/metrics`, as this is the value which is suggested by Prometheus.
 
+#### Item property "promregator.targets[].protocol" (optional)
+Specifies the protocol (`http` or `https`) which shall be used to retrieve the metrics.
+
+Defaults to `https` if not set otherwise.
+
+
 ### Option "promregator.endpoint.maxProcessingTime" (optional)
 Specifies the maximal time which may be used to query (all) targets. The value is expected to be specified in milliseconds. 
 Targets which did not respond after this amount of time are considered non-functional and no result will be returned to the Prometheus server.
