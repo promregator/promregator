@@ -32,7 +32,7 @@ For this purpose, we will use multiple Docker images, as this greatly relieves y
    jvm_buffer_pool_used_bytes{pool="direct",} 90160.0
    ```
 
-  Note that the exact text may deviate.
+   Note that the exact text may deviate.
 
 6. Note down the values from
    ```bash
@@ -107,13 +107,13 @@ then comes to your rescue.
    
 2. Retrieve the Docker image of Prometheus by calling
    ```bash
-   $ docker pull prom/prometheus:latet
+   $ docker pull prom/prometheus:latest
    ```
 
 3. Start a container using the following command:
    ```bash
-   $ docker run --name prometheus -v `pwd`/prometheus.yml:/etc/prometheus/prometheus.yml -p 127.0.0.1:9090:9090 \
-     --link promregator \
+   $ docker run --name prometheus -v `pwd`/prometheus.yml:/etc/prometheus/prometheus.yml \
+     -p 127.0.0.1:9090:9090 --link promregator \
      prom/prometheus:latest
    ```
 
