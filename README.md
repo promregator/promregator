@@ -129,4 +129,4 @@ scrape_configs:
 
 Note that the option `honor_labels: true` is **not** required. 
 
-Authentication currently is not required / not available (yet). For the current progress on this topic, please refer to #17.
+Authentication currently is not required / not available (yet). For the current progress on this topic, please refer to [#17](https://github.com/promregator/promregator/issues/17).
