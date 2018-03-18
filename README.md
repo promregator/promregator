@@ -82,7 +82,7 @@ approach.
 The suggested approach is to create a configuration YAML file, such as `myconfig.yaml`, and start Promregator with the following command line option:
 
 ```bash
-java -Dspring.config.location=file:/path/to/your/myconfig.yaml -jar promregator-0.0.1-SNAPSHOT.jar
+java -Dspring.config.location=file:/path/to/your/myconfig.yaml -jar promregator-x.y.z-SNAPSHOT.jar
 ```
 
 Here is an dummy example for such a configuration yaml file:
