@@ -13,7 +13,9 @@ metrics *on platform level* (e.g. for monitoring services, which are exposed via
 
 If you want to jumpstart and see what Promregator may do, please refer to our [quickstart description](docs/quickstart-docker.md).
 
-Here is the list of major features provided:
+## Feature List
+
+Here is the list of major features provided by Promregator:
 
 * Standard Java-Application implemented using the Spring Framework. There is **no need for administrative privileges on your Cloud Foundry** installation!
   You can even run Promregator **outside of your Cloud Foundry environment** (such as behind an internal firewall), as Promregator also supports proxy servers.
@@ -46,7 +48,7 @@ For further details on the architecture of Promregator, please look at the [arch
 ## Prerequisites
 
 Running Promregator requires:
-* JDK8 or higher
+* JRE8 or higher
 
 Compiling Promregator additionally requires:
 * Maven 3.3.0 or higher
