@@ -16,7 +16,7 @@ def getVersion() {
 timestamps {
 	node("slave") {
 		dir("build") {
-			git url: 'https://github.com/promregator/promregator.git'
+			git url: 'https://github.com/promregator/promregator.git', branch: "rel-0.1"
 			
 			stage("Build") {
 				sh """#!/bin/bash -xe
