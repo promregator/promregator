@@ -33,6 +33,9 @@ For this purpose, we will use multiple Docker images, as this greatly relieves y
    ```
 
    Note that the exact text may deviate.
+   
+   Also note that, if you don't have a browser at hand, you simply may also just use `curl` or `wget` for that.
+
 
 6. Note down the values from
    ```bash
@@ -80,7 +83,7 @@ For this purpose, we will use multiple Docker images, as this greatly relieves y
    
    Again note, that you have to replace `<yourCFPassword>` with the password which you had used for logging on to the Cloud Foundry platform (the password needs to fit to `<yourCFUsername>`).
 
-4. Verify that your setup is okay by opening the url `http://localhost:56710` in your browser. Again, you should see a similar text file as before.
+4. Verify that your setup is okay by opening the url `http://localhost:56710` in your browser (`curl` or `wget` is also okay, too). Again, you should see a similar text file as before.
 
 ### Hint
 If you made a mistake with setting up the container, you might get a broken container, which may cause troubles on getting rid of again.
