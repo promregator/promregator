@@ -43,26 +43,31 @@ For further details on the architecture of Promregator, please look at the [arch
 
 ## Prerequisites
 
-(Compiling and) Running Promregator requires:
+Running Promregator requires:
 * JDK8 or higher
+
+Compiling Promregator additionally requires:
 * Maven 3.3.0 or higher
 
 Further dependencies required are automatically loaded when building the software. An internet connection to [Maven Central](https://search.maven.org/) is necessary for that.
 
 ## Installation
 
-Sorry, but there is currently no released binary package available yet, as this project is still in alpha phase.
-Howevery, you may create your own package by downloading the source code, unpacking it into a local folder and calling
+Promregator has been [released first](https://github.com/promregator/promregator/releases/tag/v0.1.0) on 2018-03-18. It currently provides two binary-based deliveries:
+
+* You may download versions of the released jar file at [https://github.com/promregator/promregator/releases](https://github.com/promregator/promregator/releases).
+* You may use the prepared Docker container which is available at [https://hub.docker.com/r/promregator/promregator/](https://hub.docker.com/r/promregator/promregator/).
+
+Furthermore, you may create your own package by downloading the source code, unpacking it into a local folder and calling
 
 ```bash
 mvn clean package
 ```
 
-The runnable artifact will be available at `target/promregator-0.0.1-SNAPSHOT.jar`. It is a self-contained (e.g. including all library dependencies) JAR file, 
-which can be copied around and executed at an arbitrary folder by calling
+The runnable artifact will be available at `target/promregator-*-SNAPSHOT.jar`. It is a self-contained (e.g. including all library dependencies) JAR file, which can be copied around and executed at an arbitrary folder by calling
 
 ```bash
-java -jar promregator-0.0.1-SNAPSHOT.jar
+java -jar promregator-x.y.z-SNAPSHOT.jar
 ```
 
 ## Configuration (of Promregator)
