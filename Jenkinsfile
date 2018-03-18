@@ -72,7 +72,9 @@ timestamps {
 							
 							sh """
 							echo "$DOCKER_PASSWORD" | docker login -u promregator --password-stdin 
+							"""
 							
+							sh """
 							docker push ${imageName}
 							"""
 						}
