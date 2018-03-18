@@ -7,7 +7,7 @@ For this purpose, we will use multiple Docker images, as this greatly relieves y
 
 ## Setup metrics-generating Cloud Foundry application
 
-1. Make sure that you have access to a Cloud Foundry Platform. If you don't have one, yet, then you may get a free account at various providers, such as [IBM Bluemix](https://www.ibm.com/cloud-computing/bluemix).
+1. Make sure that you have access to a Cloud Foundry Platform. If you don't have one, yet, then you may get a trial account at various providers, such as [IBM Bluemix](https://www.ibm.com/cloud-computing/bluemix).
 2. Download `TestMetricsApplication.jar` from https://github.com/promregator/promregator/releases/tag/v0.1.0 to your local machine.
 3. Deploy this app onto the platform, for example with
 
@@ -42,7 +42,7 @@ For this purpose, we will use multiple Docker images, as this greatly relieves y
    $ cf target
    ```
 
-   Especially the value of `api endpoint`, `org:` and `space:` will be important in a minute.
+   Especially the value of `api endpoint:`, `org:` and `space:` will become important in a minute.
 
 ## Setup Promregator
 
@@ -66,8 +66,8 @@ For this purpose, we will use multiple Docker images, as this greatly relieves y
    
    * `<hereGoesYourOrg>` is the value printed after `org:` from above.
    * `<hereGoesYourSpace>` is the value printed after `space:` from above.
-   * `<hereGoesTheAPIEndpointHostOnly!>` is the host and domain name part of `api endpoint` from above, leaving off `https:/`. So, if `api endpoint` reads `https://api.eu-gb.bluemix.net`, then you enter `api.eu-gb.bluemix.net` here.
-   * `<yourCFUsername>` is the username which you used for logging on to the platform before.
+   * `<hereGoesTheAPIEndpointHostOnly!>` is the host and domain name part of `api endpoint:` from above, leaving off `https://`. So, if `api endpoint:` reads `https://api.eu-gb.bluemix.net`, then you should enter `api.eu-gb.bluemix.net` here.
+   * `<yourCFUsername>` is the username, which you used for logging on to the platform before.
 
 2. Retrieve the Docker image of promregator by calling
    ```bash
@@ -81,9 +81,9 @@ For this purpose, we will use multiple Docker images, as this greatly relieves y
      -p 127.0.0.1:56710:8080 promregator/promregator:0.1.0
    ```
    
-   Again note, that you have to replace `<yourCFPassword>` with the password which you had used for logging on to the Cloud Foundry platform (the password needs to fit to `<yourCFUsername>`).
+   Again note, that you have to replace `<yourCFPassword>`, with the password which you had used for logging on to the Cloud Foundry platform (the password needs to fit to `<yourCFUsername>`).
 
-4. Verify that your setup is okay by opening the url `http://localhost:56710` in your browser (`curl` or `wget` is also okay, too). Again, you should see a similar text file as before.
+4. Verify that your setup is okay by opening the url `http://localhost:56710` in your browser (`curl` or `wget` is okay again, too). Again, you should see a similar text file as before.
 
 ### Hint
 If you made a mistake with setting up the container, you might get a broken container, which may cause troubles on getting rid of again.
@@ -120,7 +120,7 @@ then comes to your rescue.
      prom/prometheus:latest
    ```
 
-4. Start your browser at `http://localhost:9090`.
+4. Start your browser at `http://localhost:9090` (here you really should have a proper browser).
 
 5. Wait a couple of seconds and type `test_random_value` (that's one of the metrics the test application emits). Click on "Execute" and switch to the graph.
 
