@@ -22,6 +22,7 @@ import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcherMetrics;
 import org.cloudfoundry.promregator.fetcher.CFMetricsFetcher;
+import org.cloudfoundry.promregator.fetcher.MetricsFetcher;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.CFMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.GenericMetricFamilySamplesPrefixRewriter;
@@ -119,10 +120,10 @@ public class MetricsEndpoint {
 		
 		this.up.clear();
 		
-		List<CFMetricsFetcher> callablesPrep = this.createMetricFetchers();
+		List<MetricsFetcher> callablesPrep = this.createMetricFetchers();
 		
 		LinkedList<Future<HashMap<String,MetricFamilySamples>>> futures = new LinkedList<>();
-		for (CFMetricsFetcher mf : callablesPrep) {
+		for (MetricsFetcher mf : callablesPrep) {
 			Future<HashMap<String, MetricFamilySamples>> future = this.metricsFetcherPool.submit(mf);
 			
 			futures.add(future);
@@ -189,11 +190,11 @@ public class MetricsEndpoint {
 		return writer.toString();
 	}
 
-	protected List<CFMetricsFetcher> createMetricFetchers() {
+	protected List<MetricsFetcher> createMetricFetchers() {
 		
 		List<Instance> instanceList = this.reactiveAppInstanceScanner.determineInstancesFromTargets(this.promregatorConfiguration.getTargets());
 		
-		List<CFMetricsFetcher> callablesPrep = new LinkedList<CFMetricsFetcher>();
+		List<MetricsFetcher> callablesPrep = new LinkedList<>();
 		for (Instance instance : instanceList) {
 			log.info(String.format("Instance %s", instance.instanceId));
 			String orgName = instance.target.getOrgName();
@@ -210,7 +211,7 @@ public class MetricsEndpoint {
 			AbstractMetricFamilySamplesEnricher mfse = new CFMetricFamilySamplesEnricher(orgName, spaceName, appName, instance.instanceId);
 			MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(mfse, requestLatency, up, failedRequests);
 
-			CFMetricsFetcher mf = null;
+			MetricsFetcher mf = null;
 			
 			if (this.proxyHost != null && this.proxyPort != 0) {
 				mf = new CFMetricsFetcher(accessURL, instance.instanceId, this.ae, mfse, this.proxyHost, this.proxyPort, mfm);
