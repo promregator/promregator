@@ -135,19 +135,7 @@ public class MetricsEndpoint {
 		// add also our own request-specific metrics
 		mmfs.merge(this.gmfspr.determineEnumerationOfMetricFamilySamples(this.requestRegistry));
 		
-		return serializeMetrics(mmfs);
-	}
-
-	private String serializeMetrics(MergableMetricFamilySamples mmfs) {
-		Enumeration<MetricFamilySamples> resultEMFS = mmfs.getEnumerationMetricFamilySamples();
-		Writer writer = new StringWriter();
-		try {
-			TextFormat.write004(writer, resultEMFS);
-		} catch (IOException e) {
-			log.error("IO Exception on StringWriter; uuuhhh...", e);
-		}
-		
-		return writer.toString();
+		return mmfs.toType004String();
 	}
 
 	private MergableMetricFamilySamples waitForMetricsFetchers(LinkedList<Future<HashMap<String, MetricFamilySamples>>> futures) {

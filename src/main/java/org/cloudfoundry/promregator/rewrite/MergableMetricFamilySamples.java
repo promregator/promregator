@@ -1,5 +1,8 @@
 package org.cloudfoundry.promregator.rewrite;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -8,6 +11,7 @@ import java.util.Map.Entry;
 import org.apache.log4j.Logger;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
+import io.prometheus.client.exporter.common.TextFormat;
 
 public class MergableMetricFamilySamples {
 	
@@ -52,6 +56,18 @@ public class MergableMetricFamilySamples {
 	public HashMap<String,MetricFamilySamples> getEnumerationMetricFamilySamplesInHashMap() {
 		return new HashMap<>(this.map);
 		// NB: This is not a deep clone, but only a shallow one!
+	}
+	
+	public String toType004String() {
+		Enumeration<MetricFamilySamples> resultEMFS = this.getEnumerationMetricFamilySamples();
+		Writer writer = new StringWriter();
+		try {
+			TextFormat.write004(writer, resultEMFS);
+		} catch (IOException e) {
+			log.error("IO Exception on StringWriter; uuuhhh...", e);
+		}
+		
+		return writer.toString();
 	}
 	
 }
