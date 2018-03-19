@@ -1,11 +1,7 @@
 package org.cloudfoundry.promregator.endpoint;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -20,13 +16,12 @@ import javax.annotation.PostConstruct;
 import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
-import org.cloudfoundry.promregator.fetcher.MetricsFetcherMetrics;
 import org.cloudfoundry.promregator.fetcher.CFMetricsFetcher;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcher;
+import org.cloudfoundry.promregator.fetcher.MetricsFetcherMetrics;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.CFMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.GenericMetricFamilySamplesPrefixRewriter;
-import org.cloudfoundry.promregator.rewrite.MFSUtils;
 import org.cloudfoundry.promregator.rewrite.MergableMetricFamilySamples;
 import org.cloudfoundry.promregator.scanner.ReactiveAppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.ReactiveAppInstanceScanner.Instance;
@@ -119,7 +114,9 @@ public class MetricsEndpoint {
 		
 		this.up.clear();
 		
-		List<MetricsFetcher> callablesPrep = this.createMetricsFetchers();
+		List<Instance> instanceList = this.reactiveAppInstanceScanner.determineInstancesFromTargets(this.promregatorConfiguration.getTargets());
+		
+		List<MetricsFetcher> callablesPrep = this.createMetricsFetchers(instanceList);
 		
 		LinkedList<Future<HashMap<String, MetricFamilySamples>>> futures = this.startMetricsFetchers(callablesPrep);
 		
@@ -181,9 +178,7 @@ public class MetricsEndpoint {
 		return futures;
 	}
 
-	protected List<MetricsFetcher> createMetricsFetchers() {
-		
-		List<Instance> instanceList = this.reactiveAppInstanceScanner.determineInstancesFromTargets(this.promregatorConfiguration.getTargets());
+	protected List<MetricsFetcher> createMetricsFetchers(List<Instance> instanceList) {
 		
 		List<MetricsFetcher> callablesList = new LinkedList<>();
 		for (Instance instance : instanceList) {
