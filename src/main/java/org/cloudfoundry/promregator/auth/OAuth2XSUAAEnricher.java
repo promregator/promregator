@@ -2,7 +2,6 @@ package org.cloudfoundry.promregator.auth;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
 import java.net.URLEncoder;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -45,7 +44,7 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
 	public void enrichWithAuthentication(HttpGet httpget) {
 		RequestConfig config = httpget.getConfig();
 		
-		String jwt = getBufferedJWT(httpget.getURI(), config);
+		String jwt = getBufferedJWT(config);
 		if (jwt == null) {
 			log.error("Unable to enrich request with JWT");
 			return;
@@ -57,14 +56,7 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
 	private String bufferedJwt = null;
 	private Instant validUntil = null;
 	
-	private synchronized String getBufferedJWT(URI uri, RequestConfig config) {
-		/* 
-		 * NB: Buffering does not happen based on the uri; so far the 
-		 * generation of the JWT does not depend on the targets, but only
-		 * on the configuration of this AuthenticationEnricher. That is also
-		 * why a single String-only field is sufficient for caching.
-		 */
-		
+	private synchronized String getBufferedJWT(RequestConfig config) {
 		if (this.bufferedJwt == null) {
 			// no JWT available
 			this.bufferedJwt = getJWT(config);
