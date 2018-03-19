@@ -9,6 +9,10 @@ import io.prometheus.client.Counter;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.Histogram;
 
+/**
+ * A class storing information about metrics, which are being used to measure
+ * the behaviour of MetricsFetchers
+ */
 public class MetricsFetcherMetrics {
 	/* references to metrics which we create and expose by our own */
 	private Histogram latencyRequest;
