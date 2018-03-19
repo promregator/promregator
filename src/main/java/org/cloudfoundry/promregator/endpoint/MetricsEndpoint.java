@@ -130,18 +130,12 @@ public class MetricsEndpoint {
 		this.scrape_duration.set(duration.toMillis() / 1000.0);
 		
 		// also add our own (global) metrics
-		mmfs.merge(this.getEnrichedMFSFromCollectorRegistry(this.collectorRegistry));
+		mmfs.merge(this.gmfspr.determineEnumerationOfMetricFamilySamples(this.collectorRegistry));
 		
 		// add also our own request-specific metrics
-		mmfs.merge(this.getEnrichedMFSFromCollectorRegistry(this.requestRegistry));
+		mmfs.merge(this.gmfspr.determineEnumerationOfMetricFamilySamples(this.requestRegistry));
 		
 		return serializeMetrics(mmfs);
-	}
-	
-	private HashMap<String, MetricFamilySamples> getEnrichedMFSFromCollectorRegistry(CollectorRegistry cr) {
-		Enumeration<MetricFamilySamples> rawMFS = cr.metricFamilySamples();
-		HashMap<String, MetricFamilySamples> enrichedMFS = this.gmfspr.determineEnumerationOfMetricFamilySamples(MFSUtils.convertToEMFSToHashMap(rawMFS));
-		return enrichedMFS;
 	}
 
 	private String serializeMetrics(MergableMetricFamilySamples mmfs) {

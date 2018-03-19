@@ -1,5 +1,6 @@
 package org.cloudfoundry.promregator.rewrite;
 
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -7,6 +8,7 @@ import java.util.Map.Entry;
 
 import io.prometheus.client.Collector;
 import io.prometheus.client.Collector.MetricFamilySamples;
+import io.prometheus.client.CollectorRegistry;
 
 public class GenericMetricFamilySamplesPrefixRewriter {
 
@@ -20,6 +22,12 @@ public class GenericMetricFamilySamplesPrefixRewriter {
 		}
 	}
 
+	public HashMap<String, Collector.MetricFamilySamples> determineEnumerationOfMetricFamilySamples(CollectorRegistry cr) {
+		Enumeration<MetricFamilySamples> rawMFS = cr.metricFamilySamples();
+		HashMap<String, MetricFamilySamples> enrichedMFS = this.determineEnumerationOfMetricFamilySamples(MFSUtils.convertToEMFSToHashMap(rawMFS));
+		return enrichedMFS;
+	}
+	
 	public HashMap<String, Collector.MetricFamilySamples> determineEnumerationOfMetricFamilySamples(HashMap<String, Collector.MetricFamilySamples> emfs) {
 		
 		if (emfs == null) {
