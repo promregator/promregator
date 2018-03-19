@@ -20,7 +20,7 @@ import javax.annotation.PostConstruct;
 import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
-import org.cloudfoundry.promregator.fetcher.MetricFetcherMetrics;
+import org.cloudfoundry.promregator.fetcher.MetricsFetcherMetrics;
 import org.cloudfoundry.promregator.fetcher.CFMetricsFetcher;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.CFMetricFamilySamplesEnricher;
@@ -208,7 +208,7 @@ public class MetricsEndpoint {
 			}
 			
 			AbstractMetricFamilySamplesEnricher mfse = new CFMetricFamilySamplesEnricher(orgName, spaceName, appName, instance.instanceId);
-			MetricFetcherMetrics mfm = new MetricFetcherMetrics(mfse, requestLatency, up, failedRequests);
+			MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(mfse, requestLatency, up, failedRequests);
 
 			CFMetricsFetcher mf = null;
 			

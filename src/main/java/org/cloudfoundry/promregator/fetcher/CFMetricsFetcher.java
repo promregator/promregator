@@ -43,10 +43,10 @@ public class CFMetricsFetcher implements MetricsFetcher {
 
 	final static CloseableHttpClient httpclient = HttpClients.createDefault();
 
-	private MetricFetcherMetrics mfm;
+	private MetricsFetcherMetrics mfm;
 
 	public CFMetricsFetcher(String endpointUrl, String instanceId, AuthenticationEnricher ae, AbstractMetricFamilySamplesEnricher mfse, 
-			String proxyHost, int proxyPort, MetricFetcherMetrics mfm) {
+			String proxyHost, int proxyPort, MetricsFetcherMetrics mfm) {
 		this.endpointUrl = endpointUrl;
 		this.instanceId = instanceId;
 		this.ae = ae;
@@ -71,7 +71,7 @@ public class CFMetricsFetcher implements MetricsFetcher {
 	 * May be <code>null</code> in which case no enriching takes place.
 	 */
 	public CFMetricsFetcher(String endpointUrl, String instanceId, AuthenticationEnricher ae, AbstractMetricFamilySamplesEnricher mfse, 
-			MetricFetcherMetrics mfm) {
+			MetricsFetcherMetrics mfm) {
 		this(endpointUrl, instanceId, ae, mfse, null, 0, mfm);
 	}
 

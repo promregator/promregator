@@ -9,7 +9,7 @@ import io.prometheus.client.Counter;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.Histogram;
 
-public class MetricFetcherMetrics {
+public class MetricsFetcherMetrics {
 	/* references to metrics which we create and expose by our own */
 	private Histogram latencyRequest;
 	private Gauge up;
@@ -18,7 +18,7 @@ public class MetricFetcherMetrics {
 
 	private String[] ownTelemetryLabels;
 	
-	public MetricFetcherMetrics(AbstractMetricFamilySamplesEnricher mfse, 
+	public MetricsFetcherMetrics(AbstractMetricFamilySamplesEnricher mfse, 
 			Histogram latencyRequest, Gauge up, Counter failedRequests) {
 		super();
 		
