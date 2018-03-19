@@ -49,7 +49,7 @@ public abstract class AbstractMetricFamilySamplesEnricher {
 	
 	protected abstract List<String> getEnrichedLabelNames(List<String> original);
 	
-	protected abstract List<String> getEnrichedLabelValues(List<String> original);
+	public abstract List<String> getEnrichedLabelValues(List<String> original);
 
 
 

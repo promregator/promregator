@@ -40,7 +40,7 @@ public class CFMetricFamilySamplesEnricher extends AbstractMetricFamilySamplesEn
 	}
 	
 	@Override
-	protected List<String> getEnrichedLabelValues(List<String> original) {
+	public List<String> getEnrichedLabelValues(List<String> original) {
 		LinkedList<String> clone = new LinkedList<String>(original);
 		
 		clone.add(this.orgName);
@@ -52,7 +52,7 @@ public class CFMetricFamilySamplesEnricher extends AbstractMetricFamilySamplesEn
 		return clone;
 	}
 	
-	public static String getInstanceFromInstanceId(String instanceId) {
+	private static String getInstanceFromInstanceId(String instanceId) {
 		if (instanceId == null)
 			return null;
 		

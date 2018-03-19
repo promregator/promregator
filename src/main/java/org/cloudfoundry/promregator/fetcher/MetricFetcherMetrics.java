@@ -1,20 +1,30 @@
 package org.cloudfoundry.promregator.fetcher;
 
+import java.util.LinkedList;
+import java.util.List;
+
+import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
+
 import io.prometheus.client.Counter;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.Histogram;
 
 public class MetricFetcherMetrics {
 	/* references to metrics which we create and expose by our own */
-	private String[] ownTelemetryLabels;
 	private Histogram latencyRequest;
 	private Gauge up;
 	private Counter failedRequests;
+
+
+	private String[] ownTelemetryLabels;
 	
-	public MetricFetcherMetrics(String[] ownTelemetryLabels, Histogram latencyRequest, Gauge up,
-			Counter failedRequests) {
+	public MetricFetcherMetrics(AbstractMetricFamilySamplesEnricher mfse, 
+			Histogram latencyRequest, Gauge up, Counter failedRequests) {
 		super();
-		this.ownTelemetryLabels = ownTelemetryLabels;
+		
+		List<String> labelValues = mfse.getEnrichedLabelValues(new LinkedList<>());
+		this.ownTelemetryLabels = labelValues.toArray(new String[0]);
+
 		this.latencyRequest = latencyRequest;
 		this.up = up;
 		this.failedRequests = failedRequests;

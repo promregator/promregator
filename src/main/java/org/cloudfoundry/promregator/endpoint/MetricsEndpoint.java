@@ -208,8 +208,7 @@ public class MetricsEndpoint {
 			}
 			
 			AbstractMetricFamilySamplesEnricher mfse = new CFMetricFamilySamplesEnricher(orgName, spaceName, appName, instance.instanceId);
-			String[] labelNamesForOwnMetrics = { orgName, spaceName, appName, instance.instanceId, CFMetricFamilySamplesEnricher.getInstanceFromInstanceId(instance.instanceId) };
-			MetricFetcherMetrics mfm = new MetricFetcherMetrics(labelNamesForOwnMetrics, requestLatency, up, failedRequests);
+			MetricFetcherMetrics mfm = new MetricFetcherMetrics(mfse, requestLatency, up, failedRequests);
 
 			CFMetricsFetcher mf = null;
 			
