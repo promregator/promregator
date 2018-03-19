@@ -95,7 +95,6 @@ public class MetricsEndpoint {
 	
 	
 	/* own metrics --- specific to this (scraping) request */
-	
 	private CollectorRegistry requestRegistry;
 	
 	// see also https://prometheus.io/docs/instrumenting/writing_exporters/#metrics-about-the-scrape-itself
@@ -120,15 +119,44 @@ public class MetricsEndpoint {
 		
 		this.up.clear();
 		
-		List<MetricsFetcher> callablesPrep = this.createMetricFetchers();
+		List<MetricsFetcher> callablesPrep = this.createMetricsFetchers();
 		
-		LinkedList<Future<HashMap<String,MetricFamilySamples>>> futures = new LinkedList<>();
-		for (MetricsFetcher mf : callablesPrep) {
-			Future<HashMap<String, MetricFamilySamples>> future = this.metricsFetcherPool.submit(mf);
-			
-			futures.add(future);
+		LinkedList<Future<HashMap<String, MetricFamilySamples>>> futures = this.startMetricsFetchers(callablesPrep);
+		
+		MergableMetricFamilySamples mmfs = waitForMetricsFetchers(futures);
+		
+		Instant stop = Instant.now();
+		Duration duration = Duration.between(start, stop);
+		this.scrape_duration.set(duration.toMillis() / 1000.0);
+		
+		// also add our own (global) metrics
+		mmfs.merge(this.getEnrichedMFSFromCollectorRegistry(this.collectorRegistry));
+		
+		// add also our own request-specific metrics
+		mmfs.merge(this.getEnrichedMFSFromCollectorRegistry(this.requestRegistry));
+		
+		return serializeMetrics(mmfs);
+	}
+	
+	private HashMap<String, MetricFamilySamples> getEnrichedMFSFromCollectorRegistry(CollectorRegistry cr) {
+		Enumeration<MetricFamilySamples> rawMFS = cr.metricFamilySamples();
+		HashMap<String, MetricFamilySamples> enrichedMFS = this.gmfspr.determineEnumerationOfMetricFamilySamples(MFSUtils.convertToEMFSToHashMap(rawMFS));
+		return enrichedMFS;
+	}
+
+	private String serializeMetrics(MergableMetricFamilySamples mmfs) {
+		Enumeration<MetricFamilySamples> resultEMFS = mmfs.getEnumerationMetricFamilySamples();
+		Writer writer = new StringWriter();
+		try {
+			TextFormat.write004(writer, resultEMFS);
+		} catch (IOException e) {
+			log.error("IO Exception on StringWriter; uuuhhh...", e);
 		}
 		
+		return writer.toString();
+	}
+
+	private MergableMetricFamilySamples waitForMetricsFetchers(LinkedList<Future<HashMap<String, MetricFamilySamples>>> futures) {
 		long starttime = System.currentTimeMillis();
 		
 		MergableMetricFamilySamples mmfs = new MergableMetricFamilySamples();
@@ -157,44 +185,25 @@ public class MetricsEndpoint {
 			}
 			
 		}
-		Instant stop = Instant.now();
-		Duration duration = Duration.between(start, stop);
-		this.scrape_duration.set(duration.toMillis() / 1000.0);
-		// NB: We have to set this here now, otherwise it would not be added to the collectorRegistry properly.
-		/* 
-		 * NB: This is a little bit off w.r.t parallel requests: If two requests came
-		 * in and reached this pint exactly at the same point time, then the two values
-		 * could be mixed up. 
-		 * But: in practice this most likely would not have any major influence
-		 */
-		
-		// also add our own metrics
-		Enumeration<MetricFamilySamples> rawMFS = this.collectorRegistry.metricFamilySamples();
-		HashMap<String, MetricFamilySamples> enrichedMFS = this.gmfspr.determineEnumerationOfMetricFamilySamples(MFSUtils.convertToEMFSToHashMap(rawMFS));
-		mmfs.merge(enrichedMFS);
-		
-		// add also our own request specific metrics
-		rawMFS = this.requestRegistry.metricFamilySamples();
-		enrichedMFS = this.gmfspr.determineEnumerationOfMetricFamilySamples(MFSUtils.convertToEMFSToHashMap(rawMFS));
-		mmfs.merge(enrichedMFS);
-		
-		// serialize
-		Enumeration<MetricFamilySamples> resultEMFS = mmfs.getEnumerationMetricFamilySamples();
-		Writer writer = new StringWriter();
-		try {
-			TextFormat.write004(writer, resultEMFS);
-		} catch (IOException e) {
-			log.error("IO Exception on StringWriter; uuuhhh...", e);
-		}
-		
-		return writer.toString();
+		return mmfs;
 	}
 
-	protected List<MetricsFetcher> createMetricFetchers() {
+	private LinkedList<Future<HashMap<String, MetricFamilySamples>>> startMetricsFetchers(List<MetricsFetcher> callablesPrep) {
+		LinkedList<Future<HashMap<String,MetricFamilySamples>>> futures = new LinkedList<>();
+		
+		for (MetricsFetcher mf : callablesPrep) {
+			Future<HashMap<String, MetricFamilySamples>> future = this.metricsFetcherPool.submit(mf);
+			
+			futures.add(future);
+		}
+		return futures;
+	}
+
+	protected List<MetricsFetcher> createMetricsFetchers() {
 		
 		List<Instance> instanceList = this.reactiveAppInstanceScanner.determineInstancesFromTargets(this.promregatorConfiguration.getTargets());
 		
-		List<MetricsFetcher> callablesPrep = new LinkedList<>();
+		List<MetricsFetcher> callablesList = new LinkedList<>();
 		for (Instance instance : instanceList) {
 			log.info(String.format("Instance %s", instance.instanceId));
 			String orgName = instance.target.getOrgName();
@@ -218,9 +227,9 @@ public class MetricsEndpoint {
 			} else {
 				mf = new CFMetricsFetcher(accessURL, instance.instanceId, this.ae, mfse, mfm);
 			}
-			callablesPrep.add(mf);
+			callablesList.add(mf);
 		}
 		
-		return callablesPrep;
+		return callablesList;
 	}
 }
