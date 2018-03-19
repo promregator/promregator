@@ -17,9 +17,6 @@ import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
-import io.prometheus.client.Counter;
-import io.prometheus.client.Gauge;
-import io.prometheus.client.Histogram;
 import io.prometheus.client.Histogram.Timer;
 
 /**
@@ -47,22 +44,15 @@ public class MetricsFetcher implements Callable<HashMap<String, MetricFamilySamp
 
 	final static CloseableHttpClient httpclient = HttpClients.createDefault();
 
-	/* references to metrics which we create and expose by our own */
-	private String[] ownTelemetryLabels;
-	private Histogram latencyRequest;
-	private Gauge up;
-	private Counter failedRequests;
+	private MetricFetcherMetrics mfm;
 
 	public MetricsFetcher(String endpointUrl, String instanceId, AuthenticationEnricher ae, AbstractMetricFamilySamplesEnricher mfse, 
-			String proxyHost, int proxyPort, String[] ownTelemetryLabels, Histogram latencyRequest, Gauge up, Counter failedRequests) {
+			String proxyHost, int proxyPort, MetricFetcherMetrics mfm) {
 		this.endpointUrl = endpointUrl;
 		this.instanceId = instanceId;
 		this.ae = ae;
 		this.mfse = mfse;
-		this.ownTelemetryLabels = ownTelemetryLabels.clone();
-		this.latencyRequest = latencyRequest;
-		this.up = up;
-		this.failedRequests = failedRequests;
+		this.mfm = mfm;
 
 		if (proxyHost != null && proxyPort != 0) {
 			this.config = RequestConfig.custom().setProxy(new HttpHost(proxyHost, proxyPort, "http")).build();
@@ -82,8 +72,8 @@ public class MetricsFetcher implements Callable<HashMap<String, MetricFamilySamp
 	 * May be <code>null</code> in which case no enriching takes place.
 	 */
 	public MetricsFetcher(String endpointUrl, String instanceId, AuthenticationEnricher ae, AbstractMetricFamilySamplesEnricher mfse, 
-			String[] ownTelemetryLabels, Histogram latencyRequest, Gauge up, Counter failedRequests) {
-		this(endpointUrl, instanceId, ae, mfse, null, 0, ownTelemetryLabels, latencyRequest, up, failedRequests);
+			MetricFetcherMetrics mfm) {
+		this(endpointUrl, instanceId, ae, mfse, null, 0, mfm);
 	}
 
 	@Override
@@ -106,8 +96,8 @@ public class MetricsFetcher implements Callable<HashMap<String, MetricFamilySamp
 		boolean available = false;
 		try {
 			Timer timer = null;
-			if (this.latencyRequest != null) {
-				timer = this.latencyRequest.labels(this.ownTelemetryLabels).startTimer();
+			if (this.mfm.getLatencyRequest() != null) {
+				timer = this.mfm.getLatencyRequest().startTimer();
 			}
 			
 			response = httpclient.execute(httpget);
@@ -148,14 +138,14 @@ public class MetricsFetcher implements Callable<HashMap<String, MetricFamilySamp
 				}
 			}
 			
-			if (this.up != null) {
+			if (this.mfm.getUp() != null) {
 				if (available) {
-					this.up.labels(this.ownTelemetryLabels).set(1.0);
+					this.mfm.getUp().set(1.0);
 				} else {
-					if (this.failedRequests != null)
-						this.failedRequests.labels(this.ownTelemetryLabels).inc();
+					if (this.mfm.getFailedRequests() != null)
+						this.mfm.getFailedRequests().inc();
 					
-					this.up.labels(this.ownTelemetryLabels).set(0.0);
+					this.mfm.getUp().set(0.0);
 				}
 			}
 		}

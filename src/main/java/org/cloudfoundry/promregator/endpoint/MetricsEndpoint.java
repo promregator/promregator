@@ -20,6 +20,7 @@ import javax.annotation.PostConstruct;
 import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
+import org.cloudfoundry.promregator.fetcher.MetricFetcherMetrics;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcher;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.CFMetricFamilySamplesEnricher;
@@ -188,7 +189,7 @@ public class MetricsEndpoint {
 		return writer.toString();
 	}
 
-	private List<MetricsFetcher> createMetricFetchers() {
+	protected List<MetricsFetcher> createMetricFetchers() {
 		
 		List<Instance> instanceList = this.reactiveAppInstanceScanner.determineInstancesFromTargets(this.promregatorConfiguration.getTargets());
 		
@@ -208,12 +209,14 @@ public class MetricsEndpoint {
 			
 			AbstractMetricFamilySamplesEnricher mfse = new CFMetricFamilySamplesEnricher(orgName, spaceName, appName, instance.instanceId);
 			String[] labelNamesForOwnMetrics = { orgName, spaceName, appName, instance.instanceId, CFMetricFamilySamplesEnricher.getInstanceFromInstanceId(instance.instanceId) };
+			MetricFetcherMetrics mfm = new MetricFetcherMetrics(labelNamesForOwnMetrics, requestLatency, up, failedRequests);
 
 			MetricsFetcher mf = null;
+			
 			if (this.proxyHost != null && this.proxyPort != 0) {
-				mf = new MetricsFetcher(accessURL, instance.instanceId, this.ae, mfse, this.proxyHost, this.proxyPort, labelNamesForOwnMetrics, requestLatency, this.up, failedRequests);
+				mf = new MetricsFetcher(accessURL, instance.instanceId, this.ae, mfse, this.proxyHost, this.proxyPort, mfm);
 			} else {
-				mf = new MetricsFetcher(accessURL, instance.instanceId, this.ae, mfse, labelNamesForOwnMetrics, requestLatency, this.up, failedRequests);
+				mf = new MetricsFetcher(accessURL, instance.instanceId, this.ae, mfse, mfm);
 			}
 			callablesPrep.add(mf);
 		}
