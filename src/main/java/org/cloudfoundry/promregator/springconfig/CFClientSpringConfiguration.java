@@ -26,7 +26,7 @@ public class CFClientSpringConfiguration {
 	}
 
 	@Bean
-	public PasswordGrantTokenProvider tokenProvider(@Value("${cf.username}") String username, @Value("${CF_PASSWORD}") String password) {
+	public PasswordGrantTokenProvider tokenProvider(@Value("${cf.username}") String username, @Value("${cf.password}") String password) {
 		return PasswordGrantTokenProvider.builder().password(password).username(username).build();
 	}
 
