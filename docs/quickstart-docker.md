@@ -53,7 +53,7 @@ For this purpose, we will use multiple Docker images, as this greatly relieves y
      authenticator:
        type: none
    
-      targets:
+     targets:
        - orgName: <hereGoesYourOrg>
          spaceName: <hereGoesYourSpace>
          applicationName: testapp
