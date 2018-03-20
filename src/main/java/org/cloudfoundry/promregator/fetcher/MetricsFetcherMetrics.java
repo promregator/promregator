@@ -35,7 +35,7 @@ public class MetricsFetcherMetrics {
 	}
 
 	public String[] getOwnTelemetryLabels() {
-		return ownTelemetryLabels;
+		return ownTelemetryLabels.clone();
 	}
 
 	public Histogram.Child getLatencyRequest() {
