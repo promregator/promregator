@@ -56,7 +56,7 @@ public class ReactiveAppInstanceScanner {
 	@Autowired
 	private InternalMetrics internalMetrics;
 
-	public static class Instance implements Cloneable {
+	private static class InternalInstance implements Cloneable {
 		
 		public Target target;
 		
@@ -70,7 +70,7 @@ public class ReactiveAppInstanceScanner {
 
 		@Override
 		protected Object clone() throws CloneNotSupportedException {
-			Instance other = new Instance();
+			InternalInstance other = new InternalInstance();
 			other.target = this.target;
 			other.orgId = this.orgId;
 			other.spaceId = this.spaceId;
@@ -80,6 +80,10 @@ public class ReactiveAppInstanceScanner {
 			
 			other.accessUrl = accessUrl;
 			return other;
+		}
+		
+		public Instance toInstance() {
+			return new Instance(this.target, this.instanceId, this.accessUrl);
 		}
 		
 	}
@@ -109,8 +113,8 @@ public class ReactiveAppInstanceScanner {
 		
 		Flux<Target> initialFlux = Flux.fromIterable(targets);
 		
-		Flux<Instance> initialInstancesOnlyApplication = initialFlux.map( target -> {
-			Instance i = new Instance();
+		Flux<InternalInstance> initialInstancesOnlyApplication = initialFlux.map( target -> {
+			InternalInstance i = new InternalInstance();
 			
 			i.target = target;
 			
@@ -121,7 +125,7 @@ public class ReactiveAppInstanceScanner {
 			return i;
 		});
 		
-		Flux<Instance> instancesOfApplications = this.getInstances(initialInstancesOnlyApplication);
+		Flux<InternalInstance> instancesOfApplications = this.getInstances(initialInstancesOnlyApplication);
 		
 		instancesOfApplications.flatMap(instance -> {
 			Mono<String> applUrlMono = this.getApplicationUrl(instance.applicationId, instance.target.getProtocol());
@@ -140,16 +144,16 @@ public class ReactiveAppInstanceScanner {
 				return applUrl + path;
 			});
 			
-			Mono<Instance> newInstance = Mono.zip(Mono.just(instance), accessUrlMono)
+			Mono<InternalInstance> newInstance = Mono.zip(Mono.just(instance), accessUrlMono)
 			.map(tuple -> {
-				Instance i = tuple.getT1();
+				InternalInstance i = tuple.getT1();
 				i.accessUrl = tuple.getT2();
 				
 				return i;
 			});
 			
 			return newInstance;
-		}).toIterable().forEach(result::add);
+		}).map(internalInstance -> internalInstance.toInstance()).toIterable().forEach(result::add);
 		
 		return result;
 	}
@@ -417,8 +421,8 @@ public class ReactiveAppInstanceScanner {
 		}
 	}
 	
-	private Flux<Instance> getInstances(Flux<Instance> instancesFlux) {
-		Flux<Instance> allInstances = instancesFlux.flatMap(instance -> {
+	private Flux<InternalInstance> getInstances(Flux<InternalInstance> instancesFlux) {
+		Flux<InternalInstance> allInstances = instancesFlux.flatMap(instance -> {
 			ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, "instances");
 			
 			Mono<ListProcessesResponse> processesResponse = Mono.zip(instance.orgId, instance.spaceId, instance.applicationId)
@@ -436,9 +440,9 @@ public class ReactiveAppInstanceScanner {
 				return this.cloudFoundryClient.processes().list(request).log("List Processes");
 			});
 			
-			Flux<Instance> fluxInstances = Mono.zip(Mono.just(instance), processesResponse, instance.applicationId)
+			Flux<InternalInstance> fluxInstances = Mono.zip(Mono.just(instance), processesResponse, instance.applicationId)
 			.flatMapMany(tuple -> {
-				Instance inst = tuple.getT1();
+				InternalInstance inst = tuple.getT1();
 				ListProcessesResponse response = tuple.getT2();
 				String appId = tuple.getT3();
 				
@@ -448,11 +452,11 @@ public class ReactiveAppInstanceScanner {
 				
 				int instances = resourcesList.get(0).getInstances();
 				
-				List<Instance> resultInstances = new LinkedList<>();
+				List<InternalInstance> resultInstances = new LinkedList<>();
 				for (int i = 0; i<instances; i++) {
-					Instance clone = null;
+					InternalInstance clone = null;
 					try {
-						clone = (Instance) inst.clone();
+						clone = (InternalInstance) inst.clone();
 					} catch (Exception e) {
 						// may not happen
 						return Mono.empty();

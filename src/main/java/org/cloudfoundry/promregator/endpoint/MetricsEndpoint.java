@@ -16,6 +16,7 @@ import javax.annotation.PostConstruct;
 import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
+import org.cloudfoundry.promregator.config.Target;
 import org.cloudfoundry.promregator.fetcher.CFMetricsFetcher;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcher;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcherMetrics;
@@ -23,8 +24,8 @@ import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.CFMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.GenericMetricFamilySamplesPrefixRewriter;
 import org.cloudfoundry.promregator.rewrite.MergableMetricFamilySamples;
+import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.scanner.ReactiveAppInstanceScanner;
-import org.cloudfoundry.promregator.scanner.ReactiveAppInstanceScanner.Instance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
@@ -182,27 +183,29 @@ public class MetricsEndpoint {
 		
 		List<MetricsFetcher> callablesList = new LinkedList<>();
 		for (Instance instance : instanceList) {
-			log.info(String.format("Instance %s", instance.instanceId));
-			String orgName = instance.target.getOrgName();
-			String spaceName = instance.target.getSpaceName();
-			String appName = instance.target.getApplicationName();
+			log.info(String.format("Instance %s", instance.getInstanceId()));
 			
-			String accessURL = instance.accessUrl;
+			Target target = instance.getTarget();
+			String orgName = target.getOrgName();
+			String spaceName = target.getSpaceName();
+			String appName = target.getApplicationName();
+			
+			String accessURL = instance.getAccessUrl();
 			
 			if (accessURL == null) {
 				log.warn(String.format("Unable to retrieve hostname for %s/%s/%s; skipping", orgName, spaceName, appName));
 				continue;
 			}
 			
-			AbstractMetricFamilySamplesEnricher mfse = new CFMetricFamilySamplesEnricher(orgName, spaceName, appName, instance.instanceId);
+			AbstractMetricFamilySamplesEnricher mfse = new CFMetricFamilySamplesEnricher(orgName, spaceName, appName, instance.getInstanceId());
 			MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(mfse, requestLatency, up, failedRequests);
 
 			MetricsFetcher mf = null;
 			
 			if (this.proxyHost != null && this.proxyPort != 0) {
-				mf = new CFMetricsFetcher(accessURL, instance.instanceId, this.ae, mfse, this.proxyHost, this.proxyPort, mfm);
+				mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), this.ae, mfse, this.proxyHost, this.proxyPort, mfm);
 			} else {
-				mf = new CFMetricsFetcher(accessURL, instance.instanceId, this.ae, mfse, mfm);
+				mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), this.ae, mfse, mfm);
 			}
 			callablesList.add(mf);
 		}
