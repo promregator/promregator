@@ -10,6 +10,7 @@ import org.cloudfoundry.promregator.auth.NullEnricher;
 import org.cloudfoundry.promregator.auth.OAuth2XSUAAEnricher;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
+import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.ReactiveAppInstanceScanner;
 import org.cloudfoundry.promregator.springconfig.CFClientSpringConfiguration;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,7 +33,7 @@ public class PromregatorApplication {
 	}
 	
 	@Bean
-	public ReactiveAppInstanceScanner reactiveAppInstanceScanner() {
+	public AppInstanceScanner appInstanceScanner() {
 		return new ReactiveAppInstanceScanner();
 	}
 	

@@ -34,7 +34,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Component
-public class ReactiveAppInstanceScanner {
+public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	private PassiveExpiringMap<String, Mono<String>> orgMap;
 	private PassiveExpiringMap<String, Mono<String>> spaceMap;
 	private PassiveExpiringMap<String, Mono<String>> applicationMap;

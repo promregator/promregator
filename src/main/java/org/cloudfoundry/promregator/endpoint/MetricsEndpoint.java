@@ -24,8 +24,8 @@ import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.CFMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.GenericMetricFamilySamplesPrefixRewriter;
 import org.cloudfoundry.promregator.rewrite.MergableMetricFamilySamples;
+import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.Instance;
-import org.cloudfoundry.promregator.scanner.ReactiveAppInstanceScanner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
@@ -55,7 +55,7 @@ public class MetricsEndpoint {
 	private static final Logger log = Logger.getLogger(MetricsEndpoint.class);
 	
 	@Autowired
-	private ReactiveAppInstanceScanner reactiveAppInstanceScanner;
+	private AppInstanceScanner appInstanceScanner;
 	
 	@Autowired
 	private ExecutorService metricsFetcherPool;
@@ -115,7 +115,7 @@ public class MetricsEndpoint {
 		
 		this.up.clear();
 		
-		List<Instance> instanceList = this.reactiveAppInstanceScanner.determineInstancesFromTargets(this.promregatorConfiguration.getTargets());
+		List<Instance> instanceList = this.appInstanceScanner.determineInstancesFromTargets(this.promregatorConfiguration.getTargets());
 		
 		List<MetricsFetcher> callablesPrep = this.createMetricsFetchers(instanceList);
 		
