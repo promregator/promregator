@@ -12,7 +12,7 @@ Whilst this is a super-simple solution, it has two major drawbacks:
 
 ## Using PushProx
 
-[PushProxy](https://github.com/RobustPerception/PushProx) is a Prometheus proxy, which can be used to tunnel requests through firewalls and proxies. It also supports the inversion of the communication direction by establishing the connection from client side (in our case, this is the CF Application / Instance side), connecting to a server. It differs from a [pushgateway](https://github.com/prometheus/pushgateway) in that way, that it does not store the metrics on the (proxy) server, but only tunnels the request to the client.
+[PushProxy](https://github.com/RobustPerception/PushProx) is a Prometheus proxy, which can be used to tunnel requests through firewalls and proxies. It also supports the inversion of the communication direction by establishing the connection from client side (in our case, this is the CF Application / Instance side), connecting to a server. It differs from [Pushgateway](https://github.com/prometheus/pushgateway) in that way, that it does not store the metrics on the (proxy) server, but only tunnels the request to the (pre-connected) client.
 
 Whilst this approach bypasses the connectivity problem which you have to connect to single CF App instance (e.g. you do not need the [X-CF-APP-INSTANCE header approach](https://docs.cloudfoundry.org/concepts/http-routing.html#app-instance-routing)), it creates a new one with its client: This tool needs to be made available inside the CF App instance. To make this happen, you either need to have a container-based application which you run in your CF application or you need to adjust the buildpack which you use to deploy your application.
 
