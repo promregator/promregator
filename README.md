@@ -46,7 +46,7 @@ It is converting the Prometheus' scraping requests into queries targeting your i
 
 For further details on the architecture of Promregator, please look at the [architecture page](docs/architecture.md).
 
-During the course of action, we came across several other implementation alternatives. Due to one or the other reason they were not implemented. You may find a detailed discussion about these approaches on our [Discarded Ideas page](docs/discarded-ideas.md)
+During the course of action, we came across several other implementation alternatives. Due to one or the other reason they were not implemented. You may find a detailed discussion about these approaches on our [discarded ideas page](docs/discarded-ideas.md)
 
 ## Prerequisites
 
