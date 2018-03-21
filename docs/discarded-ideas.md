@@ -4,7 +4,7 @@ On the way of implementing Promregator, we came across several alternatives, whi
 
 
 ## Using nginx as Proxy
-In [Prometheus Issue #1724](https://github.com/prometheus/prometheus/issues/1724) an approach is suggested to setup an nginx instance to be used as intermediate proxy for the scraping request allowing you to inject a custom HTTP Header. 
+In [Prometheus Issue #1724](https://github.com/prometheus/prometheus/issues/1724), an approach is suggested to setup an nginx instance to be used as intermediate proxy for the scraping request allowing you to inject a custom HTTP Header. 
 
 Whilst this is a super-simple solution, it has two major drawbacks:
 * The approach would only work on scraping using HTTP and not HTTPS (this is due to the fact that nginx technically is man-in-the-middle, against which HTTPS explicitly engaged security countermeasures). 
@@ -12,7 +12,7 @@ Whilst this is a super-simple solution, it has two major drawbacks:
 
 
 ## Using Pushgateway as Intermediate Bridge
-In [Prometheus Issue #1724](https://github.com/prometheus/prometheus/issues/1724) robachmann proposes to a workaround to use  [Pushgateway](https://github.com/prometheus/pushgateway) as intermediate storing-proxy. With this it is possible to connect an arbitrary number of clients to a central communication instance, exposing samples to Prometheus. The major difference in this approach is the concept that the metrics endpoint of CF App instances are not being pulled from outside, but the application coding will ensure that results are regularly published to the Pushgateway instance in an active fashion. Details about this approach in general can also be found [here](https://prometheus.io/docs/practices/pushing/).
+In [Prometheus Issue #1724](https://github.com/prometheus/prometheus/issues/1724), robachmann proposes to a workaround to use  [Pushgateway](https://github.com/prometheus/pushgateway) as intermediate storing-proxy. With this it is possible to connect an arbitrary number of clients to a central communication instance, exposing samples to Prometheus. The major difference in this approach is the concept that the metrics endpoint of CF App instances are not being pulled from outside, but the application coding will ensure that results are regularly published to the Pushgateway instance in an active fashion. Details about this approach in general can also be found [here](https://prometheus.io/docs/practices/pushing/).
 
 Our analysis has shown that this approach has several disadvantages:
 * Prometheus clearly rejects using Pushgateway for periodic scraping events -- for many good reasons. Amongst the most severe one's in the context of Cloud Foundry applications is, that Pushgateway stores samples of metrics until their value is explicitly removed from the server again. This implied - for example - that if an instance of a CF app crashes, then the "last-known" value will still be forwarded to Prometheus, even though the instance was long gone.
