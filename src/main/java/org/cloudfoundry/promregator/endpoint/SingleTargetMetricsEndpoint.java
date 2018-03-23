@@ -1,5 +1,7 @@
 package org.cloudfoundry.promregator.endpoint;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -7,6 +9,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import javax.annotation.PostConstruct;
 
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
@@ -16,6 +20,7 @@ import org.cloudfoundry.promregator.fetcher.MetricsFetcher;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcherMetrics;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.CFMetricFamilySamplesEnricher;
+import org.cloudfoundry.promregator.rewrite.GenericMetricFamilySamplesPrefixRewriter;
 import org.cloudfoundry.promregator.rewrite.MergableMetricFamilySamples;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.Instance;
@@ -30,6 +35,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.context.WebApplicationContext;
 
+import io.prometheus.client.CollectorRegistry;
+import io.prometheus.client.Gauge;
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.exporter.common.TextFormat;
 
@@ -60,11 +67,36 @@ public class SingleTargetMetricsEndpoint {
 	@Autowired
 	private ExecutorService metricsFetcherPool;
 	
+	private GenericMetricFamilySamplesPrefixRewriter gmfspr = new GenericMetricFamilySamplesPrefixRewriter("promregator");
+	
+	/* own metrics --- specific to this (scraping) request */
+	private CollectorRegistry requestRegistry;
+	
+	// see also https://prometheus.io/docs/instrumenting/writing_exporters/#metrics-about-the-scrape-itself
+	private Gauge scrape_duration;
+	private Gauge up;
+	
+	@PostConstruct
+	public void setupOwnRequestScopedMetrics() {
+		this.requestRegistry = new CollectorRegistry();
+		
+		this.scrape_duration = Gauge.build("promregator_scrape_duration_seconds", "Duration in seconds indicating how long scraping of all metrics took")
+				.register(this.requestRegistry);
+		
+		this.up = Gauge.build("promregator_up", "Indicator, whether the target of promregator is available")
+				.labelNames(CFMetricFamilySamplesEnricher.getEnrichingLabelNames())
+				.register(this.requestRegistry);
+	}
+	
 	@RequestMapping(method = RequestMethod.GET, produces=TextFormat.CONTENT_TYPE_004)
 	public String getMetrics(
 			@PathVariable String applicationId, 
 			@PathVariable String instanceNumber
 			) {
+		
+		Instant start = Instant.now();
+		
+		this.up.clear();
 		
 		String instanceId = String.format("%s:%s", applicationId, instanceNumber);
 		
@@ -90,7 +122,8 @@ public class SingleTargetMetricsEndpoint {
 		String accessURL = selectedInstance.getAccessUrl();
 
 		AbstractMetricFamilySamplesEnricher mfse = new CFMetricFamilySamplesEnricher(orgName, spaceName, appName, selectedInstance.getInstanceId());
-		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(mfse, null, null, null);
+		// TODO Metrics are missing!
+		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(mfse, null, this.up, null);
 		
 		MetricsFetcher mf = null;
 		if (this.proxyHost != null && this.proxyPort != 0) {
@@ -115,8 +148,15 @@ public class SingleTargetMetricsEndpoint {
 			throw new HttpClientErrorException(HttpStatus.BAD_GATEWAY);
 		}
 		
+		Instant stop = Instant.now();
+		Duration duration = Duration.between(start, stop);
+		this.scrape_duration.set(duration.toMillis() / 1000.0);
+		
 		MergableMetricFamilySamples mmfs = new MergableMetricFamilySamples();
 		mmfs.merge(resultMap);
+		
+		// add also our own request-specific metrics
+		mmfs.merge(this.gmfspr.determineEnumerationOfMetricFamilySamples(this.requestRegistry));
 		
 		return mmfs.toType004String();
 	}
