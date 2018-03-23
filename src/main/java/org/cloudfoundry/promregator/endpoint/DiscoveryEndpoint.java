@@ -32,14 +32,55 @@ public class DiscoveryEndpoint {
 
 	public class DiscoveryLabel {
 		private String __meta_promregator_target_path;
+		private String __meta_promregator_target_orgName;
+		private String __meta_promregator_target_spaceName;
+		private String __meta_promregator_target_applicationName;
+		private String __meta_promregator_target_applicationId;
+		private String __meta_promregator_target_instanceNumber;
+		private String __meta_promregator_target_instanceId;
 
 		public DiscoveryLabel(String __meta_promregator_target_path) {
 			super();
 			this.__meta_promregator_target_path = __meta_promregator_target_path;
 		}
 		
+		public DiscoveryLabel(String __meta_promregator_target_path, Instance instance) {
+			this(__meta_promregator_target_path);
+			
+			this.__meta_promregator_target_orgName = instance.getTarget().getOrgName();
+			this.__meta_promregator_target_spaceName = instance.getTarget().getSpaceName();
+			this.__meta_promregator_target_applicationName = instance.getTarget().getApplicationName();
+			this.__meta_promregator_target_applicationId = instance.getApplicationId();
+			this.__meta_promregator_target_instanceNumber = instance.getInstanceNumber();
+			this.__meta_promregator_target_instanceId = instance.getInstanceId();
+		}
+		
 		public String get__meta_promregator_target_path() {
 			return __meta_promregator_target_path;
+		}
+
+		public String get__meta_promregator_target_orgName() {
+			return __meta_promregator_target_orgName;
+		}
+
+		public String get__meta_promregator_target_spaceName() {
+			return __meta_promregator_target_spaceName;
+		}
+
+		public String get__meta_promregator_target_applicationName() {
+			return __meta_promregator_target_applicationName;
+		}
+
+		public String get__meta_promregator_target_applicationId() {
+			return __meta_promregator_target_applicationId;
+		}
+
+		public String get__meta_promregator_target_instanceNumber() {
+			return __meta_promregator_target_instanceNumber;
+		}
+
+		public String get__meta_promregator_target_instanceId() {
+			return __meta_promregator_target_instanceId;
 		}
 	}
 	
@@ -75,7 +116,7 @@ public class DiscoveryEndpoint {
 		for (Instance instance : instances) {
 			
 			String path = String.format(SingleTargetMetricsEndpoint.ENDPOINT_PATH+"/%s/%s", instance.getApplicationId(), instance.getInstanceNumber());
-			DiscoveryLabel dl = new DiscoveryLabel(path);
+			DiscoveryLabel dl = new DiscoveryLabel(path, instance);
 			
 			DiscoveryResponse dr = new DiscoveryResponse(targets, dl);
 			result.add(dr);
