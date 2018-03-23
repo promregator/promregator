@@ -74,7 +74,7 @@ public class DiscoveryEndpoint {
 		List<DiscoveryResponse> result = new LinkedList<>();
 		for (Instance instance : instances) {
 			
-			String path = String.format("/singleTargetMetrics/%s/%s", instance.getApplicationId(), instance.getInstanceNumber());
+			String path = String.format(SingleTargetMetricsEndpoint.ENDPOINT_PATH+"/%s/%s", instance.getApplicationId(), instance.getInstanceNumber());
 			DiscoveryLabel dl = new DiscoveryLabel(path);
 			
 			DiscoveryResponse dr = new DiscoveryResponse(targets, dl);
