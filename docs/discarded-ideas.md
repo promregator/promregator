@@ -44,7 +44,7 @@ Yet, on second glance, this kind of additional approach has four major drawbacks
 * With the aggregating approach used by Promregator today, also Promregator's own-generated metrics can be conveyed along to Prometheus with the same request. The metric's samples are transferred along the same communication channel as all the other metrics are transported. Thus, they provide a common set of metrics, making sure that they are always in sync with each other. Furthermore, using the approach depicted above, transporting Promregator's own-generated metrics to Prometheus would require yet another metrics endpoint and thus one additional HTTP request, which needs to be handled by Prometheus.
 * Finally, the approach depicted above does not really solve the "outsourcing problem" of Promregator: Major Cloud Foundry-specific configuration parameters, such as API Host, CF Username, CF Password or the candidates of CF Apps to be monitored, do not fit into Prometheus' configuration file. Thus, they still have to be specified in a Promregator's own configuration file. Moreover, the dynamic nature of the `file_sd_configs` approach does not facilitate rule handing or rewrites either, as the administrator would have to be kept alone with the challenge that the names of the targets may still change their names dynamically.
 
-There is one more challenge with this approach: the `file_sd_configs` JSON file format does not support providing different paths natively. Instead, a deviating path (the path which would indicate Prometheus' endpoint which instance shall be scraped) would have to be provided by an additional label. Then, in Prometheus' configuration file a label rewrite of the form
+There is one more challenge with this approach: the `file_sd_configs` JSON file format does not support providing different paths natively. Instead, a deviating path (the path which would indicate Prometheus' endpoint which instance shall be scraped) would have to be provided by an additional label. Then, in Prometheus' configuration file a relabel configuration of the form
 
 ```yaml
 relabel_configs:
@@ -54,5 +54,5 @@ relabel_configs:
   regex: (.+)
 ```
 
-would be required to pass on the new label to the scraping logic. Whilst this would allow the new variant of Promregator to scale along paths (and does not mean that for each CF App instance an own port was necessary), this still complicates the configuration of Prometheus -- and moreover feels like a workaround to the administrator.
+would be required to pass on the new label to the scraping logic (cf. a [similar configuration, which is used for Kubernetes](https://github.com/prometheus/prometheus/blob/master/documentation/examples/prometheus-kubernetes.yml#L257)). Whilst this would allow the new variant of Promregator to scale along paths (and does not mean that for each CF App instance an own port was necessary), this still complicates the configuration of Prometheus -- and moreover feels like a workaround to the administrator.
 
