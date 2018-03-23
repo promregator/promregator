@@ -36,9 +36,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.CollectorRegistry;
-import io.prometheus.client.Counter;
 import io.prometheus.client.Gauge;
-import io.prometheus.client.Histogram;
 import io.prometheus.client.exporter.common.TextFormat;
 
 /**
@@ -79,16 +77,6 @@ public class MetricsEndpoint {
 	private AuthenticationEnricher ae;
 	
 	private GenericMetricFamilySamplesPrefixRewriter gmfspr = new GenericMetricFamilySamplesPrefixRewriter("promregator");
-	
-	/* own metrics --- static scope (e.g. across all requests) */
-	private static Histogram requestLatency = Histogram.build("promregator_request_latency", "The latency, which the targets of the promregator produce")
-			.labelNames(CFMetricFamilySamplesEnricher.getEnrichingLabelNames())
-			.register();
-	
-	private static Counter failedRequests = Counter.build("promregator_request_failure", "Requests, which responded, but the HTTP code indicated an error or the connection dropped/timed out")
-			.labelNames(CFMetricFamilySamplesEnricher.getEnrichingLabelNames())
-			.register();
-	
 	
 	/* own metrics --- specific to this (scraping) request */
 	private CollectorRegistry requestRegistry;
@@ -198,7 +186,7 @@ public class MetricsEndpoint {
 			}
 			
 			AbstractMetricFamilySamplesEnricher mfse = new CFMetricFamilySamplesEnricher(orgName, spaceName, appName, instance.getInstanceId());
-			MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(mfse, requestLatency, up, failedRequests);
+			MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(mfse, up);
 
 			MetricsFetcher mf = null;
 			

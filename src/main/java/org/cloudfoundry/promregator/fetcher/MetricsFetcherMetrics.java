@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
+import org.cloudfoundry.promregator.rewrite.CFMetricFamilySamplesEnricher;
 
 import io.prometheus.client.Counter;
 import io.prometheus.client.Gauge;
@@ -15,23 +16,26 @@ import io.prometheus.client.Histogram;
  */
 public class MetricsFetcherMetrics {
 	/* references to metrics which we create and expose by our own */
-	private Histogram latencyRequest;
-	private Gauge up;
-	private Counter failedRequests;
+	
+	private static Histogram requestLatency = Histogram.build("promregator_request_latency", "The latency, which the targets of the promregator produce")
+			.labelNames(CFMetricFamilySamplesEnricher.getEnrichingLabelNames())
+			.register();
+	
+	private static Counter failedRequests = Counter.build("promregator_request_failure", "Requests, which responded, but the HTTP code indicated an error or the connection dropped/timed out")
+			.labelNames(CFMetricFamilySamplesEnricher.getEnrichingLabelNames())
+			.register();
 
+	private Gauge up;
 
 	private String[] ownTelemetryLabels;
 	
-	public MetricsFetcherMetrics(AbstractMetricFamilySamplesEnricher mfse, 
-			Histogram latencyRequest, Gauge up, Counter failedRequests) {
+	public MetricsFetcherMetrics(AbstractMetricFamilySamplesEnricher mfse, Gauge up) {
 		super();
 		
 		List<String> labelValues = mfse.getEnrichedLabelValues(new LinkedList<>());
 		this.ownTelemetryLabels = labelValues.toArray(new String[0]);
 
-		this.latencyRequest = latencyRequest;
 		this.up = up;
-		this.failedRequests = failedRequests;
 	}
 
 	public String[] getOwnTelemetryLabels() {
@@ -39,10 +43,10 @@ public class MetricsFetcherMetrics {
 	}
 
 	public Histogram.Child getLatencyRequest() {
-		if (this.latencyRequest == null)
+		if (requestLatency == null)
 			return null;
 		
-		return this.latencyRequest.labels(this.ownTelemetryLabels);
+		return requestLatency.labels(this.ownTelemetryLabels);
 	}
 
 	public Gauge.Child getUp() {
@@ -53,10 +57,10 @@ public class MetricsFetcherMetrics {
 	}
 
 	public Counter.Child getFailedRequests() {
-		if (this.failedRequests == null)
+		if (failedRequests == null)
 			return null;
 		
-		return this.failedRequests.labels(this.ownTelemetryLabels);
+		return failedRequests.labels(this.ownTelemetryLabels);
 	}
 
 }

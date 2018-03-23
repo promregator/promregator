@@ -56,7 +56,7 @@ public class MetricsFetcherTest {
 	public void testStraightForward() throws Exception {
 		String instanceId = "abcd:4";
 		NullMetricFamilySamplesEnricher dummymfse = new NullMetricFamilySamplesEnricher("dummy", "dummy", "dummy", "dummy");
-		CFMetricsFetcher subject = new CFMetricsFetcher("http://localhost:9002/metrics", instanceId, null, dummymfse, new MetricsFetcherMetrics(dummymfse, null, null, null));
+		CFMetricsFetcher subject = new CFMetricsFetcher("http://localhost:9002/metrics", instanceId, null, dummymfse, new MetricsFetcherMetrics(dummymfse, null));
 		
 		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
 		
@@ -88,7 +88,7 @@ public class MetricsFetcherTest {
 		String instanceId = "abcd:2";
 		TestAuthenticationEnricher ae = new TestAuthenticationEnricher();
 		NullMetricFamilySamplesEnricher dummymfse = new NullMetricFamilySamplesEnricher("dummy", "dummy", "dummy", "dummy");
-		CFMetricsFetcher subject = new CFMetricsFetcher("http://localhost:9002/metrics", instanceId, ae, dummymfse, new MetricsFetcherMetrics(dummymfse, null, null, null));
+		CFMetricsFetcher subject = new CFMetricsFetcher("http://localhost:9002/metrics", instanceId, ae, dummymfse, new MetricsFetcherMetrics(dummymfse, null));
 		
 		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
 		

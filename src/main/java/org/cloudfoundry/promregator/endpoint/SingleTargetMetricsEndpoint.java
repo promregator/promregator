@@ -122,8 +122,7 @@ public class SingleTargetMetricsEndpoint {
 		String accessURL = selectedInstance.getAccessUrl();
 
 		AbstractMetricFamilySamplesEnricher mfse = new CFMetricFamilySamplesEnricher(orgName, spaceName, appName, selectedInstance.getInstanceId());
-		// TODO Metrics are missing!
-		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(mfse, null, this.up, null);
+		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(mfse, this.up);
 		
 		MetricsFetcher mf = null;
 		if (this.proxyHost != null && this.proxyPort != 0) {
