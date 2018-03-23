@@ -54,5 +54,5 @@ relabel_configs:
   regex: (.+)
 ```
 
-would be required to pass on the new label to the scraping logic (cf. a [similar configuration, which is used for Kubernetes](https://github.com/prometheus/prometheus/blob/master/documentation/examples/prometheus-kubernetes.yml#L257)). Whilst this would allow the new variant of Promregator to scale along paths (and does not mean that for each CF App instance an own port was necessary), this still complicates the configuration of Prometheus -- and moreover feels like a workaround to the administrator.
+would be required to pass on the new label to the scraping logic (cf. a [similar configuration, which is used for Kubernetes](https://github.com/prometheus/prometheus/blob/60dafd425cdc96f7df3019cf756998b42209cf1d/documentation/examples/prometheus-kubernetes.yml#L257)). Whilst this would allow the new variant of Promregator to scale along paths (and does not mean that for each CF App instance an own port was necessary), this still complicates the configuration of Prometheus -- and moreover feels like a workaround to the administrator.
 
