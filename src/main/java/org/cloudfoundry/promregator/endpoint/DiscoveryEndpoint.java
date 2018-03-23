@@ -81,6 +81,10 @@ public class DiscoveryEndpoint {
 			result.add(dr);
 		}
 		
+		// finally, also add our own metrics endpoint
+		DiscoveryLabel dl = new DiscoveryLabel(PromregatorMetricsEndpoint.ENDPOINT_PATH);
+		result.add(new DiscoveryResponse(targets, dl));
+		
 		return result.toArray(new DiscoveryResponse[0]);
 	}
 }
