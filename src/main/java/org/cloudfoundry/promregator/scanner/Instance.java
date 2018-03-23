@@ -31,4 +31,13 @@ public class Instance {
 		return accessUrl;
 	}
 	
+	public String getInstanceNumber() {
+		String[] parts = this.instanceId.split(":");
+		return parts[1];
+	}
+
+	public String getApplicationId() {
+		String[] parts = this.instanceId.split(":");
+		return parts[0];
+	}
 }
