@@ -7,24 +7,17 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.collections4.map.PassiveExpiringMap;
-import org.cloudfoundry.client.v2.routemappings.ListRouteMappingsRequest;
 import org.cloudfoundry.client.v2.routemappings.RouteMappingResource;
-import org.cloudfoundry.client.v2.routes.GetRouteRequest;
 import org.cloudfoundry.client.v2.routes.RouteEntity;
-import org.cloudfoundry.client.v2.shareddomains.GetSharedDomainRequest;
 import org.cloudfoundry.client.v2.shareddomains.SharedDomainEntity;
 import org.cloudfoundry.client.v3.applications.ApplicationResource;
-import org.cloudfoundry.client.v3.applications.ListApplicationsRequest;
-import org.cloudfoundry.client.v3.organizations.ListOrganizationsRequest;
 import org.cloudfoundry.client.v3.organizations.OrganizationResource;
-import org.cloudfoundry.client.v3.processes.ListProcessesRequest;
 import org.cloudfoundry.client.v3.processes.ListProcessesResponse;
 import org.cloudfoundry.client.v3.processes.ProcessResource;
-import org.cloudfoundry.client.v3.spaces.ListSpacesRequest;
 import org.cloudfoundry.client.v3.spaces.SpaceResource;
+import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.config.Target;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
-import org.cloudfoundry.reactor.client.ReactorCloudFoundryClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -51,7 +44,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	private int timeoutCacheOrgLevel;
 
 	@Autowired
-	private ReactorCloudFoundryClient cloudFoundryClient;
+	private CFAccessor cfAccessor;
 	
 	@Autowired
 	private InternalMetrics internalMetrics;
@@ -196,8 +189,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			return tuple.getT1();
 		})
 		.flatMap(orgName -> {
-			ListOrganizationsRequest orgsRequest = ListOrganizationsRequest.builder().name(orgName).build();
-			return this.cloudFoundryClient.organizationsV3().list(orgsRequest).log("Query Org");
+			return this.cfAccessor.retrieveOrgId(orgName);
 		}).flatMap(response -> {
 			List<OrganizationResource> resources = response.getResources();
 			if (resources == null) {
@@ -239,8 +231,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				return tuple.getT1();
 			})
 			.flatMap(tuple -> {
-				ListSpacesRequest spacesRequest = ListSpacesRequest.builder().organizationId(tuple.getT1()).name(tuple.getT2()).build();
-				return this.cloudFoundryClient.spacesV3().list(spacesRequest).log("Query Space");
+				return this.cfAccessor.retrieveSpaceId(tuple.getT1(), tuple.getT2());
 			}).flatMap(response -> {
 				List<SpaceResource> resources = response.getResources();
 				if (resources == null) {
@@ -282,12 +273,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				return tuple.getT1();
 			})
 			.flatMap(triple -> {
-				ListApplicationsRequest request = ListApplicationsRequest.builder()
-						.organizationId(triple.getT1())
-						.spaceId(triple.getT2())
-						.name(triple.getT3())
-						.build();
-				return this.cloudFoundryClient.applicationsV3().list(request).log("Query App");
+				return this.cfAccessor.retrieveApplicationId(triple.getT1(), triple.getT2(), triple.getT3());
 			}).flatMap(response -> {
 				List<ApplicationResource> resources = response.getResources();
 				if (resources == null) {
@@ -329,8 +315,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				return tuple.getT1();
 			})
 			.flatMap(appId -> {
-				ListRouteMappingsRequest mappingRequest = ListRouteMappingsRequest.builder().applicationId(appId).build();
-				return this.cloudFoundryClient.routeMappings().list(mappingRequest).log("Query Route Mapping");
+				return this.cfAccessor.retrieveRouteMapping(appId);
 			}).flatMap(mappingResponse -> {
 				List<RouteMappingResource> resourceList = mappingResponse.getResources();
 				if (resourceList.isEmpty())
@@ -340,8 +325,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				if (routeId == null)
 					return Mono.empty();
 				
-				GetRouteRequest getRequest = GetRouteRequest.builder().routeId(routeId).build();
-				return this.cloudFoundryClient.routes().get(getRequest).log("Get Route");
+				return this.cfAccessor.retrieveRoute(routeId);
 			}).flatMap(GetRouteResponse -> {
 				RouteEntity route = GetRouteResponse.getEntity();
 				if (route == null)
@@ -402,8 +386,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				return tuple.getT1();
 			})
 			.flatMap(domainId -> {
-				GetSharedDomainRequest domainRequest = GetSharedDomainRequest.builder().sharedDomainId(domainId).build();
-				return this.cloudFoundryClient.sharedDomains().get(domainRequest).log("Get Domain");
+				return this.cfAccessor.retrieveSharedDomain(domainId);
 			}).map(response -> {
 				SharedDomainEntity sharedDomain = response.getEntity();
 				
@@ -436,8 +419,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				String spaceId = tuple.getT2();
 				String appId = tuple.getT3();
 				
-				ListProcessesRequest request = ListProcessesRequest.builder().organizationId(orgId).spaceId(spaceId).applicationId(appId).build();
-				return this.cloudFoundryClient.processes().list(request).log("List Processes");
+				return this.cfAccessor.retrieveProcesses(orgId, spaceId, appId);
 			});
 			
 			Flux<InternalInstance> fluxInstances = Mono.zip(Mono.just(instance), processesResponse, instance.applicationId)
