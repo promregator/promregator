@@ -10,6 +10,7 @@ import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,6 +31,12 @@ public class DiscoveryEndpoint {
 	@Autowired
 	private PromregatorConfiguration promregatorConfiguration;
 
+	@Value("${promregator.discovery.hostname:@null}")
+	private String myHostname;
+	
+	@Value("${promregator.discovery.port:0}")
+	private int myPort;
+	
 	public class DiscoveryLabel {
 		private String __meta_promregator_target_path;
 		private String __meta_promregator_target_orgName;
@@ -108,9 +115,11 @@ public class DiscoveryEndpoint {
 	public DiscoveryResponse[] getDiscovery(HttpServletRequest request) {
 		List<Instance> instances = this.appInstanceScanner.determineInstancesFromTargets(this.promregatorConfiguration.getTargets());
 		
-		String localHostname = request.getLocalName();
-		int localPort = request.getLocalPort();
+		String localHostname = this.myHostname != null ? this.myHostname : request.getLocalName();
+		int localPort = this.myPort != 0 ? this.myPort : request.getLocalPort();
 		final String[] targets = { String.format("%s:%d", localHostname, localPort) };
+		
+		log.info(String.format("Using scraping target %s in discovery response", targets[0]));
 		
 		List<DiscoveryResponse> result = new LinkedList<>();
 		for (Instance instance : instances) {
@@ -125,6 +134,8 @@ public class DiscoveryEndpoint {
 		// finally, also add our own metrics endpoint
 		DiscoveryLabel dl = new DiscoveryLabel(PromregatorMetricsEndpoint.ENDPOINT_PATH);
 		result.add(new DiscoveryResponse(targets, dl));
+		
+		log.info(String.format("Returing discovery document with %d targets", result.size()));
 		
 		return result.toArray(new DiscoveryResponse[0]);
 	}
