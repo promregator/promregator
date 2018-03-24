@@ -37,7 +37,7 @@ public class DiscoveryEndpoint {
 	@Value("${promregator.discovery.port:0}")
 	private int myPort;
 	
-	public class DiscoveryLabel {
+	public static class DiscoveryLabel {
 		private String __meta_promregator_target_path;
 		private String __meta_promregator_target_orgName;
 		private String __meta_promregator_target_spaceName;
@@ -91,7 +91,7 @@ public class DiscoveryEndpoint {
 		}
 	}
 	
-	public class DiscoveryResponse {
+	public static class DiscoveryResponse {
 		private String[] targets;
 		
 		private DiscoveryLabel labels;
@@ -103,7 +103,7 @@ public class DiscoveryEndpoint {
 		}
 
 		public String[] getTargets() {
-			return targets;
+			return targets.clone();
 		}
 
 		public DiscoveryLabel getLabels() {
