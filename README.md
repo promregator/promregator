@@ -77,62 +77,9 @@ The runnable artifact will be available at `target/promregator-*-SNAPSHOT.jar`. 
 java -jar promregator-x.y.z-SNAPSHOT.jar
 ```
 
-## Configuration (of Promregator)
+## Documentation
 
-The configuration may be performed using any variant of the [Spring Property Configuration](https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-external-config.html) 
-approach. 
-
-The suggested approach is to create a configuration YAML file, such as `myconfig.yaml`, and start Promregator with the following command line option:
-
-```bash
-java -Dspring.config.location=file:/path/to/your/myconfig.yaml -jar promregator-x.y.z-SNAPSHOT.jar
-```
-
-Here is an dummy example for such a configuration yaml file:
-```yaml
-cf:
-  apiHost: api.cf.example.org
-  username: myCFUserName
-  proxyHost: 192.168.111.1
-  proxyPort: 8080
-
-promregator:
-  authenticator:
-    type: OAuth2XSUAA
-    oauth2xsuaa:
-      tokenServiceURL: https://jwt.token.server.example.org/oauth/token
-      client_id: myOAuth2ClientId
-    
-  targets:
-    - orgName: myCfOrgName
-      spaceName: mySpaceName
-      applicationName: myApplication1
-      
-    - orgName: myOtherCfOrgName
-      spaceName: myOtherSpaceName
-      applicationName: myOtherApplication
-```
-
-The documentation of the configuration options can be found [here](docs/config.md).
-
-
-## Configuration of Prometheus Server
-
-From the perspective of Prometheus, Promregator behaves like any other target. 
-You may set up a scraping job for example like this:
-
-```yaml
-[...]
-scrape_configs:
-  - job_name: 'prometheus'
-    scheme: http
-    static_configs:
-      - targets: ['hostname-of-promregator:8080']
-```
-
-Note that the option `honor_labels: true` is **not** required. 
-
-Authentication currently is not required / not available (yet). For the current progress on this topic, please refer to [#17](https://github.com/promregator/promregator/issues/17).
+A detailed documentation, including a descriptionhow you may configure Promregator, what needs to be done to integrate it with Prometheus is available at the [documentation pages](docs/documentation.md).
 
 
 ## Related Work / References

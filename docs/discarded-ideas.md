@@ -28,31 +28,10 @@ Whilst this approach bypasses the connectivity problem which you have to connect
 
 However, PushProx nicely solves the problem of publishing the discovered clients by providing an endpoint called `/clients`, which contains a ready-to-use configuration file for the service discovery method `file_sd_configs`. 
 
-## Promregator with Multiple Scraping Endpoints
+## Promregator with Endpoints for Single Target Scraping
 
-As laid out in our [architecture discussion](architecture.md), Promregator outsources parts of the landscape configuration from the Prometheus' configuration file to its own configuration file. In the previous section, it has been discussed that this issue is bypassed nicely by PushProx by providing a ready-to-use configuration file for the service discovery method `file_sd_configs`. On first glance it looks appealing to apply the same pattern also to Promregator:
+As laid out in the previous section, PushProx is separating the service discovery aspect to one endpoint, which allows to register multiple targets in Prometheus using the interface of `file_sd_configs`. Scraping itself then takes place at a dedicated on scraping endpoint, whose path defines which single target (in our case: CF app instance) shall be scraped. 
 
-1. Promregator would perform the service discovery and expose the result in the appropriate `file_sd_configs` JSON format via an endpoint like `/clients`.
-2. The content of the endpoint would be fetched regularly (for example via `wget` running in the same environment as Prometheus). By this, Prometheus the scraping targets are updated automatically.
-3. The configuration file contains pseudo-URL pointing to endpoints provided by Promregator, which contain unique identifiers to determine for which CF App Instance scraping is requested.
-4. Based on the unique identifier in the scraping request, the scraping request is forwarded (like a proxy) to the corresponding CF App instance (e.g. using the [X-CF-APP-INSTANCE header approach](https://docs.cloudfoundry.org/concepts/http-routing.html#app-instance-routing)).
+Whilst this way has some advantages with regards to configuration in Prometheus, it also has several disadvantages. For a detailed discussion about this, refer to the [Single Target Scraping page](singleTargetScraping.md).
 
-Yet, on second glance, this kind of additional approach has four major drawbacks:
-
-* With the aggregating approach used by Promregator today, Prometheus only needs to send a single HTTP request to retrieve a complete set of data. With the approach depicted above, scraping `n` CF App Instances requires `n + 1` HTTP requests between Prometheus and Promregator (`n` for each instance one, which are then proxied, `+1` for the service discovery request, fetching the `file_sd_configs` JSON file). Given the fact that for each request additional overhead costs (for network, sockets, transport, establishing communication), this will have a negative impact on performance and scalability.
-* There is no native `file_sd_configs` JSON file pull mechanism provided by Prometheus. As such, periodically retrieving the new configuration from Prometheus would have to be done using a second tool (e.g. `curl` or `wget`), which was scheduled using yet-another-tool (e.g. `crond`). Whilst this may not be considered a big deal for an average administrator, it adds another single point of failure, which also may break and is out of the control of Prometheus' usual monitoring capabilities.
-* With the aggregating approach used by Promregator today, also Promregator's own-generated metrics can be conveyed along to Prometheus with the same request. The metric's samples are transferred along the same communication channel as all the other metrics are transported. Thus, they provide a common set of metrics, making sure that they are always in sync with each other. Furthermore, using the approach depicted above, transporting Promregator's own-generated metrics to Prometheus would require yet another metrics endpoint and thus one additional HTTP request, which needs to be handled by Prometheus.
-* Finally, the approach depicted above does not really solve the "outsourcing problem" of Promregator: Major Cloud Foundry-specific configuration parameters, such as API Host, CF Username, CF Password or the candidates of CF Apps to be monitored, do not fit into Prometheus' configuration file. Thus, they still have to be specified in a Promregator's own configuration file. Moreover, the dynamic nature of the `file_sd_configs` approach does not facilitate rule handing or rewrites either, as the administrator would have to be kept alone with the challenge that the names of the targets may still change their names dynamically.
-
-There is one more challenge with this approach: the `file_sd_configs` JSON file format does not support providing different paths natively. Instead, a deviating path (the path which would indicate Prometheus' endpoint which instance shall be scraped) would have to be provided by an additional label. Then, in Prometheus' configuration file a relabel configuration of the form
-
-```yaml
-relabel_configs:
-- source_labels: [__meta_promregator_target_path]
-  action: replace
-  target_label: __metrics_path__
-  regex: (.+)
-```
-
-would be required to pass on the new label to the scraping logic (cf. a [similar configuration, which is used for Kubernetes](https://github.com/prometheus/prometheus/blob/60dafd425cdc96f7df3019cf756998b42209cf1d/documentation/examples/prometheus-kubernetes.yml#L257)). Whilst this would allow the new variant of Promregator to scale along paths (and does not mean that for each CF App instance an own port was necessary), this still complicates the configuration of Prometheus -- and moreover feels like a workaround to the administrator.
-
+Note that Promregator supports this mode since version 0.2.0. However, the preferred approach still is the one using a combined endpoint, which both deals with service discovery and scraping in one shot (as depicted on the [architecture page](architecture.md)).

@@ -119,6 +119,18 @@ Specifies the protocol (`http` or `https`) which shall be used to retrieve the m
 
 Defaults to `https` if not set otherwise.
 
+### Option "promregator.discovery.hostname" (optional)
+Specifies the name of the host (or the IP address) which shall be used for specifying the target during discovery. As a rule of thumb, this name should always be the name under which Prometheus is capable of reaching Promregator.
+
+Setting this option is optional. If not specified, Promregator tries to auto-detect this value based on the configuration of the underlying operating system and the request, which triggered the service discovery.
+
+Note that in various situations, this auto-detection mechanism may fail (e.g. when running in a Docker container). Setting this option then is recommended.
+
+### Option "promregator.discovery.port" (optional)
+Specifies the port number of the host (or the IP address) which shall be used for specifying the target during discovery. As a rule of thumb, this name should always be the port under which Prometheus is capable of reaching Promregator.
+
+Setting this option is optional. If not specified, Promregator tries to auto-detect this value based on the configuration of the underlying operating system and the request, which triggered the service discovery.
+
 
 ### Option "promregator.endpoint.maxProcessingTime" (optional)
 Specifies the maximal time which may be used to query (all) targets. The value is expected to be specified in milliseconds. 
