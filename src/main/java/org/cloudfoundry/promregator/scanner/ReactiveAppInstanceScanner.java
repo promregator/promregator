@@ -420,6 +420,11 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				String appId = tuple.getT3();
 				
 				return this.cfAccessor.retrieveProcesses(orgId, spaceId, appId);
+			})
+			// stop the timer
+			.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+				tuple.getT2().stop();
+				return tuple.getT1();
 			});
 			
 			Flux<InternalInstance> fluxInstances = Mono.zip(Mono.just(instance), processesResponse, instance.applicationId)
@@ -448,11 +453,6 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				}
 				
 				return Flux.fromIterable(resultInstances);
-			})
-			// stop the timer
-			.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
-				tuple.getT2().stop();
-				return tuple.getT1();
 			});
 			
 			return fluxInstances;
