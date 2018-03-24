@@ -10,12 +10,20 @@ import org.cloudfoundry.client.v2.routes.GetRouteResponse;
 import org.cloudfoundry.client.v2.routes.RouteEntity;
 import org.cloudfoundry.client.v2.shareddomains.GetSharedDomainResponse;
 import org.cloudfoundry.client.v2.shareddomains.SharedDomainEntity;
+import org.cloudfoundry.client.v3.Lifecycle;
+import org.cloudfoundry.client.v3.LifecycleData;
+import org.cloudfoundry.client.v3.LifecycleType;
 import org.cloudfoundry.client.v3.applications.ApplicationResource;
+import org.cloudfoundry.client.v3.applications.ApplicationState;
 import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v3.organizations.OrganizationResource;
+import org.cloudfoundry.client.v3.processes.Data;
+import org.cloudfoundry.client.v3.processes.HealthCheck;
+import org.cloudfoundry.client.v3.processes.HealthCheckType;
 import org.cloudfoundry.client.v3.processes.ListProcessesResponse;
 import org.cloudfoundry.client.v3.processes.ProcessResource;
+import org.cloudfoundry.client.v3.processes.ProcessResource.Builder;
 import org.cloudfoundry.client.v3.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v3.spaces.SpaceResource;
 import org.junit.Assert;
@@ -34,10 +42,13 @@ public class CFAccessorMock implements CFAccessor {
 	public final static String UNITTEST_SHARED_DOMAIN_UUID = "be9b8696-2fa6-11e8-b467-0ed5f89f718b";
 	public final static String UNITTEST_SHARED_DOMAIN = "shared.domain.example.org";
 	
+	public final static String CREATED_AT_TIMESTAMP = "2014-11-24T19:32:49+00:00";
+	public final static String UPDATED_AT_TIMESTAMP = "2014-11-24T19:32:49+00:00";
+	
 	@Override
 	public Mono<ListOrganizationsResponse> retrieveOrgId(String orgName) {
 		if ("unittestorg".equals(orgName)) {
-			OrganizationResource or = OrganizationResource.builder().id(UNITTEST_ORG_UUID).name(orgName).build();
+			OrganizationResource or = OrganizationResource.builder().id(UNITTEST_ORG_UUID).name(orgName).createdAt(CREATED_AT_TIMESTAMP).updatedAt(UPDATED_AT_TIMESTAMP).build();
 			List<OrganizationResource> list = new LinkedList<>();
 			list.add(or);
 			
@@ -52,7 +63,7 @@ public class CFAccessorMock implements CFAccessor {
 	public Mono<ListSpacesResponse> retrieveSpaceId(String orgId, String spaceName) {
 		if ("unittestspace".equals(spaceName) && orgId.equals(UNITTEST_ORG_UUID)) {
 			
-			SpaceResource sr = SpaceResource.builder().id(UNITTEST_SPACE_UUID).name(spaceName).build();
+			SpaceResource sr = SpaceResource.builder().id(UNITTEST_SPACE_UUID).name(spaceName).createdAt(CREATED_AT_TIMESTAMP).updatedAt(UPDATED_AT_TIMESTAMP).build();
 			List<SpaceResource> list = new LinkedList<>();
 			list.add(sr);
 			ListSpacesResponse resp = ListSpacesResponse.builder().addAllResources(list).build();
@@ -66,12 +77,18 @@ public class CFAccessorMock implements CFAccessor {
 	@Override
 	public Mono<ListApplicationsResponse> retrieveApplicationId(String orgId, String spaceId, String applicationName) {
 		if (orgId.equals(UNITTEST_ORG_UUID) && spaceId.equals(UNITTEST_SPACE_UUID)) {
-			
+			LifecycleData lifecycleData = new LifecycleData() {
+				
+			};
+			Lifecycle lifecycle = Lifecycle.builder().data(lifecycleData).type(LifecycleType.BUILDPACK).build();
+
 			ApplicationResource ar = null;
 			if (applicationName.equals("testapp")) {
-				ar = ApplicationResource.builder().id(UNITTEST_APP1_UUID).name(applicationName).build();
+				ar = ApplicationResource.builder().id(UNITTEST_APP1_UUID).name(applicationName).createdAt(CREATED_AT_TIMESTAMP).updatedAt(UPDATED_AT_TIMESTAMP)
+						.lifecycle(lifecycle).state(ApplicationState.STARTED).build();
 			} else if (applicationName.equals("testapp2")) {
-				ar = ApplicationResource.builder().id(UNITTEST_APP2_UUID).name(applicationName).build();
+				ar = ApplicationResource.builder().id(UNITTEST_APP2_UUID).name(applicationName).createdAt(CREATED_AT_TIMESTAMP).updatedAt(UPDATED_AT_TIMESTAMP)
+						.lifecycle(lifecycle).state(ApplicationState.STARTED).build();
 			} else {
 				Assert.fail("Invalid ApplicationId request, application name is invalid");
 			}
@@ -148,11 +165,15 @@ public class CFAccessorMock implements CFAccessor {
 		if (orgId.equals(UNITTEST_ORG_UUID) && spaceId.equals(UNITTEST_SPACE_UUID)) {
 			List<ProcessResource> list = new LinkedList<>();
 			
+			Data data = Data.builder().timeout(100).build();
+			HealthCheck hc = HealthCheck.builder().type(HealthCheckType.HTTP).data(data).build();
+			Builder builder = ProcessResource.builder().type("dummy").command("dummycommand").memoryInMb(1024).diskInMb(1024)
+					.healthCheck(hc).createdAt(CREATED_AT_TIMESTAMP).updatedAt(UPDATED_AT_TIMESTAMP);
 			ProcessResource ar = null;
 			if (appId.equals(UNITTEST_APP1_UUID)) {
-				ar = ProcessResource.builder().instances(2).id(UNITTEST_APP1_UUID).build();
+				ar = builder.instances(2).id(UNITTEST_APP1_UUID).build();
 			} else if (appId.equals(UNITTEST_APP2_UUID)) {
-				ar = ProcessResource.builder().instances(1).id(UNITTEST_APP2_UUID).build();
+				ar = builder.instances(1).id(UNITTEST_APP2_UUID).build();
 			}
 			if (ar == null) {
 				Assert.fail("Invalid process request, invalid app id provided");
