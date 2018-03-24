@@ -134,7 +134,7 @@ public class CFAccessorMock implements CFAccessor {
 		if (routeId.equals(UNITTEST_APP1_ROUTE_UUID)) {
 			entity = RouteEntity.builder().domainId(UNITTEST_SHARED_DOMAIN_UUID).host(UNITTEST_APP1_HOST).build();
 		} else if (routeId.equals(UNITTEST_APP2_ROUTE_UUID)) {
-			entity = RouteEntity.builder().domainId(UNITTEST_SHARED_DOMAIN_UUID).host(UNITTEST_APP2_HOST).build();
+			entity = RouteEntity.builder().domainId(UNITTEST_SHARED_DOMAIN_UUID).host(UNITTEST_APP2_HOST).path("additionalPath").build();
 		}
 		
 		if (entity == null) {

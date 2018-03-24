@@ -56,7 +56,7 @@ public class ReactiveAppInstanceScannerTest {
 				Assert.assertEquals("http://hostapp1.shared.domain.example.org/testpath1", instance.getAccessUrl());
 			} else if (instanceId.equals(CFAccessorMock.UNITTEST_APP2_UUID+":0")) {
 				testapp2_instance1 = true;
-				Assert.assertEquals("https://hostapp2.shared.domain.example.org/testpath2", instance.getAccessUrl());
+				Assert.assertEquals("https://hostapp2.shared.domain.example.org/additionalPath/testpath2", instance.getAccessUrl());
 			}
 		}
 		Assert.assertTrue(testapp1_instance1);
