@@ -98,7 +98,7 @@ public class DiscoveryEndpoint {
 
 		public DiscoveryResponse(String[] targets, DiscoveryLabel labels) {
 			super();
-			this.targets = targets;
+			this.targets = targets.clone();
 			this.labels = labels;
 		}
 
