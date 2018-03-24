@@ -20,6 +20,7 @@ We consider the Single Endpoint Scraping mode as superior to the Single Target S
 
 Note that Promregator is capable of running in both modes at the same point in time. That is to say: You may switch the mode even without restarting Promregator. The major difference only is, what you need to do in Prometheus' configuration to make it talk to Promregator.
 
+An overview on the endpoints provided by Promregator can be found at the [endpoint's page](endpoint.md).
 
 ## Configuration (of Promregator)
 
