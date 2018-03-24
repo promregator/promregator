@@ -31,7 +31,7 @@ public class DiscoveryEndpoint {
 	@Autowired
 	private PromregatorConfiguration promregatorConfiguration;
 
-	@Value("${promregator.discovery.hostname:@null}")
+	@Value("${promregator.discovery.hostname:#{null}}")
 	private String myHostname;
 	
 	@Value("${promregator.discovery.port:0}")

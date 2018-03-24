@@ -31,7 +31,7 @@ public class CFClientSpringConfiguration {
 	}
 
 	@Bean
-	public ProxyConfiguration proxyConfiguration(@Value("${cf.proxyHost:@null}") String proxyHost, @Value("${cf.proxyPort:0}") int proxyPort) {
+	public ProxyConfiguration proxyConfiguration(@Value("${cf.proxyHost:#{null}}") String proxyHost, @Value("${cf.proxyPort:0}") int proxyPort) {
 		if (proxyHost != null && proxyPort != 0) {
 			return ProxyConfiguration.builder().host(proxyHost).port(proxyPort).build();
 		} else {
