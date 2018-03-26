@@ -137,8 +137,8 @@ Setting this option is optional. If not specified, Promregator tries to auto-det
 #### Option "promregator.discovery.auth" (optional)
 Specifies the way how authentication shall be verified, if a request reaches the endpoint. Valid values are:
 
-* `NONE`: no authentication verification is required (default)
-* `BASIC`: an authentication verification using HTTP Basic Authentication is performed. Valid credentials are taken from `promregator.authentication.basic.username` and `promregator.authentication.basic.password`.
+* *NONE*: no authentication verification is required (default)
+* *BASIC*: an authentication verification using HTTP Basic Authentication is performed. Valid credentials are taken from `promregator.authentication.basic.username` and `promregator.authentication.basic.password`.
 
 ### Subgroup "promregator.endpoint"
 Configures the way how the metrics endpoints `/metrics` and `/singleTargetMetrics` behave.
@@ -162,8 +162,8 @@ The default value of this option is 5.
 #### Option "promregator.endpoint.auth" (optional)
 Specifies the way how authentication shall be verified, if a request reaches the endpoint. Valid values are:
 
-* `NONE`: no authentication verification is required (default)
-* `BASIC`: an authentication verification using HTTP Basic Authentication is performed. Valid credentials are taken from `promregator.authentication.basic.username` and `promregator.authentication.basic.password`.
+* *NONE*: no authentication verification is required (default)
+* *BASIC*: an authentication verification using HTTP Basic Authentication is performed. Valid credentials are taken from `promregator.authentication.basic.username` and `promregator.authentication.basic.password`.
 
 
 ### Subgroup "promregator.metrics"
@@ -172,8 +172,8 @@ Configures the way how the promregator shall expose its own-generated metrics vi
 #### Option "promregator.metrics.auth" (optional)
 Specifies the way how authentication shall be verified, if a request reaches the endpoint `/promregatorMetrics`. Note that the authentication verification of `/metrics` is controlled by `promregator.endpoint.auth`. Valid values for this option are:
 
-* `NONE`: no authentication verification is required (default)
-* `BASIC`: an authentication verification using HTTP Basic Authentication is performed. Valid credentials are taken from `promregator.authentication.basic.username` and `promregator.authentication.basic.password`.
+* *NONE*: no authentication verification is required (default)
+* *BASIC*: an authentication verification using HTTP Basic Authentication is performed. Valid credentials are taken from `promregator.authentication.basic.username` and `promregator.authentication.basic.password`.
 
 
 #### Option "promregator.metrics.internal" (optional)
