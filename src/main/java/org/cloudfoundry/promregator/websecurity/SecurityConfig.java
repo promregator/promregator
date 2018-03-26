@@ -33,9 +33,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	@Value("${promregator.endpoint.auth:NONE}")
 	private InboundAuthorizationMode endpointAuth;
 
-	@Value("${promregator.singleTargetMetrics.auth:NONE}")
-	private InboundAuthorizationMode singleTargetMetricsAuth;
-
 	@Value("${promregator.metrics.auth:NONE}")
 	private InboundAuthorizationMode promregatorMetricsAuth;
 
@@ -45,9 +42,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 			return true;
 
 		if (this.endpointAuth != InboundAuthorizationMode.NONE)
-			return true;
-
-		if (this.singleTargetMetricsAuth != InboundAuthorizationMode.NONE)
 			return true;
 
 		if (this.promregatorMetricsAuth != InboundAuthorizationMode.NONE)
@@ -107,7 +101,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		HttpSecurity sec = security;
 		sec = this.determineHttpSecurityForEndpoint(sec, "/discovery", this.discoveryAuth);
 		sec = this.determineHttpSecurityForEndpoint(sec, "/metrics", this.endpointAuth);
-		sec = this.determineHttpSecurityForEndpoint(sec, "/singleTargetMetrics/**", this.singleTargetMetricsAuth);
+		sec = this.determineHttpSecurityForEndpoint(sec, "/singleTargetMetrics/**", this.endpointAuth);
 		sec = this.determineHttpSecurityForEndpoint(sec, "/promregatorMetrics", this.promregatorMetricsAuth);
 
 		// see also
@@ -138,7 +132,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		
 		web = this.determineWebSecurityForEndpoint(web, "/discovery", this.discoveryAuth);
 		web = this.determineWebSecurityForEndpoint(web, "/metrics", this.endpointAuth);
-		web = this.determineWebSecurityForEndpoint(web, "/singleTargetMetrics/**", this.singleTargetMetricsAuth);
+		web = this.determineWebSecurityForEndpoint(web, "/singleTargetMetrics/**", this.endpointAuth);
 		web = this.determineWebSecurityForEndpoint(web, "/promregatorMetrics", this.promregatorMetricsAuth);
 
 	}
