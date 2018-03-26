@@ -31,6 +31,7 @@ Here is the list of major features provided by Promregator:
   - Null Authentication (not recommended for productive environments!)
   
   The Authentication schemes are easily extensible.
+* **Support for inbound authentication** (e.g. Prometheus authenticates to Promregator) using Basic HTTP Authentication. 
 * **Configuration using standard Spring properties** as defined by the Spring Framework (e.g. using `application.yml` file).
 * Simple **HTTP proxy support** is available for contacting CF app endpoints.
 * All metrics provided from the Cloud Foundry applications are **automatically [enriched with additional labels](docs/enrichment.md)**, indicating their origin (similar to the `job` and `instance` labels [created by Prometheus](https://prometheus.io/docs/concepts/jobs_instances/)).
