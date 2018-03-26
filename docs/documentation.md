@@ -58,7 +58,7 @@ promregator:
       applicationName: myOtherApplication
 ```
 
-The documentation of the configuration options can be found [here](docs/config.md).
+The documentation of the configuration options can be found [here](config.md).
 
 
 ## Configuration of Prometheus Server
