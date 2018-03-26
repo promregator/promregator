@@ -119,26 +119,37 @@ Specifies the protocol (`http` or `https`) which shall be used to retrieve the m
 
 Defaults to `https` if not set otherwise.
 
-### Option "promregator.discovery.hostname" (optional)
+### Subgroup "promregator.discovery"
+Configures the way how the discovery endpoint `/discovery` behaves.
+
+#### Option "promregator.discovery.hostname" (optional)
 Specifies the name of the host (or the IP address) which shall be used for specifying the target during discovery. As a rule of thumb, this name should always be the name under which Prometheus is capable of reaching Promregator.
 
 Setting this option is optional. If not specified, Promregator tries to auto-detect this value based on the configuration of the underlying operating system and the request, which triggered the service discovery.
 
 Note that in various situations, this auto-detection mechanism may fail (e.g. when running in a Docker container). Setting this option then is recommended.
 
-### Option "promregator.discovery.port" (optional)
+#### Option "promregator.discovery.port" (optional)
 Specifies the port number of the host (or the IP address) which shall be used for specifying the target during discovery. As a rule of thumb, this name should always be the port under which Prometheus is capable of reaching Promregator.
 
 Setting this option is optional. If not specified, Promregator tries to auto-detect this value based on the configuration of the underlying operating system and the request, which triggered the service discovery.
 
+#### Option "promregator.discovery.auth" (optional)
+Specifies the way how authentication shall be verified, if a request reaches the endpoint. Valid values are:
 
-### Option "promregator.endpoint.maxProcessingTime" (optional)
+* `NONE`: no authentication verification is required (default)
+* `BASIC`: an authentication verification using HTTP Basic Authentication is performed. Valid credentials are taken from `promregator.authentication.basic.username` and `promregator.authentication.basic.password`.
+
+### Subgroup "promregator.endpoint"
+Configures the way how the metrics endpoints `/metrics` and `/singleTargetMetrics` behave.
+
+#### Option "promregator.endpoint.maxProcessingTime" (optional)
 Specifies the maximal time which may be used to query (all) targets. The value is expected to be specified in milliseconds. 
 Targets which did not respond after this amount of time are considered non-functional and no result will be returned to the Prometheus server.
 
 The default value of this option is 5000ms (=5 seconds)
 
-### Option "promregator.endpoint.threads" (optional)
+#### Option "promregator.endpoint.threads" (optional)
 Specifies how many threads may be used to query the list of targets.
 Note that for each target request sent, an own thread is required and stays blocked (synchronously) until the Cloud Foundry Application has returned a response. 
 Thus, it may be reasonable to allow more threads than you have cores in your environment where Promregator is running.
@@ -148,7 +159,24 @@ As an upper boundary, it does not make sense to allow more threads to run than y
 
 The default value of this option is 5.
 
-### Option "promregator.metrics.internal" (optional)
+#### Option "promregator.endpoint.auth" (optional)
+Specifies the way how authentication shall be verified, if a request reaches the endpoint. Valid values are:
+
+* `NONE`: no authentication verification is required (default)
+* `BASIC`: an authentication verification using HTTP Basic Authentication is performed. Valid credentials are taken from `promregator.authentication.basic.username` and `promregator.authentication.basic.password`.
+
+
+### Subgroup "promregator.metrics"
+Configures the way how the promregator shall expose its own-generated metrics via the endpoints `/metrics` and `/promregatorMetrics`.
+
+#### Option "promregator.metrics.auth" (optional)
+Specifies the way how authentication shall be verified, if a request reaches the endpoint `/promregatorMetrics`. Note that the authentication verification of `/metrics` is controlled by `promregator.endpoint.auth`. Valid values for this option are:
+
+* `NONE`: no authentication verification is required (default)
+* `BASIC`: an authentication verification using HTTP Basic Authentication is performed. Valid credentials are taken from `promregator.authentication.basic.username` and `promregator.authentication.basic.password`.
+
+
+#### Option "promregator.metrics.internal" (optional)
 Specifies, if additional internal metrics shall be exposed describing the internal state of Promregator.
 
 The default value of this option is `false`, which disables the exposure. 
@@ -157,7 +185,7 @@ Note that these metrics are not meant for productive usage. As they are primaril
 
 
 ### Subgroup "promregator.authenticator"
-Configures the way how authentication shall happen between Promregator and the targets configured above (outbound authentication).
+Configures the way how authentication shall happen between Promregator and the targets configured above (**outbound** authentication). Mind the difference to the settings provided in `promregator.authentication`!
 
 Please note that as of writing, there is no support of multiple authentication schemes across different targets. That is to say: all targets
 are queried using the same authentication scheme. If you want to have different schemes configured, then you have to run multiple instances of
@@ -212,6 +240,21 @@ java -Dspring.config.location=file:/path/to/your/myconfig.yaml -jar promregator-
 
 #### Option "promregator.authenticator.oauth2xsuaa.client_secret" (optional, only available if using promregator.authenticator.type=OAuth2XSUAA)
 Specifies the set of scopes/authorities (format itself is a comma-separated string of explicit scopes, see also https://www.oauth.com/oauth2-servers/access-tokens/client-credentials/), which shall be requested from the OAuth2 server when using the Grant Type Client Credentials flow. If not specified, an empty string is assumed, which will suppress a dedicated request of scopes. Usually, OAuth2 servers then provide a JWT, which contains all scopes allowed for the set of credentials provided.
+
+
+### Subgroup "promregator.authentication"
+Configures the way how **inbound** authentication shall be verified (e.g. between Prometheus and Promregator). Mind the difference to the settings provided in `promregator.authenticator`!
+
+#### Option "promregator.authentication.basic.username" (optional)
+Specifies the username, which is used for HTTP Basic (inbound) authentication. 
+
+If not specified, `promregator` is defaulted.
+
+
+#### Option "promregator.authentication.basic.password" (optional)
+Specifies the (plain-text) password, which is used for HTTP Basic (inbound) authentication.
+
+If not specified, a random password is generated during startup. Its value is printed to the standard error device.
 
 
 ## Further Options
