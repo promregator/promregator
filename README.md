@@ -36,7 +36,7 @@ Here is the list of major features provided by Promregator:
 * Simple **HTTP proxy support** is available for contacting CF app endpoints.
 * All metrics provided from the Cloud Foundry applications are **automatically [enriched with additional labels](docs/enrichment.md)**, indicating their origin (similar to the `job` and `instance` labels [created by Prometheus](https://prometheus.io/docs/concepts/jobs_instances/)).
 * [Additional metrics are provided](docs/enrichment.md) supporting you to **monitor Promregator** and the **communication to the Cloud Foundry applications**.
-* Promregator's endpoint (`/metrics`) supports **GZIP compression**, if the clients indicates to accept it.
+* Promregator's endpoints (e.g. `/metrics`, `/promregatorMetrics`, `/discovery`) support **GZIP compression**, if the clients indicates to accept it.
 
 
 ## Architecture
