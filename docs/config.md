@@ -157,7 +157,7 @@ Note that these metrics are not meant for productive usage. As they are primaril
 
 
 ### Subgroup "promregator.authenticator"
-Configures the way how authentication shall happen between Promregator and the targets configured above.
+Configures the way how authentication shall happen between Promregator and the targets configured above (outbound authentication).
 
 Please note that as of writing, there is no support of multiple authentication schemes across different targets. That is to say: all targets
 are queried using the same authentication scheme. If you want to have different schemes configured, then you have to run multiple instances of
