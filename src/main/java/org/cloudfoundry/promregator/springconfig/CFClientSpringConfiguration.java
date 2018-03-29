@@ -22,10 +22,8 @@ public class CFClientSpringConfiguration {
 			@Value("${cf.api_host}") String apiHost, 
 			@Value("${cf.skipSslValidation:false}") boolean skipSSLValidation, 
 			Optional<ProxyConfiguration> proxyConfiguration) throws ConfigurationException {
-		if (apiHost != null) {
-			if (PATTERN_HTTP_BASED_PROTOCOL_PREFIX.matcher(apiHost).find()) {
-				throw new ConfigurationException("cf.api_host configuration parameter must not contain an http(s)://-like prefix; specify the hostname only instead");
-			}
+		if (apiHost != null && PATTERN_HTTP_BASED_PROTOCOL_PREFIX.matcher(apiHost).find()) {
+			throw new ConfigurationException("cf.api_host configuration parameter must not contain an http(s)://-like prefix; specify the hostname only instead");
 		}
 
 		Builder connctx = DefaultConnectionContext.builder().apiHost(apiHost).skipSslValidation(skipSSLValidation);
@@ -45,10 +43,8 @@ public class CFClientSpringConfiguration {
 	
 	@Bean
 	public ProxyConfiguration proxyConfiguration(@Value("${cf.proxyHost:#{null}}") String proxyHost, @Value("${cf.proxyPort:0}") int proxyPort) throws ConfigurationException {
-		if (proxyHost != null) {
-			if (PATTERN_HTTP_BASED_PROTOCOL_PREFIX.matcher(proxyHost).find()) {
-				throw new ConfigurationException("cf.proxyHost configuration parameter must not contain an http(s)://-like prefix; specify the hostname only instead");
-			}
+		if (proxyHost != null && PATTERN_HTTP_BASED_PROTOCOL_PREFIX.matcher(proxyHost).find()) {
+			throw new ConfigurationException("cf.proxyHost configuration parameter must not contain an http(s)://-like prefix; specify the hostname only instead");
 		}
 		
 		if (proxyHost != null && proxyPort != 0) {
