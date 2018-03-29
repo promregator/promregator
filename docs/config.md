@@ -52,11 +52,6 @@ If you want to make the system establish the connection to the API host using an
 
 Please also make sure that you set "cf.proxyPort", too, as otherwise proxy support will be disabled.
 
-*WARNING!*
-Due to some limitation in the underlying libraries, it is currently *not* supported to specify the hostname of your proxy server here.
-In general this is considered a bug, and once the underlying software has resolved this limitation, it will also be made available to use hostnames instead of IP addresses here.
-Sorry for inconvenience caused!
-
 *HINT*
 For the time being (i.e. this will change in future) the proxy specified here will also be used to access the targets.
 
