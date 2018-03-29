@@ -200,7 +200,7 @@ Specifies the type of the Authenticator which shall be used when connecting to t
   Additional options must be provided to complete the configuration.
 * *OAuth2XSUAA*: Enables the OAuth2/JWT-based authentication scheme using grant type "Client Credentials" as used for XSUAA servers. 
   Additional options must be provided to complete the configuration.
-* *null* or *none*: Disables any additional authentication scheme; requests will be sent as unauthenticated HTTP GET requests. No further options need to be provided.
+* *null* or *none*: Disables any additional authentication scheme; requests will be sent as unauthenticated HTTP(s) GET requests (depending of the protocol specified for the target). No further options need to be provided.
 
 #### Option "promregator.authenticator.basic.username" (mandatory, if using promregator.authenticator.type=basic)
 Specifies the username which is being used for authenticating the call to the Prometheus client (CF application).
