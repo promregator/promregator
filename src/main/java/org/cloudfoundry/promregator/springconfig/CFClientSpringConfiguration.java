@@ -18,14 +18,17 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class CFClientSpringConfiguration {
 	@Bean
-	public DefaultConnectionContext connectionContext(@Value("${cf.api_host}") String apiHost, Optional<ProxyConfiguration> proxyConfiguration) throws ConfigurationException {
+	public DefaultConnectionContext connectionContext(
+			@Value("${cf.api_host}") String apiHost, 
+			@Value("${cf.skipSslValidation:false}") boolean skipSSLValidation, 
+			Optional<ProxyConfiguration> proxyConfiguration) throws ConfigurationException {
 		if (apiHost != null) {
 			if (PATTERN_HTTP_BASED_PROTOCOL_PREFIX.matcher(apiHost).find()) {
 				throw new ConfigurationException("cf.api_host configuration parameter must not contain an http(s)://-like prefix; specify the hostname only instead");
 			}
 		}
 
-		Builder connctx = DefaultConnectionContext.builder().apiHost(apiHost);
+		Builder connctx = DefaultConnectionContext.builder().apiHost(apiHost).skipSslValidation(skipSSLValidation);
 		
 		if (proxyConfiguration.isPresent()) {
 			connctx = connctx.proxyConfiguration(proxyConfiguration);
