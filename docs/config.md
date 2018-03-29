@@ -43,7 +43,7 @@ Due to security reasons, it is recommended *not* to store this value in your YAM
 Example:
 
 ```bash
-export cf.password=mysecretPassword
+export CF_PASSWORD=mysecretPassword
 java -Dspring.config.location=file:/path/to/your/myconfig.yaml -jar promregator-0.0.1-SNAPSHOT.jar
 ```
 
