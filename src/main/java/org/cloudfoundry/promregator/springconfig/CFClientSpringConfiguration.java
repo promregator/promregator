@@ -1,7 +1,9 @@
 package org.cloudfoundry.promregator.springconfig;
 
 import java.util.Optional;
+import java.util.regex.Pattern;
 
+import org.cloudfoundry.promregator.config.ConfigurationException;
 import org.cloudfoundry.reactor.ConnectionContext;
 import org.cloudfoundry.reactor.DefaultConnectionContext;
 import org.cloudfoundry.reactor.DefaultConnectionContext.Builder;
@@ -16,7 +18,13 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class CFClientSpringConfiguration {
 	@Bean
-	public DefaultConnectionContext connectionContext(@Value("${cf.api_host}") String apiHost, Optional<ProxyConfiguration> proxyConfiguration) {
+	public DefaultConnectionContext connectionContext(@Value("${cf.api_host}") String apiHost, Optional<ProxyConfiguration> proxyConfiguration) throws ConfigurationException {
+		if (apiHost != null) {
+			if (PATTERN_HTTP_BASED_PROTOCOL_PREFIX.matcher(apiHost).find()) {
+				throw new ConfigurationException("cf.api_host configuration parameter must not contain an http(s)://-like prefix; specify the hostname only instead");
+			}
+		}
+
 		Builder connctx = DefaultConnectionContext.builder().apiHost(apiHost);
 		
 		if (proxyConfiguration.isPresent()) {
@@ -30,8 +38,16 @@ public class CFClientSpringConfiguration {
 		return PasswordGrantTokenProvider.builder().password(password).username(username).build();
 	}
 
+	private static final Pattern PATTERN_HTTP_BASED_PROTOCOL_PREFIX = Pattern.compile("^https?://");
+	
 	@Bean
-	public ProxyConfiguration proxyConfiguration(@Value("${cf.proxyHost:#{null}}") String proxyHost, @Value("${cf.proxyPort:0}") int proxyPort) {
+	public ProxyConfiguration proxyConfiguration(@Value("${cf.proxyHost:#{null}}") String proxyHost, @Value("${cf.proxyPort:0}") int proxyPort) throws ConfigurationException {
+		if (proxyHost != null) {
+			if (PATTERN_HTTP_BASED_PROTOCOL_PREFIX.matcher(proxyHost).find()) {
+				throw new ConfigurationException("cf.proxyHost configuration parameter must not contain an http(s)://-like prefix; specify the hostname only instead");
+			}
+		}
+		
 		if (proxyHost != null && proxyPort != 0) {
 			return ProxyConfiguration.builder().host(proxyHost).port(proxyPort).build();
 		} else {
