@@ -202,6 +202,9 @@ Specifies the type of the Authenticator which shall be used when connecting to t
   Additional options must be provided to complete the configuration.
 * *null* or *none*: Disables any additional authentication scheme; requests will be sent as unauthenticated HTTP(s) GET requests (depending of the protocol specified for the target). No further options need to be provided.
 
+*Note!*
+This option does not have any influence on how Promregator authenticates to the Cloud Foundry platform's API, but only has an impact to the way how Promregator tries to authenticate on scraping Cloud Foundry Applications.
+
 #### Option "promregator.authenticator.basic.username" (mandatory, if using promregator.authenticator.type=basic)
 Specifies the username which is being used for authenticating the call to the Prometheus client (CF application).
 
