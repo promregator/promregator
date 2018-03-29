@@ -22,6 +22,9 @@ The API server is required to resolve the targets into instances which Prometheu
 
 Note that this compliant to how [cf-exporter](https://github.com/bosh-prometheus/cf_exporter) is being configured.
 
+*NOTE*
+Specify the hostname only here. Do not prefix it with `https://` or similar. Promregator will always try to connect to the API host of the Cloud Foundry platform using the HTTPS protocol (HTTP-only currently is not supported). This holds true, even if you only have an HTTP proxy as mentioned below.
+
 ### Option "cf.username" (mandatory)
 Specifies the username, which shall be used when connecting to the API server. This is your "standard" username - the same one, which you also may use
 for connecting to Cloud Foundry, e.g. when issuing `cf login`.
@@ -45,8 +48,7 @@ java -Dspring.config.location=file:/path/to/your/myconfig.yaml -jar promregator-
 ```
 
 ### Option "cf.proxyHost" (optional)
-If you want to make the system establish the connection to the API host using an HTTP (sorry, HTTPS not supported yet) proxy, enter the *IP address* 
-of this server here.
+If you want to make the system establish the connection to the API host using an HTTP (sorry, HTTPS not supported yet) proxy, enter the *IP address* of this server here.
 
 Please also make sure that you set "cf.proxyPort", too, as otherwise proxy support will be disabled.
 
@@ -56,7 +58,7 @@ In general this is considered a bug, and once the underlying software has resolv
 Sorry for inconvenience caused!
 
 *HINT*
-For the time being (i.e. this will change in future) the proxy specified here will also be uesd to access the targets.
+For the time being (i.e. this will change in future) the proxy specified here will also be used to access the targets.
 
 ### Option "cf.proxyPort" (optional)
 If you want to make the system establish the connection to the API host using an HTTP (sorry, HTTPS not supported yet) proxy, enter the port number 
