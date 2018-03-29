@@ -1,8 +1,11 @@
 package org.cloudfoundry.promregator.springconfig;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import org.apache.http.conn.util.InetAddressUtils;
 import org.cloudfoundry.promregator.config.ConfigurationException;
 import org.cloudfoundry.reactor.ConnectionContext;
 import org.cloudfoundry.reactor.DefaultConnectionContext;
@@ -48,7 +51,30 @@ public class CFClientSpringConfiguration {
 		}
 		
 		if (proxyHost != null && proxyPort != 0) {
-			return ProxyConfiguration.builder().host(proxyHost).port(proxyPort).build();
+			
+			String proxyIP = null;
+			if (!InetAddressUtils.isIPv4Address(proxyHost) && !InetAddressUtils.isIPv6Address(proxyHost)) {
+				/*
+				 * NB: There is currently a bug in io.netty.util.internal.SocketUtils.connect()
+				 * which is called implicitly by the CF API Client library, which leads to the effect
+				 * that a hostname for the proxy isn't resolved. Thus, it is only possible to pass 
+				 * IP addresses as proxy names.
+				 * To work around this issue, we manually perform a resolution of the hostname here
+				 * and then feed that one to the CF API Client library...
+				 */
+				try {
+					InetAddress ia = InetAddress.getByName(proxyHost);
+					proxyIP = ia.getHostAddress();
+				} catch (UnknownHostException e) {
+					throw new ConfigurationException("The cf.proxyHost provided cannot be resolved to an IP address; is there a typo in your configuration?", e);
+				}
+			} else {
+				// the address specified is already an IP address
+				proxyIP = proxyHost;
+			}
+			
+			return ProxyConfiguration.builder().host(proxyIP).port(proxyPort).build();
+			
 		} else {
 			return null;
 		}
