@@ -10,7 +10,7 @@ The group "cf" defines the way how Promregator connects the API server of the Cl
 Example:
 ```yaml
 cf:
-  apiHost: api.cf.example.org
+  api_host: api.cf.example.org
   username: myCFUserName
   proxyHost: 192.168.111.1
   proxyPort: 8080
