@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.collections4.map.PassiveExpiringMap;
+import org.apache.log4j.Logger;
 import org.cloudfoundry.client.v2.routemappings.RouteMappingResource;
 import org.cloudfoundry.client.v2.routes.RouteEntity;
 import org.cloudfoundry.client.v2.shareddomains.SharedDomainEntity;
@@ -15,6 +16,7 @@ import org.cloudfoundry.client.v3.organizations.OrganizationResource;
 import org.cloudfoundry.client.v3.processes.ListProcessesResponse;
 import org.cloudfoundry.client.v3.processes.ProcessResource;
 import org.cloudfoundry.client.v3.spaces.SpaceResource;
+import org.cloudfoundry.promregator.PromregatorApplication;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.config.Target;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
@@ -28,6 +30,8 @@ import reactor.core.publisher.Mono;
 
 @Component
 public class ReactiveAppInstanceScanner implements AppInstanceScanner {
+	private static final Logger log = Logger.getLogger(ReactiveAppInstanceScanner.class);
+	
 	private PassiveExpiringMap<String, Mono<String>> orgMap;
 	private PassiveExpiringMap<String, Mono<String>> spaceMap;
 	private PassiveExpiringMap<String, Mono<String>> applicationMap;
@@ -196,6 +200,11 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				return Mono.empty();
 			}
 			
+			if (resources.isEmpty()) {
+				log.warn(String.format("Received empty result on requesting org %s", orgNameString));
+				return Mono.empty();
+			}
+			
 			OrganizationResource organizationResource = resources.get(0);
 			return Mono.just(organizationResource.getId());
 		})
@@ -238,6 +247,11 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 					return Mono.empty();
 				}
 				
+				if (resources.isEmpty()) {
+					log.warn(String.format("Received empty result on requesting space %s", spaceNameString));
+					return Mono.empty();
+				}
+				
 				SpaceResource spaceResource = resources.get(0);
 				return Mono.just(spaceResource.getId());
 			})
@@ -277,6 +291,11 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			}).flatMap(response -> {
 				List<ApplicationResource> resources = response.getResources();
 				if (resources == null) {
+					return Mono.empty();
+				}
+				
+				if (resources.isEmpty()) {
+					log.warn(String.format("Received empty result on requesting application %s", applicationNameString));
 					return Mono.empty();
 				}
 				
