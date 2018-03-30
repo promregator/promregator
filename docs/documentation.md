@@ -152,7 +152,48 @@ Summarizing the suggestions for the Prometheus' configuration, it is recommended
 
 ### Common to both Scraping Modes
 
-Authentication currently is not required / not available (yet). For the current progress on this topic, please refer to [#17](https://github.com/promregator/promregator/issues/17).
+Basic Authentication available starting with version 0.2.0 of Promregator.
 
+In general, you need to specify a set of username and password, which may be used for authentication at various places. To define the set of credentials to be used is done by
 
+```yaml
+promregator:
+  authentication:
+    basic:
+      username: promregator
+      password: promi
+```
+
+There are three places where inbound authentication checks can be enabled:
+
+* At the metrics' scraping endpoints `/metrics` and `/singleTargetMetrics` by setting the configuration option `promregator.endpoint.auth` to `BASIC`.
+* At the discovery endpoint `/discovery` by setting the configuration option `promregator.discovery.auth` to `BASIC`.
+* At the Promregator's internal metrics endpoint `/promregatorMetrics` by setting the configuration option `promregator.metrics.auth` to `BASIC`
+
+or any combination of these. 
+
+For further details on these configuration options, also refer to the [configuration option page](config.md)).
+
+The corresponding option in Prometheus is the `scrape_configs[].basic_auth` option. Let us assume that you have configured Promregator like this 
+
+```yaml
+promregator:
+  endpoint:
+    auth: BASIC
+
+  authentication:
+    basic:
+      username: someuser
+      password: somepassword
+```
+
+Then the corresponding configuration in Prometheus may look like this:
+
+```yaml
+scrape_configs:
+  - job_name: 'promregator'
+    basic_auth:
+      username: someuser
+      password: somepassword
+```
  
