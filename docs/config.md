@@ -170,7 +170,7 @@ As an upper boundary, it does not make sense to allow more threads to run than y
 The default value of this option is 5.
 
 #### Option "promregator.endpoint.auth" (optional)
-Specifies the way how authentication shall be verified, if a request reaches the endpoint. Valid values are:
+Specifies the way how authentication shall be verified, if a request reaches the scraping endpoints of Promregator (e.g. `/metrics` and `/singleTargetMetrics`). Valid values are:
 
 * *NONE*: no authentication verification is required (default)
 * *BASIC*: an authentication verification using HTTP Basic Authentication is performed. Valid credentials are taken from `promregator.authentication.basic.username` and `promregator.authentication.basic.password`.
