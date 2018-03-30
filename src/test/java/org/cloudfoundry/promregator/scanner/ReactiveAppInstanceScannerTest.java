@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorMock;
 import org.cloudfoundry.promregator.config.Target;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,6 +14,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import io.prometheus.client.CollectorRegistry;
+
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = MockedReactiveAppInstanceScannerSpringApplication.class)
 @TestPropertySource(locations="default.properties")
@@ -20,6 +23,11 @@ public class ReactiveAppInstanceScannerTest {
 
 	@Autowired
 	private AppInstanceScanner appInstanceScanner;
+	
+	@AfterClass
+	public static void releaseInternalMetrics() {
+		CollectorRegistry.defaultRegistry.clear();
+	}
 	
 	@Test
 	public void testStraightForward() {
