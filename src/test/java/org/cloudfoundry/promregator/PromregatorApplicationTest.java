@@ -1,6 +1,7 @@
 package org.cloudfoundry.promregator;
 
 import org.cloudfoundry.promregator.endpoint.TestableMetricsEndpoint;
+import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.autoconfigure.AutoConfigurationExcludeFilter;
@@ -9,9 +10,13 @@ import org.springframework.boot.test.context.SpringBootTestContextBootstrapper;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.BootstrapWith;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import io.prometheus.client.CollectorRegistry;
 
 @RunWith(SpringRunner.class)
 @BootstrapWith(value=SpringBootTestContextBootstrapper.class)
@@ -27,4 +32,8 @@ public class PromregatorApplicationTest {
 	public void contextLoads() {
 	}
 
+	@AfterClass
+	public static void releaseInternalMetrics() {
+		CollectorRegistry.defaultRegistry.clear();
+	}
 }
