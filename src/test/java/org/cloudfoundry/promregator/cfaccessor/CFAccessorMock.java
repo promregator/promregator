@@ -3,6 +3,13 @@ package org.cloudfoundry.promregator.cfaccessor;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.cloudfoundry.client.v2.Metadata;
+import org.cloudfoundry.client.v2.applications.ApplicationEntity;
+import org.cloudfoundry.client.v2.applications.ApplicationResource;
+import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
+import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
+import org.cloudfoundry.client.v2.organizations.OrganizationEntity;
+import org.cloudfoundry.client.v2.organizations.OrganizationResource;
 import org.cloudfoundry.client.v2.routemappings.ListRouteMappingsResponse;
 import org.cloudfoundry.client.v2.routemappings.RouteMappingEntity;
 import org.cloudfoundry.client.v2.routemappings.RouteMappingResource;
@@ -10,22 +17,15 @@ import org.cloudfoundry.client.v2.routes.GetRouteResponse;
 import org.cloudfoundry.client.v2.routes.RouteEntity;
 import org.cloudfoundry.client.v2.shareddomains.GetSharedDomainResponse;
 import org.cloudfoundry.client.v2.shareddomains.SharedDomainEntity;
-import org.cloudfoundry.client.v3.Lifecycle;
-import org.cloudfoundry.client.v3.LifecycleData;
-import org.cloudfoundry.client.v3.LifecycleType;
-import org.cloudfoundry.client.v3.applications.ApplicationResource;
-import org.cloudfoundry.client.v3.applications.ApplicationState;
-import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
-import org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse;
-import org.cloudfoundry.client.v3.organizations.OrganizationResource;
+import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
+import org.cloudfoundry.client.v2.spaces.SpaceEntity;
+import org.cloudfoundry.client.v2.spaces.SpaceResource;
 import org.cloudfoundry.client.v3.processes.Data;
 import org.cloudfoundry.client.v3.processes.HealthCheck;
 import org.cloudfoundry.client.v3.processes.HealthCheckType;
 import org.cloudfoundry.client.v3.processes.ListProcessesResponse;
 import org.cloudfoundry.client.v3.processes.ProcessResource;
 import org.cloudfoundry.client.v3.processes.ProcessResource.Builder;
-import org.cloudfoundry.client.v3.spaces.ListSpacesResponse;
-import org.cloudfoundry.client.v3.spaces.SpaceResource;
 import org.junit.Assert;
 
 import reactor.core.publisher.Mono;
@@ -47,12 +47,21 @@ public class CFAccessorMock implements CFAccessor {
 	
 	@Override
 	public Mono<ListOrganizationsResponse> retrieveOrgId(String orgName) {
+		
 		if ("unittestorg".equals(orgName)) {
-			OrganizationResource or = OrganizationResource.builder().id(UNITTEST_ORG_UUID).name(orgName).createdAt(CREATED_AT_TIMESTAMP).updatedAt(UPDATED_AT_TIMESTAMP).build();
-			List<OrganizationResource> list = new LinkedList<>();
+			
+			OrganizationResource or = OrganizationResource.builder().entity(
+					OrganizationEntity.builder().name(orgName).build()
+				).metadata(
+					Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_ORG_UUID).build()
+					// Note that UpdatedAt is not set here, as this can also happen in real life!
+				).build();
+			
+			List<org.cloudfoundry.client.v2.organizations.OrganizationResource> list = new LinkedList<>();
 			list.add(or);
 			
-			ListOrganizationsResponse resp = ListOrganizationsResponse.builder().addAllResources(list).build();
+			ListOrganizationsResponse resp = org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse.builder().addAllResources(list).build();
+			
 			return Mono.just(resp);
 		}
 		Assert.fail("Invalid OrgId request");
@@ -63,7 +72,11 @@ public class CFAccessorMock implements CFAccessor {
 	public Mono<ListSpacesResponse> retrieveSpaceId(String orgId, String spaceName) {
 		if ("unittestspace".equals(spaceName) && orgId.equals(UNITTEST_ORG_UUID)) {
 			
-			SpaceResource sr = SpaceResource.builder().id(UNITTEST_SPACE_UUID).name(spaceName).createdAt(CREATED_AT_TIMESTAMP).updatedAt(UPDATED_AT_TIMESTAMP).build();
+			SpaceResource sr = SpaceResource.builder().entity(
+					SpaceEntity.builder().name(spaceName).build()
+				).metadata(
+					Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_SPACE_UUID).build()
+				).build();
 			List<SpaceResource> list = new LinkedList<>();
 			list.add(sr);
 			ListSpacesResponse resp = ListSpacesResponse.builder().addAllResources(list).build();
@@ -77,18 +90,19 @@ public class CFAccessorMock implements CFAccessor {
 	@Override
 	public Mono<ListApplicationsResponse> retrieveApplicationId(String orgId, String spaceId, String applicationName) {
 		if (orgId.equals(UNITTEST_ORG_UUID) && spaceId.equals(UNITTEST_SPACE_UUID)) {
-			LifecycleData lifecycleData = new LifecycleData() {
-				
-			};
-			Lifecycle lifecycle = Lifecycle.builder().data(lifecycleData).type(LifecycleType.BUILDPACK).build();
-
 			ApplicationResource ar = null;
 			if (applicationName.equals("testapp")) {
-				ar = ApplicationResource.builder().id(UNITTEST_APP1_UUID).name(applicationName).createdAt(CREATED_AT_TIMESTAMP).updatedAt(UPDATED_AT_TIMESTAMP)
-						.lifecycle(lifecycle).state(ApplicationState.STARTED).build();
+				ar = ApplicationResource.builder().entity(
+						ApplicationEntity.builder().name(applicationName).build()
+					).metadata(
+							Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP1_UUID).build()
+					).build();
 			} else if (applicationName.equals("testapp2")) {
-				ar = ApplicationResource.builder().id(UNITTEST_APP2_UUID).name(applicationName).createdAt(CREATED_AT_TIMESTAMP).updatedAt(UPDATED_AT_TIMESTAMP)
-						.lifecycle(lifecycle).state(ApplicationState.STARTED).build();
+				ar = ApplicationResource.builder().entity(
+						ApplicationEntity.builder().name(applicationName).build()
+					).metadata(
+							Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP2_UUID).build()
+					).build();
 			} else {
 				Assert.fail("Invalid ApplicationId request, application name is invalid");
 			}

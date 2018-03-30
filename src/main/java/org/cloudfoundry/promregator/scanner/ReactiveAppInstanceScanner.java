@@ -7,14 +7,14 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.collections4.map.PassiveExpiringMap;
+import org.cloudfoundry.client.v2.applications.ApplicationResource;
+import org.cloudfoundry.client.v2.organizations.OrganizationResource;
 import org.cloudfoundry.client.v2.routemappings.RouteMappingResource;
 import org.cloudfoundry.client.v2.routes.RouteEntity;
 import org.cloudfoundry.client.v2.shareddomains.SharedDomainEntity;
-import org.cloudfoundry.client.v3.applications.ApplicationResource;
-import org.cloudfoundry.client.v3.organizations.OrganizationResource;
+import org.cloudfoundry.client.v2.spaces.SpaceResource;
 import org.cloudfoundry.client.v3.processes.ListProcessesResponse;
 import org.cloudfoundry.client.v3.processes.ProcessResource;
-import org.cloudfoundry.client.v3.spaces.SpaceResource;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.config.Target;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
@@ -197,7 +197,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			}
 			
 			OrganizationResource organizationResource = resources.get(0);
-			return Mono.just(organizationResource.getId());
+			return Mono.just(organizationResource.getMetadata().getId());
 		})
 		// stop the timer
 		.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
@@ -239,7 +239,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				}
 				
 				SpaceResource spaceResource = resources.get(0);
-				return Mono.just(spaceResource.getId());
+				return Mono.just(spaceResource.getMetadata().getId());
 			})
 			// stop the timer
 			.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
@@ -281,7 +281,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				}
 				
 				ApplicationResource applicationResource = resources.get(0);
-				return Mono.just(applicationResource.getId());
+				return Mono.just(applicationResource.getMetadata().getId());
 			})
 			// stop the timer
 			.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
