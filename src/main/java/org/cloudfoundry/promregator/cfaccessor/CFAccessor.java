@@ -3,10 +3,10 @@ package org.cloudfoundry.promregator.cfaccessor;
 import org.cloudfoundry.client.v2.routemappings.ListRouteMappingsResponse;
 import org.cloudfoundry.client.v2.routes.GetRouteResponse;
 import org.cloudfoundry.client.v2.shareddomains.GetSharedDomainResponse;
-import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
-import org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse;
+import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
+import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v3.processes.ListProcessesResponse;
-import org.cloudfoundry.client.v3.spaces.ListSpacesResponse;
+import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 
 import reactor.core.publisher.Mono;
 

@@ -1,19 +1,19 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
+import org.cloudfoundry.client.v2.applications.ListApplicationsRequest;
+import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
+import org.cloudfoundry.client.v2.organizations.ListOrganizationsRequest;
+import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.routemappings.ListRouteMappingsRequest;
 import org.cloudfoundry.client.v2.routemappings.ListRouteMappingsResponse;
 import org.cloudfoundry.client.v2.routes.GetRouteRequest;
 import org.cloudfoundry.client.v2.routes.GetRouteResponse;
 import org.cloudfoundry.client.v2.shareddomains.GetSharedDomainRequest;
 import org.cloudfoundry.client.v2.shareddomains.GetSharedDomainResponse;
-import org.cloudfoundry.client.v3.applications.ListApplicationsRequest;
-import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
-import org.cloudfoundry.client.v3.organizations.ListOrganizationsRequest;
-import org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse;
+import org.cloudfoundry.client.v2.spaces.ListSpacesRequest;
+import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v3.processes.ListProcessesRequest;
 import org.cloudfoundry.client.v3.processes.ListProcessesResponse;
-import org.cloudfoundry.client.v3.spaces.ListSpacesRequest;
-import org.cloudfoundry.client.v3.spaces.ListSpacesResponse;
 import org.cloudfoundry.reactor.client.ReactorCloudFoundryClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -32,7 +32,7 @@ public class CFAccessorImpl implements CFAccessor {
 	@Override
 	public Mono<ListOrganizationsResponse> retrieveOrgId(String orgName) {
 		ListOrganizationsRequest orgsRequest = ListOrganizationsRequest.builder().name(orgName).build();
-		return this.cloudFoundryClient.organizationsV3().list(orgsRequest).log("Query Org");
+		return this.cloudFoundryClient.organizations().list(orgsRequest).log("Query Org");
 	}
 	
 	/* (non-Javadoc)
@@ -41,7 +41,7 @@ public class CFAccessorImpl implements CFAccessor {
 	@Override
 	public Mono<ListSpacesResponse> retrieveSpaceId(String orgId, String spaceName) {
 		ListSpacesRequest spacesRequest = ListSpacesRequest.builder().organizationId(orgId).name(spaceName).build();
-		return this.cloudFoundryClient.spacesV3().list(spacesRequest).log("Query Space");
+		return this.cloudFoundryClient.spaces().list(spacesRequest).log("Query Space");
 	}
 	
 	/* (non-Javadoc)
@@ -54,7 +54,7 @@ public class CFAccessorImpl implements CFAccessor {
 				.spaceId(spaceId)
 				.name(applicationName)
 				.build();
-		return this.cloudFoundryClient.applicationsV3().list(request).log("Query App");
+		return this.cloudFoundryClient.applicationsV2().list(request).log("Query App");
 	}
 	
 	/* (non-Javadoc)
