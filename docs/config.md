@@ -61,6 +61,19 @@ of this server here.
 
 Please also make sure that you set "cf.proxyHost", too, as otherwise proxy support will be disabled.
 
+### Option "cf.skipSslValidation" (optional)
+Allows to disable the SSL/TLS certificate validation when talking to the Cloud Foundry API host at the servers reported via `cf.api_host`. This is usually necessary, if your Cloud Foundry platform is only equipped with a self-signed certificate, or a certificate, which the Java Virtual Machine is not aware of (NB: the default-provided docker image only is aware of the publicly-known Root certificates as defined by the underlying operating system Ubuntu). 
+
+By default, this option is disabled, which means that the validation is performed. If the validation fails, you typically get the following error message:
+
+```
+Caused by: sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+```
+
+*WARNING!*
+Enabling this option (and thus *disabling* the validation) may make you vulnerable to [man-in-the-middle attacks](https://en.wikipedia.org/wiki/Man-in-the-middle_attack). Thus, this option should never be enabled in a productive environment, but may only be used for testing purpose in a properly controlled environment.
+
+
 ### Option "cf.cache.timeout.org" (optional)
 For performance reasons the metadata of the Cloud Foundry environment (organization, space, applications, routes) is cached locally in Promregator.
 
