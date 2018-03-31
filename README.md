@@ -80,7 +80,7 @@ java -jar promregator-x.y.z-SNAPSHOT.jar
 
 ## Documentation
 
-A detailed documentation, including a descriptionhow you may configure Promregator, what needs to be done to integrate it with Prometheus is available at the [documentation pages](docs/documentation.md).
+A detailed documentation, including a description how you may configure Promregator, what needs to be done to integrate it with Prometheus is available at the [documentation pages](docs/documentation.md).
 
 
 ## Related Work / References
