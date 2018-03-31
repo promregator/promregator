@@ -69,6 +69,8 @@ For this purpose, we will use multiple Docker images, as this greatly relieves y
    * `<hereGoesTheAPIEndpointHostOnly!>` is the host and domain name part of `api endpoint:` from above, leaving off `https://`. So, if `api endpoint:` reads `https://api.eu-gb.bluemix.net`, then you should enter `api.eu-gb.bluemix.net` here.
    * `<yourCFUsername>` is the username, which you used for logging on to the platform before.
 
+   Keep in mind that you are writing a [YAML](http://yaml.org/spec/) file, which requires that you use spaces for indentation - not tabs!
+
 2. Retrieve the Docker image of promregator by calling
    ```bash
    $ docker pull promregator/promregator:0.1.0
@@ -107,6 +109,8 @@ then comes to your rescue.
        static_configs:
          - targets: ['promregator:8080']
    ```
+   
+   Again, please be reminded to use tabs for indentation - not tabs.
    
 2. Retrieve the Docker image of Prometheus by calling
    ```bash
