@@ -12,11 +12,11 @@ A detailed analysis of Promregator's architecture is described in the [architect
 
 Since version 0.2.0, Promregator supports two modes on how it allows to integrate with Prometheus:
 
-* **Single Endpoint Scraping Mode**: This is the preferred mode. Promregator provides only one single endpoint (`/metrics`), which handles both the discovery of CF App instances on the Cloud Foundry platform, the scraping of the metrics from these instances and the merging of the metric samples which have been scraped. Prometheus only needs to scrape one single (static) target and thus only needs to send a single request for retrieving all metrics of all CF App instances at once. However, this comes at a cost of flexibility on labeling / relabeling in Prometheus.
+* **Single Endpoint Scraping Mode**: This is the default mode. Promregator provides only one single endpoint (`/metrics`), which handles both the discovery of CF App instances on the Cloud Foundry platform, the scraping of the metrics from these instances and the merging of the metric samples which have been scraped. Prometheus only needs to scrape one single (static) target and thus only needs to send a single request for retrieving all metrics of all CF App instances at once. However, this comes at a cost of flexibility on labeling / relabeling in Prometheus and does not scale well, if you have a larger number of Cloud Foundry apps to scrape. Yet, it is quite easy to configure.
 
-* **Single Target Scraping Mode**: Service discovery (determining which CF App instances are subject to scraping) is separated in an own endpoint (`/discovery`). It provides a JSON-formatted downloadable file, which can be used with the `file_sd_configs` service discovery method of Prometheus. The file includes an own target for each CF app instance to be scraped, for which Promregator serves as proxy. Therefore, Prometheus will send multiple scraping requests to Promregator (at the endpoint starting with path `/singleTargetMetrics`), which redirects them to the corresponding CF app instances. 
+* **Single Target Scraping Mode**: Service discovery (determining which CF App instances are subject to scraping) is separated in an own endpoint (`/discovery`). It provides a JSON-formatted downloadable file, which can be used with the `file_sd_configs` service discovery method of Prometheus. The file includes an own target for each CF app instance to be scraped, for which Promregator serves as proxy. Therefore, Prometheus will send multiple scraping requests to Promregator (at the endpoint starting with path `/singleTargetMetrics`), which redirects them to the corresponding CF app instances. This approach allows to also scale to hundreds of apps to be scraped, as control over the point of time for scraping is handled properly by Prometheus. However, it is more complex to configure and to maintain.
 
-We consider the Single Endpoint Scraping mode as superior to the Single Target Scraping mode. For a detailed discussion why we think so, refer to our [Single Target Scraping mode page](singleTargetScraping.md).
+For a start we recommend to set up the Single Endpoint Scraping mode, and only to switch over to the Single Target Scraping mode if the number of CF apps increase. For a detailed discussion on that refer to our [Single Target Scraping mode page](singleTargetScraping.md).
 
 Note that Promregator is capable of running in both modes at the same point in time. That is to say: You may switch the mode even without restarting Promregator. The major difference only is, what you need to do in Prometheus' configuration to make it talk to Promregator.
 
@@ -65,7 +65,7 @@ The documentation of the configuration options can be found [here](config.md).
 
 As there are two modes of how Prometheus may talk to Promregator (Single Endpoint Scraping Mode and Single Target Scraping Mode, see also above), the suggested configuration of Prometheus depends on the mode you want to use.
 
-### Configuration using Single Endpoint Scraping Mode (recommended)
+### Configuration using Single Endpoint Scraping Mode (easy to configure; recommended for starters)
 
 From the perspective of Prometheus, Promregator behaves like any other (single) target. Thus, you may use a static scraping configuration to connect Prometheus to Promregator. You may set up a scraping job for example like this:
 
@@ -87,15 +87,17 @@ From the perspective of Prometheus, Promregator behaves like both a service disc
 
 #### Service Discovery
 
-Promregator provides a JSON-formatted file, which can be fed directly to a file of service discovery `file_sd_configs`. The endpoint where this file is available is called `/discovery`. The endpoint is enabled automatically. You may retrieve the document using `wget` or `curl` my using the following command line:
+Promregator provides a JSON-formatted file, which can be fed directly to a file of service discovery `file_sd_configs`. The endpoint, where this file is available, is called `/discovery`. The endpoint is enabled automatically. You may retrieve the document using `wget` or `curl` my using the following command line:
 
 ```bash
 $ curl http://hostname-of-promregator:8080/discovery > promregator.json
 ```
 
+(NB: This assumes that there is no authentication enabled, cf. `promregator.discovery.auth` on our [configuration options page](config.md))
+
 The file then is downloaded to the file called `promregator.json`. This file contains references to the corresponding paths of endpoints which support the Single Target Scraping mode. 
 
-Note that the file has to explicitly mention the hostname and the port of your Promregator instance. Promregator tries to auto-detect this based on the request retrieved. However, for example if Promregator is running in a Docker container, this mechanism may fail. You then have to explicitly have to set the configuration parameters `promregator.discovery.hostname` and `promregator.discovery.port`. For futher details on these two options, also refer to the (configuration options page)[config.md].
+Note that the file has to explicitly mention the hostname and the port of your Promregator instance. Promregator tries to auto-detect this based on the request retrieved. However, for example if Promregator is running in a Docker container, this mechanism may fail. You then have to explicitly set the configuration parameters `promregator.discovery.hostname` and `promregator.discovery.port`. For further details on these two options, also refer to the (configuration options page)[config.md].
 
 A sample service discovery configuration at Prometheus then may look like this:
 
@@ -106,11 +108,9 @@ A sample service discovery configuration at Prometheus then may look like this:
       - promregator.json
 ```
 
-Note that the service discovery endpoint is not protected (yet) by any authentication mechanism and thus may needs to be considered in your security concept.
-
 #### Label Rewriting for Setting Metrics Path
 
-Prometheus does not support setting the metrics path for a target directly when defining targets using the `file_sd_configs` approach. Therefore, relabeling has to take place using the meta label `__meta_promregator_target_path`. Usually, 
+Prometheus does not support setting the metrics path for a target directly when defining targets using the `file_sd_configs` approach. Therefore, relabeling has to take place using the meta label `__meta_promregator_target_path`. Usually, this means something like this:
 
 ```yaml
 [...]
@@ -160,8 +160,8 @@ In general, you need to specify a set of username and password, which may be use
 promregator:
   authentication:
     basic:
-      username: promregator
-      password: promi
+      username: someuser
+      password: somepassword
 ```
 
 There are three places where inbound authentication checks can be enabled:
@@ -172,7 +172,7 @@ There are three places where inbound authentication checks can be enabled:
 
 or any combination of these. 
 
-For further details on these configuration options, also refer to the [configuration option page](config.md)).
+For further details on these configuration options, also refer to the [configuration options page](config.md)).
 
 The corresponding option in Prometheus is the `scrape_configs[].basic_auth` option. Let us assume that you have configured Promregator like this 
 
