@@ -8,12 +8,14 @@ import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.auth.BasicAuthenticationEnricher;
 import org.cloudfoundry.promregator.auth.NullEnricher;
 import org.cloudfoundry.promregator.auth.OAuth2XSUAAEnricher;
+import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
+import org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl;
+import org.cloudfoundry.promregator.config.ConfigurationException;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.ReactiveAppInstanceScanner;
 import org.cloudfoundry.promregator.springconfig.BasicAuthenticationSpringConfiguration;
-import org.cloudfoundry.promregator.springconfig.CFClientSpringConfiguration;
 import org.cloudfoundry.promregator.websecurity.SecurityConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -25,13 +27,18 @@ import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.hotspot.DefaultExports;
 
 @SpringBootApplication
-@Import({ CFClientSpringConfiguration.class, BasicAuthenticationSpringConfiguration.class, SecurityConfig.class })
+@Import({ BasicAuthenticationSpringConfiguration.class, SecurityConfig.class })
 public class PromregatorApplication {
 	
 	private static final Logger log = Logger.getLogger(PromregatorApplication.class);
 	
 	public static void main(String[] args) {
 		SpringApplication.run(PromregatorApplication.class, args);
+	}
+	
+	@Bean
+	public CFAccessor cfAccessor() throws ConfigurationException {
+		return new ReactiveCFAccessorImpl();
 	}
 	
 	@Bean
