@@ -16,9 +16,9 @@ Since version 0.2.0, Promregator supports two modes on how it allows to integrat
 
 * **Single Target Scraping Mode**: Service discovery (determining which CF App instances are subject to scraping) is separated in an own endpoint (`/discovery`). It provides a JSON-formatted downloadable file, which can be used with the `file_sd_configs` service discovery method of Prometheus. The file includes an own target for each CF app instance to be scraped, for which Promregator serves as proxy. Therefore, Prometheus will send multiple scraping requests to Promregator (at the endpoint starting with path `/singleTargetMetrics`), which redirects them to the corresponding CF app instances. This approach allows to also scale to hundreds of apps to be scraped, as control over the point of time for scraping is handled properly by Prometheus. However, it is more complex to configure and to maintain.
 
-For a start we recommend to set up the Single Endpoint Scraping mode, and only to switch over to the Single Target Scraping mode if the number of CF apps increase. For a detailed discussion on that refer to our [Single Target Scraping mode page](singleTargetScraping.md).
+In general, consumers are free to choose between these two modes. For a start, however, we recommend to set up the Single Endpoint Scraping mode, and only switch to the Single Target Scraping mode, if the number of CF apps increase and scalability becomes an issue. For a detailed discussion on that refer to our [Single Target Scraping mode page](singleTargetScraping.md).
 
-Note that Promregator is capable of running in both modes at the same point in time. That is to say: You may switch the mode even without restarting Promregator. The major difference only is, what you need to do in Prometheus' configuration to make it talk to Promregator.
+Note that Promregator is capable of running in both modes at the same point in time. That is to say: You may switch the mode on the fly - even without restarting Promregator. The major difference only is, what you need to do in Prometheus' configuration to make it talk to Promregator.
 
 An overview on the endpoints provided by Promregator can be found at the [endpoint's page](endpoint.md).
 
