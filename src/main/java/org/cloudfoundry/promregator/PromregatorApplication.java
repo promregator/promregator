@@ -16,6 +16,7 @@ import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.ReactiveAppInstanceScanner;
 import org.cloudfoundry.promregator.springconfig.BasicAuthenticationSpringConfiguration;
+import org.cloudfoundry.promregator.springconfig.ErrorSpringConfiguration;
 import org.cloudfoundry.promregator.websecurity.SecurityConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -27,7 +28,7 @@ import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.hotspot.DefaultExports;
 
 @SpringBootApplication
-@Import({ BasicAuthenticationSpringConfiguration.class, SecurityConfig.class })
+@Import({ BasicAuthenticationSpringConfiguration.class, SecurityConfig.class, ErrorSpringConfiguration.class })
 public class PromregatorApplication {
 	
 	private static final Logger log = Logger.getLogger(PromregatorApplication.class);
