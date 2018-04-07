@@ -91,12 +91,6 @@ public class CFMetricsFetcher implements MetricsFetcher {
 		
 		if (this.ae != null) {
 			this.ae.enrichWithAuthentication(httpget);
-			
-			if (log.isDebugEnabled()) {
-				Header authHeader = httpget.getFirstHeader("Authorization");
-				// QUALMS! May expose internal information! Needs to be reverted
-				log.debug(String.format("Authentication with Authorization header using value '%s'", authHeader.getValue()));
-			}
 		}
 
 		CloseableHttpResponse response = null;
