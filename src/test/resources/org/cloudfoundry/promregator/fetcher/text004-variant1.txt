@@ -1,0 +1,285 @@
+# HELP jdbcpool_connections_idle Number of idle/free connections in the JDBC Connection Pool
+# TYPE jdbcpool_connections_idle gauge
+jdbcpool_connections_idle{name="Main connection",} 5.0
+# HELP jvm_buffer_total_capacity_bytes An estimate of the total capacity of the buffers in this pool
+# TYPE jvm_buffer_total_capacity_bytes gauge
+jvm_buffer_total_capacity_bytes{id="direct",} 81920.0
+jvm_buffer_total_capacity_bytes{id="mapped",} 0.0
+# HELP process_cpu_usage The "recent cpu usage" for the Java Virtual Machine process
+# TYPE process_cpu_usage gauge
+process_cpu_usage 8.620462596740137E-4
+# HELP tomcat_threads_config_max 
+# TYPE tomcat_threads_config_max gauge
+tomcat_threads_config_max{name="http-nio-8080",} 200.0
+# HELP jvm_memory_committed_bytes The amount of memory in bytes that is committed for  the Java virtual machine to use
+# TYPE jvm_memory_committed_bytes gauge
+jvm_memory_committed_bytes{area="nonheap",id="Code Cache",} 3.9518208E7
+jvm_memory_committed_bytes{area="nonheap",id="Metaspace",} 9.6862208E7
+jvm_memory_committed_bytes{area="nonheap",id="Compressed Class Space",} 1.1927552E7
+jvm_memory_committed_bytes{area="heap",id="PS Eden Space",} 1.06430464E8
+jvm_memory_committed_bytes{area="heap",id="PS Survivor Space",} 7864320.0
+jvm_memory_committed_bytes{area="heap",id="PS Old Gen",} 2.44842496E8
+# HELP tomcat_global_request_seconds 
+# TYPE tomcat_global_request_seconds summary
+tomcat_global_request_seconds_count{name="http-nio-8080",} 575.0
+tomcat_global_request_seconds_sum{name="http-nio-8080",} 2.603
+# HELP tomcat_global_error_total 
+# TYPE tomcat_global_error_total counter
+tomcat_global_error_total{name="http-nio-8080",} 8.0
+# HELP tomcat_servlet_request_max_seconds 
+# TYPE tomcat_servlet_request_max_seconds gauge
+tomcat_servlet_request_max_seconds{name="default",} 0.0
+# HELP postgres_max_connections Maximal number of open connections (incl. super-reserved)
+# TYPE postgres_max_connections gauge
+postgres_max_connections{name="Main connection",} 100.0
+# HELP jvm_classes_unloaded_total The total number of classes unloaded since the Java virtual machine has started execution
+# TYPE jvm_classes_unloaded_total counter
+jvm_classes_unloaded_total 384.0
+# HELP process_files_open The open file descriptor count
+# TYPE process_files_open gauge
+process_files_open 140.0
+# HELP dataSource_connections_max 
+# TYPE dataSource_connections_max gauge
+dataSource_connections_max 100.0
+# HELP jvm_buffer_count An estimate of the number of buffers in the pool
+# TYPE jvm_buffer_count gauge
+jvm_buffer_count{id="direct",} 10.0
+jvm_buffer_count{id="mapped",} 0.0
+# HELP postgres_superuser_connections Number of connections reserved for superusers
+# TYPE postgres_superuser_connections gauge
+postgres_superuser_connections{name="Main connection",} 57.0
+# HELP jvm_gc_pause_seconds Time spent in GC pause
+# TYPE jvm_gc_pause_seconds summary
+jvm_gc_pause_seconds_count{action="end of minor GC",cause="Allocation Failure",} 31.0
+jvm_gc_pause_seconds_sum{action="end of minor GC",cause="Allocation Failure",} 0.366
+jvm_gc_pause_seconds_max{action="end of minor GC",cause="Allocation Failure",} 0.0
+jvm_gc_pause_seconds_count{action="end of minor GC",cause="System.gc()",} 1.0
+jvm_gc_pause_seconds_sum{action="end of minor GC",cause="System.gc()",} 0.007
+jvm_gc_pause_seconds_max{action="end of minor GC",cause="System.gc()",} 0.0
+jvm_gc_pause_seconds_count{action="end of major GC",cause="System.gc()",} 1.0
+jvm_gc_pause_seconds_sum{action="end of major GC",cause="System.gc()",} 0.352
+jvm_gc_pause_seconds_max{action="end of major GC",cause="System.gc()",} 0.0
+# HELP process_files_max The maximum file descriptor count
+# TYPE process_files_max gauge
+process_files_max 16384.0
+# HELP tomcat_global_received_bytes_total 
+# TYPE tomcat_global_received_bytes_total counter
+tomcat_global_received_bytes_total{name="http-nio-8080",} 0.0
+# HELP tomcat_servlet_request_seconds 
+# TYPE tomcat_servlet_request_seconds summary
+tomcat_servlet_request_seconds_count{name="default",} 0.0
+tomcat_servlet_request_seconds_sum{name="default",} 0.0
+# HELP tomcat_cache_access_total 
+# TYPE tomcat_cache_access_total counter
+tomcat_cache_access_total 0.0
+# HELP jvm_threads_daemon The current number of live daemon threads
+# TYPE jvm_threads_daemon gauge
+jvm_threads_daemon 28.0
+# HELP tomcat_threads_current 
+# TYPE tomcat_threads_current gauge
+tomcat_threads_current{name="http-nio-8080",} 10.0
+# HELP jdbcpool_connections_borrowed_total Number of connections borrowed from the JDBC Connection Pool
+# TYPE jdbcpool_connections_borrowed_total counter
+jdbcpool_connections_borrowed_total{name="Main connection",} 4007.0
+# HELP jvm_gc_max_data_size_bytes Max size of old generation memory pool
+# TYPE jvm_gc_max_data_size_bytes gauge
+jvm_gc_max_data_size_bytes 2.44842496E8
+# HELP system_cpu_count The number of processors available to the Java virtual machine
+# TYPE system_cpu_count gauge
+system_cpu_count 4.0
+# HELP jvm_gc_live_data_size_bytes Size of old generation memory pool after a full GC
+# TYPE jvm_gc_live_data_size_bytes gauge
+jvm_gc_live_data_size_bytes 7.3328968E7
+# HELP logback_events_total Number of error level events that made it to the logs
+# TYPE logback_events_total counter
+logback_events_total{level="error",} 8.0
+logback_events_total{level="warn",} 1.0
+logback_events_total{level="info",} 1138.0
+logback_events_total{level="debug",} 0.0
+logback_events_total{level="trace",} 0.0
+# HELP dataSource_connections_min 
+# TYPE dataSource_connections_min gauge
+dataSource_connections_min 10.0
+# HELP process_uptime_seconds The uptime of the Java virtual machine
+# TYPE process_uptime_seconds gauge
+process_uptime_seconds 37648.928
+# HELP tomcat_global_sent_bytes_total 
+# TYPE tomcat_global_sent_bytes_total counter
+tomcat_global_sent_bytes_total{name="http-nio-8080",} 111338.0
+# HELP tomcat_global_request_max_seconds 
+# TYPE tomcat_global_request_max_seconds gauge
+tomcat_global_request_max_seconds{name="http-nio-8080",} 0.216
+# HELP jdbcpool_connections_returned_total Number of connections returned back to the JDBC Connection Pool
+# TYPE jdbcpool_connections_returned_total counter
+jdbcpool_connections_returned_total{name="Main connection",} 4012.0
+# HELP jvm_threads_peak The peak live thread count since the Java virtual machine started or peak was reset
+# TYPE jvm_threads_peak gauge
+jvm_threads_peak 39.0
+# HELP jvm_threads_live The current number of live threads including both daemon and non-daemon threads
+# TYPE jvm_threads_live gauge
+jvm_threads_live 35.0
+# HELP jvm_classes_loaded The number of classes that are currently loaded in the Java virtual machine
+# TYPE jvm_classes_loaded gauge
+jvm_classes_loaded 16239.0
+# HELP jvm_gc_memory_allocated_bytes_total Incremented for an increase in the size of the young generation memory pool after one GC to before the next
+# TYPE jvm_gc_memory_allocated_bytes_total counter
+jvm_gc_memory_allocated_bytes_total 3.26634616E9
+# HELP system_cpu_usage The "recent cpu usage" for the whole system
+# TYPE system_cpu_usage gauge
+system_cpu_usage 0.06407365755115557
+# HELP liquibase_runtime_tenant_seconds Total net runtime of liquibase (in seconds)
+# TYPE liquibase_runtime_tenant_seconds summary
+liquibase_runtime_tenant_seconds_count{changelogFilename="global-common-changelog.xml",tenant="null",} 1.0
+liquibase_runtime_tenant_seconds_sum{changelogFilename="global-common-changelog.xml",tenant="null",} 2.88508981
+liquibase_runtime_tenant_seconds_max{changelogFilename="global-common-changelog.xml",tenant="null",} 0.0
+liquibase_runtime_tenant_seconds_count{changelogFilename="global-core-changelog.xml",tenant="null",} 1.0
+liquibase_runtime_tenant_seconds_sum{changelogFilename="global-core-changelog.xml",tenant="null",} 0.08973261
+liquibase_runtime_tenant_seconds_max{changelogFilename="global-core-changelog.xml",tenant="null",} 0.0
+liquibase_runtime_tenant_seconds_count{changelogFilename="tenant-changelog.xml",tenant="sascha",} 1.0
+liquibase_runtime_tenant_seconds_sum{changelogFilename="tenant-changelog.xml",tenant="sascha",} 0.301066183
+liquibase_runtime_tenant_seconds_max{changelogFilename="tenant-changelog.xml",tenant="sascha",} 0.0
+liquibase_runtime_tenant_seconds_count{changelogFilename="tenant-changelog.xml",tenant="demo",} 1.0
+liquibase_runtime_tenant_seconds_sum{changelogFilename="tenant-changelog.xml",tenant="demo",} 0.390754986
+liquibase_runtime_tenant_seconds_max{changelogFilename="tenant-changelog.xml",tenant="demo",} 0.0
+liquibase_runtime_tenant_seconds_count{changelogFilename="tenant-changelog.xml",tenant="monday",} 1.0
+liquibase_runtime_tenant_seconds_sum{changelogFilename="tenant-changelog.xml",tenant="monday",} 0.317805123
+liquibase_runtime_tenant_seconds_max{changelogFilename="tenant-changelog.xml",tenant="monday",} 0.0
+liquibase_runtime_tenant_seconds_count{changelogFilename="tenant-changelog.xml",tenant="viktor",} 1.0
+liquibase_runtime_tenant_seconds_sum{changelogFilename="tenant-changelog.xml",tenant="viktor",} 0.393390974
+liquibase_runtime_tenant_seconds_max{changelogFilename="tenant-changelog.xml",tenant="viktor",} 0.0
+liquibase_runtime_tenant_seconds_count{changelogFilename="tenant-changelog.xml",tenant="tuesday",} 1.0
+liquibase_runtime_tenant_seconds_sum{changelogFilename="tenant-changelog.xml",tenant="tuesday",} 0.375040511
+liquibase_runtime_tenant_seconds_max{changelogFilename="tenant-changelog.xml",tenant="tuesday",} 0.0
+liquibase_runtime_tenant_seconds_count{changelogFilename="tenant-changelog.xml",tenant="wednesday",} 1.0
+liquibase_runtime_tenant_seconds_sum{changelogFilename="tenant-changelog.xml",tenant="wednesday",} 0.119816745
+liquibase_runtime_tenant_seconds_max{changelogFilename="tenant-changelog.xml",tenant="wednesday",} 0.0
+liquibase_runtime_tenant_seconds_count{changelogFilename="tenant-changelog.xml",tenant="demo2",} 1.0
+liquibase_runtime_tenant_seconds_sum{changelogFilename="tenant-changelog.xml",tenant="demo2",} 0.243040757
+liquibase_runtime_tenant_seconds_max{changelogFilename="tenant-changelog.xml",tenant="demo2",} 0.0
+liquibase_runtime_tenant_seconds_count{changelogFilename="tenant-changelog.xml",tenant="thursday",} 1.0
+liquibase_runtime_tenant_seconds_sum{changelogFilename="tenant-changelog.xml",tenant="thursday",} 0.241254795
+liquibase_runtime_tenant_seconds_max{changelogFilename="tenant-changelog.xml",tenant="thursday",} 0.0
+liquibase_runtime_tenant_seconds_count{changelogFilename="tenant-changelog.xml",tenant="friday",} 1.0
+liquibase_runtime_tenant_seconds_sum{changelogFilename="tenant-changelog.xml",tenant="friday",} 0.257191376
+liquibase_runtime_tenant_seconds_max{changelogFilename="tenant-changelog.xml",tenant="friday",} 0.0
+liquibase_runtime_tenant_seconds_count{changelogFilename="tenant-changelog.xml",tenant="saturday",} 1.0
+liquibase_runtime_tenant_seconds_sum{changelogFilename="tenant-changelog.xml",tenant="saturday",} 0.258362649
+liquibase_runtime_tenant_seconds_max{changelogFilename="tenant-changelog.xml",tenant="saturday",} 0.0
+liquibase_runtime_tenant_seconds_count{changelogFilename="tenant-changelog.xml",tenant="sunday",} 1.0
+liquibase_runtime_tenant_seconds_sum{changelogFilename="tenant-changelog.xml",tenant="sunday",} 0.22609313
+liquibase_runtime_tenant_seconds_max{changelogFilename="tenant-changelog.xml",tenant="sunday",} 0.0
+liquibase_runtime_tenant_seconds_count{changelogFilename="tenant-changelog.xml",tenant="january",} 1.0
+liquibase_runtime_tenant_seconds_sum{changelogFilename="tenant-changelog.xml",tenant="january",} 0.172248326
+liquibase_runtime_tenant_seconds_max{changelogFilename="tenant-changelog.xml",tenant="january",} 0.0
+liquibase_runtime_tenant_seconds_count{changelogFilename="tenant-changelog.xml",tenant="february",} 1.0
+liquibase_runtime_tenant_seconds_sum{changelogFilename="tenant-changelog.xml",tenant="february",} 0.159139405
+liquibase_runtime_tenant_seconds_max{changelogFilename="tenant-changelog.xml",tenant="february",} 0.0
+liquibase_runtime_tenant_seconds_count{changelogFilename="tenant-changelog.xml",tenant="march",} 1.0
+liquibase_runtime_tenant_seconds_sum{changelogFilename="tenant-changelog.xml",tenant="march",} 0.202559053
+liquibase_runtime_tenant_seconds_max{changelogFilename="tenant-changelog.xml",tenant="march",} 0.0
+liquibase_runtime_tenant_seconds_count{changelogFilename="tenant-changelog.xml",tenant="april",} 1.0
+liquibase_runtime_tenant_seconds_sum{changelogFilename="tenant-changelog.xml",tenant="april",} 0.231347349
+liquibase_runtime_tenant_seconds_max{changelogFilename="tenant-changelog.xml",tenant="april",} 0.0
+liquibase_runtime_tenant_seconds_count{changelogFilename="tenant-changelog.xml",tenant="may",} 1.0
+liquibase_runtime_tenant_seconds_sum{changelogFilename="tenant-changelog.xml",tenant="may",} 0.200299048
+liquibase_runtime_tenant_seconds_max{changelogFilename="tenant-changelog.xml",tenant="may",} 0.0
+liquibase_runtime_tenant_seconds_count{changelogFilename="tenant-changelog.xml",tenant="poolTest03",} 1.0
+liquibase_runtime_tenant_seconds_sum{changelogFilename="tenant-changelog.xml",tenant="poolTest03",} 0.100129829
+liquibase_runtime_tenant_seconds_max{changelogFilename="tenant-changelog.xml",tenant="poolTest03",} 0.0
+liquibase_runtime_tenant_seconds_count{changelogFilename="tenant-changelog.xml",tenant="poolTest01",} 1.0
+liquibase_runtime_tenant_seconds_sum{changelogFilename="tenant-changelog.xml",tenant="poolTest01",} 0.166272966
+liquibase_runtime_tenant_seconds_max{changelogFilename="tenant-changelog.xml",tenant="poolTest01",} 0.0
+liquibase_runtime_tenant_seconds_count{changelogFilename="tenant-changelog.xml",tenant="june",} 1.0
+liquibase_runtime_tenant_seconds_sum{changelogFilename="tenant-changelog.xml",tenant="june",} 0.097906941
+liquibase_runtime_tenant_seconds_max{changelogFilename="tenant-changelog.xml",tenant="june",} 0.0
+liquibase_runtime_tenant_seconds_count{changelogFilename="tenant-changelog.xml",tenant="july",} 1.0
+liquibase_runtime_tenant_seconds_sum{changelogFilename="tenant-changelog.xml",tenant="july",} 0.138176859
+liquibase_runtime_tenant_seconds_max{changelogFilename="tenant-changelog.xml",tenant="july",} 0.0
+liquibase_runtime_tenant_seconds_count{changelogFilename="tenant-changelog.xml",tenant="poolTest02",} 1.0
+liquibase_runtime_tenant_seconds_sum{changelogFilename="tenant-changelog.xml",tenant="poolTest02",} 0.203756045
+liquibase_runtime_tenant_seconds_max{changelogFilename="tenant-changelog.xml",tenant="poolTest02",} 0.0
+liquibase_runtime_tenant_seconds_count{changelogFilename="tenant-changelog.xml",tenant="august",} 1.0
+liquibase_runtime_tenant_seconds_sum{changelogFilename="tenant-changelog.xml",tenant="august",} 0.13085025
+liquibase_runtime_tenant_seconds_max{changelogFilename="tenant-changelog.xml",tenant="august",} 0.0
+liquibase_runtime_tenant_seconds_count{changelogFilename="tenant-changelog.xml",tenant="september",} 1.0
+liquibase_runtime_tenant_seconds_sum{changelogFilename="tenant-changelog.xml",tenant="september",} 0.108800819
+liquibase_runtime_tenant_seconds_max{changelogFilename="tenant-changelog.xml",tenant="september",} 0.0
+liquibase_runtime_tenant_seconds_count{changelogFilename="tenant-changelog.xml",tenant="october",} 1.0
+liquibase_runtime_tenant_seconds_sum{changelogFilename="tenant-changelog.xml",tenant="october",} 0.114850044
+liquibase_runtime_tenant_seconds_max{changelogFilename="tenant-changelog.xml",tenant="october",} 0.0
+# HELP dataSource_connections_active 
+# TYPE dataSource_connections_active gauge
+dataSource_connections_active 1.0
+# HELP jvm_memory_max_bytes The maximum amount of memory in bytes that can be used for memory management
+# TYPE jvm_memory_max_bytes gauge
+jvm_memory_max_bytes{area="nonheap",id="Code Cache",} 2.68435456E8
+jvm_memory_max_bytes{area="nonheap",id="Metaspace",} 3.39771392E8
+jvm_memory_max_bytes{area="nonheap",id="Compressed Class Space",} 2.68435456E8
+jvm_memory_max_bytes{area="heap",id="PS Eden Space",} 1.06430464E8
+jvm_memory_max_bytes{area="heap",id="PS Survivor Space",} 7864320.0
+jvm_memory_max_bytes{area="heap",id="PS Old Gen",} 2.44842496E8
+# HELP process_start_time_seconds The start time of the Java virtual machine
+# TYPE process_start_time_seconds gauge
+process_start_time_seconds 1.523098968958E9
+# HELP jvm_gc_memory_promoted_bytes_total Count of positive increases in the size of the old generation memory pool before GC to after GC
+# TYPE jvm_gc_memory_promoted_bytes_total counter
+jvm_gc_memory_promoted_bytes_total 6.7397704E7
+# HELP jvm_buffer_memory_used_bytes An estimate of the memory that the Java virtual machine is using for this buffer pool
+# TYPE jvm_buffer_memory_used_bytes gauge
+jvm_buffer_memory_used_bytes{id="direct",} 81920.0
+jvm_buffer_memory_used_bytes{id="mapped",} 0.0
+# HELP http_server_requests_seconds 
+# TYPE http_server_requests_seconds summary
+http_server_requests_seconds_count{exception="None",method="GET",status="200",uri="/v1/ping",} 566.0
+http_server_requests_seconds_sum{exception="None",method="GET",status="200",uri="/v1/ping",} 1.546404032
+http_server_requests_seconds_max{exception="None",method="GET",status="200",uri="/v1/ping",} 0.002074861
+http_server_requests_seconds_count{exception="None",method="GET",status="200",uri="/prometheus",} 1.0
+http_server_requests_seconds_sum{exception="None",method="GET",status="200",uri="/prometheus",} 0.153420658
+http_server_requests_seconds_max{exception="None",method="GET",status="200",uri="/prometheus",} 0.0
+http_server_requests_seconds_count{exception="None",method="GET",status="403",uri="/metrics",} 8.0
+http_server_requests_seconds_sum{exception="None",method="GET",status="403",uri="/metrics",} 0.055933921
+http_server_requests_seconds_max{exception="None",method="GET",status="403",uri="/metrics",} 0.0
+# HELP system_load_average_1m The sum of the number of runnable entities queued to available processors and the number of runnable entities running on the available processors averaged over a period of time
+# TYPE system_load_average_1m gauge
+system_load_average_1m 0.22
+# HELP tomcat_cache_hit_total 
+# TYPE tomcat_cache_hit_total counter
+tomcat_cache_hit_total 0.0
+# HELP jdbcpool_connections_released_total Number of connections released by this JDBC Connection Pool
+# TYPE jdbcpool_connections_released_total counter
+jdbcpool_connections_released_total{name="Main connection",} 0.0
+# HELP jdbcpool_connections_created_total Number of connections created by this JDBC Connection Pool
+# TYPE jdbcpool_connections_created_total counter
+jdbcpool_connections_created_total{name="Main connection",} 6.0
+# HELP mtdatasource_any_requests_total Number of requests for a DB Connection without binding to a tenant
+# TYPE mtdatasource_any_requests_total counter
+mtdatasource_any_requests_total 3945.0
+# HELP jvm_memory_used_bytes The amount of used memory
+# TYPE jvm_memory_used_bytes gauge
+jvm_memory_used_bytes{area="nonheap",id="Code Cache",} 3.9221504E7
+jvm_memory_used_bytes{area="nonheap",id="Metaspace",} 9.304924E7
+jvm_memory_used_bytes{area="nonheap",id="Compressed Class Space",} 1.1234624E7
+jvm_memory_used_bytes{area="heap",id="PS Eden Space",} 1.5804392E7
+jvm_memory_used_bytes{area="heap",id="PS Survivor Space",} 0.0
+jvm_memory_used_bytes{area="heap",id="PS Old Gen",} 7.3328968E7
+# HELP postgres_used_connections Number of open connections by normal db users
+# TYPE postgres_used_connections gauge
+postgres_used_connections{name="Main connection",} 40.0
+# HELP jdbcpool_connections_active Number of active connections in the JDBC Connection Pool
+# TYPE jdbcpool_connections_active gauge
+jdbcpool_connections_active{name="Main connection",} 1.0
+# HELP jdbcpool_consumers_waiting_for_connection Number of consumers waiting for a connection (queue length)
+# TYPE jdbcpool_consumers_waiting_for_connection gauge
+jdbcpool_consumers_waiting_for_connection{name="Main connection",} 0.0
+# HELP postgres_free_connections Number of free connections which can be used by normal db users
+# TYPE postgres_free_connections gauge
+postgres_free_connections{name="Main connection",} 0.0
+# HELP tomcat_threads_busy 
+# TYPE tomcat_threads_busy gauge
+tomcat_threads_busy{name="http-nio-8080",} 1.0
+# HELP tomcat_servlet_error_total 
+# TYPE tomcat_servlet_error_total counter
+tomcat_servlet_error_total{name="default",} 0.0
+# HELP dbconn_connection_requests_checks_total Number of requests to check the validity of the connection
+# TYPE dbconn_connection_requests_checks_total counter
+dbconn_connection_requests_checks_total 1.0

@@ -1,5 +1,10 @@
 package org.cloudfoundry.promregator.fetcher;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -675,4 +680,19 @@ public class TextFormat004ParserTest {
 		Sample sample = new Sample(bucketMetricName, labelNames, labelValues, value); 
 		return sample;
 	}
+
+	@Test
+	public void testVariant1() throws IOException, URISyntaxException {
+		String textToParse = new String(Files.readAllBytes(Paths.get(getClass().getResource("text004-variant1.txt").toURI())));
+		
+		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
+		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
+		
+		// ensure that all metrics are understood
+		for (MetricFamilySamples mfs : resultMap.values()) {
+			Assert.assertNotEquals(Type.UNTYPED, mfs.type);
+		}
+		
+	}
+
 }

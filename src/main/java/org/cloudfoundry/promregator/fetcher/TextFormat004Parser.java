@@ -151,6 +151,9 @@ public class TextFormat004Parser {
 		}*/
 		
 		Collector.Type type = determineType(metricName);
+		if (type == Type.UNTYPED) {
+			log.info(String.format("Affected metric is %s", metricName));
+		}
 
 		List<String> labelNames = labels == null ? new LinkedList<String>() : labels.getNames();
 		List<String> labelValues = labels == null ? new LinkedList<String>() : labels.getValues();
@@ -228,7 +231,10 @@ public class TextFormat004Parser {
 			return metricName.substring(0, metricName.length()-4);
 		} else if (metricName.endsWith("_count")) {
 			return metricName.substring(0, metricName.length()-6);
-		} 
+		} else if (metricName.endsWith("_max")) {
+			// provided as additional metric by micrometer
+			return metricName.substring(0, metricName.length()-4);
+		}
 		
 		return metricName;
 	}
