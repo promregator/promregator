@@ -704,7 +704,7 @@ public class TextFormat004ParserTest {
 		
 		MetricFamilySamples mfs = resultMap.get("logback_events_total");
 		// this file contains multiple samples for the same metric
-		Assert.assertNotEquals(1, mfs.samples.size());
+		Assert.assertEquals(5, mfs.samples.size());
 	}
 
 }
