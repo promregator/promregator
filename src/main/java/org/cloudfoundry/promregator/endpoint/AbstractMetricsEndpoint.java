@@ -92,6 +92,7 @@ public abstract class AbstractMetricsEndpoint {
 	}
 	
 	public String handleRequest() {
+		log.info(String.format("Received request to a metrics endpoint; we have %d targets configured", this.promregatorConfiguration.getTargets().size()));
 		Instant start = Instant.now();
 		
 		this.up.clear();
