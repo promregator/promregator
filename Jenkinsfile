@@ -58,7 +58,7 @@ timestamps {
 					sh """
 						ln ../target/promregator-${currentVersion}.jar data/promregator.jar
 						
-						docker build --pull -t ${imageName} .
+						docker build --pull --squash --compress -t ${imageName} .
 						
 						docker history ${imageName}
 					"""
