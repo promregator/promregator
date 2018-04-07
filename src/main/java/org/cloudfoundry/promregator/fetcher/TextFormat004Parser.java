@@ -119,7 +119,7 @@ public class TextFormat004Parser {
 		} else {
 			Matcher mValue = PATTERN_PARSE_VALUE.matcher(rest);
 			if (!mValue.find()) {
-				log.warn("Unable to parse value in metric line: "+line);
+				log.warn(String.format("Unable to parse value in metric line: %s", line));
 				return;
 			}
 			valueString = mValue.group(1);
@@ -127,7 +127,7 @@ public class TextFormat004Parser {
 			try {
 				value = this.parseGoDouble(valueString);
 			} catch (NumberFormatException nfe) {
-				log.warn("Unable to parse value in metrics line properly: "+line, nfe);
+				log.warn(String.format("Unable to parse value in metrics line properly: %s", line), nfe);
 				return;
 			}
 			end = mValue.end();
@@ -152,7 +152,7 @@ public class TextFormat004Parser {
 		
 		Collector.Type type = determineType(metricName);
 		if (type == Type.UNTYPED) {
-			log.info(String.format("Affected metric is %s", metricName));
+			log.info(String.format("Definition of metric %s without type information (assuming untyped)", metricName));
 		}
 
 		List<String> labelNames = labels == null ? new LinkedList<String>() : labels.getNames();
@@ -219,8 +219,6 @@ public class TextFormat004Parser {
 		}
 		
 		// we have no clue what this metric is all about
-		log.info("Definition of metric without type information (assuming untyped)");
-		
 		return Collector.Type.UNTYPED;
 	}
 
