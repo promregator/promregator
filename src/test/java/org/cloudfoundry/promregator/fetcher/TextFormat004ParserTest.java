@@ -694,5 +694,17 @@ public class TextFormat004ParserTest {
 		}
 		
 	}
+	
+	@Test
+	public void testLogbackWithMultipleLabelValues() throws IOException, URISyntaxException {
+		String textToParse = new String(Files.readAllBytes(Paths.get(getClass().getResource("text004-logback.txt").toURI())));
+		
+		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
+		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
+		
+		MetricFamilySamples mfs = resultMap.get("logback_events_total");
+		// this file contains multiple samples for the same metric
+		Assert.assertNotEquals(1, mfs.samples.size());
+	}
 
 }

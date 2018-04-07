@@ -1,0 +1,7 @@
+# HELP logback_events_total Number of error level events that made it to the logs
+# TYPE logback_events_total counter
+logback_events_total{level="error",} 8.0
+logback_events_total{level="warn",} 1.0
+logback_events_total{level="info",} 1138.0
+logback_events_total{level="debug",} 0.0
+logback_events_total{level="trace",} 0.0

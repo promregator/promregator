@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
 
 import io.prometheus.client.Collector;
+import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Collector.MetricFamilySamples.Sample;
 import io.prometheus.client.Collector.Type;
 
@@ -161,13 +162,20 @@ public class TextFormat004Parser {
 		Sample sample = new Sample(metricName, labelNames, labelValues, value);
 
 		if (type.equals(Collector.Type.COUNTER) || type.equals(Collector.Type.GAUGE) || type.equals(Collector.Type.UNTYPED)) {
-			List<Sample> samples = new LinkedList<Sample>();
-			samples.add(sample);
+			MetricFamilySamples mfsStored = this.mapMFS.get(metricName);
+			if (mfsStored != null) {
+				// we already have created a metric for this line; we just have to add the sample
+				mfsStored.samples.add(sample);
+			} else {
+				// there is no such MFS entry yet; we have to create one
+				List<Sample> samples = new LinkedList<Sample>();
+				samples.add(sample);
 
-			String docString = this.mapHelps.get(metricName);
+				String docString = this.mapHelps.get(metricName);
 
-			Collector.MetricFamilySamples mfs = new Collector.MetricFamilySamples(metricName, type, docString, samples);
-			this.mapMFS.put(metricName, mfs);
+				Collector.MetricFamilySamples mfs = new Collector.MetricFamilySamples(metricName, type, docString, samples);
+				this.mapMFS.put(metricName, mfs);
+			}
 		} else if (type.equals(Collector.Type.HISTOGRAM)) {
 			String baseMetricName = determineBaseMetricName(metricName);
 			
