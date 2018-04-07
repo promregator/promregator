@@ -115,6 +115,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	}
 	
 	@PostConstruct
+	@SuppressWarnings("PMD.UnusedPrivateMethod") // method is really required
 	private void constructCloudFoundryClient() throws ConfigurationException {
 		ProxyConfiguration proxyConfiguration = this.proxyConfiguration();
 		DefaultConnectionContext connectionContext = this.connectionContext(proxyConfiguration);
