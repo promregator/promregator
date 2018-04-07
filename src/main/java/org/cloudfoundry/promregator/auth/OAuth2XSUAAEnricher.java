@@ -161,7 +161,7 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
 		TokenResponse oAuthResponse = gson.fromJson(json, TokenResponse.class);
 		
 		String jwt = oAuthResponse.getAccessToken();
-		log.info(String.format("JWT token retrieved: %s...", jwt.substring(0, 30)));
+		log.info(String.format("JWT token retrieved: %s...", jwt.substring(0, Math.min(jwt.length() / 2, 30))));
 
 		int timeOutForUs = Math.max(oAuthResponse.getExpiresIn() - 30, oAuthResponse.getExpiresIn() / 2);
 		this.validUntil = Instant.now().plus(timeOutForUs, ChronoUnit.SECONDS);
