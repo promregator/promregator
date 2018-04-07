@@ -702,7 +702,11 @@ public class TextFormat004ParserTest {
 		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
 		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		
+		Assert.assertEquals(1, resultMap.keySet().size());
+		
 		MetricFamilySamples mfs = resultMap.get("logback_events_total");
+		Assert.assertNotNull(mfs);
+		
 		// this file contains multiple samples for the same metric
 		Assert.assertEquals(5, mfs.samples.size());
 	}
