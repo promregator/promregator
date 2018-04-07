@@ -3,6 +3,7 @@ package org.cloudfoundry.promregator.fetcher;
 import java.io.IOException;
 import java.util.HashMap;
 
+import org.apache.http.Header;
 import org.apache.http.HttpHost;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
@@ -88,8 +89,14 @@ public class CFMetricsFetcher implements MetricsFetcher {
 		// see also https://docs.cloudfoundry.org/concepts/http-routing.html
 		httpget.setHeader(HTTP_HEADER_CF_APP_INSTANCE, this.instanceId);
 		
-		if (ae != null) {
-			ae.enrichWithAuthentication(httpget);
+		if (this.ae != null) {
+			this.ae.enrichWithAuthentication(httpget);
+			
+			if (log.isDebugEnabled()) {
+				Header authHeader = httpget.getFirstHeader("Authorization");
+				// QUALMS! May expose internal information! Needs to be reverted
+				log.debug(String.format("Authentication with Authorization header using value '%s'", authHeader.getValue()));
+			}
 		}
 
 		CloseableHttpResponse response = null;
