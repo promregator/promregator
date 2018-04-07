@@ -59,7 +59,7 @@ public class CFMetricsFetcher implements MetricsFetcher {
 			this.config = null;
 		}
 	}
-	
+
 	/**
 	 * creates a new Metrics Fetcher by defining the target endpoint where the metrics can be read, the instance identifier
 	 * of the instance, which shall be queried. 
@@ -77,6 +77,7 @@ public class CFMetricsFetcher implements MetricsFetcher {
 
 	@Override
 	public HashMap<String, MetricFamilySamples> call() throws Exception {
+		log.info(String.format("Reading metrics from %s for instance %s", this.endpointUrl, this.instanceId));
 		
 		HttpGet httpget = new HttpGet(this.endpointUrl);
 		
@@ -109,7 +110,8 @@ public class CFMetricsFetcher implements MetricsFetcher {
 				log.warn(String.format("Target server at '%s' and instance '%s' responded with a non-200 status code: %d", this.endpointUrl, this.instanceId, response.getStatusLine().getStatusCode()));
 				return null;
 			}
-
+			log.info(String.format("Sucessfully received metrics from %s for instance %s", this.endpointUrl, this.instanceId));
+			
 			String result = EntityUtils.toString(response.getEntity());
 			
 			TextFormat004Parser parser = new TextFormat004Parser(result);
@@ -149,5 +151,4 @@ public class CFMetricsFetcher implements MetricsFetcher {
 			}
 		}
 	}
-
 }

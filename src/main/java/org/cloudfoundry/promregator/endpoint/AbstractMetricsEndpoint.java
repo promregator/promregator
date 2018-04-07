@@ -97,12 +97,15 @@ public abstract class AbstractMetricsEndpoint {
 		this.up.clear();
 		
 		List<Instance> instanceList = this.appInstanceScanner.determineInstancesFromTargets(this.promregatorConfiguration.getTargets());
+		log.info(String.format("Raw list contains %d instances", instanceList.size()));
 
 		instanceList = this.filterInstanceList(instanceList);
+		log.info(String.format("Post filtering, %d instances will be fetched", instanceList.size()));
 		
 		List<MetricsFetcher> callablesPrep = this.createMetricsFetchers(instanceList);
 		
 		LinkedList<Future<HashMap<String, MetricFamilySamples>>> futures = this.startMetricsFetchers(callablesPrep);
+		log.info(String.format("Fetching metrics from %d distinct endpoints", futures.size()));
 		
 		MergableMetricFamilySamples mmfs = waitForMetricsFetchers(futures);
 		
@@ -183,7 +186,7 @@ public abstract class AbstractMetricsEndpoint {
 		
 		List<MetricsFetcher> callablesList = new LinkedList<>();
 		for (Instance instance : instanceList) {
-			log.info(String.format("Instance %s", instance.getInstanceId()));
+			log.info(String.format("Creating Metrics Fetcher for instance %s", instance.getInstanceId()));
 			
 			Target target = instance.getTarget();
 			String orgName = target.getOrgName();
