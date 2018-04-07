@@ -221,12 +221,12 @@ Specifies the password which is being used for authenticating the call to the Pr
 
 *WARNING!* 
 Due to security reasons, it is *neither* recommended to store this value in your YAML file, nor to put it into the command line when starting Promregator.
-Instead it is suggested to set the identically named environment variable `promregator.authenticator.basic.password` when starting the application.
+Instead it is suggested to set the identically named environment variable `PROMREGATOR_AUTHENTICATOR_BASIC_PASSWORD` when starting the application.
 
 Example:
 
 ```bash
-export promregator.authenticator.basic.password=myPassword
+export PROMREGATOR_AUTHENTICATOR_BASIC_PASSWORD=myPassword
 java -Dspring.config.location=file:/path/to/your/myconfig.yaml -jar promregator-0.0.1-SNAPSHOT.jar
 ```
 
