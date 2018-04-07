@@ -14,7 +14,8 @@ if [ "$PROMREGATOR_CONFIG_DIR" == "" ]; then
 	PROMREGATOR_CONFIG_DIR="/etc/promregator"
 fi
 
-cd /opt/promregator
+# Why /home/ and not /opt/? see https://github.com/promregator/promregator/issues/39
+cd /home/promregator
 
 # Workaround for not-working spring.config.location
 ln -sf ../../$PROMREGATOR_CONFIG_DIR/promregator.yml .
