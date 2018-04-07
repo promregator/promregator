@@ -3,14 +3,17 @@ package org.cloudfoundry.promregator.rewrite;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
+import io.prometheus.client.Collector.Type;
 import io.prometheus.client.exporter.common.TextFormat;
 
 public class MergableMetricFamilySamples {
@@ -50,7 +53,17 @@ public class MergableMetricFamilySamples {
 	}
 	
 	public Enumeration<MetricFamilySamples> getEnumerationMetricFamilySamples() {
-		return Collections.enumeration(this.map.values());
+		Collection<MetricFamilySamples> coll = this.map.values();
+		
+		for (Iterator<MetricFamilySamples> iterator = coll.iterator(); iterator.hasNext();) {
+			MetricFamilySamples mfs = iterator.next();
+			if (mfs.type == Type.UNTYPED) {
+				log.warn(String.format("Dropping metric %s from set of metrics, as it is untyped and the simpleclient's serialization coding does not properly support this", mfs.name));
+				iterator.remove();
+			}
+		}
+		
+		return Collections.enumeration(coll);
 	}
 	
 	public HashMap<String,MetricFamilySamples> getEnumerationMetricFamilySamplesInHashMap() {

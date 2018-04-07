@@ -71,5 +71,26 @@ public class MergableMetricFamilySamplesTest {
 		Assert.assertEquals(mfs, returnedHMMFS.get("dummy"));
 
 	}
+	
+	@Test
+	public void testUntypedMetricEnumeration() {
+		MergableMetricFamilySamples subject = new MergableMetricFamilySamples();
+		
+		List<Sample> samples = new LinkedList<>();
+		MetricFamilySamples mfs = new MetricFamilySamples("dummy", Type.UNTYPED, "somehelp", samples);
+		
+		List<MetricFamilySamples> list = new LinkedList<>();
+		list.add(mfs);
+		
+		HashMap<String, MetricFamilySamples> hmmfs = new HashMap<>();
+		hmmfs.put("dummy", mfs);
+		
+		subject.merge(hmmfs);
+		
+		Enumeration<MetricFamilySamples> returnedEMFS = subject.getEnumerationMetricFamilySamples();
+		
+		Assert.assertFalse(returnedEMFS.hasMoreElements());
+	}
+
 
 }
