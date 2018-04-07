@@ -251,7 +251,7 @@ export promregator.authenticator.oauth2xsuaa.client_secret=myClientSecret
 java -Dspring.config.location=file:/path/to/your/myconfig.yaml -jar promregator-0.0.1-SNAPSHOT.jar
 ```
 
-#### Option "promregator.authenticator.oauth2xsuaa.client_secret" (optional, only available if using promregator.authenticator.type=OAuth2XSUAA)
+#### Option "promregator.authenticator.oauth2xsuaa.scopes" (optional, only available if using promregator.authenticator.type=OAuth2XSUAA)
 Specifies the set of scopes/authorities (format itself is a comma-separated string of explicit scopes, see also https://www.oauth.com/oauth2-servers/access-tokens/client-credentials/), which shall be requested from the OAuth2 server when using the Grant Type Client Credentials flow. If not specified, an empty string is assumed, which will suppress a dedicated request of scopes. Usually, OAuth2 servers then provide a JWT, which contains all scopes allowed for the set of credentials provided.
 
 
