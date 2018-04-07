@@ -3,7 +3,6 @@ package org.cloudfoundry.promregator.fetcher;
 import java.io.IOException;
 import java.util.HashMap;
 
-import org.apache.http.Header;
 import org.apache.http.HttpHost;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
