@@ -196,4 +196,56 @@ scrape_configs:
       username: someuser
       password: somepassword
 ```
- 
+
+## Logging
+
+### Log Levels
+
+By default, logging is set to only emit messages, which are of major severity to allow running Promregator out of the box. Therefore, only messages of level "Warning" or higher are provided. Promregator uses [logback](https://logback.qos.ch/) as logging tool. It is aware of the following levels:
+
+| Level | Meaning | Written by default settings | may contain secret data |
+|-------|---------|-----------------------------|-------------------------|
+| ERROR | Something fatal has happened, which Promregator does not permit to go on as expected | Yes | No |
+| WARN  | A situation occurred, which most likely is not expected and thus may hint to some other mistake (e.g. wrong configuration setting) | Yes | No |
+| INFO  | Documents typical and usual results of operations; the main flow of logic can be seen in the logs | No | No <sup>(1)</sup> |
+| DEBUG | Additionally provides internal state information to allow finding bugs | No | No <sup>(1)</sup> |
+| TRACE | Very detailed logging providing detailed internal state information (currently not used) | No | Yes |
+
+As the "Trace" level may expose internal secrets (such as passwords, credentials, or similar), it is **not** recommended to post such logs in Github issue reports without scanning them manually before.
+
+<sup>(1)</sup> Please note that also higher levels (especially "Info" and "Debug") may also contain references to URLs and hostnames, which might be internal to your network. If this is relevant in your case, you might also need to check the content of these log records before posting the log to github.
+
+### Configuration of Log Levels
+
+You may change the log level provided by setting the Spring configuration variable
+
+```
+logging.level.org.cloudfoundry.promregator
+```
+
+to the corresponding log level mentioned in the table above. You may do so, for example, by specifying the variable in your `pomregator.yml` file like this:
+
+```yaml
+[...]
+logging:
+  level:
+    org:
+      cloudfoundry:
+        promregator: INFO
+```
+
+Alternatively, you may also provide a Java system variable via the command line like this:
+
+```bash
+java -Dlogging.level.org.cloudfoundry.promregator=INFO -jar promregator-x.y.z-SNAPSHOT.jar
+```
+
+or, if you are running the docker container, you may do it like this:
+
+```bash
+docker run -d \
+ --env JAVA_OPTS=-Dlogging.level.org.cloudfoundry.promregator=INFO \
+ -v /path/to/your/own/promregator.yaml:/etc/promregator/promregator.yml \
+ promregator/promregator:<version>
+```
+
