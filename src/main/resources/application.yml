@@ -8,3 +8,7 @@ logging:
     org:
       cloudfoundry:
         promregator: WARN
+
+    reactor:
+      Mono:
+        OnAssembly: WARN
