@@ -3,3 +3,8 @@ server:
     enabled: true
     mime-types: application/json,application/xml,text/html,text/xml,text/plain,application/javascript,text/css
 
+logging:
+  level:
+    org:
+      cloudfoundry:
+        promregator: WARN
