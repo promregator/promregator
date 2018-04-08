@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 import javax.annotation.PostConstruct;
 
 import org.apache.http.conn.util.InetAddressUtils;
+import org.apache.log4j.Logger;
 import org.cloudfoundry.client.v2.applications.ListApplicationsRequest;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsRequest;
@@ -36,6 +37,8 @@ import reactor.core.publisher.Mono;
 
 @Component
 public class ReactiveCFAccessorImpl implements CFAccessor {
+	private static final Logger log = Logger.getLogger(ReactiveCFAccessorImpl.class);
+	
 	@Value("${cf.api_host}")
 	private String apiHost;
 
@@ -130,7 +133,13 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	@Override
 	public Mono<ListOrganizationsResponse> retrieveOrgId(String orgName) {
 		ListOrganizationsRequest orgsRequest = ListOrganizationsRequest.builder().name(orgName).build();
-		return this.cloudFoundryClient.organizations().list(orgsRequest).log("Query Org");
+		Mono<ListOrganizationsResponse> monoResp = this.cloudFoundryClient.organizations().list(orgsRequest);
+		
+		if (log.isDebugEnabled()) {
+			monoResp = monoResp.log(log.getName()+".retrieveOrgId");
+		}
+		
+		return monoResp;
 	}
 	
 	/* (non-Javadoc)
@@ -139,7 +148,13 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	@Override
 	public Mono<ListSpacesResponse> retrieveSpaceId(String orgId, String spaceName) {
 		ListSpacesRequest spacesRequest = ListSpacesRequest.builder().organizationId(orgId).name(spaceName).build();
-		return this.cloudFoundryClient.spaces().list(spacesRequest).log("Query Space");
+		Mono<ListSpacesResponse> monoResp = this.cloudFoundryClient.spaces().list(spacesRequest);
+		
+		if (log.isDebugEnabled()) {
+			monoResp = monoResp.log(log.getName()+".retrieveSpaceId");
+		}
+		
+		return monoResp;
 	}
 	
 	/* (non-Javadoc)
@@ -152,7 +167,13 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 				.spaceId(spaceId)
 				.name(applicationName)
 				.build();
-		return this.cloudFoundryClient.applicationsV2().list(request).log("Query App");
+		Mono<ListApplicationsResponse> monoResp = this.cloudFoundryClient.applicationsV2().list(request);
+		
+		if (log.isDebugEnabled()) {
+			monoResp = monoResp.log(log.getName()+".retrieveApplicationId");
+		}
+		
+		return monoResp;
 	}
 	
 	/* (non-Javadoc)
@@ -161,7 +182,13 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	@Override
 	public Mono<ListRouteMappingsResponse> retrieveRouteMapping(String appId) {
 		ListRouteMappingsRequest mappingRequest = ListRouteMappingsRequest.builder().applicationId(appId).build();
-		return this.cloudFoundryClient.routeMappings().list(mappingRequest).log("Query Route Mapping");
+		Mono<ListRouteMappingsResponse> monoResp = this.cloudFoundryClient.routeMappings().list(mappingRequest);
+		
+		if (log.isDebugEnabled()) {
+			monoResp = monoResp.log(log.getName()+".retrieveRouteMapping");
+		}
+		
+		return monoResp;
 	}
 	
 	/* (non-Javadoc)
@@ -170,7 +197,13 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	@Override
 	public Mono<GetRouteResponse> retrieveRoute(String routeId) {
 		GetRouteRequest getRequest = GetRouteRequest.builder().routeId(routeId).build();
-		return this.cloudFoundryClient.routes().get(getRequest).log("Get Route");
+		Mono<GetRouteResponse> monoResp = this.cloudFoundryClient.routes().get(getRequest).log();
+		
+		if (log.isDebugEnabled()) {
+			monoResp = monoResp.log(log.getName()+".retrieveRoute");
+		}
+		
+		return monoResp;
 	}
 	
 	/* (non-Javadoc)
@@ -179,7 +212,13 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	@Override
 	public Mono<GetSharedDomainResponse> retrieveSharedDomain(String domainId) {
 		GetSharedDomainRequest domainRequest = GetSharedDomainRequest.builder().sharedDomainId(domainId).build();
-		return this.cloudFoundryClient.sharedDomains().get(domainRequest).log("Get Domain");
+		Mono<GetSharedDomainResponse> monoResp = this.cloudFoundryClient.sharedDomains().get(domainRequest).log();
+		
+		if (log.isDebugEnabled()) {
+			monoResp = monoResp.log(log.getName()+".retrieveSharedDomain");
+		}
+		
+		return monoResp;
 	}
 	
 	/* (non-Javadoc)
@@ -188,6 +227,12 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	@Override
 	public Mono<ListProcessesResponse> retrieveProcesses(String orgId, String spaceId, String appId) {
 		ListProcessesRequest request = ListProcessesRequest.builder().organizationId(orgId).spaceId(spaceId).applicationId(appId).build();
-		return this.cloudFoundryClient.processes().list(request).log("List Processes");
+		Mono<ListProcessesResponse> monoResp = this.cloudFoundryClient.processes().list(request);
+		
+		if (log.isDebugEnabled()) {
+			monoResp = monoResp.log(log.getName()+".retrieveProcesses");
+		}
+		
+		return monoResp;
 	}
 }
