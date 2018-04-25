@@ -36,7 +36,7 @@ java -Dspring.config.location=file:/path/to/your/myconfig.yaml -jar promregator-
 Here is an dummy example for such a configuration yaml file:
 ```yaml
 cf:
-  apiHost: api.cf.example.org
+  api_host: api.cf.example.org
   username: myCFUserName
   proxyHost: 192.168.111.1
   proxyPort: 8080
