@@ -116,8 +116,12 @@ Specifies the name of the Cloud Foundry Organization which hosts the application
 #### Item property "promregator.targets[].spaceName" (mandatory)
 Specifies the name of the Cloud Foundry Space (within the Cloud Foundry Organization specified above), which hosts the application, which you want to query for metrics.
 
-#### Item property "promregator.targets[].applicationName" (mandatory)
+#### Item property "promregator.targets[].applicationName" (optional)
 Specifies the name of the Cloud Foundry Application (within the Cloud Foundry Organization and Space specified above), which hosts the application, which you want to query for metrics.
+
+If left out, *all* applications within the specified Cloud Foundry Organization and Cloud Foundry Space are considered as targets. Only applications in the Cloud Foundry Application state "STARTED" are considered. 
+
+By this, automatic detection of new applications is possible. Note that discovery of *new* applications within the space only takes place after the timeout of "cf.cache.timeout.application" has occurred. To enforce a discovery, you may [invalidate the application cache manually](./invalidate-cache.md).
 
 #### Item property "promregator.targets[].path" (optional)
 Specifies the path under which the application's endpoint provides its Prometheus metrics.
