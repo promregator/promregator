@@ -54,8 +54,6 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	@Autowired
 	private InternalMetrics internalMetrics;
 
-	private Mono<String> orgId;
-
 	private static class InternalInstance implements Cloneable {
 
 		public Target target;
@@ -556,6 +554,24 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		});
 
 		return allInstances;
+	}
+
+	public void invalidateCacheApplications() {
+		log.info("Invalidating application cache");
+		this.applicationMap = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
+		this.applicationsInSpaceMap.clear();
+		this.hostnameMap.clear();
+		this.domainMap.clear();
+	}
+	
+	public void invalidateCacheSpace() {
+		log.info("Invalidating space cache");
+		this.spaceMap.clear();
+	}
+
+	public void invalidateCacheOrg() {
+		log.info("Invalidating org cache");
+		this.orgMap.clear();
 	}
 
 }
