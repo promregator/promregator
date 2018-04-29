@@ -108,6 +108,12 @@ Note that applications and routes *may* change often. That is why you should pic
 
 Caches can also be invalidated out of the row by sending an HTTP REST request to Promregator. Further details can be found at the [Cache Invalidation page](./invalidate-cache.md).
 
+#### Option "promregator.cache.invalidate.auth" (optional)
+Specifies the way how authentication shall be verified, if a request reaches the [Cache Invalidation endpoint](./invalidate-cache.md). Valid values are:
+
+* *NONE*: no authentication verification is required (default)
+* *BASIC*: an authentication verification using HTTP Basic Authentication is performed. Valid credentials are taken from `promregator.authentication.basic.username` and `promregator.authentication.basic.password`.
+
 ## Group "promregator"
 This group configures the behavior of Promregator itself. It is mainly meant on how requests shall be handled, as soon as the Prometheus server starts to pull metrics.
 

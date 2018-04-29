@@ -30,6 +30,8 @@ The HTTP REST endpoint allows to specify which caches shall be flushed by using 
 
 Not specifying any of these parameters will lead to no cache to be flushed. On completion of any request, the HTTP status code of the request will be 204 ("no content").
 
+The HTTP REST endpoint may be protected by an authentication scheme. For details, refer to option "promregator.cache.invalidate.auth" as described in our [configuration page](./config.md).
+
 ### Example
 
 Sending the request
