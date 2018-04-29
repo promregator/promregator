@@ -8,7 +8,6 @@ import javax.annotation.PostConstruct;
 
 import org.apache.commons.collections4.map.PassiveExpiringMap;
 import org.apache.log4j.Logger;
-import org.cloudfoundry.client.v2.applications.ApplicationEntity;
 import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.organizations.OrganizationResource;
@@ -119,7 +118,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		LinkedList<Instance> result = new LinkedList<>();
 
 		List<Target> resolvedTargets = this.resolveTargets(targets);
-		
+
 		Flux<Target> initialFlux = Flux.fromIterable(resolvedTargets);
 
 		Flux<InternalInstance> initialInstancesOnlyApplication = initialFlux.map(target -> {
@@ -167,51 +166,53 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 
 	private List<Target> resolveTargets(List<Target> targets) {
 		List<Target> resolvedTargets = new LinkedList<>();
-		
+
 		for (Target target : targets) {
 			if (target.getApplicationName() != null) {
 				// trivial case; does not require to be resolved
 				resolvedTargets.add(target);
 				continue;
 			}
-			
+
 			String orgName = target.getOrgName();
 			String spaceName = target.getSpaceName();
 			String key = String.format("%s|%s", orgName, spaceName);
 			Flux<String> applicationsInSpace = this.applicationsInSpaceMap.get(key);
 			if (applicationsInSpace == null) {
 				// cache miss
-				
-				// for retrieving all applications, we need the orgId and spaceId
+
+				// for retrieving all applications, we need the orgId and
+				// spaceId
 				// the names are not sufficient
 				Mono<String> orgIdMono = this.getOrgId(orgName);
 				Mono<String> spaceIdMono = this.getSpaceId(orgIdMono, spaceName);
-				
-				Mono<ListApplicationsResponse> responseMono = this.cfAccessor.retrieveAllApplicationIdsInSpace(orgIdMono.block(), spaceIdMono.block());
-				
+
+				Mono<ListApplicationsResponse> responseMono = this.cfAccessor
+						.retrieveAllApplicationIdsInSpace(orgIdMono.block(), spaceIdMono.block());
+
 				applicationsInSpace = responseMono.flatMapMany(response -> {
 					List<ApplicationResource> resources = response.getResources();
 					if (resources == null) {
 						return Flux.empty();
 					}
-					
+
 					List<String> appNames = new LinkedList<>();
 					for (ApplicationResource ar : resources) {
 						if (!isApplicationInScrapableState(ar.getEntity().getState())) {
 							continue;
 						}
-						
+
 						appNames.add(ar.getEntity().getName());
 					}
-					
+
 					return Flux.fromIterable(appNames);
 				});
-				
+
 				this.applicationsInSpaceMap.put(key, applicationsInSpace);
 			}
-			
+
 			Iterable<String> applicationNames = applicationsInSpace.toIterable();
-			
+
 			for (String appName : applicationNames) {
 				Target newTarget = new Target();
 				newTarget.setOrgName(target.getOrgName());
@@ -219,25 +220,25 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				newTarget.setApplicationName(appName);
 				newTarget.setPath(target.getPath());
 				newTarget.setProtocol(target.getProtocol());
-				
+
 				resolvedTargets.add(newTarget);
 			}
 		}
 
 		return resolvedTargets;
 	}
-	
+
 	private boolean isApplicationInScrapableState(String state) {
 		if ("STARTED".equals(state)) {
 			return true;
 		}
-		
+
 		// TODO: To be enhanced, once we know of further states, which are
 		// also scrapable.
-		
+
 		return false;
 	}
-	
+
 	private static class ReactiveTimer {
 		private Timer t;
 		private final InternalMetrics im;
