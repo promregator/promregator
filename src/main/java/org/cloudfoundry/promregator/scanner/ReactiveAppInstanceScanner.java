@@ -178,15 +178,26 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			Flux<String> applicationsInSpace = this.applicationsInSpaceMap.get(key);
 			if (applicationsInSpace == null) {
 				// cache miss
+				this.internalMetrics.countMiss("appinstancescanner.applicationsInSpace");
 
 				// for retrieving all applications, we need the orgId and
-				// spaceId
-				// the names are not sufficient
+				// spaceId the names are not sufficient
 				Mono<String> orgIdMono = this.getOrgId(orgName);
 				Mono<String> spaceIdMono = this.getSpaceId(orgIdMono, spaceName);
 
-				Mono<ListApplicationsResponse> responseMono = this.cfAccessor
-						.retrieveAllApplicationIdsInSpace(orgIdMono.block(), spaceIdMono.block());
+				ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, "applicationsInSpace");
+				
+				Mono<ListApplicationsResponse> responseMono = Mono.zip(orgIdMono, spaceIdMono)
+					.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+						tuple.getT2().start();
+						return tuple.getT1();
+					}).flatMap(tuple -> {
+						return this.cfAccessor.retrieveAllApplicationIdsInSpace(tuple.getT1(), tuple.getT2());
+					})// stop the timer
+					.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+						tuple.getT2().stop();
+						return tuple.getT1();
+					}).cache();
 
 				applicationsInSpace = responseMono.flatMapMany(response -> {
 					List<ApplicationResource> resources = response.getResources();
@@ -207,6 +218,8 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				});
 
 				this.applicationsInSpaceMap.put(key, applicationsInSpace);
+			} else {
+				this.internalMetrics.countHit("appinstancescanner.applicationsInSpace");
 			}
 
 			Iterable<String> applicationNames = applicationsInSpace.toIterable();
