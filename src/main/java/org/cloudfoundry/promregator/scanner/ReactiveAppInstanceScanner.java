@@ -558,7 +558,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 
 	public void invalidateCacheApplications() {
 		log.info("Invalidating application cache");
-		this.applicationMap = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
+		this.applicationMap.clear();
 		this.applicationsInSpaceMap.clear();
 		this.hostnameMap.clear();
 		this.domainMap.clear();
