@@ -24,6 +24,7 @@ Here is the list of major features provided by Promregator:
 * **Automatic discovery** of instances and hostnames of Cloud Foundry apps supported
   * **Multiple CF apps** in **multiple Orgs** and **multiple spaces** supported
   * **Multiple instances** per app supported, **automatically detecting up- and downscaling** (results are cached, timeout of caching can be configured)
+  * *(>= 0.4.0)* **Auto-detection of all applications** within a CF space allows a simplified configuration
 * Fetching of the **Prometheus Metric endpoints** of multiple app instances is performed in **parallel** (number of concurrent threads used for retrieving metrics can be configured)
 * **Support of Authentication Schemes** at the CF app's endpoint. The following Authentication schemes are currently available:
   - Basic HTTP Authentication (as of [RFC2617](https://www.ietf.org/rfc/rfc2617.txt))
@@ -36,6 +37,7 @@ Here is the list of major features provided by Promregator:
 * Simple **HTTP proxy support** is available for contacting CF app endpoints.
 * All metrics provided from the Cloud Foundry applications are **automatically [enriched with additional labels](docs/enrichment.md)**, indicating their origin (similar to the `job` and `instance` labels [created by Prometheus](https://prometheus.io/docs/concepts/jobs_instances/)).
 * [Additional metrics are provided](docs/enrichment.md) supporting you to **monitor Promregator** and the **communication to the Cloud Foundry applications**.
+* *(>= 0.4.0)* **[Cache Invalidation](docs/invalidate-cache.md)** is possible via an (optionally auth-protected) HTTP REST endpoint.
 * Promregator's endpoints (e.g. `/metrics`, `/promregatorMetrics`, `/discovery`) support **GZIP compression**, if the clients indicates to accept it.
 
 
