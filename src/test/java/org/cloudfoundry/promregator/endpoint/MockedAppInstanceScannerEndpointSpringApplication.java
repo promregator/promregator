@@ -64,6 +64,12 @@ public class MockedAppInstanceScannerEndpointSpringApplication {
 		public boolean isOrgInvalidated() {
 			return orgInvalidated;
 		}
+
+		public void reset() {
+			this.orgInvalidated = false;
+			this.spaceInvalidated = false;
+			this.appInvalidated = false;
+		}
 	}
 	
 	@Bean
