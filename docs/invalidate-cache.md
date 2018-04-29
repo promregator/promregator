@@ -28,7 +28,7 @@ The HTTP REST endpoint allows to specify which caches shall be flushed by using 
 | Space Cache   | `space`      |
 | Application Cache | `application` |
 
-Not specifying any of these parameters will lead to no cache to be flushed. On completion of any request, the HTTP status code of the request will be 204 ("no conent").
+Not specifying any of these parameters will lead to no cache to be flushed. On completion of any request, the HTTP status code of the request will be 204 ("no content").
 
 ### Example
 
