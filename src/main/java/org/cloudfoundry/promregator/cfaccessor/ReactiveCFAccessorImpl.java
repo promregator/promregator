@@ -265,6 +265,23 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	}
 	
 	/* (non-Javadoc)
+	 * @see org.cloudfoundry.promregator.cfaccessor.CFAccessor#retrieveAllApplicationIdsInSpace(java.lang.String, java.lang.String)
+	 */
+	@Override
+	public Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String orgId, String spaceId) {
+		ListApplicationsRequest request = ListApplicationsRequest.builder()
+				.organizationId(orgId)
+				.spaceId(spaceId)
+				.build();
+		Mono<ListApplicationsResponse> monoResp = this.cloudFoundryClient.applicationsV2().list(request);
+		
+		monoResp = monoResp.log(log.getName()+".retrieveAllApplicationIdsInSpace", Level.FINE);
+		
+		return monoResp;
+	}
+
+	
+	/* (non-Javadoc)
 	 * @see org.cloudfoundry.promregator.cfaccessor.CFAccessor#retrieveRouteMapping(java.lang.String)
 	 */
 	@Override
@@ -309,4 +326,5 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		return this.performGenericRetrieval("processes", "retrieveProcesses", key, this.processCache, 
 				request, r -> this.cloudFoundryClient.processes().list(r));
 	}
+
 }

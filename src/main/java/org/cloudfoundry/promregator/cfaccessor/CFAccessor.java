@@ -18,6 +18,8 @@ public interface CFAccessor {
 
 	Mono<ListApplicationsResponse> retrieveApplicationId(String orgId, String spaceId, String applicationName);
 
+	Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String orgId, String spaceId);
+	
 	Mono<ListRouteMappingsResponse> retrieveRouteMapping(String appId);
 
 	Mono<GetRouteResponse> retrieveRoute(String routeId);
