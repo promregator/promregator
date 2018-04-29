@@ -199,25 +199,43 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 						return tuple.getT1();
 					}).cache();
 
-				applicationsInSpace = responseMono.flatMapMany(response -> {
+				
+				
+				Flux<ApplicationResource> applicationResourceInSpace = responseMono.flatMapMany(response -> {
 					List<ApplicationResource> resources = response.getResources();
 					if (resources == null) {
 						return Flux.empty();
 					}
 
-					List<String> appNames = new LinkedList<>();
+					List<ApplicationResource> appNames = new LinkedList<>();
 					for (ApplicationResource ar : resources) {
 						if (!isApplicationInScrapableState(ar.getEntity().getState())) {
 							continue;
 						}
 
-						appNames.add(ar.getEntity().getName());
+						appNames.add(ar);
 					}
 
 					return Flux.fromIterable(appNames);
 				});
-
+				
+				applicationsInSpace = applicationResourceInSpace.map(ar ->  ar.getEntity().getName());
 				this.applicationsInSpaceMap.put(key, applicationsInSpace);
+				
+				/*
+				 * Note that we can perform a great performance optimization here:
+				 * applicationResourceInSpace contains all information required to
+				 * fill also applicationMap. If this is filled, further single roundtrips
+				 * are no longer necessary for fetching the id of the application. 
+				 */
+				applicationResourceInSpace.subscribe(ar -> {
+					String applicationId = ar.getMetadata().getId();
+					
+					String applicationMapKey = this.determineApplicationMapKey(orgIdMono, spaceIdMono, ar.getEntity().getName());
+					
+					this.applicationMap.putIfAbsent(applicationMapKey, Mono.just(applicationId));
+				});
+				
 			} else {
 				this.internalMetrics.countHit("appinstancescanner.applicationsInSpace");
 			}
@@ -233,6 +251,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				newTarget.setProtocol(target.getProtocol());
 
 				resolvedTargets.add(newTarget);
+
 			}
 		}
 
@@ -360,7 +379,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 
 	private Mono<String> getApplicationId(Mono<String> orgIdMono, Mono<String> spaceIdMono,
 			String applicationNameString) {
-		String key = String.format("%d|%d|%s", orgIdMono.hashCode(), spaceIdMono.hashCode(), applicationNameString);
+		String key = determineApplicationMapKey(orgIdMono, spaceIdMono, applicationNameString);
 		synchronized (key.intern()) {
 			Mono<String> cached = this.applicationMap.get(key);
 			if (cached != null) {
@@ -403,6 +422,11 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			this.applicationMap.put(key, cached);
 			return cached;
 		}
+	}
+
+	private String determineApplicationMapKey(Mono<String> orgIdMono, Mono<String> spaceIdMono, String applicationNameString) {
+		String key = String.format("%d|%d|%s", orgIdMono.hashCode(), spaceIdMono.hashCode(), applicationNameString);
+		return key;
 	}
 
 	private Mono<String> getApplicationUrl(Mono<String> applicationIdMono, String protocol) {
