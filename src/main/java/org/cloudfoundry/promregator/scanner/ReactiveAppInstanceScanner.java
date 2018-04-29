@@ -169,6 +169,12 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		List<Target> resolvedTargets = new LinkedList<>();
 		
 		for (Target target : targets) {
+			if (target.getApplicationName() != null) {
+				// trivial case; does not require to be resolved
+				resolvedTargets.add(target);
+				continue;
+			}
+			
 			String orgName = target.getOrgName();
 			String spaceName = target.getSpaceName();
 			String key = String.format("%s|%s", orgName, spaceName);
