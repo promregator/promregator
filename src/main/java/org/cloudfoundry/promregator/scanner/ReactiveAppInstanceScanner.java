@@ -69,7 +69,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 
 		@Override
 		protected Object clone() throws CloneNotSupportedException {
-			InternalInstance other = new InternalInstance();
+			InternalInstance other = (InternalInstance) super.clone();
 			other.target = this.target;
 			other.orgId = this.orgId;
 			other.spaceId = this.spaceId;

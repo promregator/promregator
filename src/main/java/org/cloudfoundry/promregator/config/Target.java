@@ -65,7 +65,7 @@ public class Target implements Cloneable {
 
 	@Override
 	public Object clone() throws CloneNotSupportedException {
-		Target clone = new Target();
+		Target clone = (Target) super.clone();
 		clone.orgName = this.orgName;
 		clone.spaceName = this.spaceName;
 		clone.applicationName = this.applicationName;
