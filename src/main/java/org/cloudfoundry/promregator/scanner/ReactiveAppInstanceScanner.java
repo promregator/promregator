@@ -243,15 +243,16 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			Iterable<String> applicationNames = applicationsInSpace.toIterable();
 
 			for (String appName : applicationNames) {
-				Target newTarget = new Target();
-				newTarget.setOrgName(target.getOrgName());
-				newTarget.setSpaceName(target.getSpaceName());
+				Target newTarget = null;
+				try {
+					newTarget = (Target) target.clone();
+				} catch (CloneNotSupportedException e) {
+					log.error("Cloning exception raised, even though not expected", e);
+					continue;
+				}
 				newTarget.setApplicationName(appName);
-				newTarget.setPath(target.getPath());
-				newTarget.setProtocol(target.getProtocol());
 
 				resolvedTargets.add(newTarget);
-
 			}
 		}
 
