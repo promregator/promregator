@@ -1,6 +1,6 @@
 package org.cloudfoundry.promregator.config;
 
-public class Target {
+public class Target implements Cloneable {
 	private String orgName;
 
 	private String spaceName;
@@ -61,6 +61,18 @@ public class Target {
 					"Invalid configuration: Target attempted to be configured with non-http(s) protocol: %s",
 					protocol));
 		}
+	}
+
+	@Override
+	protected Object clone() throws CloneNotSupportedException {
+		Target clone = new Target();
+		clone.orgName = this.orgName;
+		clone.spaceName = this.spaceName;
+		clone.applicationName = this.applicationName;
+		clone.path = this.path;
+		clone.protocol = this.protocol;
+		
+		return clone;
 	}
 
 }
