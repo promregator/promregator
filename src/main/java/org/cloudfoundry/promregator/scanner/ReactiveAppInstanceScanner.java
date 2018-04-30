@@ -8,6 +8,7 @@ import javax.annotation.PostConstruct;
 
 import org.apache.commons.collections4.map.PassiveExpiringMap;
 import org.apache.log4j.Logger;
+import org.cloudfoundry.client.v2.applications.ApplicationEntity;
 import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.organizations.OrganizationResource;
@@ -186,56 +187,43 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				Mono<String> spaceIdMono = this.getSpaceId(orgIdMono, spaceName);
 
 				ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, "applicationsInSpace");
-				
+
 				Mono<ListApplicationsResponse> responseMono = Mono.zip(orgIdMono, spaceIdMono)
-					.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
-						tuple.getT2().start();
-						return tuple.getT1();
-					}).flatMap(tuple -> {
-						return this.cfAccessor.retrieveAllApplicationIdsInSpace(tuple.getT1(), tuple.getT2());
-					})// stop the timer
-					.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
-						tuple.getT2().stop();
-						return tuple.getT1();
-					}).cache();
+						.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+							tuple.getT2().start();
+							return tuple.getT1();
+						}).flatMap(tuple -> {
+							return this.cfAccessor.retrieveAllApplicationIdsInSpace(tuple.getT1(), tuple.getT2());
+						})// stop the timer
+						.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+							tuple.getT2().stop();
+							return tuple.getT1();
+						}).cache();
 
-				
-				
-				Flux<ApplicationResource> applicationResourceInSpace = responseMono.flatMapMany(response -> {
-					List<ApplicationResource> resources = response.getResources();
-					if (resources == null) {
-						return Flux.empty();
-					}
+				Flux<ApplicationResource> applicationResourceInSpace = responseMono
+						.map(ListApplicationsResponse::getResources).flatMapMany(Flux::fromIterable)
+						.filter(ar -> isApplicationInScrapableState(ar.getEntity().getState()));
 
-					List<ApplicationResource> appNames = new LinkedList<>();
-					for (ApplicationResource ar : resources) {
-						if (!isApplicationInScrapableState(ar.getEntity().getState())) {
-							continue;
-						}
-
-						appNames.add(ar);
-					}
-
-					return Flux.fromIterable(appNames);
-				});
-				
-				applicationsInSpace = applicationResourceInSpace.map(ar ->  ar.getEntity().getName());
+				applicationsInSpace = applicationResourceInSpace.map(ApplicationResource::getEntity)
+						.map(ApplicationEntity::getName);
 				this.applicationsInSpaceMap.put(key, applicationsInSpace);
-				
+
 				/*
-				 * Note that we can perform a great performance optimization here:
-				 * applicationResourceInSpace contains all information required to
-				 * fill also applicationMap. If this is filled, further single roundtrips
-				 * are no longer necessary for fetching the id of the application. 
+				 * Note that we can perform a great performance optimization
+				 * here: applicationResourceInSpace contains all information
+				 * required to fill also applicationMap. If this is filled,
+				 * further single roundtrips are no longer necessary for
+				 * fetching the id of the application.
 				 */
 				applicationResourceInSpace.subscribe(ar -> {
 					String applicationId = ar.getMetadata().getId();
-					
-					String applicationMapKey = this.determineApplicationMapKey(orgIdMono, spaceIdMono, ar.getEntity().getName());
-					
+
+					String applicationMapKey = this.determineApplicationMapKey(orgIdMono, spaceIdMono,
+							ar.getEntity().getName());
+
 					this.applicationMap.putIfAbsent(applicationMapKey, Mono.just(applicationId));
 				});
-				
+
 			} else {
 				this.internalMetrics.countHit("appinstancescanner.applicationsInSpace");
 			}
@@ -425,7 +413,8 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		}
 	}
 
-	private String determineApplicationMapKey(Mono<String> orgIdMono, Mono<String> spaceIdMono, String applicationNameString) {
+	private String determineApplicationMapKey(Mono<String> orgIdMono, Mono<String> spaceIdMono,
+			String applicationNameString) {
 		String key = String.format("%d|%d|%s", orgIdMono.hashCode(), spaceIdMono.hashCode(), applicationNameString);
 		return key;
 	}
@@ -601,7 +590,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		this.hostnameMap.clear();
 		this.domainMap.clear();
 	}
-	
+
 	public void invalidateCacheSpace() {
 		log.info("Invalidating space cache");
 		this.spaceMap.clear();
