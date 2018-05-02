@@ -25,6 +25,7 @@ Here is the list of major features provided by Promregator:
   * **Multiple CF apps** in **multiple Orgs** and **multiple spaces** supported
   * **Multiple instances** per app supported, **automatically detecting up- and downscaling** (results are cached, timeout of caching can be configured)
   * *(>= 0.4.0)* **Auto-detection of all applications** within a CF space allows a simplified configuration
+  * *(>= 0.4.0)* **Filtering of applications** within a CF space based on **Regular Expression** allows a simplified configuration
 * Fetching of the **Prometheus Metric endpoints** of multiple app instances is performed in **parallel** (number of concurrent threads used for retrieving metrics can be configured)
 * **Support of Authentication Schemes** at the CF app's endpoint. The following Authentication schemes are currently available:
   - Basic HTTP Authentication (as of [RFC2617](https://www.ietf.org/rfc/rfc2617.txt))
