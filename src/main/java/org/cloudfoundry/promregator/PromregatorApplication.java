@@ -32,6 +32,8 @@ import io.prometheus.client.hotspot.DefaultExports;
 public class PromregatorApplication {
 	
 	private static final Logger log = Logger.getLogger(PromregatorApplication.class);
+
+	public static final String SPACE_ALL_APPLICATIONS = "SPACE_ALL_APPLICATIONS";
 	
 	public static void main(String[] args) {
 		SpringApplication.run(PromregatorApplication.class, args);

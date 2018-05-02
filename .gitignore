@@ -27,6 +27,12 @@ hs_err_pid*
 .classpath
 .project
 
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
 # application.yaml for local tests
 application.yaml
 
