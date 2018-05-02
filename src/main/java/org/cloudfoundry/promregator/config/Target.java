@@ -7,6 +7,8 @@ public class Target implements Cloneable {
 
 	private String applicationName;
 
+	private String applicationRegex;
+
 	private String path;
 
 	private String protocol;
@@ -63,6 +65,14 @@ public class Target implements Cloneable {
 		}
 	}
 
+	public String getApplicationRegex() {
+		return applicationRegex;
+	}
+
+	public void setApplicationRegex(String applicationRegex) {
+		this.applicationRegex = applicationRegex;
+	}
+
 	@Override
 	public Object clone() throws CloneNotSupportedException {
 		Target clone = (Target) super.clone();
@@ -71,7 +81,7 @@ public class Target implements Cloneable {
 		clone.applicationName = this.applicationName;
 		clone.path = this.path;
 		clone.protocol = this.protocol;
-		
+
 		return clone;
 	}
 

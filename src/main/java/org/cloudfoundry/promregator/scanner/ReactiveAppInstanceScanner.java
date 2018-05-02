@@ -3,6 +3,8 @@ package org.cloudfoundry.promregator.scanner;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 
@@ -173,6 +175,12 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				continue;
 			}
 
+			/* NB: Now we have to consider two cases:
+			 * Case 1: both applicationName and applicationRegex is empty => select all apps
+			 * Case 2: applicationName is null, but applicationRegex is filled => filter all apps with the regex
+			 * In both cases we need the list of all apps in the space.
+			 */
+
 			String orgName = target.getOrgName();
 			String spaceName = target.getSpaceName();
 			String key = String.format("%s|%s", orgName, spaceName);
@@ -204,7 +212,17 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 						.map(ListApplicationsResponse::getResources).flatMapMany(Flux::fromIterable)
 						.filter(ar -> isApplicationInScrapableState(ar.getEntity().getState()));
 
-				applicationsInSpace = applicationResourceInSpace.map(ApplicationResource::getEntity)
+				Flux<ApplicationResource> filteredApplicationResource = applicationResourceInSpace;
+				if (target.getApplicationRegex() != null) {
+					final Pattern filterPattern = Pattern.compile(target.getApplicationRegex());
+					
+					filteredApplicationResource = applicationResourceInSpace.filter(ar -> {
+						Matcher m = filterPattern.matcher(ar.getEntity().getName());
+						return m.matches();
+					});
+				}
+				
+				applicationsInSpace = filteredApplicationResource.map(ApplicationResource::getEntity)
 						.map(ApplicationEntity::getName);
 				this.applicationsInSpaceMap.put(key, applicationsInSpace);
 
