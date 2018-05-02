@@ -41,27 +41,28 @@ public class CFAccessorMock implements CFAccessor {
 	public final static String UNITTEST_APP2_HOST = "hostapp2";
 	public final static String UNITTEST_SHARED_DOMAIN_UUID = "be9b8696-2fa6-11e8-b467-0ed5f89f718b";
 	public final static String UNITTEST_SHARED_DOMAIN = "shared.domain.example.org";
-	
+
 	public final static String CREATED_AT_TIMESTAMP = "2014-11-24T19:32:49+00:00";
 	public final static String UPDATED_AT_TIMESTAMP = "2014-11-24T19:32:49+00:00";
-	
+
 	@Override
 	public Mono<ListOrganizationsResponse> retrieveOrgId(String orgName) {
-		
+
 		if ("unittestorg".equals(orgName)) {
-			
-			OrganizationResource or = OrganizationResource.builder().entity(
-					OrganizationEntity.builder().name(orgName).build()
-				).metadata(
-					Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_ORG_UUID).build()
-					// Note that UpdatedAt is not set here, as this can also happen in real life!
-				).build();
-			
+
+			OrganizationResource or = OrganizationResource.builder()
+					.entity(OrganizationEntity.builder().name(orgName).build())
+					.metadata(Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_ORG_UUID).build()
+					// Note that UpdatedAt is not set here, as this can also
+					// happen in real life!
+					).build();
+
 			List<org.cloudfoundry.client.v2.organizations.OrganizationResource> list = new LinkedList<>();
 			list.add(or);
-			
-			ListOrganizationsResponse resp = org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse.builder().addAllResources(list).build();
-			
+
+			ListOrganizationsResponse resp = org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse
+					.builder().addAllResources(list).build();
+
 			return Mono.just(resp);
 		}
 		Assert.fail("Invalid OrgId request");
@@ -71,18 +72,16 @@ public class CFAccessorMock implements CFAccessor {
 	@Override
 	public Mono<ListSpacesResponse> retrieveSpaceId(String orgId, String spaceName) {
 		if ("unittestspace".equals(spaceName) && orgId.equals(UNITTEST_ORG_UUID)) {
-			
-			SpaceResource sr = SpaceResource.builder().entity(
-					SpaceEntity.builder().name(spaceName).build()
-				).metadata(
-					Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_SPACE_UUID).build()
-				).build();
+
+			SpaceResource sr = SpaceResource.builder().entity(SpaceEntity.builder().name(spaceName).build())
+					.metadata(Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_SPACE_UUID).build())
+					.build();
 			List<SpaceResource> list = new LinkedList<>();
 			list.add(sr);
 			ListSpacesResponse resp = ListSpacesResponse.builder().addAllResources(list).build();
 			return Mono.just(resp);
 		}
-		
+
 		Assert.fail("Invalid SpaceId request");
 		return null;
 	}
@@ -92,27 +91,23 @@ public class CFAccessorMock implements CFAccessor {
 		if (orgId.equals(UNITTEST_ORG_UUID) && spaceId.equals(UNITTEST_SPACE_UUID)) {
 			ApplicationResource ar = null;
 			if (applicationName.equals("testapp")) {
-				ar = ApplicationResource.builder().entity(
-						ApplicationEntity.builder().name(applicationName).build()
-					).metadata(
-							Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP1_UUID).build()
-					).build();
+				ar = ApplicationResource.builder().entity(ApplicationEntity.builder().name(applicationName).build())
+						.metadata(Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP1_UUID).build())
+						.build();
 			} else if (applicationName.equals("testapp2")) {
-				ar = ApplicationResource.builder().entity(
-						ApplicationEntity.builder().name(applicationName).build()
-					).metadata(
-							Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP2_UUID).build()
-					).build();
+				ar = ApplicationResource.builder().entity(ApplicationEntity.builder().name(applicationName).build())
+						.metadata(Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP2_UUID).build())
+						.build();
 			} else {
 				Assert.fail("Invalid ApplicationId request, application name is invalid");
 			}
-			
+
 			List<ApplicationResource> list = new LinkedList<>();
 			list.add(ar);
 			ListApplicationsResponse resp = ListApplicationsResponse.builder().addAllResources(list).build();
 			return Mono.just(resp);
 		}
-		
+
 		Assert.fail("Invalid ApplicationId request");
 		return null;
 	}
@@ -125,7 +120,7 @@ public class CFAccessorMock implements CFAccessor {
 		} else if (appId.equals(UNITTEST_APP2_UUID)) {
 			entity = RouteMappingEntity.builder().applicationId(appId).routeId(UNITTEST_APP2_ROUTE_UUID).build();
 		}
-		
+
 		if (entity == null) {
 			Assert.fail("Invalid route mapping request");
 			return null;
@@ -137,39 +132,40 @@ public class CFAccessorMock implements CFAccessor {
 		List<RouteMappingResource> list = new LinkedList<>();
 		list.add(rmr);
 		ListRouteMappingsResponse resp = ListRouteMappingsResponse.builder().addAllResources(list).build();
-		
+
 		return Mono.just(resp);
 	}
 
 	@Override
 	public Mono<GetRouteResponse> retrieveRoute(String routeId) {
-		
+
 		RouteEntity entity = null;
 		if (routeId.equals(UNITTEST_APP1_ROUTE_UUID)) {
 			entity = RouteEntity.builder().domainId(UNITTEST_SHARED_DOMAIN_UUID).host(UNITTEST_APP1_HOST).build();
 		} else if (routeId.equals(UNITTEST_APP2_ROUTE_UUID)) {
-			entity = RouteEntity.builder().domainId(UNITTEST_SHARED_DOMAIN_UUID).host(UNITTEST_APP2_HOST).path("additionalPath").build();
+			entity = RouteEntity.builder().domainId(UNITTEST_SHARED_DOMAIN_UUID).host(UNITTEST_APP2_HOST)
+					.path("additionalPath").build();
 		}
-		
+
 		if (entity == null) {
 			Assert.fail("Invalid route request");
 			return null;
 		}
-		
+
 		GetRouteResponse resp = GetRouteResponse.builder().entity(entity).build();
 		return Mono.just(resp);
 	}
 
 	@Override
 	public Mono<GetSharedDomainResponse> retrieveSharedDomain(String domainId) {
-		
+
 		if (domainId.equals(UNITTEST_SHARED_DOMAIN_UUID)) {
 			SharedDomainEntity entity = SharedDomainEntity.builder().name(UNITTEST_SHARED_DOMAIN).build();
 			GetSharedDomainResponse resp = GetSharedDomainResponse.builder().entity(entity).build();
-			
+
 			return Mono.just(resp);
 		}
-		
+
 		Assert.fail("Invalid shared domain request");
 		return null;
 	}
@@ -178,11 +174,11 @@ public class CFAccessorMock implements CFAccessor {
 	public Mono<ListProcessesResponse> retrieveProcesses(String orgId, String spaceId, String appId) {
 		if (orgId.equals(UNITTEST_ORG_UUID) && spaceId.equals(UNITTEST_SPACE_UUID)) {
 			List<ProcessResource> list = new LinkedList<>();
-			
+
 			Data data = Data.builder().timeout(100).build();
 			HealthCheck hc = HealthCheck.builder().type(HealthCheckType.HTTP).data(data).build();
-			Builder builder = ProcessResource.builder().type("dummy").command("dummycommand").memoryInMb(1024).diskInMb(1024)
-					.healthCheck(hc).createdAt(CREATED_AT_TIMESTAMP).updatedAt(UPDATED_AT_TIMESTAMP);
+			Builder builder = ProcessResource.builder().type("dummy").command("dummycommand").memoryInMb(1024)
+					.diskInMb(1024).healthCheck(hc).createdAt(CREATED_AT_TIMESTAMP).updatedAt(UPDATED_AT_TIMESTAMP);
 			ProcessResource ar = null;
 			if (appId.equals(UNITTEST_APP1_UUID)) {
 				ar = builder.instances(2).id(UNITTEST_APP1_UUID).build();
@@ -194,12 +190,37 @@ public class CFAccessorMock implements CFAccessor {
 				return null;
 			}
 			list.add(ar);
-			
+
 			ListProcessesResponse resp = ListProcessesResponse.builder().addAllResources(list).build();
-			
+
 			return Mono.just(resp);
 		}
-		
+
+		Assert.fail("Invalid process request");
+		return null;
+	}
+
+	@Override
+	public Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String orgId, String spaceId) {
+		if (orgId.equals(UNITTEST_ORG_UUID) && spaceId.equals(UNITTEST_SPACE_UUID)) {
+			List<ApplicationResource> list = new LinkedList<>();
+
+			ApplicationResource ar = ApplicationResource.builder()
+					.entity(ApplicationEntity.builder().name("testapp").state("STARTED").build())
+					.metadata(Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP1_UUID).build())
+					.build();
+			list.add(ar);
+
+			ar = ApplicationResource.builder()
+					.entity(ApplicationEntity.builder().name("testapp2").state("STARTED").build())
+					.metadata(Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP2_UUID).build())
+					.build();
+			list.add(ar);
+
+			ListApplicationsResponse resp = ListApplicationsResponse.builder().addAllResources(list).build();
+			return Mono.just(resp);
+		}
+
 		Assert.fail("Invalid process request");
 		return null;
 	}
