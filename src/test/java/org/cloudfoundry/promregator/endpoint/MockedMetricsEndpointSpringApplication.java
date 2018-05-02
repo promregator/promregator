@@ -11,6 +11,8 @@ import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
+import org.cloudfoundry.promregator.scanner.TargetResolver;
+import org.cloudfoundry.promregator.scanner.TrivialTargetResolver;
 import org.springframework.boot.autoconfigure.AutoConfigurationExcludeFilter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.TypeExcludeFilter;
@@ -64,6 +66,11 @@ public class MockedMetricsEndpointSpringApplication {
 		};
 	}
 
+	@Bean
+	public TargetResolver targetResolver() {
+		return new TrivialTargetResolver();
+	}
+	
 	@Bean
 	public ExecutorService metricsFetcherPool() {
 		return Executors.newSingleThreadExecutor();
