@@ -35,6 +35,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Value("${promregator.metrics.auth:NONE}")
 	private InboundAuthorizationMode promregatorMetricsAuth;
+	
+	@Value("${promregator.cache.invalidate.auth:NONE}")
+	private InboundAuthorizationMode cacheInvalidateAuth;
 
 	
 	private boolean isInboundAuthSecurityEnabled() {
@@ -45,6 +48,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 			return true;
 
 		if (this.promregatorMetricsAuth != InboundAuthorizationMode.NONE)
+			return true;
+		
+		if (this.cacheInvalidateAuth != InboundAuthorizationMode.NONE)
 			return true;
 		
 		return false;
@@ -103,6 +109,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		sec = this.determineHttpSecurityForEndpoint(sec, "/metrics", this.endpointAuth);
 		sec = this.determineHttpSecurityForEndpoint(sec, "/singleTargetMetrics/**", this.endpointAuth);
 		sec = this.determineHttpSecurityForEndpoint(sec, "/promregatorMetrics", this.promregatorMetricsAuth);
+		sec = this.determineHttpSecurityForEndpoint(sec, "/cache/invalidate", this.cacheInvalidateAuth);
 
 		// see also
 		// https://www.boraji.com/spring-security-4-http-basic-authentication-example
@@ -134,6 +141,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		web = this.determineWebSecurityForEndpoint(web, "/metrics", this.endpointAuth);
 		web = this.determineWebSecurityForEndpoint(web, "/singleTargetMetrics/**", this.endpointAuth);
 		web = this.determineWebSecurityForEndpoint(web, "/promregatorMetrics", this.promregatorMetricsAuth);
+		web = this.determineWebSecurityForEndpoint(web, "/cache/invalidate", this.cacheInvalidateAuth);
 
 	}
 }

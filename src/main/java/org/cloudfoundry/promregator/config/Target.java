@@ -1,16 +1,16 @@
 package org.cloudfoundry.promregator.config;
 
-public class Target {
+public class Target implements Cloneable {
 	private String orgName;
-	
+
 	private String spaceName;
-	
+
 	private String applicationName;
 
 	private String path;
-	
+
 	private String protocol;
-	
+
 	public String getOrgName() {
 		return orgName;
 	}
@@ -38,7 +38,7 @@ public class Target {
 	public String getPath() {
 		if (this.path == null)
 			return "/metrics";
-		
+
 		return path;
 	}
 
@@ -49,7 +49,7 @@ public class Target {
 	public String getProtocol() {
 		if (this.protocol == null)
 			return "https";
-		
+
 		return protocol;
 	}
 
@@ -57,9 +57,22 @@ public class Target {
 		if ("http".equals(protocol) || "https".equals(protocol)) {
 			this.protocol = protocol;
 		} else {
-			throw new Error(String.format("Invalid configuration: Target attempted to be configured with non-http(s) protocol: %s", protocol));
+			throw new Error(String.format(
+					"Invalid configuration: Target attempted to be configured with non-http(s) protocol: %s",
+					protocol));
 		}
 	}
 
-	
+	@Override
+	public Object clone() throws CloneNotSupportedException {
+		Target clone = (Target) super.clone();
+		clone.orgName = this.orgName;
+		clone.spaceName = this.spaceName;
+		clone.applicationName = this.applicationName;
+		clone.path = this.path;
+		clone.protocol = this.protocol;
+		
+		return clone;
+	}
+
 }
