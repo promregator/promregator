@@ -23,7 +23,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import io.prometheus.client.Histogram.Timer;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -154,27 +153,6 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		return result;
 	}
 
-	private static class ReactiveTimer {
-		private Timer t;
-		private final InternalMetrics im;
-		private final String requestType;
-		
-		public ReactiveTimer(final InternalMetrics im, final String requestType) {
-			this.im = im;
-			this.requestType = requestType;
-		}
-		
-		public void start() {
-			this.t = this.im.startTimerCFFetch(this.requestType);
-		}
-
-		public void stop() {
-			if (this.t != null) {
-				this.t.observeDuration();
-			}
-		}
-	}
-	
 	private Mono<String> getOrgId(String orgNameString) {
 		Mono<String> cached = this.orgMap.get(orgNameString);
 		if (cached != null) {
