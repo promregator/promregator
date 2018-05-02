@@ -24,7 +24,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 			result.add(rt);
 		}
 		
-		return null;
+		return result;
 	}
 
 }
