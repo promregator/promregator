@@ -16,7 +16,9 @@ def getVersion() {
 timestamps {
 	node("slave") {
 		dir("build") {
-			git url: 'https://github.com/promregator/promregator.git', branch: env.BRANCH_NAME
+			sh "export"
+		
+			checkout scm
 			
 			stage("Build") {
 				sh """#!/bin/bash -xe
