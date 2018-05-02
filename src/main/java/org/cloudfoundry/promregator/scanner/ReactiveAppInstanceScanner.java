@@ -14,7 +14,6 @@ import org.cloudfoundry.client.v2.routes.RouteEntity;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
 import org.cloudfoundry.client.v3.processes.ListProcessesResponse;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
-import org.cloudfoundry.promregator.config.Target;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -61,7 +60,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	}
 	
 	private static class OSAVector {
-		public Target target;
+		public ResolvedTarget target;
 		
 		public String orgId;
 		public String spaceId;
@@ -78,8 +77,8 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	private InternalMetrics internalMetrics;
 	
 	@Override
-	public List<Instance> determineInstancesFromTargets(List<Target> targets) {
-		Flux<Target> targetsFlux = Flux.fromIterable(targets);
+	public List<Instance> determineInstancesFromTargets(List<ResolvedTarget> targets) {
+		Flux<ResolvedTarget> targetsFlux = Flux.fromIterable(targets);
 		
 		Flux<OSAVector> initialOSAVectorFlux = targetsFlux.map(target -> {
 			OSAVector v = new OSAVector();

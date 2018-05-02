@@ -17,5 +17,5 @@ public interface AppInstanceScanner {
 	 * @param targets the list of targets, for which the properties of instances shall be determined
 	 * @return the list of instances containing the access URL and the instance identifier
 	 */
-	List<Instance> determineInstancesFromTargets(List<Target> targets);
+	List<Instance> determineInstancesFromTargets(List<ResolvedTarget> targets);
 }

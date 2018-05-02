@@ -16,7 +16,6 @@ import javax.annotation.PostConstruct;
 import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
-import org.cloudfoundry.promregator.config.Target;
 import org.cloudfoundry.promregator.fetcher.CFMetricsFetcher;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcher;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcherMetrics;
@@ -26,6 +25,8 @@ import org.cloudfoundry.promregator.rewrite.GenericMetricFamilySamplesPrefixRewr
 import org.cloudfoundry.promregator.rewrite.MergableMetricFamilySamples;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.Instance;
+import org.cloudfoundry.promregator.scanner.ResolvedTarget;
+import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
@@ -45,6 +46,9 @@ import io.prometheus.client.Gauge;
 public abstract class AbstractMetricsEndpoint {
 	
 	private static final Logger log = Logger.getLogger(AbstractMetricsEndpoint.class);
+	
+	@Autowired
+	private TargetResolver targetResolver;
 	
 	@Autowired
 	private AppInstanceScanner appInstanceScanner;
@@ -97,7 +101,10 @@ public abstract class AbstractMetricsEndpoint {
 		
 		this.up.clear();
 		
-		List<Instance> instanceList = this.appInstanceScanner.determineInstancesFromTargets(this.promregatorConfiguration.getTargets());
+		List<ResolvedTarget> resolvedTargets = this.targetResolver.resolveTargets(this.promregatorConfiguration.getTargets());
+		log.info(String.format("Raw list contains %d resolved targets", resolvedTargets.size()));
+		
+		List<Instance> instanceList = this.appInstanceScanner.determineInstancesFromTargets(resolvedTargets);
 		log.info(String.format("Raw list contains %d instances", instanceList.size()));
 
 		instanceList = this.filterInstanceList(instanceList);
@@ -189,7 +196,7 @@ public abstract class AbstractMetricsEndpoint {
 		for (Instance instance : instanceList) {
 			log.info(String.format("Creating Metrics Fetcher for instance %s", instance.getInstanceId()));
 			
-			Target target = instance.getTarget();
+			ResolvedTarget target = instance.getTarget();
 			String orgName = target.getOrgName();
 			String spaceName = target.getSpaceName();
 			String appName = target.getApplicationName();

@@ -4,7 +4,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorMock;
-import org.cloudfoundry.promregator.config.Target;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
@@ -31,9 +30,9 @@ public class ReactiveAppInstanceScannerTest {
 	
 	@Test
 	public void testStraightForward() {
-		List<Target> targets = new LinkedList<>();
+		List<ResolvedTarget> targets = new LinkedList<>();
 		
-		Target t = new Target();
+		ResolvedTarget t = new ResolvedTarget();
 		t.setOrgName("unittestorg");
 		t.setSpaceName("unittestspace");
 		t.setApplicationName("testapp");
@@ -41,7 +40,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setProtocol("http");
 		targets.add(t);
 		
-		t = new Target();
+		t = new ResolvedTarget();
 		t.setOrgName("unittestorg");
 		t.setSpaceName("unittestspace");
 		t.setApplicationName("testapp2");

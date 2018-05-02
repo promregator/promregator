@@ -9,6 +9,8 @@ import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.Instance;
+import org.cloudfoundry.promregator.scanner.ResolvedTarget;
+import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
@@ -24,6 +26,9 @@ import org.springframework.web.context.WebApplicationContext;
 public class DiscoveryEndpoint {
 
 	private static final Logger log = Logger.getLogger(DiscoveryEndpoint.class);
+	
+	@Autowired
+	private TargetResolver targetResolver;
 	
 	@Autowired
 	private AppInstanceScanner appInstanceScanner;
@@ -113,7 +118,10 @@ public class DiscoveryEndpoint {
 	
 	@RequestMapping(method = RequestMethod.GET, produces=MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public DiscoveryResponse[] getDiscovery(HttpServletRequest request) {
-		List<Instance> instances = this.appInstanceScanner.determineInstancesFromTargets(this.promregatorConfiguration.getTargets());
+		
+		List<ResolvedTarget> resolvedTargets = this.targetResolver.resolveTargets(this.promregatorConfiguration.getTargets());
+		
+		List<Instance> instances = this.appInstanceScanner.determineInstancesFromTargets(resolvedTargets);
 		
 		String localHostname = this.myHostname != null ? this.myHostname : request.getLocalName();
 		int localPort = this.myPort != 0 ? this.myPort : request.getLocalPort();
