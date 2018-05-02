@@ -15,6 +15,8 @@ import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.ReactiveAppInstanceScanner;
+import org.cloudfoundry.promregator.scanner.ReactiveTargetResolver;
+import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.cloudfoundry.promregator.springconfig.BasicAuthenticationSpringConfiguration;
 import org.cloudfoundry.promregator.springconfig.ErrorSpringConfiguration;
 import org.cloudfoundry.promregator.websecurity.SecurityConfig;
@@ -40,6 +42,11 @@ public class PromregatorApplication {
 	@Bean
 	public CFAccessor cfAccessor() throws ConfigurationException {
 		return new ReactiveCFAccessorImpl();
+	}
+	
+	@Bean
+	public TargetResolver targetResolver() {
+		return new ReactiveTargetResolver();
 	}
 	
 	@Bean
