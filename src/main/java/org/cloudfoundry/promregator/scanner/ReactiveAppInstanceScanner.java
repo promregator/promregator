@@ -127,7 +127,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		Flux<Instance> instancesFlux = OSAVectorCompleteFlux.flatMap(v -> {
 			List<Instance> instances = new ArrayList<>(v.numberOfInstances);
 			for (int i = 0; i<v.numberOfInstances; i++) {
-				Instance inst = new Instance(v.target, i+"", v.accessURL);
+				Instance inst = new Instance(v.target, String.format("%s:%d", v.applicationId, i), v.accessURL);
 				instances.add(inst);
 			}
 			
