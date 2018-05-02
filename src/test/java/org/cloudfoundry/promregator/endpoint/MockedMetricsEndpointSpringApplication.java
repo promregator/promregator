@@ -8,9 +8,9 @@ import java.util.concurrent.Executors;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.auth.NullEnricher;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
-import org.cloudfoundry.promregator.config.Target;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.Instance;
+import org.cloudfoundry.promregator.scanner.ResolvedTarget;
 import org.springframework.boot.autoconfigure.AutoConfigurationExcludeFilter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.TypeExcludeFilter;
@@ -38,10 +38,10 @@ public class MockedMetricsEndpointSpringApplication {
 		return new AppInstanceScanner() {
 
 			@Override
-			public List<Instance> determineInstancesFromTargets(List<Target> targets) {
+			public List<Instance> determineInstancesFromTargets(List<ResolvedTarget> targets) {
 				LinkedList<Instance> result = new LinkedList<>();
 
-				Target t = new Target();
+				ResolvedTarget t = new ResolvedTarget();
 				t.setOrgName("unittestorg");
 				t.setSpaceName("unittestspace");
 				t.setApplicationName("unittestapp");
@@ -50,7 +50,7 @@ public class MockedMetricsEndpointSpringApplication {
 				result.add(new Instance(t, "faedbb0a-2273-4cb4-a659-bd31331f7daf:0", "http://localhost:1234"));
 				result.add(new Instance(t, "faedbb0a-2273-4cb4-a659-bd31331f7daf:1", "http://localhost:1234"));
 
-				t = new Target();
+				t = new ResolvedTarget();
 				t.setOrgName("unittestorg");
 				t.setSpaceName("unittestspace");
 				t.setApplicationName("unittestapp2");
