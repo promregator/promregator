@@ -6,10 +6,13 @@ import java.util.concurrent.Executors;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.auth.NullEnricher;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
+import org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
+import org.cloudfoundry.promregator.scanner.CachingTargetResolver;
 import org.cloudfoundry.promregator.scanner.ReactiveAppInstanceScanner;
+import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.AutoConfigurationExcludeFilter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -17,6 +20,7 @@ import org.springframework.boot.context.TypeExcludeFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
@@ -32,43 +36,75 @@ import io.prometheus.client.CollectorRegistry;
 		// NOT excluded
 })
 @Import({ PromregatorConfiguration.class })
+@TestPropertySource(locations="../default.properties")
 public class MockedAppInstanceScannerEndpointSpringApplication {
 	public static class MockedReactiveAppInstanceScanner extends ReactiveAppInstanceScanner {
-		private boolean appInvalidated;
-		private boolean spaceInvalidated;
-		private boolean orgInvalidated;
+		private boolean appURLInvalidated;
+		
+		@Override
+		public void invalidateApplicationUrlCache() {
+			this.appURLInvalidated = true;
+		}
+
+		public boolean isAppURLInvalidated() {
+			return appURLInvalidated;
+		}
+
+	}
+	
+	public class MockedReactiveCFAccessorImpl extends ReactiveCFAccessorImpl {
+		private boolean applicationCache = false;
+		private boolean spaceCache = false;
+		private boolean orgCache = false;
 		
 		@Override
 		public void invalidateCacheApplications() {
-			this.appInvalidated = true;
+			this.applicationCache = true;
 		}
 
 		@Override
 		public void invalidateCacheSpace() {
-			this.spaceInvalidated = true;
+			this.spaceCache = true;
 		}
 
 		@Override
 		public void invalidateCacheOrg() {
-			this.orgInvalidated = true;
+			this.orgCache = true;
 		}
 
-		public boolean isAppInvalidated() {
-			return appInvalidated;
+		public boolean isApplicationCache() {
+			return applicationCache;
 		}
 
-		public boolean isSpaceInvalidated() {
-			return spaceInvalidated;
+		public boolean isSpaceCache() {
+			return spaceCache;
 		}
 
-		public boolean isOrgInvalidated() {
-			return orgInvalidated;
+		public boolean isOrgCache() {
+			return orgCache;
+		}
+	}
+	
+	public static class MockedCachingTargetResolver extends CachingTargetResolver {
+		public MockedCachingTargetResolver() {
+			super(null);
+		}
+
+		private boolean resolverCache = false;
+		
+		@Override
+		public void invalidateCache() {
+			this.resolverCache = true;
+		}
+
+		public boolean isResolverCache() {
+			return this.resolverCache;
 		}
 	}
 	
 	@Bean
 	public CFAccessor cfAccessor() {
-		return Mockito.mock(CFAccessor.class);
+		return new MockedReactiveCFAccessorImpl();
 	}
 	
 	@Bean
@@ -81,6 +117,16 @@ public class MockedAppInstanceScannerEndpointSpringApplication {
 		return new MockedReactiveAppInstanceScanner();
 	}
 
+	@Bean
+	public CachingTargetResolver cachingTargetResolver() {
+		return new MockedCachingTargetResolver();
+	}
+	
+	@Bean
+	public TargetResolver targetResolver(CachingTargetResolver cachingTargetResolver) {
+		return cachingTargetResolver;
+	}
+	
 	@Bean
 	public ExecutorService metricsFetcherPool() {
 		return Executors.newSingleThreadExecutor();

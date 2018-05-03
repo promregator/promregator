@@ -24,7 +24,7 @@ public class CachingTargetResolver implements TargetResolver {
 	@Value("${cf.cache.timeout.resolver:300}")
 	private int timeoutCacheApplicationLevel;
 
-	@Autowired
+	@Autowired(required=false)
 	private List<CachingTargetResolverRemovalListener> removalListeners;
 	
 	private TargetResolver nativeTargetResolver;
@@ -40,6 +40,9 @@ public class CachingTargetResolver implements TargetResolver {
 
 				@Override
 				public void onRemoval(RemovalNotification<Target, List<ResolvedTarget>> notification) {
+					if (removalListeners == null)
+						return; // nothing to do
+					
 					// propagate to all registered listeners
 					for (CachingTargetResolverRemovalListener listener : removalListeners) {
 						listener.onRemoval(notification.getKey(), notification.getValue());

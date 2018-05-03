@@ -1,6 +1,10 @@
 package org.cloudfoundry.promregator.endpoint;
 
+import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
+import org.cloudfoundry.promregator.endpoint.MockedAppInstanceScannerEndpointSpringApplication.MockedCachingTargetResolver;
+import org.cloudfoundry.promregator.endpoint.MockedAppInstanceScannerEndpointSpringApplication.MockedReactiveCFAccessorImpl;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
+import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,7 +17,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = MockedAppInstanceScannerEndpointSpringApplication.class)
-@TestPropertySource(locations="default.properties")
+@TestPropertySource(locations="password_only.properties")
 public class InvalidateCacheEndpointTest {
 
 	@Autowired
@@ -22,19 +26,30 @@ public class InvalidateCacheEndpointTest {
 	@Autowired
 	private AppInstanceScanner appInstanceScanner;
 	
+	@Autowired
+	private CFAccessor cfAccessor;
+	
+	@Autowired
+	private TargetResolver targetResolver;
+	
 	@Test
 	public void testInvalidateCacheAll() {
 		Assert.assertNotNull(subject);
 		
-		ResponseEntity<String> response = subject.invalidateCache(true, true, true);
+		ResponseEntity<String> response = subject.invalidateCache(true, true, true, true);
 		
 		Assert.assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
 		
 		MockedAppInstanceScannerEndpointSpringApplication.MockedReactiveAppInstanceScanner ais = (MockedAppInstanceScannerEndpointSpringApplication.MockedReactiveAppInstanceScanner) this.appInstanceScanner;
+		Assert.assertTrue(ais.isAppURLInvalidated());
 		
-		Assert.assertTrue(ais.isAppInvalidated());
-		Assert.assertTrue(ais.isSpaceInvalidated());
-		Assert.assertTrue(ais.isOrgInvalidated());
+		MockedReactiveCFAccessorImpl cfa = (MockedReactiveCFAccessorImpl) this.cfAccessor;
+		Assert.assertTrue(cfa.isApplicationCache());
+		Assert.assertTrue(cfa.isOrgCache());
+		Assert.assertTrue(cfa.isSpaceCache());
+		
+		MockedCachingTargetResolver tr = (MockedCachingTargetResolver) this.targetResolver;
+		Assert.assertTrue(tr.isResolverCache());
 	}
 
 }
