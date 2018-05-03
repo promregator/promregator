@@ -8,7 +8,6 @@ import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.config.Target;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import reactor.core.publisher.Flux;
@@ -16,9 +15,6 @@ import reactor.core.publisher.Mono;
 
 @Component
 public class ReactiveTargetResolver implements TargetResolver {
-
-	@Value("${cf.cache.timeout.application:300}")
-	private int timeoutCacheApplicationLevel;
 
 	@Autowired
 	private CFAccessor cfAccessor;
