@@ -204,4 +204,10 @@ public class CFAccessorMock implements CFAccessor {
 		return null;
 	}
 
+	@Override
+	public Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String orgId, String spaceId) {
+		Assert.fail("Not implemented yet");
+		return null;
+	}
+
 }
