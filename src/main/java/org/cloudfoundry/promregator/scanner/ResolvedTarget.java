@@ -1,6 +1,10 @@
 package org.cloudfoundry.promregator.scanner;
 
+import org.cloudfoundry.promregator.config.Target;
+
 public class ResolvedTarget {
+	private Target originalTarget;
+	
 	private String orgName;
 	
 	private String spaceName;
@@ -61,5 +65,12 @@ public class ResolvedTarget {
 		}
 	}
 
+	public Target getOriginalTarget() {
+		return originalTarget;
+	}
+
+	public void setOriginalTarget(Target originalTarget) {
+		this.originalTarget = originalTarget;
+	}
 	
 }

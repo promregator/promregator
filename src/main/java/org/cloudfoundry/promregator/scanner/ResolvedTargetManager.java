@@ -1,10 +1,10 @@
 package org.cloudfoundry.promregator.scanner;
 
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.config.Target;
 import org.springframework.stereotype.Component;
 
@@ -14,8 +14,6 @@ import com.google.common.cache.LoadingCache;
 
 @Component
 public class ResolvedTargetManager implements TargetResolver {
-	private static final Logger log = Logger.getLogger(ResolvedTargetManager.class);
-	
 	private LoadingCache<Target, List<ResolvedTarget>> targetResolutionCache;
 	
 	private TargetResolver nativeTargetResolver;
@@ -30,7 +28,10 @@ public class ResolvedTargetManager implements TargetResolver {
 
 				@Override
 				public List<ResolvedTarget> load(Target key) throws Exception {
-					return targetResolver.resolveTargets(key);
+					List<Target> list = new LinkedList<>();
+					list.add(key);
+					
+					return targetResolver.resolveTargets(list);
 				}
 			});
 	}
@@ -40,13 +41,39 @@ public class ResolvedTargetManager implements TargetResolver {
 	}
 
 	@Override
-	public List<ResolvedTarget> resolveTargets(Target configTarget) {
-		try {
-			List<ResolvedTarget> result = this.targetResolutionCache.get(configTarget);
-			return result;
-		} catch (ExecutionException e) {
-			log.error(String.format("Error loading resolution of target %s", configTarget.toString()), e);
-			return null;
+	public List<ResolvedTarget> resolveTargets(List<Target> configTargets) {
+		LinkedList<Target> toBeLoaded = new LinkedList<Target>();
+		
+		LinkedList<ResolvedTarget> result = new LinkedList<ResolvedTarget>();
+		
+		for (Target configTarget : configTargets) {
+			List<ResolvedTarget> cached = this.targetResolutionCache.getIfPresent(configTarget);
+			if (cached != null) {
+				result.addAll(cached);
+			} else {
+				toBeLoaded.add(configTarget);
+			}
 		}
+		
+		if (!toBeLoaded.isEmpty()) {
+			List<ResolvedTarget> newlyResolvedTargets = this.nativeTargetResolver.resolveTargets(toBeLoaded);
+			
+			result.addAll(newlyResolvedTargets);
+			
+			// update the cache, too!
+			HashMap<Target, LinkedList<ResolvedTarget>> map = new HashMap<>();
+			for (ResolvedTarget rtarget : newlyResolvedTargets) {
+				LinkedList<ResolvedTarget> list = map.get(rtarget.getOriginalTarget());
+				if (list == null) {
+					list = new LinkedList<>();
+				}
+				list.add(rtarget);
+				map.put(rtarget.getOriginalTarget(), list);
+			}
+			
+			this.targetResolutionCache.putAll(map);
+		}
+		
+		return result;
 	}
 }

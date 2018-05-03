@@ -73,6 +73,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 				newTarget.setApplicationName(appName);
 				newTarget.setPath(configTarget.getPath());
 				newTarget.setProtocol(configTarget.getProtocol());
+				newTarget.setOriginalTarget(configTarget);
 				
 				return newTarget;
 			});
