@@ -3,6 +3,7 @@ package org.cloudfoundry.promregator.cfaccessor;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 
@@ -70,6 +71,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	private PassiveExpiringMap<String, Mono<ListApplicationsResponse>> applicationMap;
 	private PassiveExpiringMap<String, Mono<ListRouteMappingsResponse>> routeMappingMap;
 	private PassiveExpiringMap<String, Mono<GetRouteResponse>> routeMap;
+	private PassiveExpiringMap<String, Mono<GetSharedDomainResponse>> domainMap;
 
 	
 	@Value("${cf.cache.timeout.org:3600}")
@@ -107,6 +109,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		this.applicationMap = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
 		this.routeMappingMap = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
 		this.routeMap = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
+		this.domainMap = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
 	}
 	
 	private DefaultConnectionContext connectionContext(ProxyConfiguration proxyConfiguration) throws ConfigurationException {
@@ -175,38 +178,58 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		this.cloudFoundryClient = this.cloudFoundryClient(connectionContext, tokenProvider);
 	}
 
+	/**
+	 * performs standard, cached retrieval from the CF API server
+	 * @param retrievalTypeName the name of type of the request which is being made; used for identification in internalMetrics
+	 * @param logName the name of the logger category, which shall be used for logging this Reactor operation
+	 * @param key the key for which the request is being made (e.g. orgId, orgId|spaceName, ...)
+	 * @param cacheMap the PassiveExpiringMap, which shall be used for caching the request
+	 * @param requestData an object which is being used as input parameter for the request
+	 * @param requestFunction a function which calls the CF API operation, which is being made, <code>requestData</code> is used as input parameter for this function.
+	 * @return
+	 */
+	private <P, R> Mono<P> performGenericRetrieval(String retrievalTypeName, String logName, String key, PassiveExpiringMap<String, Mono<P>> cacheMap, R requestData, Function<R, Mono<P>> requestFunction) {
+		synchronized(key.intern()) {
+			Mono<P> cached = cacheMap.get(key);
+			if (cached != null) {
+				this.internalMetrics.countHit("cfaccessor."+retrievalTypeName);
+				return cached;
+			}
+			
+			this.internalMetrics.countMiss("cfaccessor."+retrievalTypeName);
+
+			ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, retrievalTypeName);
+			
+			cached = Mono.just(requestData)
+				// start the timer
+				.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+					tuple.getT2().start();
+					return tuple.getT1();
+				})
+				.flatMap( requestFunction )
+				// stop the timer
+				.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+					tuple.getT2().stop();
+					return tuple.getT1();
+				})
+				.log(log.getName()+"."+logName, Level.FINE);
+
+			cacheMap.put(key, cached);
+			
+			return cached;
+		}
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.cloudfoundry.promregator.cfaccessor.CFAccessor#retrieveOrgId(java.lang.String)
 	 */
 	@Override
 	public Mono<ListOrganizationsResponse> retrieveOrgId(String orgName) {
-		Mono<ListOrganizationsResponse> result = this.orgMap.get(orgName);
-		if (result != null) {
-			this.internalMetrics.countHit("cfaccessor.org");
-			return result;
-		}
-		this.internalMetrics.countMiss("cfaccessor.org");
-		
-		ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, "org");
-		
 		ListOrganizationsRequest orgsRequest = ListOrganizationsRequest.builder().name(orgName).build();
 		
-		result = Mono.just(orgsRequest)
-			// start the timer
-			.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
-				tuple.getT2().start();
-				return tuple.getT1();
-			})
-			.flatMap( or -> this.cloudFoundryClient.organizations().list(or))
-			// stop the timer
-			.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
-				tuple.getT2().stop();
-				return tuple.getT1();
-			})
-			.log(log.getName()+".retrieveOrgId", Level.FINE);
-		
-		this.orgMap.put(orgName, result);
-		return result;
+		return this.performGenericRetrieval("org", "retrieveOrgId", orgName, this.orgMap, orgsRequest, or -> {
+			return this.cloudFoundryClient.organizations().list(or);
+		});
 	}
 	
 	/* (non-Javadoc)
@@ -216,37 +239,11 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	public Mono<ListSpacesResponse> retrieveSpaceId(String orgId, String spaceName) {
 		String key = String.format("%s|%s", orgId, spaceName);
 		
-		synchronized(key.intern()) {
-			Mono<ListSpacesResponse> cached = this.spaceMap.get(key);
-			if (cached != null) {
-				this.internalMetrics.countHit("cfaccessor.space");
-				return cached;
-			}
-			
-			this.internalMetrics.countMiss("cfaccessor.space");
-
-			ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, "space");
-			
-			ListSpacesRequest spacesRequest = ListSpacesRequest.builder().organizationId(orgId).name(spaceName).build();
-			
-			cached = Mono.just(spacesRequest)
-				// start the timer
-				.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
-					tuple.getT2().start();
-					return tuple.getT1();
-				})
-				.flatMap(sr -> this.cloudFoundryClient.spaces().list(sr))
-				// stop the timer
-				.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
-					tuple.getT2().stop();
-					return tuple.getT1();
-				})
-				.log(log.getName()+".retrieveSpaceId", Level.FINE);
-			
-			this.spaceMap.put(key, cached);
-			
-			return cached;
-		}
+		ListSpacesRequest spacesRequest = ListSpacesRequest.builder().organizationId(orgId).name(spaceName).build();
+		
+		return this.performGenericRetrieval("space", "retrieveSpaceId", key, this.spaceMap, spacesRequest, sr -> {
+			return this.cloudFoundryClient.spaces().list(sr);
+		});
 	}
 	
 	/* (non-Javadoc)
@@ -256,41 +253,14 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	public Mono<ListApplicationsResponse> retrieveApplicationId(String orgId, String spaceId, String applicationName) {
 		String key = String.format("%s|%s|%s", orgId, spaceId, applicationName);
 		
-		synchronized(key.intern()) {
-			Mono<ListApplicationsResponse> cached = this.applicationMap.get(key);
-			if (cached != null) {
-				this.internalMetrics.countHit("cfaccessor.app");
-				return cached;
-			}
-			
-			this.internalMetrics.countMiss("cfaccessor.app");
-
-			ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, "app");
-
-			ListApplicationsRequest request = ListApplicationsRequest.builder()
-				.organizationId(orgId)
-				.spaceId(spaceId)
-				.name(applicationName)
-				.build();
-			
-			cached = Mono.just(request)
-				// start the timer
-				.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
-					tuple.getT2().start();
-					return tuple.getT1();
-				})
-				.flatMap( r ->  this.cloudFoundryClient.applicationsV2().list(r))
-				// stop the timer
-				.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
-					tuple.getT2().stop();
-					return tuple.getT1();
-				})
-				.log(log.getName()+".retrieveApplicationId", Level.FINE);
-
-			this.applicationMap.put(key, cached);
-			
-			return cached;
-		}
+		ListApplicationsRequest request = ListApplicationsRequest.builder()
+			.organizationId(orgId)
+			.spaceId(spaceId)
+			.name(applicationName)
+			.build();
+		
+		return this.performGenericRetrieval("app", "retrieveApplicationId", key, this.applicationMap, 
+			request, r ->  this.cloudFoundryClient.applicationsV2().list(r));
 	}
 	
 	/* (non-Javadoc)
@@ -298,38 +268,10 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	 */
 	@Override
 	public Mono<ListRouteMappingsResponse> retrieveRouteMapping(String appId) {
-		String key = appId;
+		ListRouteMappingsRequest mappingRequest = ListRouteMappingsRequest.builder().applicationId(appId).build();
 		
-		synchronized(key.intern()) {
-			Mono<ListRouteMappingsResponse> cached = this.routeMappingMap.get(key);
-			if (cached != null) {
-				this.internalMetrics.countHit("cfaccessor.routeMapping");
-				return cached;
-			}
-			this.internalMetrics.countMiss("cfaccessor.routeMapping");
-			
-			ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, "routeMapping");
-			
-			ListRouteMappingsRequest mappingRequest = ListRouteMappingsRequest.builder().applicationId(appId).build();
-			
-			cached = Mono.just(mappingRequest)
-				// start the timer
-				.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
-					tuple.getT2().start();
-					return tuple.getT1();
-				})
-				.flatMap( r ->  this.cloudFoundryClient.routeMappings().list(r))
-				// stop the timer
-				.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
-					tuple.getT2().stop();
-					return tuple.getT1();
-				})
-				.log(log.getName()+".retrieveRouteMapping", Level.FINE);
-
-			this.routeMappingMap.put(key, cached);
-			
-			return cached;
-		}
+		return this.performGenericRetrieval("routeMapping", "retrieveRouteMapping", appId, this.routeMappingMap, 
+				mappingRequest, r ->  this.cloudFoundryClient.routeMappings().list(r));
 	}
 	
 	/* (non-Javadoc)
@@ -337,39 +279,10 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	 */
 	@Override
 	public Mono<GetRouteResponse> retrieveRoute(String routeId) {
-		String key = routeId;
+		GetRouteRequest getRequest = GetRouteRequest.builder().routeId(routeId).build();
 		
-		synchronized(key.intern()) {
-			Mono<GetRouteResponse> cached = this.routeMap.get(key);
-			if (cached != null) {
-				this.internalMetrics.countHit("cfaccessor.route");
-				return cached;
-			}
-			this.internalMetrics.countMiss("cfaccessor.route");
-			
-			ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, "route");
-			
-			GetRouteRequest getRequest = GetRouteRequest.builder().routeId(routeId).build();
-
-			cached = Mono.just(getRequest)
-				// start the timer
-				.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
-					tuple.getT2().start();
-					return tuple.getT1();
-				})
-				.flatMap( r -> this.cloudFoundryClient.routes().get(r))
-				// stop the timer
-				.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
-					tuple.getT2().stop();
-					return tuple.getT1();
-				})
-				.log(log.getName()+".retrieveRoute", Level.FINE);
-
-			this.routeMap.put(key, cached);
-			
-			return cached;
-		}
-
+		return this.performGenericRetrieval("route", "retrieveRoute", routeId, this.routeMap, 
+				getRequest, r -> this.cloudFoundryClient.routes().get(r));
 	}
 	
 	/* (non-Javadoc)
@@ -378,11 +291,9 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	@Override
 	public Mono<GetSharedDomainResponse> retrieveSharedDomain(String domainId) {
 		GetSharedDomainRequest domainRequest = GetSharedDomainRequest.builder().sharedDomainId(domainId).build();
-		Mono<GetSharedDomainResponse> monoResp = this.cloudFoundryClient.sharedDomains().get(domainRequest).log();
 		
-		monoResp = monoResp.log(log.getName()+".retrieveSharedDomain", Level.FINE);
-		
-		return monoResp;
+		return this.performGenericRetrieval("domain", "retrieveSharedDomain", domainId, this.domainMap, 
+				domainRequest, r -> this.cloudFoundryClient.sharedDomains().get(r));
 	}
 	
 	/* (non-Javadoc)

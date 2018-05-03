@@ -27,7 +27,6 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	private static final Logger log = Logger.getLogger(ReactiveAppInstanceScanner.class);
 
 	private PassiveExpiringMap<String, Mono<String>> hostnameMap;
-	private PassiveExpiringMap<String, Mono<String>> domainMap;
 
 	@Value("${cf.cache.timeout.application:300}")
 	private int timeoutCacheApplicationLevel;
@@ -36,7 +35,6 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	@PostConstruct
 	public void setupMaps() {
 		this.hostnameMap = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
-		this.domainMap = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
 	}
 	
 	private static class OSAVector {
@@ -217,39 +215,12 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	}
 	
 	private Mono<String> getDomain(String domainIdString) {
-		String key = domainIdString;
-		
-		synchronized (key.intern()) {
-			Mono<String> cached = this.domainMap.get(key);
-			if (cached != null) {
-				this.internalMetrics.countHit("appinstancescanner.domain");
-				return cached;
-			}
-	
-			this.internalMetrics.countMiss("appinstancescanner.domain");
-	
-			ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, "domain");
-	
-			cached = Mono.just(domainIdString)
-				// start the timer
-				.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
-					tuple.getT2().start();
-					return tuple.getT1();
-				})
-				.flatMap(domainId -> {
-					return this.cfAccessor.retrieveSharedDomain(domainId);
-				}).map(response -> response.getEntity())
-				.map(entity -> entity.getName())
-				// stop the timer
-				.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
-					tuple.getT2().stop();
-					return tuple.getT1();
-				})
-				.cache();
+		Mono<String> domainName = this.cfAccessor.retrieveSharedDomain(domainIdString)
+			.map(response -> response.getEntity())
+			.map(entity -> entity.getName())
+			.cache();
 			
-			this.domainMap.put(key, cached);
-			return cached;
-		}
+		return domainName;
 	}
 	
 	private Mono<Integer> getNumberOfProcesses(OSAVector osav) {
