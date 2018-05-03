@@ -14,7 +14,6 @@ import org.cloudfoundry.client.v2.routes.RouteEntity;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
-import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -49,9 +48,6 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	
 	@Autowired
 	private CFAccessor cfAccessor;
-	
-	@Autowired
-	private InternalMetrics internalMetrics;
 	
 	@Override
 	public List<Instance> determineInstancesFromTargets(List<ResolvedTarget> targets) {
