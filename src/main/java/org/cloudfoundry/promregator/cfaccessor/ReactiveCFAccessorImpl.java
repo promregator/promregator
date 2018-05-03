@@ -67,12 +67,17 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 
 	private PassiveExpiringMap<String, Mono<ListOrganizationsResponse>> orgMap;
 	private PassiveExpiringMap<String, Mono<ListSpacesResponse>> spaceMap;
+	private PassiveExpiringMap<String, Mono<ListApplicationsResponse>> applicationMap;
 
+	
 	@Value("${cf.cache.timeout.org:3600}")
 	private int timeoutCacheOrgLevel;
 
 	@Value("${cf.cache.timeout.space:3600}")
 	private int timeoutCacheSpaceLevel;
+	
+	@Value("${cf.cache.timeout.application:300}")
+	private int timeoutCacheApplicationLevel;
 	
 	@Autowired
 	private InternalMetrics internalMetrics;
@@ -87,6 +92,17 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	public void setupMaps() {
 		this.orgMap = new PassiveExpiringMap<>(this.timeoutCacheOrgLevel, TimeUnit.SECONDS);
 		this.spaceMap = new PassiveExpiringMap<>(this.timeoutCacheSpaceLevel, TimeUnit.SECONDS);
+		/*
+		 * NB: There is little point in separating the timeouts between applicationMap
+		 * and hostnameMap:
+		 * - changes to routes may come easily and thus need to be detected fast
+		 * - apps can start and stop, we need to see this, too
+		 * - instances can be added to apps
+		 * - Blue/green deployment may alter both of them
+		 * 
+		 * In short: both are very volatile and we need to query them often
+		 */
+		this.applicationMap = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
 	}
 	
 	private DefaultConnectionContext connectionContext(ProxyConfiguration proxyConfiguration) throws ConfigurationException {
@@ -234,16 +250,43 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	 */
 	@Override
 	public Mono<ListApplicationsResponse> retrieveApplicationId(String orgId, String spaceId, String applicationName) {
-		ListApplicationsRequest request = ListApplicationsRequest.builder()
+		String key = String.format("%s|%s|%s", orgId, spaceId, applicationName);
+		
+		synchronized(key.intern()) {
+			Mono<ListApplicationsResponse> cached = this.applicationMap.get(key);
+			if (cached != null) {
+				this.internalMetrics.countHit("cfaccessor.app");
+				return cached;
+			}
+			
+			this.internalMetrics.countMiss("cfaccessor.app");
+
+			ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, "app");
+
+			ListApplicationsRequest request = ListApplicationsRequest.builder()
 				.organizationId(orgId)
 				.spaceId(spaceId)
 				.name(applicationName)
 				.build();
-		Mono<ListApplicationsResponse> monoResp = this.cloudFoundryClient.applicationsV2().list(request);
-		
-		monoResp = monoResp.log(log.getName()+".retrieveApplicationId", Level.FINE);
-		
-		return monoResp;
+			
+			cached = Mono.just(request)
+				// start the timer
+				.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+					tuple.getT2().start();
+					return tuple.getT1();
+				})
+				.flatMap( r ->  this.cloudFoundryClient.applicationsV2().list(r))
+				// stop the timer
+				.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+					tuple.getT2().stop();
+					return tuple.getT1();
+				})
+				.log(log.getName()+".retrieveApplicationId", Level.FINE);
+
+			this.applicationMap.put(key, cached);
+			
+			return cached;
+		}
 	}
 	
 	/* (non-Javadoc)

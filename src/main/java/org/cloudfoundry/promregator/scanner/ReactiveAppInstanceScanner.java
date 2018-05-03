@@ -26,7 +26,6 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	
 	private static final Logger log = Logger.getLogger(ReactiveAppInstanceScanner.class);
 
-	private PassiveExpiringMap<String, Mono<String>> applicationMap;
 	private PassiveExpiringMap<String, Mono<String>> hostnameMap;
 	private PassiveExpiringMap<String, Mono<String>> domainMap;
 
@@ -36,17 +35,6 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 
 	@PostConstruct
 	public void setupMaps() {
-		/*
-		 * NB: There is little point in separating the timeouts between applicationMap
-		 * and hostnameMap:
-		 * - changes to routes may come easily and thus need to be detected fast
-		 * - apps can start and stop, we need to see this, too
-		 * - instances can be added to apps
-		 * - Blue/green deployment may alter both of them
-		 * 
-		 * In short: both are very volatile and we need to query them often
-		 */
-		this.applicationMap = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
 		this.hostnameMap = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
 		this.domainMap = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
 	}
@@ -170,49 +158,24 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	}
 	
 	private Mono<String> getApplicationId(String orgIdString, String spaceIdString, String applicationNameString) {
-		String key = String.format("%s|%s|%s", orgIdString, spaceIdString, applicationNameString);
-		synchronized(key.intern()) {
-			Mono<String> cached = this.applicationMap.get(key);
-			if (cached != null) {
-				this.internalMetrics.countHit("appinstancescanner.app");
-				return cached;
-			}
+		Mono<String> applicationId = this.cfAccessor.retrieveApplicationId(orgIdString, spaceIdString, applicationNameString)
+			.flatMap(response -> {
+				List<ApplicationResource> resources = response.getResources();
+				if (resources == null) {
+					return Mono.empty();
+				}
+				
+				if (resources.isEmpty()) {
+					log.warn(String.format("Received empty result on requesting application %s", applicationNameString));
+					return Mono.empty();
+				}
+				
+				ApplicationResource applicationResource = resources.get(0);
+				return Mono.just(applicationResource.getMetadata().getId());
+			})
+			.cache();
 			
-			this.internalMetrics.countMiss("appinstancescanner.app");
-			
-			ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, "app");
-			
-			cached = Mono.zip(Mono.just(orgIdString), Mono.just(spaceIdString), Mono.just(applicationNameString))
-				// start the timer
-				.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
-					tuple.getT2().start();
-					return tuple.getT1();
-				})
-				.flatMap(triple -> {
-					return this.cfAccessor.retrieveApplicationId(triple.getT1(), triple.getT2(), triple.getT3());
-				}).flatMap(response -> {
-					List<ApplicationResource> resources = response.getResources();
-					if (resources == null) {
-						return Mono.empty();
-					}
-					
-					if (resources.isEmpty()) {
-						log.warn(String.format("Received empty result on requesting application %s", applicationNameString));
-						return Mono.empty();
-					}
-					
-					ApplicationResource applicationResource = resources.get(0);
-					return Mono.just(applicationResource.getMetadata().getId());
-				})
-				// stop the timer
-				.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
-					tuple.getT2().stop();
-					return tuple.getT1();
-				}).cache();
-			
-			this.applicationMap.put(key, cached);
-			return cached;
-		}
+		return applicationId;
 	}
 	
 	private Mono<String> getApplicationUrl(String applicationId, String protocol) {
