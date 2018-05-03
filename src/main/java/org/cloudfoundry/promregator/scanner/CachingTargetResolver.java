@@ -5,6 +5,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.config.Target;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +24,7 @@ public class CachingTargetResolver implements TargetResolver {
 	private static final Logger log = Logger.getLogger(CachingTargetResolver.class);
 	
 	@Value("${cf.cache.timeout.resolver:300}")
-	private int timeoutCacheApplicationLevel;
+	private int timeoutCacheResolverLevel;
 
 	@Autowired(required=false)
 	private List<CachingTargetResolverRemovalListener> removalListeners;
@@ -33,11 +35,18 @@ public class CachingTargetResolver implements TargetResolver {
 	
 	public CachingTargetResolver(TargetResolver targetResolver) {
 		this.nativeTargetResolver = targetResolver;
+	}
+	
+	@PostConstruct
+	private void setupCache() {
+		/* Note that this cannot be done during construction as
+		 * this.timeoutCacheResolverLevel isn't available there, yet.
+		 */
 		
 		this.targetResolutionCache = CacheBuilder.newBuilder()
-			.expireAfterWrite(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS)
+			.expireAfterWrite(this.timeoutCacheResolverLevel, TimeUnit.SECONDS)
 			.removalListener(new RemovalListener<Target, List<ResolvedTarget>>() {
-
+	
 				@Override
 				public void onRemoval(RemovalNotification<Target, List<ResolvedTarget>> notification) {
 					if (removalListeners == null)
@@ -51,7 +60,7 @@ public class CachingTargetResolver implements TargetResolver {
 				
 			})
 			.build(new CacheLoader<Target, List<ResolvedTarget>>() {
-
+	
 				@Override
 				public List<ResolvedTarget> load(Target key) throws Exception {
 					// shouldn't be used, but as last resort, this is ok
@@ -60,7 +69,7 @@ public class CachingTargetResolver implements TargetResolver {
 					List<Target> list = new LinkedList<>();
 					list.add(key);
 					
-					return targetResolver.resolveTargets(list);
+					return nativeTargetResolver.resolveTargets(list);
 				}
 			});
 	}
