@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.config.Target;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +15,8 @@ import com.google.common.cache.LoadingCache;
 
 @Component
 public class CachingTargetResolver implements TargetResolver {
+	private static final Logger log = Logger.getLogger(CachingTargetResolver.class);
+	
 	private LoadingCache<Target, List<ResolvedTarget>> targetResolutionCache;
 	
 	private TargetResolver nativeTargetResolver;
@@ -29,6 +32,9 @@ public class CachingTargetResolver implements TargetResolver {
 
 				@Override
 				public List<ResolvedTarget> load(Target key) throws Exception {
+					// shouldn't be used, but as last resort, this is ok
+					log.warn(String.format("Single-loading target %s, which is not efficient and thus should be avoided", key.toString()));
+					
 					List<Target> list = new LinkedList<>();
 					list.add(key);
 					
