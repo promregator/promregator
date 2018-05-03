@@ -24,8 +24,16 @@ public class ReactiveTargetResolver implements TargetResolver {
 	private CFAccessor cfAccessor;
 	
 	@Override
-	public List<ResolvedTarget> resolveTargets(Target configTarget) {
+	public List<ResolvedTarget> resolveTargets(List<Target> configTargets) {
 		
+		Flux<ResolvedTarget> resultFlux = Flux.fromIterable(configTargets)
+			// TODO add here a .parallel()
+			.flatMap(configTarget -> this.resolveSingleTarget(configTarget));
+		
+		return resultFlux.collectList().block();
+	}
+	
+	public Flux<ResolvedTarget> resolveSingleTarget(Target configTarget) {
 		Mono<String> orgIdMono = this.cfAccessor.retrieveOrgId(configTarget.getOrgName())
 				.map( r -> r.getResources())
 				.map( l -> l.get(0))
@@ -56,22 +64,20 @@ public class ReactiveTargetResolver implements TargetResolver {
 				return Flux.fromIterable(appNames);
 			});
 		
-		Iterable<String> applicationNames = applicationsInSpace.toIterable();
-
-		List<ResolvedTarget> resolvedTargets = new LinkedList<>();
-
-		for (String appName : applicationNames) {
-			ResolvedTarget newTarget = new ResolvedTarget();
-			newTarget.setOrgName(configTarget.getOrgName());
-			newTarget.setSpaceName(configTarget.getSpaceName());
-			newTarget.setApplicationName(appName);
-			newTarget.setPath(configTarget.getPath());
-			newTarget.setProtocol(configTarget.getProtocol());
-			
-			resolvedTargets.add(newTarget);
-		}
+		Flux<ResolvedTarget> result = applicationsInSpace
+			.map(appName -> {
+				ResolvedTarget newTarget = new ResolvedTarget();
+				
+				newTarget.setOrgName(configTarget.getOrgName());
+				newTarget.setSpaceName(configTarget.getSpaceName());
+				newTarget.setApplicationName(appName);
+				newTarget.setPath(configTarget.getPath());
+				newTarget.setProtocol(configTarget.getProtocol());
+				
+				return newTarget;
+			});
 		
-		return resolvedTargets;
+		return result;
 	}
 	
 	private boolean isApplicationInScrapableState(String state) {
