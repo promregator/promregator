@@ -86,4 +86,8 @@ public class CachingTargetResolver implements TargetResolver {
 		
 		this.targetResolutionCache.putAll(map);
 	}
+
+	public void invalidateCache() {
+		this.targetResolutionCache.invalidateAll();
+	}
 }
