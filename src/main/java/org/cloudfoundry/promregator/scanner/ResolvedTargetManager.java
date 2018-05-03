@@ -24,6 +24,7 @@ public class ResolvedTargetManager implements TargetResolver {
 		this.targetResolutionCache = CacheBuilder.newBuilder()
 			.expireAfterWrite(2L, TimeUnit.MINUTES)
 			// TODO make this timeout customizable
+			// TODO register Removal Listeners --> remove metrics from global CollectorRegistry
 			.build(new CacheLoader<Target, List<ResolvedTarget>>() {
 
 				@Override
