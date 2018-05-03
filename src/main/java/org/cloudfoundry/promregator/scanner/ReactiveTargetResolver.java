@@ -62,14 +62,8 @@ public class ReactiveTargetResolver implements TargetResolver {
 		
 		Flux<ResolvedTarget> result = applicationsInSpace
 			.map(appName -> {
-				ResolvedTarget newTarget = new ResolvedTarget();
-				
-				newTarget.setOrgName(configTarget.getOrgName());
-				newTarget.setSpaceName(configTarget.getSpaceName());
+				ResolvedTarget newTarget = new ResolvedTarget(configTarget);
 				newTarget.setApplicationName(appName);
-				newTarget.setPath(configTarget.getPath());
-				newTarget.setProtocol(configTarget.getProtocol());
-				newTarget.setOriginalTarget(configTarget);
 				
 				return newTarget;
 			});

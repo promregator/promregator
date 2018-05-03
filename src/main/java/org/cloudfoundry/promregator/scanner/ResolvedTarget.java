@@ -15,6 +15,19 @@ public class ResolvedTarget {
 	
 	private String protocol;
 	
+	public ResolvedTarget() {
+		super();
+	}
+	
+	public ResolvedTarget(Target configTarget) {
+		this.originalTarget = configTarget;
+		this.orgName = configTarget.getOrgName();
+		this.spaceName = configTarget.getSpaceName();
+		this.applicationName = configTarget.getApplicationName();
+		this.path = configTarget.getPath();
+		this.protocol = configTarget.getProtocol();
+	}
+	
 	public String getOrgName() {
 		return orgName;
 	}
