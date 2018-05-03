@@ -60,20 +60,23 @@ public class ResolvedTargetManager implements TargetResolver {
 			
 			result.addAll(newlyResolvedTargets);
 			
-			// update the cache, too!
-			HashMap<Target, LinkedList<ResolvedTarget>> map = new HashMap<>();
-			for (ResolvedTarget rtarget : newlyResolvedTargets) {
-				LinkedList<ResolvedTarget> list = map.get(rtarget.getOriginalTarget());
-				if (list == null) {
-					list = new LinkedList<>();
-				}
-				list.add(rtarget);
-				map.put(rtarget.getOriginalTarget(), list);
-			}
-			
-			this.targetResolutionCache.putAll(map);
+			updateTargetResolutionCache(newlyResolvedTargets);
 		}
 		
 		return result;
+	}
+
+	private void updateTargetResolutionCache(List<ResolvedTarget> newlyResolvedTargets) {
+		HashMap<Target, LinkedList<ResolvedTarget>> map = new HashMap<>();
+		for (ResolvedTarget rtarget : newlyResolvedTargets) {
+			LinkedList<ResolvedTarget> list = map.get(rtarget.getOriginalTarget());
+			if (list == null) {
+				list = new LinkedList<>();
+			}
+			list.add(rtarget);
+			map.put(rtarget.getOriginalTarget(), list);
+		}
+		
+		this.targetResolutionCache.putAll(map);
 	}
 }
