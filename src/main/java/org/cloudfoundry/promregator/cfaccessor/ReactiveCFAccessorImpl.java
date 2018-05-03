@@ -2,11 +2,13 @@ package org.cloudfoundry.promregator.cfaccessor;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.collections4.map.PassiveExpiringMap;
 import org.apache.http.conn.util.InetAddressUtils;
 import org.apache.log4j.Logger;
 import org.cloudfoundry.client.v2.applications.ListApplicationsRequest;
@@ -24,6 +26,8 @@ import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v3.processes.ListProcessesRequest;
 import org.cloudfoundry.client.v3.processes.ListProcessesResponse;
 import org.cloudfoundry.promregator.config.ConfigurationException;
+import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
+import org.cloudfoundry.promregator.scanner.ReactiveTimer;
 import org.cloudfoundry.reactor.ConnectionContext;
 import org.cloudfoundry.reactor.DefaultConnectionContext;
 import org.cloudfoundry.reactor.DefaultConnectionContext.Builder;
@@ -31,6 +35,7 @@ import org.cloudfoundry.reactor.ProxyConfiguration;
 import org.cloudfoundry.reactor.TokenProvider;
 import org.cloudfoundry.reactor.client.ReactorCloudFoundryClient;
 import org.cloudfoundry.reactor.tokenprovider.PasswordGrantTokenProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -57,10 +62,27 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	
 	@Value("${cf.proxyPort:0}") 
 	private int proxyPort;
+	
+	/* Cache-related attributes */
 
+	private PassiveExpiringMap<String, Mono<ListOrganizationsResponse>> orgMap;
+
+	@Value("${cf.cache.timeout.org:3600}")
+	private int timeoutCacheOrgLevel;
+
+	@Autowired
+	private InternalMetrics internalMetrics;
+
+	
 	private static final Pattern PATTERN_HTTP_BASED_PROTOCOL_PREFIX = Pattern.compile("^https?://");
 	
 	private ReactorCloudFoundryClient cloudFoundryClient;
+	
+	
+	@PostConstruct
+	public void setupMaps() {
+		this.orgMap = new PassiveExpiringMap<>(this.timeoutCacheOrgLevel, TimeUnit.SECONDS);
+	}
 	
 	private DefaultConnectionContext connectionContext(ProxyConfiguration proxyConfiguration) throws ConfigurationException {
 		if (apiHost != null && PATTERN_HTTP_BASED_PROTOCOL_PREFIX.matcher(apiHost).find()) {
@@ -133,12 +155,33 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	 */
 	@Override
 	public Mono<ListOrganizationsResponse> retrieveOrgId(String orgName) {
+		Mono<ListOrganizationsResponse> result = this.orgMap.get(orgName);
+		if (result != null) {
+			this.internalMetrics.countHit("cfaccessor.org");
+			return result;
+		}
+		this.internalMetrics.countMiss("cfaccessor.org");
+		
+		ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, "org");
+		
 		ListOrganizationsRequest orgsRequest = ListOrganizationsRequest.builder().name(orgName).build();
-		Mono<ListOrganizationsResponse> monoResp = this.cloudFoundryClient.organizations().list(orgsRequest);
 		
-		monoResp = monoResp.log(log.getName()+".retrieveOrgId", Level.FINE);
+		result = Mono.just(orgsRequest)
+			// start the timer
+			.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+				tuple.getT2().start();
+				return tuple.getT1();
+			})
+			.flatMap( or -> this.cloudFoundryClient.organizations().list(or))
+			// stop the timer
+			.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+				tuple.getT2().stop();
+				return tuple.getT1();
+			})
+			.log(log.getName()+".retrieveOrgId", Level.FINE);
 		
-		return monoResp;
+		this.orgMap.put(orgName, result);
+		return result;
 	}
 	
 	/* (non-Javadoc)

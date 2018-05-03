@@ -25,7 +25,6 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	
 	private static final Logger log = Logger.getLogger(ReactiveAppInstanceScanner.class);
 
-	private PassiveExpiringMap<String, Mono<String>> orgMap;
 	private PassiveExpiringMap<String, Mono<String>> spaceMap;
 	private PassiveExpiringMap<String, Mono<String>> applicationMap;
 	private PassiveExpiringMap<String, Mono<String>> hostnameMap;
@@ -37,12 +36,8 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	@Value("${cf.cache.timeout.space:3600}")
 	private int timeoutCacheSpaceLevel;
 
-	@Value("${cf.cache.timeout.org:3600}")
-	private int timeoutCacheOrgLevel;
-
 	@PostConstruct
 	public void setupMaps() {
-		this.orgMap = new PassiveExpiringMap<>(this.timeoutCacheOrgLevel, TimeUnit.SECONDS);
 		this.spaceMap = new PassiveExpiringMap<>(this.timeoutCacheSpaceLevel, TimeUnit.SECONDS);
 		/*
 		 * NB: There is little point in separating the timeouts between applicationMap
@@ -137,21 +132,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	}
 	
 	private Mono<String> getOrgId(String orgNameString) {
-		Mono<String> cached = this.orgMap.get(orgNameString);
-		if (cached != null) {
-			this.internalMetrics.countHit("appinstancescanner.org");
-			return cached;
-		}
-		this.internalMetrics.countMiss("appinstancescanner.org");
-		
-		ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, "org");
-		
-		cached = Mono.just(orgNameString)
-			// start the timer
-			.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
-				tuple.getT2().start();
-				return tuple.getT1();
-			})
+		Mono<String> orgId = Mono.just(orgNameString)
 			.flatMap(orgName -> {
 				return this.cfAccessor.retrieveOrgId(orgName);
 			}).flatMap(response -> {
@@ -168,15 +149,9 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				OrganizationResource organizationResource = resources.get(0);
 				return Mono.just(organizationResource.getMetadata().getId());
 			})
-			// stop the timer
-			.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
-				tuple.getT2().stop();
-				return tuple.getT1();
-			})
 			.cache();
 		
-		this.orgMap.put(orgNameString, cached);
-		return cached;
+		return orgId;
 	}
 
 	private Mono<String> getSpaceId(String orgIdString, String spaceNameString) {

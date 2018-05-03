@@ -4,7 +4,7 @@ import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 
 import io.prometheus.client.Histogram.Timer;
 
-class ReactiveTimer {
+public class ReactiveTimer {
 	private Timer t;
 	private final InternalMetrics im;
 	private final String requestType;
