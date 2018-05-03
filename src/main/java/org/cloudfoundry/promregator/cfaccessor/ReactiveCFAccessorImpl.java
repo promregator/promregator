@@ -72,7 +72,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	private PassiveExpiringMap<String, Mono<ListRouteMappingsResponse>> routeMappingMap;
 	private PassiveExpiringMap<String, Mono<GetRouteResponse>> routeMap;
 	private PassiveExpiringMap<String, Mono<GetSharedDomainResponse>> domainMap;
-
+	private PassiveExpiringMap<String, Mono<ListProcessesResponse>> processMap;
 	
 	@Value("${cf.cache.timeout.org:3600}")
 	private int timeoutCacheOrgLevel;
@@ -90,6 +90,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	private static final Pattern PATTERN_HTTP_BASED_PROTOCOL_PREFIX = Pattern.compile("^https?://");
 	
 	private ReactorCloudFoundryClient cloudFoundryClient;
+
 	
 	
 	@PostConstruct
@@ -110,6 +111,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		this.routeMappingMap = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
 		this.routeMap = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
 		this.domainMap = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
+		this.processMap = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
 	}
 	
 	private DefaultConnectionContext connectionContext(ProxyConfiguration proxyConfiguration) throws ConfigurationException {
@@ -301,11 +303,11 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	 */
 	@Override
 	public Mono<ListProcessesResponse> retrieveProcesses(String orgId, String spaceId, String appId) {
+		String key = String.format("%s|%s|%s", orgId, spaceId, appId);
+		
 		ListProcessesRequest request = ListProcessesRequest.builder().organizationId(orgId).spaceId(spaceId).applicationId(appId).build();
-		Mono<ListProcessesResponse> monoResp = this.cloudFoundryClient.processes().list(request);
 		
-		monoResp = monoResp.log(log.getName()+".retrieveProcesses", Level.FINE);
-		
-		return monoResp;
+		return this.performGenericRetrieval("processes", "retrieveProcesses", key, this.processMap, 
+				request, r -> this.cloudFoundryClient.processes().list(r));
 	}
 }

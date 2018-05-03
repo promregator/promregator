@@ -223,29 +223,12 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		return domainName;
 	}
 	
-	private Mono<Integer> getNumberOfProcesses(OSAVector osav) {
-		ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, "instances");
+	private Mono<Integer> getNumberOfProcesses(OSAVector v) {
 		
-		Mono<ListProcessesResponse> processesResponse = Mono.just(osav)
-			// start the timer
-			.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
-				tuple.getT2().start();
-				return tuple.getT1();
-			})
-			.flatMap(v -> {
-				return this.cfAccessor.retrieveProcesses(v.orgId, v.spaceId, v.applicationId);
-			})
-			// stop the timer
-			.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
-				tuple.getT2().stop();
-				return tuple.getT1();
-			});
-		
-		Mono<Integer> instancesMono = processesResponse.map(pr -> pr.getResources())
+		return this.cfAccessor.retrieveProcesses(v.orgId, v.spaceId, v.applicationId)
+			.map(pr -> pr.getResources())
 			.map(list -> list.get(0))
 			.map(e -> e.getInstances());
-		
-		return instancesMono;
 	}
 	
 	private String determineAccessURL(final String applicationUrl, final String path) {
