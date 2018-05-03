@@ -13,7 +13,6 @@ import org.cloudfoundry.client.v2.organizations.OrganizationResource;
 import org.cloudfoundry.client.v2.routes.RouteEntity;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
-import org.cloudfoundry.client.v3.processes.ListProcessesResponse;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +25,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	
 	private static final Logger log = Logger.getLogger(ReactiveAppInstanceScanner.class);
 
-	private PassiveExpiringMap<String, Mono<String>> hostnameMap;
+	private PassiveExpiringMap<String, Mono<String>> applicationUrlMap;
 
 	@Value("${cf.cache.timeout.application:300}")
 	private int timeoutCacheApplicationLevel;
@@ -34,7 +33,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 
 	@PostConstruct
 	public void setupMaps() {
-		this.hostnameMap = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
+		this.applicationUrlMap = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
 	}
 	
 	private static class OSAVector {
@@ -180,7 +179,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		String key = applicationId;
 		
 		synchronized (key.intern()) {
-			Mono<String> applicationUrlMono = this.hostnameMap.get(key);
+			Mono<String> applicationUrlMono = this.applicationUrlMap.get(key);
 			if (applicationUrlMono != null) {
 				return applicationUrlMono;
 			}
@@ -215,7 +214,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 					return url;
 				});
 			
-			this.hostnameMap.put(key, applicationUrlMono);
+			this.applicationUrlMap.put(key, applicationUrlMono);
 			
 			return applicationUrlMono;
 		}

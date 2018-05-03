@@ -66,13 +66,13 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	
 	/* Cache-related attributes */
 
-	private PassiveExpiringMap<String, Mono<ListOrganizationsResponse>> orgMap;
-	private PassiveExpiringMap<String, Mono<ListSpacesResponse>> spaceMap;
-	private PassiveExpiringMap<String, Mono<ListApplicationsResponse>> applicationMap;
-	private PassiveExpiringMap<String, Mono<ListRouteMappingsResponse>> routeMappingMap;
-	private PassiveExpiringMap<String, Mono<GetRouteResponse>> routeMap;
-	private PassiveExpiringMap<String, Mono<GetSharedDomainResponse>> domainMap;
-	private PassiveExpiringMap<String, Mono<ListProcessesResponse>> processMap;
+	private PassiveExpiringMap<String, Mono<ListOrganizationsResponse>> orgCache;
+	private PassiveExpiringMap<String, Mono<ListSpacesResponse>> spaceCache;
+	private PassiveExpiringMap<String, Mono<ListApplicationsResponse>> applicationCache;
+	private PassiveExpiringMap<String, Mono<ListRouteMappingsResponse>> routeMappingCache;
+	private PassiveExpiringMap<String, Mono<GetRouteResponse>> routeCache;
+	private PassiveExpiringMap<String, Mono<GetSharedDomainResponse>> domainCache;
+	private PassiveExpiringMap<String, Mono<ListProcessesResponse>> processCache;
 	
 	@Value("${cf.cache.timeout.org:3600}")
 	private int timeoutCacheOrgLevel;
@@ -95,10 +95,10 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	
 	@PostConstruct
 	public void setupMaps() {
-		this.orgMap = new PassiveExpiringMap<>(this.timeoutCacheOrgLevel, TimeUnit.SECONDS);
-		this.spaceMap = new PassiveExpiringMap<>(this.timeoutCacheSpaceLevel, TimeUnit.SECONDS);
+		this.orgCache = new PassiveExpiringMap<>(this.timeoutCacheOrgLevel, TimeUnit.SECONDS);
+		this.spaceCache = new PassiveExpiringMap<>(this.timeoutCacheSpaceLevel, TimeUnit.SECONDS);
 		/*
-		 * NB: There is little point in separating the timeouts between applicationMap
+		 * NB: There is little point in separating the timeouts between applicationCache
 		 * and hostnameMap:
 		 * - changes to routes may come easily and thus need to be detected fast
 		 * - apps can start and stop, we need to see this, too
@@ -107,11 +107,11 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		 * 
 		 * In short: both are very volatile and we need to query them often
 		 */
-		this.applicationMap = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
-		this.routeMappingMap = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
-		this.routeMap = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
-		this.domainMap = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
-		this.processMap = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
+		this.applicationCache = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
+		this.routeMappingCache = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
+		this.routeCache = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
+		this.domainCache = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
+		this.processCache = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
 	}
 	
 	private DefaultConnectionContext connectionContext(ProxyConfiguration proxyConfiguration) throws ConfigurationException {
@@ -229,7 +229,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	public Mono<ListOrganizationsResponse> retrieveOrgId(String orgName) {
 		ListOrganizationsRequest orgsRequest = ListOrganizationsRequest.builder().name(orgName).build();
 		
-		return this.performGenericRetrieval("org", "retrieveOrgId", orgName, this.orgMap, orgsRequest, or -> {
+		return this.performGenericRetrieval("org", "retrieveOrgId", orgName, this.orgCache, orgsRequest, or -> {
 			return this.cloudFoundryClient.organizations().list(or);
 		});
 	}
@@ -243,7 +243,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		
 		ListSpacesRequest spacesRequest = ListSpacesRequest.builder().organizationId(orgId).name(spaceName).build();
 		
-		return this.performGenericRetrieval("space", "retrieveSpaceId", key, this.spaceMap, spacesRequest, sr -> {
+		return this.performGenericRetrieval("space", "retrieveSpaceId", key, this.spaceCache, spacesRequest, sr -> {
 			return this.cloudFoundryClient.spaces().list(sr);
 		});
 	}
@@ -261,7 +261,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 			.name(applicationName)
 			.build();
 		
-		return this.performGenericRetrieval("app", "retrieveApplicationId", key, this.applicationMap, 
+		return this.performGenericRetrieval("app", "retrieveApplicationId", key, this.applicationCache, 
 			request, r ->  this.cloudFoundryClient.applicationsV2().list(r));
 	}
 	
@@ -272,7 +272,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	public Mono<ListRouteMappingsResponse> retrieveRouteMapping(String appId) {
 		ListRouteMappingsRequest mappingRequest = ListRouteMappingsRequest.builder().applicationId(appId).build();
 		
-		return this.performGenericRetrieval("routeMapping", "retrieveRouteMapping", appId, this.routeMappingMap, 
+		return this.performGenericRetrieval("routeMapping", "retrieveRouteMapping", appId, this.routeMappingCache, 
 				mappingRequest, r ->  this.cloudFoundryClient.routeMappings().list(r));
 	}
 	
@@ -283,7 +283,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	public Mono<GetRouteResponse> retrieveRoute(String routeId) {
 		GetRouteRequest getRequest = GetRouteRequest.builder().routeId(routeId).build();
 		
-		return this.performGenericRetrieval("route", "retrieveRoute", routeId, this.routeMap, 
+		return this.performGenericRetrieval("route", "retrieveRoute", routeId, this.routeCache, 
 				getRequest, r -> this.cloudFoundryClient.routes().get(r));
 	}
 	
@@ -294,7 +294,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	public Mono<GetSharedDomainResponse> retrieveSharedDomain(String domainId) {
 		GetSharedDomainRequest domainRequest = GetSharedDomainRequest.builder().sharedDomainId(domainId).build();
 		
-		return this.performGenericRetrieval("domain", "retrieveSharedDomain", domainId, this.domainMap, 
+		return this.performGenericRetrieval("domain", "retrieveSharedDomain", domainId, this.domainCache, 
 				domainRequest, r -> this.cloudFoundryClient.sharedDomains().get(r));
 	}
 	
@@ -307,7 +307,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		
 		ListProcessesRequest request = ListProcessesRequest.builder().organizationId(orgId).spaceId(spaceId).applicationId(appId).build();
 		
-		return this.performGenericRetrieval("processes", "retrieveProcesses", key, this.processMap, 
+		return this.performGenericRetrieval("processes", "retrieveProcesses", key, this.processCache, 
 				request, r -> this.cloudFoundryClient.processes().list(r));
 	}
 }
