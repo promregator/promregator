@@ -7,7 +7,6 @@ import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.config.Target;
-import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -24,34 +23,27 @@ public class ReactiveTargetResolver implements TargetResolver {
 	@Autowired
 	private CFAccessor cfAccessor;
 	
-	@Autowired
-	private InternalMetrics internalMetrics;
-	
 	@Override
 	public List<ResolvedTarget> resolveTargets(Target configTarget) {
 		
-		List<Target> resolvedTargets = new LinkedList<>();
+		Mono<String> orgIdMono = this.cfAccessor.retrieveOrgId(configTarget.getOrgName())
+				.map( r -> r.getResources())
+				.map( l -> l.get(0))
+				.map( e -> e.getMetadata()) 
+				.map( entry -> entry.getId());
 		
-		String orgName = configTarget.getOrgName();
-		String spaceName = configTarget.getSpaceName();
-		String key = String.format("%s|%s", orgName, spaceName);
-		Flux<String> applicationsInSpace = this.applicationsInSpaceMap.get(key);
-		if (applicationsInSpace == null) {
-			// cache miss
-			
-			// for retrieving all applications, we need the orgId and spaceId
-			// the names are not sufficient
-			Mono<String> orgIdMono = this.getOrgId(orgName);
-			Mono<String> spaceIdMono = this.getSpaceId(orgIdMono, spaceName);
-			
-			Mono<ListApplicationsResponse> responseMono = this.cfAccessor.retrieveAllApplicationIdsInSpace(orgIdMono.block(), spaceIdMono.block());
-			
-			applicationsInSpace = responseMono.flatMapMany(response -> {
-				List<ApplicationResource> resources = response.getResources();
-				if (resources == null) {
-					return Flux.empty();
-				}
-				
+		Mono<String> spaceIdMono = orgIdMono.flatMap(orgId -> {
+			return this.cfAccessor.retrieveSpaceId(orgId, configTarget.getSpaceName());
+		}).map( r -> r.getResources())
+			.map( l -> l.get(0))
+			.map( e -> e.getMetadata())
+			.map( entry -> entry.getId());
+		
+		Mono<ListApplicationsResponse> responseMono = Mono.zip(orgIdMono, spaceIdMono)
+			.flatMap( tuple -> this.cfAccessor.retrieveAllApplicationIdsInSpace(tuple.getT1(), tuple.getT2()));
+		
+		Flux<String> applicationsInSpace = responseMono.map( r -> r.getResources())
+			.flatMapMany(resources -> {
 				List<String> appNames = new LinkedList<>();
 				for (ApplicationResource ar : resources) {
 					if (!isApplicationInScrapableState(ar.getEntity().getState())) {
@@ -63,27 +55,24 @@ public class ReactiveTargetResolver implements TargetResolver {
 				
 				return Flux.fromIterable(appNames);
 			});
-			
-			this.applicationsInSpaceMap.put(key, applicationsInSpace);
-		}
 		
 		Iterable<String> applicationNames = applicationsInSpace.toIterable();
-		
+
+		List<ResolvedTarget> resolvedTargets = new LinkedList<>();
+
 		for (String appName : applicationNames) {
-			Target newTarget = new Target();
-			newTarget.setOrgName(target.getOrgName());
-			newTarget.setSpaceName(target.getSpaceName());
+			ResolvedTarget newTarget = new ResolvedTarget();
+			newTarget.setOrgName(configTarget.getOrgName());
+			newTarget.setSpaceName(configTarget.getSpaceName());
 			newTarget.setApplicationName(appName);
-			newTarget.setPath(target.getPath());
-			newTarget.setProtocol(target.getProtocol());
+			newTarget.setPath(configTarget.getPath());
+			newTarget.setProtocol(configTarget.getProtocol());
 			
 			resolvedTargets.add(newTarget);
 		}
 		
 		return resolvedTargets;
 	}
-
-	
 	
 	private boolean isApplicationInScrapableState(String state) {
 		if ("STARTED".equals(state)) {

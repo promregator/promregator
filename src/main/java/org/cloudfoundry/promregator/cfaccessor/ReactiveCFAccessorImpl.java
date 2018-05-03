@@ -68,6 +68,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	private PassiveExpiringMap<String, Mono<ListOrganizationsResponse>> orgCache;
 	private PassiveExpiringMap<String, Mono<ListSpacesResponse>> spaceCache;
 	private PassiveExpiringMap<String, Mono<ListApplicationsResponse>> applicationCache;
+	private PassiveExpiringMap<String, Mono<ListApplicationsResponse>> allApplicationInSpaceCache;
 	private PassiveExpiringMap<String, Mono<ListRouteMappingsResponse>> routeMappingCache;
 	private PassiveExpiringMap<String, Mono<GetRouteResponse>> routeCache;
 	private PassiveExpiringMap<String, Mono<GetSharedDomainResponse>> domainCache;
@@ -107,6 +108,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		 * In short: both are very volatile and we need to query them often
 		 */
 		this.applicationCache = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
+		this.allApplicationInSpaceCache = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
 		this.routeMappingCache = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
 		this.routeCache = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
 		this.domainCache = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
@@ -269,15 +271,14 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	 */
 	@Override
 	public Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String orgId, String spaceId) {
+		String key = String.format("%s|%s", orgId, spaceId);
 		ListApplicationsRequest request = ListApplicationsRequest.builder()
 				.organizationId(orgId)
 				.spaceId(spaceId)
 				.build();
-		Mono<ListApplicationsResponse> monoResp = this.cloudFoundryClient.applicationsV2().list(request);
 		
-		monoResp = monoResp.log(log.getName()+".retrieveAllApplicationIdsInSpace", Level.FINE);
-		
-		return monoResp;
+		return this.performGenericRetrieval("allApps", "retrieveAllApplicationIdsInSpace", key, this.allApplicationInSpaceCache, 
+				request, r -> this.cloudFoundryClient.applicationsV2().list(r));
 	}
 
 	
