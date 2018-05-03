@@ -13,12 +13,12 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
 @Component
-public class ResolvedTargetManager implements TargetResolver {
+public class CachingTargetResolver implements TargetResolver {
 	private LoadingCache<Target, List<ResolvedTarget>> targetResolutionCache;
 	
 	private TargetResolver nativeTargetResolver;
 	
-	public ResolvedTargetManager(TargetResolver targetResolver) {
+	public CachingTargetResolver(TargetResolver targetResolver) {
 		this.nativeTargetResolver = targetResolver;
 		
 		this.targetResolutionCache = CacheBuilder.newBuilder()
