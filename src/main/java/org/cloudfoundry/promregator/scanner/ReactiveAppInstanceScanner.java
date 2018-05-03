@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.client.v2.organizations.OrganizationResource;
 import org.cloudfoundry.client.v2.routes.RouteEntity;
+import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
 import org.cloudfoundry.client.v3.processes.ListProcessesResponse;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
@@ -25,7 +26,6 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	
 	private static final Logger log = Logger.getLogger(ReactiveAppInstanceScanner.class);
 
-	private PassiveExpiringMap<String, Mono<String>> spaceMap;
 	private PassiveExpiringMap<String, Mono<String>> applicationMap;
 	private PassiveExpiringMap<String, Mono<String>> hostnameMap;
 	private PassiveExpiringMap<String, Mono<String>> domainMap;
@@ -33,12 +33,9 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	@Value("${cf.cache.timeout.application:300}")
 	private int timeoutCacheApplicationLevel;
 
-	@Value("${cf.cache.timeout.space:3600}")
-	private int timeoutCacheSpaceLevel;
 
 	@PostConstruct
 	public void setupMaps() {
-		this.spaceMap = new PassiveExpiringMap<>(this.timeoutCacheSpaceLevel, TimeUnit.SECONDS);
 		/*
 		 * NB: There is little point in separating the timeouts between applicationMap
 		 * and hostnameMap:
@@ -132,73 +129,44 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	}
 	
 	private Mono<String> getOrgId(String orgNameString) {
-		Mono<String> orgId = Mono.just(orgNameString)
-			.flatMap(orgName -> {
-				return this.cfAccessor.retrieveOrgId(orgName);
-			}).flatMap(response -> {
-				List<OrganizationResource> resources = response.getResources();
-				if (resources == null) {
-					return Mono.empty();
-				}
-				
-				if (resources.isEmpty()) {
-					log.warn(String.format("Received empty result on requesting org %s", orgNameString));
-					return Mono.empty();
-				}
-				
-				OrganizationResource organizationResource = resources.get(0);
-				return Mono.just(organizationResource.getMetadata().getId());
-			})
-			.cache();
+		Mono<String> orgId = this.cfAccessor.retrieveOrgId(orgNameString).flatMap(response -> {
+			List<OrganizationResource> resources = response.getResources();
+			if (resources == null) {
+				return Mono.empty();
+			}
+			
+			if (resources.isEmpty()) {
+				log.warn(String.format("Received empty result on requesting org %s", orgNameString));
+				return Mono.empty();
+			}
+			
+			OrganizationResource organizationResource = resources.get(0);
+			return Mono.just(organizationResource.getMetadata().getId());
+		}).cache();
 		
 		return orgId;
 	}
 
 	private Mono<String> getSpaceId(String orgIdString, String spaceNameString) {
-		String key = String.format("%s|%s", orgIdString, spaceNameString);
-		
-		synchronized(key.intern()) {
-			Mono<String> cached = this.spaceMap.get(key);
-			if (cached != null) {
-				this.internalMetrics.countHit("appinstancescanner.space");
-				return cached;
+
+		Mono<ListSpacesResponse> listSpacesResponse = this.cfAccessor.retrieveSpaceId(orgIdString, spaceNameString);
+
+		Mono<String> spaceId = listSpacesResponse.flatMap(response -> {
+			List<SpaceResource> resources = response.getResources();
+			if (resources == null) {
+				return Mono.empty();
 			}
 			
-			this.internalMetrics.countMiss("appinstancescanner.space");
+			if (resources.isEmpty()) {
+				log.warn(String.format("Received empty result on requesting space %s", spaceNameString));
+				return Mono.empty();
+			}
 			
-			ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, "space");
-			
-			cached = Mono.zip(Mono.just(orgIdString), Mono.just(spaceNameString))
-				// start the timer
-				.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
-					tuple.getT2().start();
-					return tuple.getT1();
-				})
-				.flatMap(tuple -> {
-					return this.cfAccessor.retrieveSpaceId(tuple.getT1(), tuple.getT2());
-				}).flatMap(response -> {
-					List<SpaceResource> resources = response.getResources();
-					if (resources == null) {
-						return Mono.empty();
-					}
-					
-					if (resources.isEmpty()) {
-						log.warn(String.format("Received empty result on requesting space %s", spaceNameString));
-						return Mono.empty();
-					}
-					
-					SpaceResource spaceResource = resources.get(0);
-					return Mono.just(spaceResource.getMetadata().getId());
-				})
-				// stop the timer
-				.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
-					tuple.getT2().stop();
-					return tuple.getT1();
-				}).cache();
-			
-			this.spaceMap.put(key, cached);
-			return cached;
-		}
+			SpaceResource spaceResource = resources.get(0);
+			return Mono.just(spaceResource.getMetadata().getId());
+		}).cache();
+		
+		return spaceId;
 	}
 	
 	private Mono<String> getApplicationId(String orgIdString, String spaceIdString, String applicationNameString) {

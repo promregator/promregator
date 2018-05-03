@@ -66,10 +66,14 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	/* Cache-related attributes */
 
 	private PassiveExpiringMap<String, Mono<ListOrganizationsResponse>> orgMap;
+	private PassiveExpiringMap<String, Mono<ListSpacesResponse>> spaceMap;
 
 	@Value("${cf.cache.timeout.org:3600}")
 	private int timeoutCacheOrgLevel;
 
+	@Value("${cf.cache.timeout.space:3600}")
+	private int timeoutCacheSpaceLevel;
+	
 	@Autowired
 	private InternalMetrics internalMetrics;
 
@@ -82,6 +86,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	@PostConstruct
 	public void setupMaps() {
 		this.orgMap = new PassiveExpiringMap<>(this.timeoutCacheOrgLevel, TimeUnit.SECONDS);
+		this.spaceMap = new PassiveExpiringMap<>(this.timeoutCacheSpaceLevel, TimeUnit.SECONDS);
 	}
 	
 	private DefaultConnectionContext connectionContext(ProxyConfiguration proxyConfiguration) throws ConfigurationException {
@@ -189,12 +194,39 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	 */
 	@Override
 	public Mono<ListSpacesResponse> retrieveSpaceId(String orgId, String spaceName) {
-		ListSpacesRequest spacesRequest = ListSpacesRequest.builder().organizationId(orgId).name(spaceName).build();
-		Mono<ListSpacesResponse> monoResp = this.cloudFoundryClient.spaces().list(spacesRequest);
+		String key = String.format("%s|%s", orgId, spaceName);
 		
-		monoResp = monoResp.log(log.getName()+".retrieveSpaceId", Level.FINE);
-		
-		return monoResp;
+		synchronized(key.intern()) {
+			Mono<ListSpacesResponse> cached = this.spaceMap.get(key);
+			if (cached != null) {
+				this.internalMetrics.countHit("cfaccessor.space");
+				return cached;
+			}
+			
+			this.internalMetrics.countMiss("cfaccessor.space");
+
+			ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, "space");
+			
+			ListSpacesRequest spacesRequest = ListSpacesRequest.builder().organizationId(orgId).name(spaceName).build();
+			
+			cached = Mono.just(spacesRequest)
+				// start the timer
+				.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+					tuple.getT2().start();
+					return tuple.getT1();
+				})
+				.flatMap(sr -> this.cloudFoundryClient.spaces().list(sr))
+				// stop the timer
+				.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+					tuple.getT2().stop();
+					return tuple.getT1();
+				})
+				.log(log.getName()+".retrieveSpaceId", Level.FINE);
+			
+			this.spaceMap.put(key, cached);
+			
+			return cached;
+		}
 	}
 	
 	/* (non-Javadoc)
