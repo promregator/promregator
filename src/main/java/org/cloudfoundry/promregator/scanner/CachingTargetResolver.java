@@ -7,30 +7,46 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.config.Target;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.cache.RemovalListener;
+import com.google.common.cache.RemovalNotification;
 
 @Component
 public class CachingTargetResolver implements TargetResolver {
 	private static final Logger log = Logger.getLogger(CachingTargetResolver.class);
 	
-	private LoadingCache<Target, List<ResolvedTarget>> targetResolutionCache;
-	
 	@Value("${cf.cache.timeout.resolver:300}")
 	private int timeoutCacheApplicationLevel;
+
+	@Autowired
+	private List<CachingTargetResolverRemovalListener> removalListeners;
 	
 	private TargetResolver nativeTargetResolver;
+	
+	private LoadingCache<Target, List<ResolvedTarget>> targetResolutionCache;
 	
 	public CachingTargetResolver(TargetResolver targetResolver) {
 		this.nativeTargetResolver = targetResolver;
 		
 		this.targetResolutionCache = CacheBuilder.newBuilder()
 			.expireAfterWrite(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS)
-			// TODO register Removal Listeners --> remove metrics from global CollectorRegistry
+			.removalListener(new RemovalListener<Target, List<ResolvedTarget>>() {
+
+				@Override
+				public void onRemoval(RemovalNotification<Target, List<ResolvedTarget>> notification) {
+					// propagate to all registered listeners
+					for (CachingTargetResolverRemovalListener listener : removalListeners) {
+						listener.onRemoval(notification.getKey(), notification.getValue());
+					}
+				}
+				
+			})
 			.build(new CacheLoader<Target, List<ResolvedTarget>>() {
 
 				@Override
