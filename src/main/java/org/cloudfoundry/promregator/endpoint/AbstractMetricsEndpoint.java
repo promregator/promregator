@@ -29,8 +29,6 @@ import org.cloudfoundry.promregator.scanner.ResolvedTarget;
 import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Scope;
-import org.springframework.web.context.WebApplicationContext;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.CollectorRegistry;
@@ -42,7 +40,9 @@ import io.prometheus.client.Gauge;
  * whose data is being backed by a set of further Prometheus metrics endpoints run on one or several CF apps. 
  *
  */
-@Scope(value=WebApplicationContext.SCOPE_REQUEST)
+
+// Warning! Setting @Scope(value=WebApplicationContext.SCOPE_REQUEST) here is useless, as it is
+// being ignored by the Framework. Workaround: Annotate the implementing class instead
 public abstract class AbstractMetricsEndpoint {
 	
 	private static final Logger log = Logger.getLogger(AbstractMetricsEndpoint.class);

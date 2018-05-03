@@ -4,16 +4,19 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.cloudfoundry.promregator.scanner.Instance;
+import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.context.WebApplicationContext;
 
 import io.prometheus.client.exporter.common.TextFormat;
 
 @RestController
+@Scope(value=WebApplicationContext.SCOPE_REQUEST) // see also https://github.com/promregator/promregator/issues/51
 @RequestMapping(SingleTargetMetricsEndpoint.ENDPOINT_PATH+"/{applicationId}/{instanceNumber}")
 public class SingleTargetMetricsEndpoint extends AbstractMetricsEndpoint {
 	public static final String ENDPOINT_PATH = "/singleTargetMetrics";
