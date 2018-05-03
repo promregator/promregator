@@ -16,6 +16,7 @@ import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.ReactiveAppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.ReactiveTargetResolver;
+import org.cloudfoundry.promregator.scanner.ResolvedTargetManager;
 import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.cloudfoundry.promregator.springconfig.BasicAuthenticationSpringConfiguration;
 import org.cloudfoundry.promregator.springconfig.ErrorSpringConfiguration;
@@ -45,8 +46,13 @@ public class PromregatorApplication {
 	}
 	
 	@Bean
-	public TargetResolver targetResolver() {
-		return new ReactiveTargetResolver();
+	public ResolvedTargetManager resolvedTargetManager() {
+		return new ResolvedTargetManager(new ReactiveTargetResolver());
+	}
+	
+	@Bean
+	public TargetResolver targetResolver(ResolvedTargetManager resolvedTargetManager) {
+		return resolvedTargetManager;
 	}
 	
 	@Bean
