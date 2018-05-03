@@ -108,6 +108,17 @@ Note that applications and routes *may* change often. That is why you should pic
 
 Caches can also be invalidated out of the row by sending an HTTP REST request to Promregator. Further details can be found at the [Cache Invalidation page](./invalidate-cache.md).
 
+### Option "cf.cache.timeout.resolver" (optional)
+For performance reasons the metadata of the Cloud Foundry environment (organization, space, applications, routes) is cached locally in Promregator.
+
+This option allows you to specify how often the mapping between your configured targets and its resolution to Cloud Foundry Organization names, Cloud Foundry Space names and Cloud Foundry Application names takes place. This cache is used, if you do not explicitly specify the organization name, the space name and the application name in a target (e.g. you left out the application name to select all applications within a space). 
+
+The value is a timeout after which this mapping is invalidated and thus determined again. Its unit is seconds.
+
+By default, this value is set to 300 seconds, which means that the mapping is retrieved every five minutes.
+
+Caches can also be invalidated out of the row by sending an HTTP REST request to Promregator. Further details can be found at the [Cache Invalidation page](./invalidate-cache.md).
+
 #### Option "promregator.cache.invalidate.auth" (optional)
 Specifies the way how authentication shall be verified, if a request reaches the [Cache Invalidation endpoint](./invalidate-cache.md). Valid values are:
 

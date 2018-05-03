@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.config.Target;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.google.common.cache.CacheBuilder;
@@ -19,14 +20,16 @@ public class CachingTargetResolver implements TargetResolver {
 	
 	private LoadingCache<Target, List<ResolvedTarget>> targetResolutionCache;
 	
+	@Value("${cf.cache.timeout.resolver:300}")
+	private int timeoutCacheApplicationLevel;
+	
 	private TargetResolver nativeTargetResolver;
 	
 	public CachingTargetResolver(TargetResolver targetResolver) {
 		this.nativeTargetResolver = targetResolver;
 		
 		this.targetResolutionCache = CacheBuilder.newBuilder()
-			.expireAfterWrite(2L, TimeUnit.MINUTES)
-			// TODO make this timeout customizable
+			.expireAfterWrite(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS)
 			// TODO register Removal Listeners --> remove metrics from global CollectorRegistry
 			.build(new CacheLoader<Target, List<ResolvedTarget>>() {
 
