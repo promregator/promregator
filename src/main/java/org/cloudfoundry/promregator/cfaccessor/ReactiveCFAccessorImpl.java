@@ -68,7 +68,6 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	private PassiveExpiringMap<String, Mono<ListOrganizationsResponse>> orgCache;
 	private PassiveExpiringMap<String, Mono<ListSpacesResponse>> spaceCache;
 	private PassiveExpiringMap<String, Mono<ListApplicationsResponse>> applicationCache;
-	private PassiveExpiringMap<String, Mono<ListApplicationsResponse>> allApplicationInSpaceCache;
 	private PassiveExpiringMap<String, Mono<ListRouteMappingsResponse>> routeMappingCache;
 	private PassiveExpiringMap<String, Mono<GetRouteResponse>> routeCache;
 	private PassiveExpiringMap<String, Mono<GetSharedDomainResponse>> domainCache;
@@ -108,7 +107,6 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		 * In short: both are very volatile and we need to query them often
 		 */
 		this.applicationCache = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
-		this.allApplicationInSpaceCache = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
 		this.routeMappingCache = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
 		this.routeCache = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
 		this.domainCache = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
@@ -186,24 +184,29 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	 * @param retrievalTypeName the name of type of the request which is being made; used for identification in internalMetrics
 	 * @param logName the name of the logger category, which shall be used for logging this Reactor operation
 	 * @param key the key for which the request is being made (e.g. orgId, orgId|spaceName, ...)
-	 * @param cacheMap the PassiveExpiringMap, which shall be used for caching the request
+	 * @param cacheMap the PassiveExpiringMap, which shall be used for caching the request; may be <code>null</code> to indicate that no caching shall take place
 	 * @param requestData an object which is being used as input parameter for the request
 	 * @param requestFunction a function which calls the CF API operation, which is being made, <code>requestData</code> is used as input parameter for this function.
 	 * @return
 	 */
 	private <P, R> Mono<P> performGenericRetrieval(String retrievalTypeName, String logName, String key, PassiveExpiringMap<String, Mono<P>> cacheMap, R requestData, Function<R, Mono<P>> requestFunction) {
 		synchronized(key.intern()) {
-			Mono<P> cached = cacheMap.get(key);
-			if (cached != null) {
-				this.internalMetrics.countHit("cfaccessor."+retrievalTypeName);
-				return cached;
-			}
+			Mono<P> result = null;
 			
-			this.internalMetrics.countMiss("cfaccessor."+retrievalTypeName);
+			if (cacheMap != null) {
+				// caching takes place at all
+				result = cacheMap.get(key);
+				if (result != null) {
+					this.internalMetrics.countHit("cfaccessor."+retrievalTypeName);
+					return result;
+				}
+				
+				this.internalMetrics.countMiss("cfaccessor."+retrievalTypeName);
+			}
 
 			ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, retrievalTypeName);
 			
-			cached = Mono.just(requestData)
+			result = Mono.just(requestData)
 				// start the timer
 				.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
 					tuple.getT2().start();
@@ -217,9 +220,9 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 				})
 				.log(log.getName()+"."+logName, Level.FINE);
 
-			cacheMap.put(key, cached);
+			cacheMap.put(key, result);
 			
-			return cached;
+			return result;
 		}
 	}
 	
@@ -277,7 +280,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 				.spaceId(spaceId)
 				.build();
 		
-		return this.performGenericRetrieval("allApps", "retrieveAllApplicationIdsInSpace", key, this.allApplicationInSpaceCache, 
+		return this.performGenericRetrieval("allApps", "retrieveAllApplicationIdsInSpace", key, null, 
 				request, r -> this.cloudFoundryClient.applicationsV2().list(r));
 	}
 
