@@ -1,4 +1,4 @@
-package org.cloudfoundry.promregator.scanner;
+package org.cloudfoundry.promregator.cfaccessor;
 
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 
