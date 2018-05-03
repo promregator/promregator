@@ -30,6 +30,12 @@ public class ReactiveTargetResolver implements TargetResolver {
 	}
 	
 	public Flux<ResolvedTarget> resolveSingleTarget(Target configTarget) {
+		if (configTarget.getApplicationName() != null) {
+			// config target is already resolved
+			ResolvedTarget rt = new ResolvedTarget(configTarget);
+			return Flux.just(rt);
+		}
+		
 		Mono<String> orgIdMono = this.cfAccessor.retrieveOrgId(configTarget.getOrgName())
 				.map( r -> r.getResources())
 				.map( l -> l.get(0))
