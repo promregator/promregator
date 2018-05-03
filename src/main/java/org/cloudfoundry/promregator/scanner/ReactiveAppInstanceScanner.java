@@ -246,4 +246,8 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		
 		return applUrl + internalPath;
 	}
+	
+	public void invalidateApplicationUrlCache() {
+		this.applicationUrlMap.clear();
+	}
 }

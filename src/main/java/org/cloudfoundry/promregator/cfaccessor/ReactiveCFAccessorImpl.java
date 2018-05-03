@@ -328,4 +328,23 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 				request, r -> this.cloudFoundryClient.processes().list(r));
 	}
 
+	
+	public void invalidateCacheApplications() {
+		log.info("Invalidating application cache");
+		this.applicationCache.clear();
+		this.routeMappingCache.clear();
+		this.routeCache.clear();
+		this.domainCache.clear();
+		this.processCache.clear();
+	}
+	
+	public void invalidateCacheSpace() {
+		log.info("Invalidating space cache");
+		this.spaceCache.clear();
+	}
+
+	public void invalidateCacheOrg() {
+		log.info("Invalidating org cache");
+		this.orgCache.clear();
+	}
 }

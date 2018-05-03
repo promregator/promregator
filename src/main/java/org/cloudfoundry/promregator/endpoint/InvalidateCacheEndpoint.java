@@ -1,5 +1,7 @@
 package org.cloudfoundry.promregator.endpoint;
 
+import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
+import org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.ReactiveAppInstanceScanner;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,8 +18,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class InvalidateCacheEndpoint {
 
 	@Autowired
+	private CFAccessor cfAccessor;
+	
+	@Autowired
 	private AppInstanceScanner appInstanceScanner;
-
+	
 	@RequestMapping(method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)
 	public ResponseEntity<String> invalidateCache(
 			@RequestParam(name = "application", required = false) boolean application,
@@ -25,18 +30,21 @@ public class InvalidateCacheEndpoint {
 			@RequestParam(name = "org", required = false) boolean org
 			) {
 
+		ReactiveCFAccessorImpl reactiveCFAccessor = (ReactiveCFAccessorImpl) this.cfAccessor;
+		
 		ReactiveAppInstanceScanner reactiveAppInstanceScanner = (ReactiveAppInstanceScanner) this.appInstanceScanner;
 		
 		if (application) {
-			reactiveAppInstanceScanner.invalidateCacheApplications();
+			reactiveAppInstanceScanner.invalidateApplicationUrlCache();
+			reactiveCFAccessor.invalidateCacheApplications();
 		}
 		
 		if (space) {
-			reactiveAppInstanceScanner.invalidateCacheSpace();
+			reactiveCFAccessor.invalidateCacheSpace();
 		}
 		
 		if (org) {
-			reactiveAppInstanceScanner.invalidateCacheOrg();
+			reactiveCFAccessor.invalidateCacheOrg();
 		}
 
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
