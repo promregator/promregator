@@ -181,63 +181,39 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	private Mono<String> getApplicationUrl(String applicationId, String protocol) {
 		String key = applicationId;
 
-		synchronized(key.intern()) {
-			Mono<String> cached = this.hostnameMap.get(key);
-			if (cached != null) {
-				this.internalMetrics.countHit("appinstancescanner.route");
-				return cached;
-			}
-			
-			this.internalMetrics.countMiss("appinstancescanner.route");
-			ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, "route");
-			
-			Mono<RouteEntity> routeMono = Mono.just(applicationId)
-				// start the timer
-				.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
-					tuple.getT2().start();
-					return tuple.getT1();
-				})
-				.flatMap(appId -> {
-					return this.cfAccessor.retrieveRouteMapping(appId);
-				})
-				.map(rm -> rm.getResources())
-				.map(l -> l.get(0))
-				.map(e -> e.getEntity())
-				.map(entity -> entity.getRouteId())
-				.flatMap(routeId -> { 
-					return this.cfAccessor.retrieveRoute(routeId); 
-				})
-				.map(routeResponse -> routeResponse.getEntity());
-			// WARNING! routeResponse.getApplicationsUrl() is the URL back to the application
-			// and not the URL which points to the endpoint of the cell!
+		Mono<RouteEntity> routeMono = this.cfAccessor.retrieveRouteMapping(applicationId)
+			.map(rm -> rm.getResources())
+			.map(l -> l.get(0))
+			.map(e -> e.getEntity())
+			.map(entity -> entity.getRouteId())
+			.flatMap(routeId -> { 
+				return this.cfAccessor.retrieveRoute(routeId); 
+			})
+			.map(routeResponse -> routeResponse.getEntity());
+		// WARNING! routeResponse.getApplicationsUrl() is the URL back to the application
+		// and not the URL which points to the endpoint of the cell!
 
-			Mono<String> domainMono = routeMono.map(route -> route.getDomainId())
-				.flatMap(domainId -> {
-					return this.getDomain(domainId);
-				});
-			
-			Mono<String> applicationUrlMono = Mono.zip(domainMono, routeMono)
-				.map(tuple -> {
-					String domain = tuple.getT1();
-					RouteEntity route = tuple.getT2();
-					
-					String url = String.format("%s://%s.%s", protocol, route.getHost(), domain);
-					if (route.getPath() != null) {
-						url += "/"+route.getPath();
-					}
-					
-					return url;
-				})
-				// stop the timer
-				.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
-					tuple.getT2().stop();
-					return tuple.getT1();
-				}).cache();
-			
-			this.hostnameMap.put(key, applicationUrlMono);
-			
-			return applicationUrlMono;
-		}
+		Mono<String> domainMono = routeMono.map(route -> route.getDomainId())
+			.flatMap(domainId -> {
+				return this.getDomain(domainId);
+			});
+		
+		Mono<String> applicationUrlMono = Mono.zip(domainMono, routeMono)
+			.map(tuple -> {
+				String domain = tuple.getT1();
+				RouteEntity route = tuple.getT2();
+				
+				String url = String.format("%s://%s.%s", protocol, route.getHost(), domain);
+				if (route.getPath() != null) {
+					url += "/"+route.getPath();
+				}
+				
+				return url;
+			});
+		
+		this.hostnameMap.put(key, applicationUrlMono);
+		
+		return applicationUrlMono;
 	}
 	
 	private Mono<String> getDomain(String domainIdString) {

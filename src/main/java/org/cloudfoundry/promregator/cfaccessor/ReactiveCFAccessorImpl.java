@@ -68,6 +68,8 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	private PassiveExpiringMap<String, Mono<ListOrganizationsResponse>> orgMap;
 	private PassiveExpiringMap<String, Mono<ListSpacesResponse>> spaceMap;
 	private PassiveExpiringMap<String, Mono<ListApplicationsResponse>> applicationMap;
+	private PassiveExpiringMap<String, Mono<ListRouteMappingsResponse>> routeMappingMap;
+	private PassiveExpiringMap<String, Mono<GetRouteResponse>> routeMap;
 
 	
 	@Value("${cf.cache.timeout.org:3600}")
@@ -103,6 +105,8 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		 * In short: both are very volatile and we need to query them often
 		 */
 		this.applicationMap = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
+		this.routeMappingMap = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
+		this.routeMap = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
 	}
 	
 	private DefaultConnectionContext connectionContext(ProxyConfiguration proxyConfiguration) throws ConfigurationException {
@@ -294,12 +298,38 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	 */
 	@Override
 	public Mono<ListRouteMappingsResponse> retrieveRouteMapping(String appId) {
-		ListRouteMappingsRequest mappingRequest = ListRouteMappingsRequest.builder().applicationId(appId).build();
-		Mono<ListRouteMappingsResponse> monoResp = this.cloudFoundryClient.routeMappings().list(mappingRequest);
+		String key = appId;
 		
-		monoResp = monoResp.log(log.getName()+".retrieveRouteMapping", Level.FINE);
-		
-		return monoResp;
+		synchronized(key.intern()) {
+			Mono<ListRouteMappingsResponse> cached = this.routeMappingMap.get(key);
+			if (cached != null) {
+				this.internalMetrics.countHit("cfaccessor.routeMapping");
+				return cached;
+			}
+			this.internalMetrics.countMiss("cfaccessor.routeMapping");
+			
+			ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, "routeMapping");
+			
+			ListRouteMappingsRequest mappingRequest = ListRouteMappingsRequest.builder().applicationId(appId).build();
+			
+			cached = Mono.just(mappingRequest)
+				// start the timer
+				.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+					tuple.getT2().start();
+					return tuple.getT1();
+				})
+				.flatMap( r ->  this.cloudFoundryClient.routeMappings().list(r))
+				// stop the timer
+				.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+					tuple.getT2().stop();
+					return tuple.getT1();
+				})
+				.log(log.getName()+".retrieveRouteMapping", Level.FINE);
+
+			this.routeMappingMap.put(key, cached);
+			
+			return cached;
+		}
 	}
 	
 	/* (non-Javadoc)
@@ -307,12 +337,39 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	 */
 	@Override
 	public Mono<GetRouteResponse> retrieveRoute(String routeId) {
-		GetRouteRequest getRequest = GetRouteRequest.builder().routeId(routeId).build();
-		Mono<GetRouteResponse> monoResp = this.cloudFoundryClient.routes().get(getRequest).log();
+		String key = routeId;
 		
-		monoResp = monoResp.log(log.getName()+".retrieveRoute", Level.FINE);
-		
-		return monoResp;
+		synchronized(key.intern()) {
+			Mono<GetRouteResponse> cached = this.routeMap.get(key);
+			if (cached != null) {
+				this.internalMetrics.countHit("cfaccessor.route");
+				return cached;
+			}
+			this.internalMetrics.countMiss("cfaccessor.route");
+			
+			ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, "route");
+			
+			GetRouteRequest getRequest = GetRouteRequest.builder().routeId(routeId).build();
+
+			cached = Mono.just(getRequest)
+				// start the timer
+				.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+					tuple.getT2().start();
+					return tuple.getT1();
+				})
+				.flatMap( r -> this.cloudFoundryClient.routes().get(r))
+				// stop the timer
+				.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+					tuple.getT2().stop();
+					return tuple.getT1();
+				})
+				.log(log.getName()+".retrieveRoute", Level.FINE);
+
+			this.routeMap.put(key, cached);
+			
+			return cached;
+		}
+
 	}
 	
 	/* (non-Javadoc)
