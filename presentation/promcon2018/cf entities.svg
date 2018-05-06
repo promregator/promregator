@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/PR-SVG-20010719/DTD/svg10.dtd">
+<svg width="34cm" height="10cm" viewBox="179 139 678 199" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <g>
+    <rect style="fill: #ffffff" x="180" y="140" width="126.3" height="28"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="180" y="140" width="126.3" height="28"/>
+    <text font-size="16" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:700" x="243.15" y="159">Organization</text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="400" y="140" width="64.1" height="28"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="400" y="140" width="64.1" height="28"/>
+    <text font-size="16" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:700" x="432.05" y="159">Space</text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="331.472,154 321.3,154 399,154 400,154 "/>
+    <polygon style="fill: #000000" points="306.3,154 320.3,149.2 334.3,154 320.3,158.8 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="306.3,154 320.3,149.2 334.3,154 320.3,158.8 "/>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:end;font-family:monospace;font-style:normal;font-weight:normal" x="396" y="151">0..*</text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="560" y="140" width="112.15" height="28"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="560" y="140" width="112.15" height="28"/>
+    <text font-size="16" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:700" x="616.075" y="159">Application</text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="490.28,154 480.108,154 557.993,154 558.993,154 "/>
+    <polygon style="fill: #000000" points="465.108,154 479.108,149.2 493.108,154 479.108,158.8 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="465.108,154 479.108,149.2 493.108,154 479.108,158.8 "/>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:end;font-family:monospace;font-style:normal;font-weight:normal" x="554.993" y="151">0..*</text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="760" y="140" width="87.05" height="28"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="760" y="140" width="87.05" height="28"/>
+    <text font-size="16" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:700" x="803.525" y="159">Instance</text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="697.322,154 687.15,154 759,154 760,154 "/>
+    <polygon style="fill: #000000" points="672.15,154 686.15,149.2 700.15,154 686.15,158.8 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="672.15,154 686.15,149.2 700.15,154 686.15,158.8 "/>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:end;font-family:monospace;font-style:normal;font-weight:normal" x="756" y="151">1..*</text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="780.917" y="224.411" width="43.6" height="28"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="780.917" y="224.411" width="43.6" height="28"/>
+    <text font-size="16" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:700" x="802.717" y="243.411">Cell</text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="803.525,168 803.525,204 802.717,204 802.717,224.411 "/>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="807.525" y="180">1</text>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="806.717" y="220.411">1</text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="750.83" y="308.822" width="104.7" height="28"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="750.83" y="308.822" width="104.7" height="28"/>
+    <text font-size="16" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:700" x="803.18" y="327.822">Internal IP</text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="802.717,252.411 802.717,280.616 803.18,280.616 803.18,308.822 "/>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="806.717" y="264.411">1</text>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="807.18" y="304.822">1</text>
+  </g>
+</svg>
