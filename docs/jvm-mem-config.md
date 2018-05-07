@@ -30,7 +30,7 @@ Given this memory configuration, a maximal memory allocation **for the Docker co
 Note that with the fixed memory configuration in the image for the Java Virtual Machine, it does not provide any benefit to increase the memory allocation for the Docker container **alone**. Instead, you have to provide your own set of memory configuration parameters by providing an own configuration in the environment variable `JAVA_MEM_OPTS`. Assuming that you wanted to increase the maximal heap memory size (and only that one!) to 400 megabytes, you would have to start the Docker container like this:
 
 ```bash
-$ docker run -d --env JAVA_MEM_OPTS="-Xmx400m -Xms300m -Xss600k -XX:ReservedCodeCacheSize=256m -XX:MaxMetaspaceSize=300m" promregator/promregator:0.x.y [...]
+$ docker run -d -m 800m --env JAVA_MEM_OPTS="-Xmx400m -Xms300m -Xss600k -XX:ReservedCodeCacheSize=256m -XX:MaxMetaspaceSize=300m" promregator/promregator:0.x.y [...]
 ```
 
 Note that all other parameters still need to be provided, as setting `JAVA_MEM_OPTS` externally disables any kind of defaulting.
