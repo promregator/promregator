@@ -61,6 +61,11 @@ promregator:
 The documentation of the configuration options can be found [here](config.md).
 
 
+## Java Memory Configuration
+Promregator is written in Java and therefore requires a Java Virtual Machine (e.g. Java Runtime Edition) to run. Finding a proper memory configuration can be a tricky thing with JVMs - especially, if being run in a docker container. 
+
+The current knowledge about memory configuration for Promregator can be found at the [Java Memory Configuration page](jvm-mem-config.md).
+
 ## Configuration of Prometheus Server
 
 As there are two modes of how Prometheus may talk to Promregator (Single Endpoint Scraping Mode and Single Target Scraping Mode, see also above), the suggested configuration of Prometheus depends on the mode you want to use.
