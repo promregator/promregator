@@ -34,3 +34,13 @@ $ docker run -d -m 800m --env JAVA_MEM_OPTS="-Xmx400m -Xms300m -Xss600k -XX:Rese
 ```
 
 Note that all other parameters still need to be provided, as setting `JAVA_MEM_OPTS` externally disables any kind of defaulting.
+
+
+## Monitoring Memory Consumption of Promregator
+
+Having attached Prometheus to Promregator, you are also able to monitor the memory consumption of Promregator. For instance, the following metrics might be of interest for you:
+
+* `promregator_jvm_memory_bytes_used{area="heap"}` provides the amount of memory allocated for the heap
+* `promregator_jvm_memory_bytes_used{area="non-heap"}` provides the amount of memory allocated for the non-heap part (i.e. Metaspace)
+
+Note that Java is running a garbage collector; thus, old and unused objects may still be reported (for example) to consume memory on the heap, because they have not been cleaned up, yet. If you want to see when garbage collection has taken place, please refer to `promregator_jvm_gc_collection_seconds_count`. You may also gain further insight on the different memory areas subject to garbage collecting by looking at `promregator_jvm_memory_pool_bytes_used`.
