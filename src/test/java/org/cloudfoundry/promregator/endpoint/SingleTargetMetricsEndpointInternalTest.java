@@ -3,8 +3,8 @@ package org.cloudfoundry.promregator.endpoint;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.cloudfoundry.promregator.config.Target;
 import org.cloudfoundry.promregator.scanner.Instance;
+import org.cloudfoundry.promregator.scanner.ResolvedTarget;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.web.client.HttpClientErrorException;
@@ -24,8 +24,8 @@ public class SingleTargetMetricsEndpointInternalTest extends SingleTargetMetrics
 		
 		List<Instance> instanceList = new LinkedList<>();
 		
-		Target t;
-		t = new Target();
+		ResolvedTarget t;
+		t = new ResolvedTarget();
 		t.setOrgName("unittestorg");
 		t.setSpaceName("unittestspace");
 		t.setApplicationName("unittestapp");
@@ -54,8 +54,8 @@ public class SingleTargetMetricsEndpointInternalTest extends SingleTargetMetrics
 		
 		List<Instance> instanceList = new LinkedList<>();
 		
-		Target t;
-		t = new Target();
+		ResolvedTarget t;
+		t = new ResolvedTarget();
 		t.setOrgName("unittestorg");
 		t.setSpaceName("unittestspace");
 		t.setApplicationName("unittestapp");
