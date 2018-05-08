@@ -9,7 +9,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.web.client.HttpClientErrorException;
 
-public class SingleTargetMetricsEndpointTest extends SingleTargetMetricsEndpoint {
+public class SingleTargetMetricsEndpointInternal2Test extends SingleTargetMetricsEndpoint {
 
 	@Override
 	public String handleRequest() {
