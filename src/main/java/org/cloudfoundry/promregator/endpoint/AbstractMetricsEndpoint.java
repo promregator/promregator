@@ -80,15 +80,11 @@ public abstract class AbstractMetricsEndpoint {
 	private CollectorRegistry requestRegistry;
 	
 	// see also https://prometheus.io/docs/instrumenting/writing_exporters/#metrics-about-the-scrape-itself
-	private Gauge scrape_duration;
 	private Gauge up;
 	
 	@PostConstruct
 	public void setupOwnRequestScopedMetrics() {
 		this.requestRegistry = new CollectorRegistry();
-		
-		this.scrape_duration = Gauge.build("promregator_scrape_duration_seconds", "Duration in seconds indicating how long scraping of all metrics took")
-				.register(this.requestRegistry);
 		
 		this.up = Gauge.build("promregator_up", "Indicator, whether the target of promregator is available")
 				.labelNames(CFMetricFamilySamplesEnricher.getEnrichingLabelNames())
@@ -119,7 +115,7 @@ public abstract class AbstractMetricsEndpoint {
 		
 		Instant stop = Instant.now();
 		Duration duration = Duration.between(start, stop);
-		this.scrape_duration.set(duration.toMillis() / 1000.0);
+		this.handleScrapeDuration(this.requestRegistry, duration);
 		
 		if (this.isIncludeGlobalMetrics()) {
 			// also add our own (global) metrics
@@ -131,6 +127,16 @@ public abstract class AbstractMetricsEndpoint {
 		
 		return mmfs.toType004String();
 	}
+
+	/**
+	 * called when scraping has been finished; contains the overall duration of the scraping request.
+	 * 
+	 * The implementing class is suggested to write the duration into an own sample for the corresponding
+	 * metric.
+	 * @param requestReqistry the registry to which the metric shall be / is registered.
+	 * @param duration the duration of the just completed scrape request.
+	 */
+	protected abstract void handleScrapeDuration(CollectorRegistry requestRegistry, Duration duration);
 
 	/**
 	 * specifies whether the global metrics provided by Promregator itself
