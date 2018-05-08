@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.WebApplicationContext;
 
 @RestController
-@RequestMapping("/singleTargetMetrics")
+@RequestMapping("/metrics")
 @Scope(value=WebApplicationContext.SCOPE_REQUEST)
-public class TestableMetricsEndpoint extends MetricsEndpoint {
+public class TestableSingleTargetMetricsEndpoint extends SingleTargetMetricsEndpoint {
 
 	@Override
 	protected List<MetricsFetcher> createMetricsFetchers(List<Instance> instanceList) {
