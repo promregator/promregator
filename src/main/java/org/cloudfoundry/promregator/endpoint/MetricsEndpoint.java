@@ -1,5 +1,6 @@
 package org.cloudfoundry.promregator.endpoint;
 
+import java.time.Duration;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -10,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.WebApplicationContext;
 
+import io.prometheus.client.CollectorRegistry;
+import io.prometheus.client.Gauge;
 import io.prometheus.client.exporter.common.TextFormat;
 
 /**
@@ -42,6 +45,14 @@ public class MetricsEndpoint extends AbstractMetricsEndpoint {
 		}
 		
 		return instanceList; 
+	}
+
+	@Override
+	protected void handleScrapeDuration(CollectorRegistry requestRegistry, Duration duration) {
+		Gauge scrape_duration = Gauge.build("promregator_scrape_duration_seconds", "Duration in seconds indicating how long scraping of all metrics took")
+				.register(requestRegistry);
+		
+		scrape_duration.set(duration.toMillis() / 1000.0);
 	}
 	
 }
