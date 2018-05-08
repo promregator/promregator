@@ -5,9 +5,9 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.cloudfoundry.promregator.config.Target;
 import org.cloudfoundry.promregator.rewrite.CFMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.scanner.Instance;
+import org.cloudfoundry.promregator.scanner.ResolvedTarget;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -80,7 +80,7 @@ public class SingleTargetMetricsEndpoint extends AbstractMetricsEndpoint {
 				.labelNames(CFMetricFamilySamplesEnricher.getEnrichingLabelNames())
 				.register(requestRegistry);
 		
-		Target t = this.instance.getTarget();
+		ResolvedTarget t = this.instance.getTarget();
 		CFMetricFamilySamplesEnricher enricher = new CFMetricFamilySamplesEnricher(t.getOrgName(), t.getSpaceName(), t.getApplicationName(), this.instance.getInstanceId());
 		
 		List<String> labelValues = enricher.getEnrichedLabelValues(new ArrayList<String>(0));
