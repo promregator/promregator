@@ -114,6 +114,10 @@ public class CFMetricsFetcher implements MetricsFetcher {
 			
 			String result = EntityUtils.toString(response.getEntity());
 			
+			if (this.mfm.getRequestSize() != null) {
+				this.mfm.getRequestSize().observe(result.length());
+			}
+			
 			TextFormat004Parser parser = new TextFormat004Parser(result);
 			HashMap<String, MetricFamilySamples> emfs = parser.parse();
 
