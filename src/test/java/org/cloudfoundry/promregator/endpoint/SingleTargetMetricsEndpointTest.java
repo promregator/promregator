@@ -1,6 +1,8 @@
 package org.cloudfoundry.promregator.endpoint;
 
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.cloudfoundry.promregator.fetcher.TextFormat004Parser;
 import org.junit.Assert;
@@ -60,6 +62,27 @@ public class SingleTargetMetricsEndpointTest {
 		Sample sample = mfs.samples.get(0);
 		Assert.assertEquals("[org_name, space_name, app_name, cf_instance_id, cf_instance_number]", sample.labelNames.toString()); 
 		Assert.assertEquals("[unittestorg, unittestspace, unittestapp, faedbb0a-2273-4cb4-a659-bd31331f7daf:0, 0]", sample.labelValues.toString()); 
+	}
+	
+	@Test
+	public void testIssue51() {
+		Assert.assertNotNull(subject);
+		
+		String response = subject.getMetrics("faedbb0a-2273-4cb4-a659-bd31331f7daf", "0");
+		
+		Assert.assertNotNull(response);
+		Assert.assertNotEquals("", response);
+
+		final Pattern p = Pattern.compile("cf_instance_id=\"([^\"]+)\"");
+		
+		Matcher m = p.matcher(response);
+		boolean atLeastOneFound = false;
+		while(m.find()) {
+			atLeastOneFound = true;
+			String instanceId = m.group(1);
+			Assert.assertEquals("faedbb0a-2273-4cb4-a659-bd31331f7daf:0", instanceId);
+		}
+		Assert.assertTrue(atLeastOneFound);
 	}
 
 }
