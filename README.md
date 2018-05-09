@@ -86,3 +86,7 @@ A detailed documentation, including a description how you may configure Promrega
 ## Related Work / References
 For related work, which we came across, refer to our [references page](docs/references.md).
 
+## Sending Analysis Material
+
+For sending material (e.g. memory dumps) for analysis, which you do not want to (or even should not) share to/with the public, please refer to our [analysis material page](docs/analysis-material.md)
+
