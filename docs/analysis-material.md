@@ -66,7 +66,7 @@ please follow the following procedure:
    ```
    By doing so, we will be the only one's to open the archive.
 
-3. Send it to the email address mentioned at the profile of [eaglerainbow](https://github.com/eaglerainbow).
+3. Send the encrypted archive to the email address mentioned at the profile of [eaglerainbow](https://github.com/eaglerainbow).
 
 We hereby assure you that we will solely use your data for improving Promregator's quality. Under no circumstances we will make the data provided by you public or send it to any third party without your consent. In case we find it necessary and appropriate to forward your data to someone else, we will first contact you to seek permission to do so. You are free to reject that permission.
 
