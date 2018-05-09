@@ -68,6 +68,8 @@ please follow the following procedure:
 
 3. Send the encrypted archive to the email address mentioned at the profile of [eaglerainbow](https://github.com/eaglerainbow).
 
+4. If the file size is too large to be sent over email, please upload the archive to some trusty server and send us the link to that file via email instead.
+
 We hereby assure you that we will solely use your data for improving Promregator's quality. Under no circumstances we will make the data provided by you public or send it to any third party without your consent. In case we find it necessary and appropriate to forward your data to someone else, we will first contact you to seek permission to do so. You are free to reject that permission.
 
 In case you change your mind and want your data you have sent to us to be destroyed, please drop us a note that you want to revoke your permission for the future. Your data you have sent to us then will be destroyed at the next point in time possible.
