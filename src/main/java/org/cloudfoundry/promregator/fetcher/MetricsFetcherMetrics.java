@@ -6,7 +6,6 @@ import java.util.List;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.CFMetricFamilySamplesEnricher;
 
-import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Counter;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.Histogram;
@@ -24,6 +23,11 @@ public class MetricsFetcherMetrics {
 	
 	private static Counter failedRequests = Counter.build("promregator_request_failure", "Requests, which responded, but the HTTP code indicated an error or the connection dropped/timed out")
 			.labelNames(CFMetricFamilySamplesEnricher.getEnrichingLabelNames())
+			.register();
+	
+	private static Histogram requestSize = Histogram.build("promregator_request_size", "The size in bytes of the document, which the scraped targets sent to promregator")
+			.labelNames(CFMetricFamilySamplesEnricher.getEnrichingLabelNames())
+			.exponentialBuckets(100, 1.5, 16)
 			.register();
 
 	private Gauge up;
@@ -62,6 +66,13 @@ public class MetricsFetcherMetrics {
 			return null;
 		
 		return failedRequests.labels(this.ownTelemetryLabels);
+	}
+	
+	public Histogram.Child getRequestSize() {
+		if (requestSize == null)
+			return null;
+		
+		return requestSize.labels(this.ownTelemetryLabels);
 	}
 
 }

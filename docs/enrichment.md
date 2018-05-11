@@ -47,9 +47,12 @@ the caller via Prometheus metrics. For this, the following metrics are exposed:
 
 * `promregator_request_latency`: a [Prometheus histogram](https://prometheus.io/docs/practices/histograms/), 
   which returns the latency which was necessary to retrieve the metrics from the target.
+* `promregator_request_size`: a [Prometheus histogram](https://prometheus.io/docs/practices/histograms/), which returns the size of the scraping document, which was sent from the target to Promregator.
 * `promregator_up`: a [Prometheus Gauge](https://prometheus.io/docs/concepts/metric_types/) which indicates whether an instance was reachable or not (similar to the [gauge provided for Prometheus' own monitoring](https://prometheus.io/docs/concepts/jobs_instances/)).
 * `promregator_request_failure`: a [Prometheus Gauge](https://prometheus.io/docs/concepts/metric_types/) which indicates the number of requests sent to the target, which have failed.
-* `promregator_scrape_duration_seconds`: a [Prometheus Gauge](https://prometheus.io/docs/concepts/metric_types/) which indicates how long scraping of all targets took. Note that this metric is independent from the targets and thus does not carry the labels `org_name`, `space_name`, `app_name`, `cf_instance_number` and `cf_instance_id` (as stated below).
+* `promregator_scrape_duration_seconds`: a [Prometheus Gauge](https://prometheus.io/docs/concepts/metric_types/) which indicates how long scraping of the current request target took. 
+  * In Single Endpoint Scraping, this metric is independent from the targets and thus does not carry the labels `org_name`, `space_name`, `app_name`, `cf_instance_number` and `cf_instance_id` (as stated below).
+  * In Single Target Scraping, this metric is dependent from the target chosen and thus provides the labels `org_name`, `space_name`, `app_name`, `cf_instance_number` and `cf_instance_id` (as stated below).
 
 Note that additionally to the labels `org_name`, `space_name`, `app_name`, `cf_instance_number` and `cf_instance_id` (which tells you the target, which the metric is referring to), the metric name is prefixed with `promregator_` indicating that the value of the metric sample was created by Promregator itself and is not originated by any of the targets.
 

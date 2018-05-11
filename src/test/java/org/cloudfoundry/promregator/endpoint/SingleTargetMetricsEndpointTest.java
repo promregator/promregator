@@ -1,82 +1,88 @@
 package org.cloudfoundry.promregator.endpoint;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.cloudfoundry.promregator.JUnitTestUtils;
-import org.cloudfoundry.promregator.scanner.Instance;
-import org.cloudfoundry.promregator.scanner.ResolvedTarget;
-import org.junit.AfterClass;
+import org.cloudfoundry.promregator.fetcher.TextFormat004Parser;
 import org.junit.Assert;
 import org.junit.Test;
-import org.springframework.web.client.HttpClientErrorException;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-public class SingleTargetMetricsEndpointTest extends SingleTargetMetricsEndpoint {
-	@AfterClass
-	public static void cleanupEnvironment() {
-		JUnitTestUtils.cleanUpAll();
-	}
+import io.prometheus.client.Collector.MetricFamilySamples;
+import io.prometheus.client.Collector.MetricFamilySamples.Sample;
 
-	@Override
-	public String handleRequest() {
-		// necessary for proper test isolation
-		return null;
-	}
+@RunWith(SpringJUnit4ClassRunner.class)
+@SpringBootTest(classes = MockedMetricsEndpointSpringApplication.class)
+@TestPropertySource(locations="default.properties")
+public class SingleTargetMetricsEndpointTest {
 
+	@Autowired
+	private TestableSingleTargetMetricsEndpoint subject;
+	
 	@Test
-	public void testfilterInstanceListPositive() {
-		// NB: required to set up the test properly
-		this.getMetrics("129856d2-c53b-4971-b100-4ce371b78070", "42");
+	public void testGetMetrics() {
+		Assert.assertNotNull(subject);
 		
-		List<Instance> instanceList = new LinkedList<>();
+		String response = subject.getMetrics("faedbb0a-2273-4cb4-a659-bd31331f7daf", "0");
 		
-		ResolvedTarget t;
-		t = new ResolvedTarget();
-		t.setOrgName("unittestorg");
-		t.setSpaceName("unittestspace");
-		t.setApplicationName("unittestapp");
-		t.setPath("/metricsPath");
-		t.setProtocol("https");
+		Assert.assertNotNull(response);
+		Assert.assertNotEquals("", response);
 		
-		instanceList.add(new Instance(t, "129856d2-c53b-4971-b100-4ce371b78070:41", "https://someurl"));
-		instanceList.add(new Instance(t, "229856d2-c53b-4971-b100-4ce371b78070:42", "https://someurl"));
+		TextFormat004Parser parser = new TextFormat004Parser(response);
+		HashMap<String, MetricFamilySamples> mapMFS = parser.parse();
 		
-		Instance i;
-		i = new Instance(t, "129856d2-c53b-4971-b100-4ce371b78070:42", "https://someurl");
-		
-		instanceList.add(i);
-		
-		List<Instance> result = this.filterInstanceList(instanceList);
-		
-		Assert.assertEquals(1, result.size());
-		Assert.assertEquals(i, result.get(0));
+		Assert.assertNotNull(mapMFS.get("metric_unittestapp"));
+		Assert.assertNull(mapMFS.get("metric_unittestapp2"));
 	}
 	
-	
-	@Test(expected=HttpClientErrorException.class)
-	public void testfilterInstanceListNegative() {
-		// NB: required to set up the test properly
-		this.getMetrics("59ff5929-b593-4d90-a3b3-95f4883a8553", "1");
+	@Test
+	public void testIssue52() {
+		Assert.assertNotNull(subject);
 		
-		List<Instance> instanceList = new LinkedList<>();
+		String response = subject.getMetrics("faedbb0a-2273-4cb4-a659-bd31331f7daf", "0");
 		
-		ResolvedTarget t;
-		t = new ResolvedTarget();
-		t.setOrgName("unittestorg");
-		t.setSpaceName("unittestspace");
-		t.setApplicationName("unittestapp");
-		t.setPath("/metricsPath");
-		t.setProtocol("https");
+		Assert.assertNotNull(response);
+		Assert.assertNotEquals("", response);
 		
-		instanceList.add(new Instance(t, "129856d2-c53b-4971-b100-4ce371b78070:41", "https://someurl"));
-		instanceList.add(new Instance(t, "229856d2-c53b-4971-b100-4ce371b78070:42", "https://someurl"));
+		TextFormat004Parser parser = new TextFormat004Parser(response);
+		HashMap<String, MetricFamilySamples> mapMFS = parser.parse();
 		
-		Instance i;
-		i = new Instance(t, "129856d2-c53b-4971-b100-4ce371b78070:42", "https://someurl");
+		Assert.assertNotNull(mapMFS.get("metric_unittestapp"));
+		Assert.assertNull(mapMFS.get("metric_unittestapp2"));
 		
-		instanceList.add(i);
+		MetricFamilySamples mfs = mapMFS.get("promregator_scrape_duration_seconds");
+		Assert.assertNotNull(mfs);
+		Assert.assertEquals(1, mfs.samples.size());
 		
-		List<Instance> result = this.filterInstanceList(instanceList);
+		Sample sample = mfs.samples.get(0);
+		Assert.assertEquals("[org_name, space_name, app_name, cf_instance_id, cf_instance_number]", sample.labelNames.toString()); 
+		Assert.assertEquals("[unittestorg, unittestspace, unittestapp, faedbb0a-2273-4cb4-a659-bd31331f7daf:0, 0]", sample.labelValues.toString()); 
 	}
 	
+	@Test
+	public void testIssue51() {
+		Assert.assertNotNull(subject);
+		
+		String response = subject.getMetrics("faedbb0a-2273-4cb4-a659-bd31331f7daf", "0");
+		
+		Assert.assertNotNull(response);
+		Assert.assertNotEquals("", response);
+
+		final Pattern p = Pattern.compile("cf_instance_id=\"([^\"]+)\"");
+		
+		Matcher m = p.matcher(response);
+		boolean atLeastOneFound = false;
+		while(m.find()) {
+			atLeastOneFound = true;
+			String instanceId = m.group(1);
+			Assert.assertEquals("faedbb0a-2273-4cb4-a659-bd31331f7daf:0", instanceId);
+		}
+		Assert.assertTrue(atLeastOneFound);
+	}
+
 }
