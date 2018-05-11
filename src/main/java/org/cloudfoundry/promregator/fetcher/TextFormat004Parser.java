@@ -17,9 +17,6 @@ import io.prometheus.client.Collector.Type;
 /* Unfortunately, there is nothing provided for this by Prometheus.io :-(
  * So, we have to do this ourselves.
  * Details of the format are described at https://prometheus.io/docs/instrumenting/exposition_formats/
- * 
- * WARNING! Deviating from standard!
- * - Label values may not contain "}" characters (or this parser will fail)
  */
 public class TextFormat004Parser {
 	private static final Logger log = Logger.getLogger(TextFormat004Parser.class);
@@ -41,7 +38,7 @@ public class TextFormat004Parser {
 	
 	private final static Pattern PATTERN_TOKEN_WITH_SPACE_SEPARATOR = Pattern.compile("^([a-zA-Z0-9:_\\\"]+)");
 	private final static Pattern PATTERN_SKIP_SPACES = Pattern.compile("[ \\\\t]*");
-	private final static Pattern PATTERN_PARSE_LABELBLOCK = Pattern.compile("^\\{([^}]+)\\}");
+	private final static Pattern PATTERN_PARSE_LABELBLOCK = Pattern.compile("^\\{(.+)\\}");
 	private final static Pattern PATTERN_PARSE_VALUE = Pattern.compile("^([-+]?[0-9]*\\.?[0-9]+[eE]?[-+]?[0-9]*)[ \\\\t]*");
 	private final static Pattern PATTERN_PARSE_VALUETEXT = Pattern.compile("^(NaN|Nan|\\+Inf|-Inf)[ \\\\t]*");
 

@@ -618,20 +618,20 @@ public class TextFormat004ParserTest {
 		Sample sample = new Sample(bucketMetricName, labelNames, labelValues, value); 
 		return sample;
 	}
-	
+
 	@Test
 	public void testSummaryWithLabel() {
-		String textToParse = "# Finally a summary, which has a complex representation, too:\n" + 
-				"# HELP rpc_duration_seconds A summary of the RPC duration in seconds.\n" + 
-				"# TYPE rpc_duration_seconds summary\n" + 
-				"rpc_duration_seconds{name=\"value\",quantile=\"0.01\",} 3102\n" + 
-				"rpc_duration_seconds{name=\"value\",quantile=\"0.05\"} 3272\n" + 
-				"rpc_duration_seconds{quantile=\"0.5\",name=\"value\",} 4773\n" + 
-				"rpc_duration_seconds{quantile=\"0.9\",name=\"value\"} 9001\n" + 
-				"rpc_duration_seconds{name=\"value\",quantile=\"0.99\"} 76656\n" + 
-				"rpc_duration_seconds_sum 1.7560473e+07\n" + 
+		String textToParse = "# Finally a summary, which has a complex representation, too:\n" +
+				"# HELP rpc_duration_seconds A summary of the RPC duration in seconds.\n" +
+				"# TYPE rpc_duration_seconds summary\n" +
+				"rpc_duration_seconds{name=\"value\",quantile=\"0.01\",} 3102\n" +
+				"rpc_duration_seconds{name=\"value\",quantile=\"0.05\"} 3272\n" +
+				"rpc_duration_seconds{quantile=\"0.5\",name=\"value\",} 4773\n" +
+				"rpc_duration_seconds{quantile=\"0.9\",name=\"value\"} 9001\n" +
+				"rpc_duration_seconds{name=\"value\",quantile=\"0.99\"} 76656\n" +
+				"rpc_duration_seconds_sum 1.7560473e+07\n" +
 				"rpc_duration_seconds_count 2693";
-		
+
 		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
 		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
@@ -640,7 +640,7 @@ public class TextFormat004ParserTest {
 		LinkedList<Collector.MetricFamilySamples> expectedList = new LinkedList<>();
 
 		List<Sample> samples = new LinkedList<>();
-		
+
 		Sample sample = null;
 		sample = createSampleForSummaryWithDummyLabel("rpc_duration_seconds", "0.01", 3102, true); samples.add(sample);
 		sample = createSampleForSummaryWithDummyLabel("rpc_duration_seconds", "0.05", 3272, true); samples.add(sample);
@@ -649,16 +649,48 @@ public class TextFormat004ParserTest {
 		sample = createSampleForSummaryWithDummyLabel("rpc_duration_seconds", "0.99", 76656, true); samples.add(sample);
 		sample = new Sample("rpc_duration_seconds_sum", new LinkedList<>(), new LinkedList<>(), 1.7560473e+07); samples.add(sample);
 		sample = new Sample("rpc_duration_seconds_count", new LinkedList<>(), new LinkedList<>(), 2693); samples.add(sample);
-		
+
 		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("rpc_duration_seconds", Type.SUMMARY, "A summary of the RPC duration in seconds.", samples);
 		expectedList.add(expectedMFS);
-		
+
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
-		
+
 		// compare
 		compareEMFS(expected, result);
 	}
-	
+
+	@Test
+	public void testSimpleWithLabelIncludingBraces() {
+		String textToParse = "# Finally a summary, which has a complex representation, too:\n" +
+				"rpc_duration_seconds{name=\"val/{ue}\",quantile=\"0.01\",} 3102\n";
+
+		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
+		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
+		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
+
+		// creating expected result
+		LinkedList<Collector.MetricFamilySamples> expectedList = new LinkedList<>();
+
+		List<Sample> samples = new LinkedList<>();
+
+		List<String> labelNames = new LinkedList<>();
+		labelNames.add("name");
+		labelNames.add("quantile");
+		List<String> labelValues = new LinkedList<>();
+		labelValues.add("val/{ue}");
+		labelValues.add("0.01");
+		Sample sample = new Sample("rpc_duration_seconds", labelNames, labelValues, 3102);
+		samples.add(sample);
+
+		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("rpc_duration_seconds", Type.UNTYPED, null, samples);
+		expectedList.add(expectedMFS);
+
+		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
+
+		// compare
+		compareEMFS(expected, result);
+	}
+
 	private static Sample createSampleForSummaryWithDummyLabel(String bucketMetricName, String quantileValue, double value, boolean firstPosition) {
 		List<String> labelNames = new LinkedList<>();
 		if (firstPosition) {
