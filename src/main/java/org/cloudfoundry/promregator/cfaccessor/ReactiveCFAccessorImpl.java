@@ -8,6 +8,7 @@ import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
+import javax.validation.constraints.Null;
 
 import org.apache.commons.collections4.map.PassiveExpiringMap;
 import org.apache.http.conn.util.InetAddressUtils;
@@ -189,7 +190,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	 * @param requestFunction a function which calls the CF API operation, which is being made, <code>requestData</code> is used as input parameter for this function.
 	 * @return
 	 */
-	private <P, R> Mono<P> performGenericRetrieval(String retrievalTypeName, String logName, String key, PassiveExpiringMap<String, Mono<P>> cacheMap, R requestData, Function<R, Mono<P>> requestFunction) {
+	private <P, R> Mono<P> performGenericRetrieval(String retrievalTypeName, String logName, String key, @Null PassiveExpiringMap<String, Mono<P>> cacheMap, R requestData, Function<R, Mono<P>> requestFunction) {
 		synchronized(key.intern()) {
 			Mono<P> result = null;
 			
@@ -220,7 +221,9 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 				})
 				.log(log.getName()+"."+logName, Level.FINE);
 
-			cacheMap.put(key, result);
+			if (cacheMap != null) {
+				cacheMap.put(key, result);
+			}
 			
 			return result;
 		}
