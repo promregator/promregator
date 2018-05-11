@@ -3,10 +3,12 @@ package org.cloudfoundry.promregator.scanner;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.config.Target;
 import org.cloudfoundry.promregator.scanner.MockedCachingTargetResolverSpringApplication.MockedTargetResolver;
 import org.cloudfoundry.promregator.scanner.MockedCachingTargetResolverSpringApplication.RemovalHandler;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +20,10 @@ import org.junit.Assert;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = MockedCachingTargetResolverSpringApplication.class)
 public class CachingTargetResolverTest {
+	@AfterClass
+	public static void cleanupEnvironment() {
+		JUnitTestUtils.cleanUpAll();
+	}
 
 	@Autowired
 	private TargetResolver targetResolver;

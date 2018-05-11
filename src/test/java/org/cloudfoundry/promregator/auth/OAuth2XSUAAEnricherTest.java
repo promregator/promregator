@@ -4,9 +4,11 @@ import java.io.IOException;
 import java.net.URI;
 
 import org.apache.http.client.methods.HttpGet;
+import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.config.OAuth2XSUAAAuthenticationConfiguration;
 import org.cloudfoundry.promregator.mockServer.AuthenticationMockServer;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,6 +37,11 @@ public class OAuth2XSUAAEnricherTest {
 	@After
 	public void tearDownAuthenticationServer() {
 		this.ams.stop();
+	}
+	
+	@AfterClass
+	public static void cleanupEnvironment() {
+		JUnitTestUtils.cleanUpAll();
 	}
 
 	@Test

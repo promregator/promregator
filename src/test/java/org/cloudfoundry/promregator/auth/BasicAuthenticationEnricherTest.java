@@ -1,13 +1,20 @@
 package org.cloudfoundry.promregator.auth;
 
 import org.apache.http.client.methods.HttpGet;
+import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.config.BasicAuthenticationConfiguration;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 public class BasicAuthenticationEnricherTest {
+
+	@AfterClass
+	public static void cleanupEnvironment() {
+		JUnitTestUtils.cleanUpAll();
+	}
 
 	@Test
 	public void testStraightForward() {

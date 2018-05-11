@@ -3,7 +3,9 @@ package org.cloudfoundry.promregator.scanner;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.config.Target;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,6 +16,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = MockedReactiveTargetResolverSpringApplication.class)
 public class ReactiveTargetResolverTest {
+	@AfterClass
+	public static void cleanupEnvironment() {
+		JUnitTestUtils.cleanUpAll();
+	}
 
 	@Autowired
 	private TargetResolver targetResolver;

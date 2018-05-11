@@ -3,6 +3,7 @@ package org.cloudfoundry.promregator.scanner;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorMock;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -24,8 +25,8 @@ public class ReactiveAppInstanceScannerTest {
 	private AppInstanceScanner appInstanceScanner;
 	
 	@AfterClass
-	public static void releaseInternalMetrics() {
-		CollectorRegistry.defaultRegistry.clear();
+	public static void cleanupEnvironment() {
+		JUnitTestUtils.cleanUpAll();
 	}
 	
 	@Test

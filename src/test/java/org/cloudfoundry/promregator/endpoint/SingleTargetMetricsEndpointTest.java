@@ -3,13 +3,19 @@ package org.cloudfoundry.promregator.endpoint;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.web.client.HttpClientErrorException;
 
 public class SingleTargetMetricsEndpointTest extends SingleTargetMetricsEndpoint {
+	@AfterClass
+	public static void cleanupEnvironment() {
+		JUnitTestUtils.cleanUpAll();
+	}
 
 	@Override
 	public String handleRequest() {
