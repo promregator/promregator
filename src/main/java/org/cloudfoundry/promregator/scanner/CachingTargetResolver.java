@@ -38,7 +38,7 @@ public class CachingTargetResolver implements TargetResolver {
 	}
 	
 	@PostConstruct
-	private void setupCache() {
+	public void setupCache() {
 		/* Note that this cannot be done during construction as
 		 * this.timeoutCacheResolverLevel isn't available there, yet.
 		 */
