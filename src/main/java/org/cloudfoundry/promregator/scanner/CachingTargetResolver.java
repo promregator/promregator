@@ -29,12 +29,12 @@ public class CachingTargetResolver implements TargetResolver {
 	@Autowired(required=false)
 	private List<CachingTargetResolverRemovalListener> removalListeners;
 	
-	private TargetResolver nativeTargetResolver;
+	private TargetResolver parentTargetResolver;
 	
 	private LoadingCache<Target, List<ResolvedTarget>> targetResolutionCache;
 	
 	public CachingTargetResolver(TargetResolver targetResolver) {
-		this.nativeTargetResolver = targetResolver;
+		this.parentTargetResolver = targetResolver;
 	}
 	
 	@PostConstruct
@@ -69,13 +69,13 @@ public class CachingTargetResolver implements TargetResolver {
 					List<Target> list = new LinkedList<>();
 					list.add(key);
 					
-					return nativeTargetResolver.resolveTargets(list);
+					return parentTargetResolver.resolveTargets(list);
 				}
 			});
 	}
 
 	public TargetResolver getNativeTargetResolver() {
-		return nativeTargetResolver;
+		return parentTargetResolver;
 	}
 
 	@Override
@@ -94,7 +94,7 @@ public class CachingTargetResolver implements TargetResolver {
 		}
 		
 		if (!toBeLoaded.isEmpty()) {
-			List<ResolvedTarget> newlyResolvedTargets = this.nativeTargetResolver.resolveTargets(toBeLoaded);
+			List<ResolvedTarget> newlyResolvedTargets = this.parentTargetResolver.resolveTargets(toBeLoaded);
 			
 			result.addAll(newlyResolvedTargets);
 			
