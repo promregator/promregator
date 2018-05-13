@@ -29,6 +29,7 @@ import org.cloudfoundry.promregator.rewrite.MergableMetricFamilySamples;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
+import org.cloudfoundry.promregator.scanner.ResolvedTargetManager;
 import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -57,6 +58,9 @@ public abstract class AbstractMetricsEndpoint {
 	
 	@Autowired
 	private TargetResolver targetResolver;
+	
+	@Autowired
+	private ResolvedTargetManager resolvedTargetManager;
 	
 	@Autowired
 	private AppInstanceScanner appInstanceScanner;
@@ -110,6 +114,11 @@ public abstract class AbstractMetricsEndpoint {
 		
 		List<ResolvedTarget> resolvedTargets = this.targetResolver.resolveTargets(this.promregatorConfiguration.getTargets());
 		log.debug(String.format("Raw list contains %d resolved targets", resolvedTargets.size()));
+		
+		// ensure that the ResolvedTargets are registered / touched properly
+		for (ResolvedTarget rt : resolvedTargets) {
+			this.resolvedTargetManager.registerResolvedTarget(rt);
+		}
 		
 		List<Instance> instanceList = this.appInstanceScanner.determineInstancesFromTargets(resolvedTargets, applicationIdFilter, instanceFilter);
 		log.debug(String.format("Raw list contains %d instances", instanceList.size()));

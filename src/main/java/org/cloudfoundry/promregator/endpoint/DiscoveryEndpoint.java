@@ -10,6 +10,7 @@ import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
+import org.cloudfoundry.promregator.scanner.ResolvedTargetManager;
 import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +30,9 @@ public class DiscoveryEndpoint {
 	
 	@Autowired
 	private TargetResolver targetResolver;
+	
+	@Autowired
+	private ResolvedTargetManager resolvedTargetManager;
 	
 	@Autowired
 	private AppInstanceScanner appInstanceScanner;
@@ -119,7 +123,12 @@ public class DiscoveryEndpoint {
 	@RequestMapping(method = RequestMethod.GET, produces=MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public DiscoveryResponse[] getDiscovery(HttpServletRequest request) {
 		List<ResolvedTarget> resolvedTargets = this.targetResolver.resolveTargets(this.promregatorConfiguration.getTargets());
-
+		
+		// ensure that the ResolvedTargets are registered / touched properly
+		for (ResolvedTarget rt : resolvedTargets) {
+			this.resolvedTargetManager.registerResolvedTarget(rt);
+		}
+		
 		List<Instance> instances = this.appInstanceScanner.determineInstancesFromTargets(resolvedTargets, null, null);
 		
 		String localHostname = this.myHostname != null ? this.myHostname : request.getLocalName();

@@ -1,5 +1,6 @@
 package org.cloudfoundry.promregator;
 
+import java.time.Clock;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -17,6 +18,7 @@ import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.ReactiveAppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.ReactiveTargetResolver;
+import org.cloudfoundry.promregator.scanner.ResolvedTargetManager;
 import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.cloudfoundry.promregator.springconfig.BasicAuthenticationSpringConfiguration;
 import org.cloudfoundry.promregator.springconfig.ErrorSpringConfiguration;
@@ -26,6 +28,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
@@ -36,6 +39,7 @@ import io.prometheus.client.hotspot.DefaultExports;
 @SpringBootApplication
 @EnableScheduling
 @Import({ BasicAuthenticationSpringConfiguration.class, SecurityConfig.class, ErrorSpringConfiguration.class })
+@EnableAsync
 public class PromregatorApplication {
 	
 	@Value("${promregator.simulation.enabled:false}")
@@ -49,6 +53,11 @@ public class PromregatorApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(PromregatorApplication.class, args);
 		// to be enabled for debugging reactor methods: Hooks.onOperatorDebug();
+	}
+	
+	@Bean
+	public Clock clock() {
+		return Clock.systemDefaultZone();
 	}
 	
 	@Bean
@@ -90,6 +99,11 @@ public class PromregatorApplication {
 	public ExecutorService metricsFetcherPool() {
 		log.info(String.format("Thread Pool size is set to %d", this.threadPoolSize));
 		return Executors.newFixedThreadPool(this.threadPoolSize);
+	}
+	
+	@Bean
+	public ResolvedTargetManager resolvedTargetManager(Clock clock) {
+		return new ResolvedTargetManager(clock);
 	}
 	
 	@Bean
