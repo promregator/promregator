@@ -129,25 +129,4 @@ public class ResolvedTarget {
 		return true;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("ResolvedTarget [orgName=");
-		builder.append(orgName);
-		builder.append(", spaceName=");
-		builder.append(spaceName);
-		builder.append(", applicationName=");
-		builder.append(applicationName);
-		builder.append(", path=");
-		builder.append(path);
-		builder.append(", protocol=");
-		builder.append(protocol);
-		builder.append("]");
-		return builder.toString();
-	}
-
-	
 }

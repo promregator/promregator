@@ -80,5 +80,4 @@ public class MetricsFetcherMetrics {
 		
 		return requestSize.labels(this.ownTelemetryLabels);
 	}
-
 }

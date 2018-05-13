@@ -38,4 +38,58 @@ public class Instance {
 		String[] parts = this.instanceId.split(":");
 		return parts[0];
 	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((accessUrl == null) ? 0 : accessUrl.hashCode());
+		result = prime * result + ((instanceId == null) ? 0 : instanceId.hashCode());
+		result = prime * result + ((target == null) ? 0 : target.hashCode());
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		Instance other = (Instance) obj;
+		if (accessUrl == null) {
+			if (other.accessUrl != null) {
+				return false;
+			}
+		} else if (!accessUrl.equals(other.accessUrl)) {
+			return false;
+		}
+		if (instanceId == null) {
+			if (other.instanceId != null) {
+				return false;
+			}
+		} else if (!instanceId.equals(other.instanceId)) {
+			return false;
+		}
+		if (target == null) {
+			if (other.target != null) {
+				return false;
+			}
+		} else if (!target.equals(other.target)) {
+			return false;
+		}
+		return true;
+	}
+	
+	
 }

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 public class TestableResolvedTargetManagerReceiver {
 	private ResolvedTarget lastRt;
 	
-	@JmsListener(destination=MessageBusDestination.RESOLVEDTARGETMANAGER_RESOLVED_TARGET_REMOVED, containerFactory=JMSSpringConfiguration.BEAN_NAME_JMS_LISTENER_CONTAINER_FACTORY)
+	@JmsListener(destination=MessageBusDestination.DISCOVERER_INSTANCE_REMOVED, containerFactory=JMSSpringConfiguration.BEAN_NAME_JMS_LISTENER_CONTAINER_FACTORY)
 	public void receiver(ResolvedTarget rt) {
 		this.lastRt = rt;
 	}

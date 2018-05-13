@@ -17,7 +17,6 @@ import org.cloudfoundry.promregator.discovery.CFDiscoverer;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
-import org.cloudfoundry.promregator.scanner.ResolvedTargetManager;
 import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.cloudfoundry.promregator.scanner.TrivialTargetResolver;
 import org.springframework.boot.autoconfigure.AutoConfigurationExcludeFilter;
@@ -97,11 +96,6 @@ public class MockedMetricsEndpointSpringApplication {
 	@Bean
 	public TargetResolver targetResolver() {
 		return new TrivialTargetResolver();
-	}
-	
-	@Bean
-	public ResolvedTargetManager resolvedTargetManager(Clock clock) {
-		return new ResolvedTargetManager(clock);
 	}
 	
 	@Bean

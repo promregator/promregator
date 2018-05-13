@@ -1,15 +1,25 @@
 package org.cloudfoundry.promregator.discovery;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
+import org.cloudfoundry.promregator.messagebus.MessageBusDestination;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
-import org.cloudfoundry.promregator.scanner.ResolvedTargetManager;
 import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -20,13 +30,21 @@ public class CFDiscoverer {
 	private TargetResolver targetResolver;
 	
 	@Autowired
-	private ResolvedTargetManager resolvedTargetManager;
-	
-	@Autowired
 	private AppInstanceScanner appInstanceScanner;
 	
 	@Autowired
 	private PromregatorConfiguration promregatorConfiguration;
+
+	@Autowired
+	private JmsTemplate jmsTemplate;
+
+	@Autowired
+	private Clock clock;
+	
+	private Map<Instance, Instant> instanceExpiryMap = new ConcurrentHashMap<>();
+	
+	@Value("${cf.cache.timeout.instance:300}")
+	private int expiryTimeout;
 	
 	public List<Instance> discover() {
 		log.info(String.format("We have %d targets configured", this.promregatorConfiguration.getTargets().size()));
@@ -34,15 +52,46 @@ public class CFDiscoverer {
 		List<ResolvedTarget> resolvedTargets = this.targetResolver.resolveTargets(this.promregatorConfiguration.getTargets());
 		log.info(String.format("Raw list contains %d resolved targets", resolvedTargets.size()));
 		
-		// ensure that the ResolvedTargets are registered / touched properly
-		for (ResolvedTarget rt : resolvedTargets) {
-			this.resolvedTargetManager.registerResolvedTarget(rt);
-		}
-		
 		List<Instance> instanceList = this.appInstanceScanner.determineInstancesFromTargets(resolvedTargets);
 		log.info(String.format("Raw list contains %d instances", instanceList.size()));
 
+		// ensure that the instances are registered / touched properly
+		for (Instance instance : instanceList) {
+			this.registerInstance(instance);
+		}
+		
 		return instanceList;
 	}
+
+	private void registerInstance(Instance instance) {
+		Instant timeout = nextTimeout();
+		this.instanceExpiryMap.put(instance, timeout);
+		// NB: If already in the map, then the timeout is overwritten => refreshing/touching
+	}
+
+	private Instant nextTimeout() {
+		Instant timeout = Instant.now(this.clock).plus(this.expiryTimeout, ChronoUnit.SECONDS);
+		return timeout;
+	}
 	
+	@Scheduled(fixedDelay=60*1000)
+	public void cleanup() {
+		Instant now = Instant.now(this.clock);
+		
+		for (Iterator<Entry<Instance, Instant>> it = this.instanceExpiryMap.entrySet().iterator(); it.hasNext();) {
+			Entry<Instance, Instant> entry = it.next();
+			
+			if (entry.getValue().isAfter(now)) {
+				// not ripe yet; skip
+				continue;
+			}
+			
+			log.info(String.format("Instance %s has timed out; cleaning up", entry.getKey()));
+			
+			// broadcast event to JMS topic, that the instance is to be deleted
+			this.jmsTemplate.convertAndSend(MessageBusDestination.DISCOVERER_INSTANCE_REMOVED, entry.getKey());
+			
+			it.remove();
+		}
+	}
 }

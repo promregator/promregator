@@ -19,7 +19,6 @@ import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.ReactiveAppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.ReactiveTargetResolver;
-import org.cloudfoundry.promregator.scanner.ResolvedTargetManager;
 import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.cloudfoundry.promregator.springconfig.BasicAuthenticationSpringConfiguration;
 import org.cloudfoundry.promregator.springconfig.ErrorSpringConfiguration;
@@ -106,11 +105,6 @@ public class PromregatorApplication {
 	public ExecutorService metricsFetcherPool() {
 		log.info(String.format("Thread Pool size is set to %d", this.threadPoolSize));
 		return Executors.newFixedThreadPool(this.threadPoolSize);
-	}
-	
-	@Bean
-	public ResolvedTargetManager resolvedTargetManager(Clock clock) {
-		return new ResolvedTargetManager(clock);
 	}
 	
 	@Bean
