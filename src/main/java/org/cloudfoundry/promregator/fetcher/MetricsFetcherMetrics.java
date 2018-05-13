@@ -80,4 +80,21 @@ public class MetricsFetcherMetrics {
 		
 		return requestSize.labels(this.ownTelemetryLabels);
 	}
+	
+	
+	/**
+	 * deregisters the samples from the (global) CollectorRegistry
+	 * once an instance is no longer required.
+	 */
+	public void deregisterSamplesFromRegistry() {
+		/*
+		 * Note that we do not need to de-register the Up metric:
+		 * - up metrics are registered a request-level registry only, which gets destroyed automatically
+		 * - we here only deal with samples coming from metrics, which are registered at the global CollectorRegistry
+		 */
+		
+		requestLatency.remove(this.ownTelemetryLabels);
+		failedRequests.remove(this.ownTelemetryLabels);
+		requestSize.remove(this.ownTelemetryLabels);
+	}
 }

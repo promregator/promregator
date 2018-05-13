@@ -90,6 +90,21 @@ public class Instance {
 		}
 		return true;
 	}
-	
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("Instance [target=");
+		builder.append(target);
+		builder.append(", instanceId=");
+		builder.append(instanceId);
+		builder.append(", accessUrl=");
+		builder.append(accessUrl);
+		builder.append("]");
+		return builder.toString();
+	}
 	
 }
