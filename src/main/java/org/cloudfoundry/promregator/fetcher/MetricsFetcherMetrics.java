@@ -1,13 +1,8 @@
 package org.cloudfoundry.promregator.fetcher;
 
-import java.util.LinkedList;
-import java.util.List;
-
-import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.CFMetricFamilySamplesEnricher;
 
 import io.prometheus.client.Counter;
-import io.prometheus.client.Gauge;
 import io.prometheus.client.Histogram;
 
 /**
@@ -31,18 +26,12 @@ public class MetricsFetcherMetrics {
 			.exponentialBuckets(100, 1.5, 16)
 			.register();
 
-	private Gauge up;
-
 	private String[] ownTelemetryLabels;
 
-	
-	public MetricsFetcherMetrics(AbstractMetricFamilySamplesEnricher mfse, Gauge up, boolean requestLatencyEnabled) {
+	public MetricsFetcherMetrics(String[] ownTelemetryLabels, boolean requestLatencyEnabled) {
 		super();
 		
-		List<String> labelValues = mfse.getEnrichedLabelValues(new LinkedList<>());
-		this.ownTelemetryLabels = labelValues.toArray(new String[0]);
-
-		this.up = up;
+		this.ownTelemetryLabels = ownTelemetryLabels.clone();
 		this.requestLatencyEnabled = requestLatencyEnabled;
 	}
 
@@ -58,13 +47,6 @@ public class MetricsFetcherMetrics {
 			return null;
 		
 		return requestLatency.labels(this.ownTelemetryLabels);
-	}
-
-	public Gauge.Child getUp() {
-		if (this.up == null)
-			return null;
-		
-		return this.up.labels(this.ownTelemetryLabels);
 	}
 
 	public Counter.Child getFailedRequests() {

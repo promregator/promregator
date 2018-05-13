@@ -34,6 +34,7 @@ import org.springframework.beans.factory.annotation.Value;
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Gauge;
+import io.prometheus.client.Gauge.Child;
 
 /**
  * An abstract class allowing to easily build a spring-framework HTTP REST-server endpoint, 
@@ -202,17 +203,22 @@ public abstract class AbstractMetricsEndpoint {
 			}
 			
 			AbstractMetricFamilySamplesEnricher mfse = new CFMetricFamilySamplesEnricher(orgName, spaceName, appName, instance.getInstanceId());
-			MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(mfse, this.up, this.recordRequestLatency);
+			List<String> labelValues = mfse.getEnrichedLabelValues(new LinkedList<>());
+			String[] ownTelemetryLabelValues = labelValues.toArray(new String[0]);
+			
+			MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, this.recordRequestLatency);
+			
+			Child upChild = this.up.labels(ownTelemetryLabelValues);
 
 			MetricsFetcher mf = null;
 			
 			if (this.simulationMode) {
-				mf = new MetricsFetcherSimulator(accessURL, this.ae, mfse, mfm);
+				mf = new MetricsFetcherSimulator(accessURL, this.ae, mfse, mfm, upChild);
 			} else {
 				if (this.proxyHost != null && this.proxyPort != 0) {
-					mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), this.ae, mfse, this.proxyHost, this.proxyPort, mfm);
+					mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), this.ae, mfse, this.proxyHost, this.proxyPort, mfm, upChild);
 				} else {
-					mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), this.ae, mfse, mfm);
+					mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), this.ae, mfse, mfm, upChild);
 				}
 			}
 			callablesList.add(mf);

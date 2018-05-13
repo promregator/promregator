@@ -1,5 +1,8 @@
 package org.cloudfoundry.promregator.lifecycle;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcherMetrics;
 import org.cloudfoundry.promregator.messagebus.MessageBusDestination;
@@ -28,7 +31,10 @@ public class InstanceLifecycleHandler {
 		String appName = instance.getTarget().getApplicationName();
 		
 		AbstractMetricFamilySamplesEnricher mfse = new CFMetricFamilySamplesEnricher(orgName, spaceName, appName, instance.getInstanceId());
-		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(mfse, null);
+		List<String> labelValues = mfse.getEnrichedLabelValues(new LinkedList<>());
+		String[] ownTelemetryLabelValues = labelValues.toArray(new String[0]);
+		
+		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues);
 		mfm.deregisterSamplesFromRegistry();
 	}
 }
