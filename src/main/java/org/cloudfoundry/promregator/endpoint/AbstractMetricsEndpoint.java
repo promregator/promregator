@@ -17,7 +17,7 @@ import javax.validation.constraints.Null;
 
 import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
-import org.cloudfoundry.promregator.config.PromregatorConfiguration;
+import org.cloudfoundry.promregator.discovery.CFDiscoverer;
 import org.cloudfoundry.promregator.fetcher.CFMetricsFetcher;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcher;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcherMetrics;
@@ -26,15 +26,10 @@ import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.CFMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.GenericMetricFamilySamplesPrefixRewriter;
 import org.cloudfoundry.promregator.rewrite.MergableMetricFamilySamples;
-import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
-import org.cloudfoundry.promregator.scanner.ResolvedTargetManager;
-import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.client.HttpClientErrorException;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.CollectorRegistry;
@@ -57,19 +52,13 @@ public abstract class AbstractMetricsEndpoint {
 	private boolean simulationMode;
 	
 	@Autowired
-	private TargetResolver targetResolver;
-	
-	@Autowired
-	private ResolvedTargetManager resolvedTargetManager;
-	
-	@Autowired
-	private AppInstanceScanner appInstanceScanner;
-	
-	@Autowired
 	private ExecutorService metricsFetcherPool;
 	
 	@Autowired
 	private CollectorRegistry collectorRegistry;
+	
+	@Autowired
+	private CFDiscoverer discoverer;
 	
 	@Value("${cf.proxyHost:@null}")
 	private String proxyHost;
@@ -79,9 +68,6 @@ public abstract class AbstractMetricsEndpoint {
 
 	@Value("${promregator.endpoint.maxProcessingTime:5000}")
 	private int maxProcessingTime;
-	
-	@Autowired
-	private PromregatorConfiguration promregatorConfiguration;
 	
 	@Autowired
 	private AuthenticationEnricher ae;
@@ -107,25 +93,12 @@ public abstract class AbstractMetricsEndpoint {
 	}
 	
 	public String handleRequest(@Null Predicate<? super String> applicationIdFilter, @Null Predicate<? super Instance> instanceFilter) {
-		log.debug(String.format("Received request to a metrics endpoint; we have %d targets configured", this.promregatorConfiguration.getTargets().size()));
+		log.debug("Received request to a metrics endpoint");
 		Instant start = Instant.now();
 		
 		this.up.clear();
 		
-		List<ResolvedTarget> resolvedTargets = this.targetResolver.resolveTargets(this.promregatorConfiguration.getTargets());
-		log.debug(String.format("Raw list contains %d resolved targets", resolvedTargets.size()));
-		
-		// ensure that the ResolvedTargets are registered / touched properly
-		for (ResolvedTarget rt : resolvedTargets) {
-			this.resolvedTargetManager.registerResolvedTarget(rt);
-		}
-		
-		List<Instance> instanceList = this.appInstanceScanner.determineInstancesFromTargets(resolvedTargets, applicationIdFilter, instanceFilter);
-		log.debug(String.format("Raw list contains %d instances", instanceList.size()));
-		
-		if (instanceList.isEmpty()) {
-			throw new HttpClientErrorException(HttpStatus.NOT_FOUND);
-		}
+		List<Instance> instanceList = this.discoverer.discover();
 		
 		List<MetricsFetcher> callablesPrep = this.createMetricsFetchers(instanceList);
 		

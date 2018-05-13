@@ -1,5 +1,6 @@
 package org.cloudfoundry.promregator.endpoint;
 
+import java.time.Clock;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -12,9 +13,11 @@ import javax.validation.constraints.Null;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.auth.NullEnricher;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
+import org.cloudfoundry.promregator.discovery.CFDiscoverer;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
+import org.cloudfoundry.promregator.scanner.ResolvedTargetManager;
 import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.cloudfoundry.promregator.scanner.TrivialTargetResolver;
 import org.springframework.boot.autoconfigure.AutoConfigurationExcludeFilter;
@@ -87,8 +90,23 @@ public class MockedMetricsEndpointSpringApplication {
 	}
 
 	@Bean
+	public Clock clock() {
+		return Clock.systemDefaultZone();
+	}
+	
+	@Bean
 	public TargetResolver targetResolver() {
 		return new TrivialTargetResolver();
+	}
+	
+	@Bean
+	public ResolvedTargetManager resolvedTargetManager(Clock clock) {
+		return new ResolvedTargetManager(clock);
+	}
+	
+	@Bean
+	public CFDiscoverer cfDiscoverer() {
+		return new CFDiscoverer();
 	}
 	
 	@Bean
