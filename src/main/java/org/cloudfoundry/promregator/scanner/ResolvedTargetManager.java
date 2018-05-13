@@ -9,7 +9,10 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
+import org.cloudfoundry.promregator.messagebus.MessageBusDestination;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -21,6 +24,9 @@ public class ResolvedTargetManager {
 	
 	@Value("${cf.cache.timeout.resolvedTarget:300}")
 	private int expiryTimeout;
+	
+	@Autowired
+	private JmsTemplate jmsTemplate;
 	
 	private Clock clock;
 	
@@ -40,6 +46,9 @@ public class ResolvedTargetManager {
 	}
 	
 	public void deregisterResolvedTarget(ResolvedTarget rt) {
+		// broadcast event to JMS topic, that the ResolvedTarget is to be deleted
+		this.jmsTemplate.convertAndSend(MessageBusDestination.RESOLVEDTARGETMANAGER_RESOLVED_TARGET_REMOVED, rt);
+		
 		this.resolvedTargetExpiryMap.remove(rt);
 	}
 	
@@ -56,6 +65,9 @@ public class ResolvedTargetManager {
 			}
 			
 			log.info(String.format("Resolved Target %s has timed out; cleaning up", entry.getKey()));
+			
+			// broadcast event to JMS topic, that the ResolvedTarget is to be deleted
+			this.jmsTemplate.convertAndSend(MessageBusDestination.RESOLVEDTARGETMANAGER_RESOLVED_TARGET_REMOVED, entry.getKey());
 			
 			it.remove();
 		}

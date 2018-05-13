@@ -23,6 +23,7 @@ import org.cloudfoundry.promregator.scanner.ResolvedTargetManager;
 import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.cloudfoundry.promregator.springconfig.BasicAuthenticationSpringConfiguration;
 import org.cloudfoundry.promregator.springconfig.ErrorSpringConfiguration;
+import org.cloudfoundry.promregator.springconfig.JMSSpringConfiguration;
 import org.cloudfoundry.promregator.websecurity.SecurityConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -39,7 +40,7 @@ import io.prometheus.client.hotspot.DefaultExports;
 
 @SpringBootApplication
 @EnableScheduling
-@Import({ BasicAuthenticationSpringConfiguration.class, SecurityConfig.class, ErrorSpringConfiguration.class })
+@Import({ BasicAuthenticationSpringConfiguration.class, SecurityConfig.class, ErrorSpringConfiguration.class, JMSSpringConfiguration.class })
 @EnableAsync
 public class PromregatorApplication {
 	

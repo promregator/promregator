@@ -3,12 +3,22 @@ server:
     enabled: true
     mime-types: application/json,application/xml,text/html,text/xml,text/plain,application/javascript,text/css
 
+# see also https://stackoverflow.com/a/30296748
+spring:
+  jms:
+    pub-sub-domain: true
+
 logging:
   level:
     org:
       cloudfoundry:
         promregator: WARN
 
+# To be enabled, if ActiveMQ logging shall be activated - see also http://activemq.apache.org/how-do-i-enable-debug-logging.html
+#      apache:
+#        activemq: DEBUG
+
     reactor:
       Mono:
         OnAssembly: WARN
+
