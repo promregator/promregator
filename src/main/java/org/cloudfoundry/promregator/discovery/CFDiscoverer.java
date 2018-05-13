@@ -44,6 +44,7 @@ public class CFDiscoverer {
 	private Map<Instance, Instant> instanceExpiryMap = new ConcurrentHashMap<>();
 	
 	@Value("${cf.cache.timeout.instance:300}")
+	// TODO requires mentioning in the documentation
 	private int expiryTimeout;
 	
 	public List<Instance> discover() {
@@ -56,6 +57,7 @@ public class CFDiscoverer {
 		log.info(String.format("Raw list contains %d instances", instanceList.size()));
 
 		// ensure that the instances are registered / touched properly
+		// TODO requires unit test coverage that the instance list really properly touches the timestamps ==> TestableCFDiscoverer
 		for (Instance instance : instanceList) {
 			this.registerInstance(instance);
 		}
@@ -75,6 +77,7 @@ public class CFDiscoverer {
 	}
 	
 	@Scheduled(fixedDelay=60*1000)
+	// TODO requires unit test that really the marked instances are removed (and the message is sent through the bus)
 	public void cleanup() {
 		Instant now = Instant.now(this.clock);
 		
