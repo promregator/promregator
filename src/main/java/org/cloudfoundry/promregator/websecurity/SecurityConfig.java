@@ -15,6 +15,8 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
+import org.springframework.security.web.savedrequest.RequestCache;
 
 @Configuration
 @EnableWebSecurity
@@ -36,7 +38,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	@Value("${promregator.metrics.auth:NONE}")
 	private InboundAuthorizationMode promregatorMetricsAuth;
 
-	
 	private boolean isInboundAuthSecurityEnabled() {
 		if (this.discoveryAuth != InboundAuthorizationMode.NONE)
 			return true;
@@ -46,7 +47,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 		if (this.promregatorMetricsAuth != InboundAuthorizationMode.NONE)
 			return true;
-		
+
 		return false;
 	}
 
@@ -80,8 +81,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		return manager;
 	}
 
-	private HttpSecurity determineHttpSecurityForEndpoint(HttpSecurity secInitial, String endpoint, InboundAuthorizationMode iam) throws Exception {
-		
+	private HttpSecurity determineHttpSecurityForEndpoint(HttpSecurity secInitial, String endpoint,
+			InboundAuthorizationMode iam) throws Exception {
+
 		HttpSecurity sec = secInitial;
 		if (iam == InboundAuthorizationMode.BASIC) {
 			System.err.println(String.format("Endpoint %s is BASIC authentication protected", endpoint));
@@ -90,7 +92,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		// NB: Ignoring is not possible in this method; see configure(WebSecurity web)
 		return sec;
 	}
-	
+
 	@Override
 	protected void configure(HttpSecurity security) throws Exception {
 		if (!this.isInboundAuthSecurityEnabled()) {
@@ -104,13 +106,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		sec = this.determineHttpSecurityForEndpoint(sec, "/singleTargetMetrics/**", this.endpointAuth);
 		sec = this.determineHttpSecurityForEndpoint(sec, "/promregatorMetrics", this.promregatorMetricsAuth);
 
+		
+		// see also https://github.com/spring-projects/spring-security/issues/4242
+		security.requestCache().requestCache(this.newHttpSessionRequestCache());
+		
 		// see also
 		// https://www.boraji.com/spring-security-4-http-basic-authentication-example
 		sec.httpBasic();
 	}
 
-	private WebSecurity determineWebSecurityForEndpoint(WebSecurity secInitial, String endpoint, InboundAuthorizationMode iam) throws Exception {
-		
+	private WebSecurity determineWebSecurityForEndpoint(WebSecurity secInitial, String endpoint,
+			InboundAuthorizationMode iam) throws Exception {
+
 		WebSecurity sec = secInitial;
 		if (iam == InboundAuthorizationMode.NONE) {
 			System.err.println(String.format("Endpoint %s is NOT authentication protected", endpoint));
@@ -119,7 +126,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		return sec;
 	}
 
-	
 	// see also
 	// https://stackoverflow.com/questions/30366405/how-to-disable-spring-security-for-particular-url
 	@Override
@@ -127,13 +133,22 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		if (!this.isInboundAuthSecurityEnabled()) {
 			return;
 		}
-		
+
 		WebSecurity web = webInitial;
-		
+
 		web = this.determineWebSecurityForEndpoint(web, "/discovery", this.discoveryAuth);
 		web = this.determineWebSecurityForEndpoint(web, "/metrics", this.endpointAuth);
 		web = this.determineWebSecurityForEndpoint(web, "/singleTargetMetrics/**", this.endpointAuth);
 		web = this.determineWebSecurityForEndpoint(web, "/promregatorMetrics", this.promregatorMetricsAuth);
 
+	}
+
+	/*
+	 * see issue with https://github.com/spring-projects/spring-security/issues/4242
+	 */
+	private RequestCache newHttpSessionRequestCache() {
+		HttpSessionRequestCache httpSessionRequestCache = new HttpSessionRequestCache();
+		httpSessionRequestCache.setCreateSessionAllowed(false);
+		return httpSessionRequestCache;
 	}
 }
