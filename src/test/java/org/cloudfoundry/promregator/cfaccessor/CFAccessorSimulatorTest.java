@@ -1,7 +1,5 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
-import static org.junit.Assert.fail;
-
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.routemappings.ListRouteMappingsResponse;
