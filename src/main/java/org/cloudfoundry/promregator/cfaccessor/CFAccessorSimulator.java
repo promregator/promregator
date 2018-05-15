@@ -63,10 +63,10 @@ public class CFAccessorSimulator implements CFAccessor {
 					// Note that UpdatedAt is not set here, as this can also happen in real life!
 				).build();
 			
-			List<org.cloudfoundry.client.v2.organizations.OrganizationResource> list = new LinkedList<>();
+			List<OrganizationResource> list = new LinkedList<>();
 			list.add(or);
 			
-			ListOrganizationsResponse resp = org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse.builder().addAllResources(list).build();
+			ListOrganizationsResponse resp = ListOrganizationsResponse.builder().addAllResources(list).build();
 			
 			return Mono.just(resp);
 		}
