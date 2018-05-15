@@ -97,7 +97,7 @@ public class CFAccessorMassMock implements CFAccessor {
 			ApplicationResource ar = null;
 			
 			if (applicationName.startsWith("testapp")) {
-				String appNumber = applicationName.substring(8);
+				String appNumber = applicationName.substring(7);
 				
 				ar = ApplicationResource.builder().entity(
 						ApplicationEntity.builder().name(applicationName).build()
