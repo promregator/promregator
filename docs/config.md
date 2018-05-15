@@ -269,6 +269,18 @@ Specifies the (plain-text) password, which is used for HTTP Basic (inbound) auth
 
 If not specified, a random password is generated during startup. Its value is printed to the standard error device.
 
+### Option "promregator.gc.rate" (optional)
+
+Promregator is quite memory intensive in that sense that it temporarily may allocate quite large chunks of memory. Those memory blocks, however, are released very soon again. However, this may cause a challenge to garbage collection. 
+
+With this option, a rate (measured in seconds) can be specified after which the Java Virtual Machine shall be triggered to perform a (major) garbage collection by calling `System.gc()`. 
+
+By default, a value of 1200 seconds (20 minutes) is configured. In case you experience dumps with error messages
+```
+java.lang.OutOfMemoryError: Java heap space
+```
+you may try to *decrease* this value. A value below 120 (seconds) does not make sense, though.
+
 
 ## Further Options
 
