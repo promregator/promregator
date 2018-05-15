@@ -27,6 +27,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.hotspot.DefaultExports;
 
@@ -104,7 +105,7 @@ public class PromregatorApplication {
 	
 	/* see also https://github.com/promregator/promregator/issues/54 */
 	@Scheduled(fixedRateString = "${promregator.gc.rate:1200}000")
-	@SuppressWarnings("DM_GC")
+	@SuppressFBWarnings(value="DM_GC", justification="Similar situation as with RMI, which uses this approach")
 	public void forceGC() {
 		log.info("Triggering major garbage collection");
 		System.gc();
