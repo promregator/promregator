@@ -9,6 +9,7 @@ import org.cloudfoundry.promregator.auth.BasicAuthenticationEnricher;
 import org.cloudfoundry.promregator.auth.NullEnricher;
 import org.cloudfoundry.promregator.auth.OAuth2XSUAAEnricher;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
+import org.cloudfoundry.promregator.cfaccessor.CFAccessorSimulator;
 import org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl;
 import org.cloudfoundry.promregator.config.ConfigurationException;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
@@ -28,19 +29,30 @@ import org.springframework.context.annotation.Import;
 
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.hotspot.DefaultExports;
+import reactor.core.publisher.Hooks;
 
 @SpringBootApplication
 @Import({ BasicAuthenticationSpringConfiguration.class, SecurityConfig.class, ErrorSpringConfiguration.class })
 public class PromregatorApplication {
 	
+	@Value("${promregator.simulation.enabled:false}")
+	private boolean simulationMode;
+
+	@Value("${promregator.simulation.instances:10}")
+	private int simulationInstances;
+	
 	private static final Logger log = Logger.getLogger(PromregatorApplication.class);
 	
 	public static void main(String[] args) {
 		SpringApplication.run(PromregatorApplication.class, args);
+		Hooks.onOperatorDebug();
 	}
 	
 	@Bean
 	public CFAccessor cfAccessor() throws ConfigurationException {
+		if (this.simulationMode) {
+			return new CFAccessorSimulator(this.simulationInstances);
+		}
 		return new ReactiveCFAccessorImpl();
 	}
 	

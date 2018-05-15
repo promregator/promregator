@@ -19,6 +19,7 @@ import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.fetcher.CFMetricsFetcher;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcher;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcherMetrics;
+import org.cloudfoundry.promregator.fetcher.MetricsFetcherSimulator;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.CFMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.GenericMetricFamilySamplesPrefixRewriter;
@@ -46,6 +47,9 @@ import io.prometheus.client.Gauge;
 public abstract class AbstractMetricsEndpoint {
 	
 	private static final Logger log = Logger.getLogger(AbstractMetricsEndpoint.class);
+	
+	@Value("${promregator.simulation.enabled:false}")
+	private boolean simulationMode;
 	
 	@Autowired
 	private TargetResolver targetResolver;
@@ -219,10 +223,14 @@ public abstract class AbstractMetricsEndpoint {
 
 			MetricsFetcher mf = null;
 			
-			if (this.proxyHost != null && this.proxyPort != 0) {
-				mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), this.ae, mfse, this.proxyHost, this.proxyPort, mfm);
+			if (this.simulationMode) {
+				mf = new MetricsFetcherSimulator(accessURL, this.ae, mfse, mfm);
 			} else {
-				mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), this.ae, mfse, mfm);
+				if (this.proxyHost != null && this.proxyPort != 0) {
+					mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), this.ae, mfse, this.proxyHost, this.proxyPort, mfm);
+				} else {
+					mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), this.ae, mfse, mfm);
+				}
 			}
 			callablesList.add(mf);
 		}
