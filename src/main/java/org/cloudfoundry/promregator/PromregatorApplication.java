@@ -104,6 +104,7 @@ public class PromregatorApplication {
 	
 	/* see also https://github.com/promregator/promregator/issues/54 */
 	@Scheduled(fixedRateString = "${promregator.gc.rate:1200}000")
+	@SuppressWarnings("DM_GC")
 	public void forceGC() {
 		log.info("Triggering major garbage collection");
 		System.gc();

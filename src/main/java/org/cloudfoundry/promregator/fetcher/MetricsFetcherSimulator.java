@@ -29,8 +29,8 @@ public class MetricsFetcherSimulator implements MetricsFetcher {
 		BufferedInputStream bis = new BufferedInputStream(is);
 		byte[] buffer = new byte[256*1024];
 		try {
-			bis.read(buffer);
-			SIM_TEXT004 = new String(buffer, "UTF-8");
+			int len = bis.read(buffer);
+			SIM_TEXT004 = new String(buffer, 0, len, "UTF-8");
 		} catch (IOException e) {
 			SIM_TEXT004 = "";
 		} finally {
