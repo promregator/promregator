@@ -26,12 +26,14 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.hotspot.DefaultExports;
-import reactor.core.publisher.Hooks;
 
 @SpringBootApplication
+@EnableScheduling
 @Import({ BasicAuthenticationSpringConfiguration.class, SecurityConfig.class, ErrorSpringConfiguration.class })
 public class PromregatorApplication {
 	
@@ -45,7 +47,7 @@ public class PromregatorApplication {
 	
 	public static void main(String[] args) {
 		SpringApplication.run(PromregatorApplication.class, args);
-		Hooks.onOperatorDebug();
+		// to be enabled for debugging reactor methods: Hooks.onOperatorDebug();
 	}
 	
 	@Bean
@@ -105,5 +107,12 @@ public class PromregatorApplication {
 		}
 
 		return ae;
+	}
+	
+	/* see also https://github.com/promregator/promregator/issues/54 */
+	@Scheduled(fixedRateString = "${promregator.gc.rate:1200}000")
+	public void forceGC() {
+		log.info("Triggering major garbage collection");
+		System.gc();
 	}
 }
