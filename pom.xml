@@ -131,7 +131,13 @@
 			<artifactId>simpleclient_hotspot</artifactId>
 			<version>0.3.0</version>
 		</dependency>
-
+		
+		<!--  Findbugs annotations for exemptions -->
+		<dependency>
+			<groupId>com.google.code.findbugs</groupId>
+			<artifactId>annotations</artifactId>
+			<version>3.0.1</version>
+		</dependency>
 	</dependencies>
 
 	<dependencyManagement>
