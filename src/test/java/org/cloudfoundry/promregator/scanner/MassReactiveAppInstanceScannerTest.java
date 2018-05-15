@@ -56,9 +56,9 @@ public class MassReactiveAppInstanceScannerTest {
 		
 		Assert.assertEquals(numberOfApps*10, result.size());
 		
-		// test to be faster than 3 seconds
+		// test to be faster than 6 seconds
 		Duration d = Duration.between(start, stop);
-		Assert.assertTrue(d.minusSeconds(5).isNegative());
+		Assert.assertTrue(d.minusSeconds(6).isNegative());
 	}
 
 }
