@@ -63,14 +63,14 @@ public class MassReactiveAppInstanceScannerTest {
 
 	@Test
 	public void testPerformanceWithFilter() {
-		List<Target> targets = new LinkedList<>();
+		List<ResolvedTarget> targets = new LinkedList<>();
 		
-		Target t = null;
+		ResolvedTarget t = null;
 		
 		final int numberOfApps = 10000;
 		
 		for (int i = 0;i<numberOfApps;i++) {
-			t = new Target();
+			t = new ResolvedTarget();
 			t.setOrgName("unittestorg");
 			t.setSpaceName("unittestspace");
 			t.setApplicationName("testapp"+i);

@@ -75,9 +75,9 @@ public class ReactiveAppInstanceScannerTest {
 	
 	@Test
 	public void testWithPrefiltering() {
-		List<Target> targets = new LinkedList<>();
+		List<ResolvedTarget> targets = new LinkedList<>();
 		
-		Target t = new Target();
+		ResolvedTarget t = new ResolvedTarget();
 		t.setOrgName("unittestorg");
 		t.setSpaceName("unittestspace");
 		t.setApplicationName("testapp");
@@ -85,7 +85,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setProtocol("http");
 		targets.add(t);
 		
-		t = new Target();
+		t = new ResolvedTarget();
 		t.setOrgName("unittestorg");
 		t.setSpaceName("unittestspace");
 		t.setApplicationName("testapp2");
