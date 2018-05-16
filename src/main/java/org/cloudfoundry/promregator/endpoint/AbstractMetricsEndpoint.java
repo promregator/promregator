@@ -93,13 +93,13 @@ public abstract class AbstractMetricsEndpoint {
 				.register(this.requestRegistry);
 	}
 	
-	public String handleRequest(@Null Predicate<? super Instance> instanceFilter) {
+	public String handleRequest(@Null Predicate<? super String> applicationIdFilter, @Null Predicate<? super Instance> instanceFilter) {
 		log.info(String.format("Received request to a metrics endpoint; we have %d targets configured", this.promregatorConfiguration.getTargets().size()));
 		Instant start = Instant.now();
 		
 		this.up.clear();
 		
-		List<Instance> instanceList = this.appInstanceScanner.determineInstancesFromTargets(this.promregatorConfiguration.getTargets(), null);
+		List<Instance> instanceList = this.appInstanceScanner.determineInstancesFromTargets(this.promregatorConfiguration.getTargets(), applicationIdFilter, instanceFilter);
 		log.info(String.format("Raw list contains %d instances", instanceList.size()));
 
 		instanceList = this.filterInstanceList(instanceList);

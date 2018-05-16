@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
 import javax.annotation.PostConstruct;
+import javax.validation.constraints.Null;
 
 import org.apache.commons.collections4.map.PassiveExpiringMap;
 import org.apache.log4j.Logger;
@@ -27,6 +28,7 @@ import org.springframework.stereotype.Component;
 import io.prometheus.client.Histogram.Timer;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
 
 @Component
 public class ReactiveAppInstanceScanner implements AppInstanceScanner {
@@ -105,7 +107,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	}
 	
 	
-	public List<Instance> determineInstancesFromTargets(List<Target> targets, Predicate<? super Instance> instanceFilter) {
+	public List<Instance> determineInstancesFromTargets(List<Target> targets, @Null Predicate<? super String> applicationIdFilter, Predicate<? super Instance> instanceFilter) {
 		LinkedList<Instance> result = new LinkedList<>();
 		
 		Flux<Target> initialFlux = Flux.fromIterable(targets);
@@ -121,6 +123,15 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			
 			return i;
 		});
+		
+		if (applicationIdFilter != null) {
+			Flux.zip(initialInstancesOnlyApplication, initialInstancesOnlyApplication.flatMap(ii -> ii.applicationId))
+				.filter(tuple -> {
+					String applicationId = tuple.getT2();
+					return applicationIdFilter.test(applicationId);
+				})
+				.map(Tuple2::getT1);
+		}
 		
 		Flux<InternalInstance> instancesOfApplications = this.getInstances(initialInstancesOnlyApplication);
 		

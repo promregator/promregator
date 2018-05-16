@@ -49,7 +49,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setProtocol("https");
 		targets.add(t);
 		
-		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, null);
+		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, null, null);
 		
 		boolean testapp1_instance1 = false;
 		boolean testapp1_instance2 = false;
@@ -94,7 +94,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setProtocol("https");
 		targets.add(t);
 		
-		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, instance -> {
+		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, null, instance -> {
 			if (instance.getInstanceId().startsWith(CFAccessorMock.UNITTEST_APP1_UUID))
 				// the instances of app1 are being filtered away
 				return false;
