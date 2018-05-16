@@ -35,7 +35,9 @@ public class InstanceLifecycleHandler {
 		List<String> labelValues = mfse.getEnrichedLabelValues(new LinkedList<>());
 		String[] ownTelemetryLabelValues = labelValues.toArray(new String[0]);
 		
-		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues);
+		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, true);
+		// NB: requestLatency is enabled to allow access to the child, if necessary
+		
 		mfm.deregisterSamplesFromRegistry();
 	}
 }
