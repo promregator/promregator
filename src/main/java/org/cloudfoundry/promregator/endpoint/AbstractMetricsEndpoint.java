@@ -10,8 +10,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Predicate;
 
 import javax.annotation.PostConstruct;
+import javax.validation.constraints.Null;
 
 import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
@@ -95,7 +97,7 @@ public abstract class AbstractMetricsEndpoint {
 				.register(this.requestRegistry);
 	}
 	
-	public String handleRequest() {
+	public String handleRequest(@Null Predicate<? super Instance> instanceFilter) {
 		log.info(String.format("Received request to a metrics endpoint; we have %d targets configured", this.promregatorConfiguration.getTargets().size()));
 		Instant start = Instant.now();
 		
