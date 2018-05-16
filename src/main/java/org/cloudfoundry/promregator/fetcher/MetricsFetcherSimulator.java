@@ -10,6 +10,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 
+import io.prometheus.client.Gauge;
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Histogram.Timer;
 
@@ -19,7 +20,8 @@ public class MetricsFetcherSimulator implements MetricsFetcher {
 	private AuthenticationEnricher ae;
 	private AbstractMetricFamilySamplesEnricher mfse;
 	private MetricsFetcherMetrics mfm;
-
+	private Gauge.Child up;
+	
 	private Random randomLatency = new Random();
 	
 	private static String SIM_TEXT004;
@@ -43,12 +45,12 @@ public class MetricsFetcherSimulator implements MetricsFetcher {
 	}
 	
 	public MetricsFetcherSimulator(String accessURL, AuthenticationEnricher ae,
-			AbstractMetricFamilySamplesEnricher mfse, MetricsFetcherMetrics mfm) {
+			AbstractMetricFamilySamplesEnricher mfse, MetricsFetcherMetrics mfm, Gauge.Child up) {
 				this.accessURL = accessURL;
 				this.ae = ae;
 				this.mfse = mfse;
 				this.mfm = mfm;
-				
+				this.up = up;
 		
 	}
 
@@ -73,7 +75,7 @@ public class MetricsFetcherSimulator implements MetricsFetcher {
 		
 		Thread.sleep(latency);
 		
-		this.mfm.getUp().set(1);
+		this.up.set(1);
 		
 		if (timer != null) {
 			timer.observeDuration();
