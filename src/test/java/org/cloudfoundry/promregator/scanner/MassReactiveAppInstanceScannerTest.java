@@ -5,7 +5,6 @@ import java.time.Instant;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.cloudfoundry.promregator.config.Target;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
