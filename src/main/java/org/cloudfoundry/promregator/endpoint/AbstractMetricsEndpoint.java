@@ -78,6 +78,9 @@ public abstract class AbstractMetricsEndpoint {
 	@Autowired
 	private AuthenticationEnricher ae;
 	
+	@Value("${promregator.metrics.requestLatency:false}")
+	private boolean recordRequestLatency;
+	
 	private GenericMetricFamilySamplesPrefixRewriter gmfspr = new GenericMetricFamilySamplesPrefixRewriter("promregator");
 	
 	/* own metrics --- specific to this (scraping) request */
@@ -210,7 +213,7 @@ public abstract class AbstractMetricsEndpoint {
 			}
 			
 			AbstractMetricFamilySamplesEnricher mfse = new CFMetricFamilySamplesEnricher(orgName, spaceName, appName, instance.getInstanceId());
-			MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(mfse, up);
+			MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(mfse, this.up, this.recordRequestLatency);
 
 			MetricsFetcher mf = null;
 			
