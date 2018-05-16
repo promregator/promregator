@@ -48,13 +48,13 @@ public class CFDiscoverer {
 	private int expiryTimeout;
 	
 	public List<Instance> discover() {
-		log.info(String.format("We have %d targets configured", this.promregatorConfiguration.getTargets().size()));
+		log.debug(String.format("We have %d targets configured", this.promregatorConfiguration.getTargets().size()));
 		
 		List<ResolvedTarget> resolvedTargets = this.targetResolver.resolveTargets(this.promregatorConfiguration.getTargets());
-		log.info(String.format("Raw list contains %d resolved targets", resolvedTargets.size()));
+		log.debug(String.format("Raw list contains %d resolved targets", resolvedTargets.size()));
 		
 		List<Instance> instanceList = this.appInstanceScanner.determineInstancesFromTargets(resolvedTargets);
-		log.info(String.format("Raw list contains %d instances", instanceList.size()));
+		log.debug(String.format("Raw list contains %d instances", instanceList.size()));
 
 		// ensure that the instances are registered / touched properly
 		// TODO requires unit test coverage that the instance list really properly touches the timestamps ==> TestableCFDiscoverer
