@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.cloudfoundry.promregator.cfaccessor.CFAccessorMassMock;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
@@ -61,7 +62,7 @@ public class MassReactiveAppInstanceScannerTest {
 	}
 
 	@Test
-	public void testPerformanceWithFilter() {
+	public void testPerformanceWithInstanceFilter() {
 		List<ResolvedTarget> targets = new LinkedList<>();
 		
 		ResolvedTarget t = null;
@@ -98,4 +99,48 @@ public class MassReactiveAppInstanceScannerTest {
 		Assert.assertTrue(d.minusSeconds(6).isNegative());
 	}
 
+	@Test
+	public void testPerformanceWithApplicationIdAndInstanceFilter() {
+		List<ResolvedTarget> targets = new LinkedList<>();
+		
+		ResolvedTarget t = null;
+		
+		final int numberOfApps = 10000;
+		
+		for (int i = 0;i<numberOfApps;i++) {
+			t = new ResolvedTarget();
+			t.setOrgName("unittestorg");
+			t.setSpaceName("unittestspace");
+			t.setApplicationName("testapp"+i);
+			t.setPath("/testpath");
+			t.setProtocol("http");
+			targets.add(t);
+		}
+		
+		Instant start = Instant.now();
+		
+		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, applicationId -> {
+			// filters out all applications,except for one
+			if (applicationId.equals(CFAccessorMassMock.UNITTEST_APP_UUID_PREFIX+"0"))
+				return true;
+			
+			return false;
+		}, instance -> {
+			// filters out all instances, but only the instance "0" is kept
+			
+			if (instance.getInstanceId().endsWith(":0"))
+				return true;
+			
+			return false;
+		});
+		
+		Instant stop = Instant.now();
+		
+		Assert.assertEquals(1, result.size());
+		
+		// test to be faster than 3 seconds
+		Duration d = Duration.between(start, stop);
+		Assert.assertTrue(d.minusSeconds(3).isNegative());
+	}
+	
 }
