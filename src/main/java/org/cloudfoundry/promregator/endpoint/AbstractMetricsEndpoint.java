@@ -32,6 +32,8 @@ import org.cloudfoundry.promregator.scanner.ResolvedTarget;
 import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.CollectorRegistry;
@@ -108,9 +110,10 @@ public abstract class AbstractMetricsEndpoint {
 		
 		List<Instance> instanceList = this.appInstanceScanner.determineInstancesFromTargets(resolvedTargets, applicationIdFilter, instanceFilter);
 		log.info(String.format("Raw list contains %d instances", instanceList.size()));
-
-		instanceList = this.filterInstanceList(instanceList);
-		log.info(String.format("Post filtering, %d instances will be fetched", instanceList.size()));
+		
+		if (instanceList.isEmpty()) {
+			throw new HttpClientErrorException(HttpStatus.NOT_FOUND);
+		}
 		
 		List<MetricsFetcher> callablesPrep = this.createMetricsFetchers(instanceList);
 		
@@ -151,13 +154,6 @@ public abstract class AbstractMetricsEndpoint {
 	 * <code>false</code> otherwise.
 	 */
 	protected abstract boolean isIncludeGlobalMetrics();
-
-	/**
-	 * allows to filter the list of detected instances.
-	 * Only those instances returned by this method will later be scraped
-	 * @return the (reduced) list of instances which shall be scraped
-	 */
-	protected abstract List<Instance> filterInstanceList(List<Instance> instanceList);
 
 	private MergableMetricFamilySamples waitForMetricsFetchers(LinkedList<Future<HashMap<String, MetricFamilySamples>>> futures) {
 		long starttime = System.currentTimeMillis();

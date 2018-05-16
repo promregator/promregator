@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.cloudfoundry.promregator.fetcher.MetricsFetcher;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.springframework.context.annotation.Scope;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,15 +37,16 @@ public class MetricsEndpoint extends AbstractMetricsEndpoint {
 		return true;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.cloudfoundry.promregator.endpoint.AbstractMetricsEndpoint#createMetricsFetchers(java.util.List)
+	 */
 	@Override
-	protected List<Instance> filterInstanceList(List<Instance> instanceList) {
-		// all instances shall be processed
-		
+	protected List<MetricsFetcher> createMetricsFetchers(List<Instance> instanceList) {
 		if (instanceList.size() > 20) {
 			log.warn(String.format("You are using Single Endpoint Scraping with %d (>20) active targets; to improve scalability it is recommended to switch to Single Target Scraping", instanceList.size()));
 		}
-		
-		return instanceList; 
+
+		return super.createMetricsFetchers(instanceList);
 	}
 
 	@Override
