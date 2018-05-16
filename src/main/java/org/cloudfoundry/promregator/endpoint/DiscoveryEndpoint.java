@@ -110,7 +110,7 @@ public class DiscoveryEndpoint {
 	@RequestMapping(method = RequestMethod.GET, produces=MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public DiscoveryResponse[] getDiscovery(HttpServletRequest request) {
 		
-		List<Instance> instances = this.discoverer.discover();
+		List<Instance> instances = this.discoverer.discover(null, null);
 		
 		String localHostname = this.myHostname != null ? this.myHostname : request.getLocalName();
 		int localPort = this.myPort != 0 ? this.myPort : request.getLocalPort();

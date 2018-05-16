@@ -99,7 +99,7 @@ public abstract class AbstractMetricsEndpoint {
 		
 		this.up.clear();
 		
-		List<Instance> instanceList = this.discoverer.discover();
+		List<Instance> instanceList = this.discoverer.discover(applicationIdFilter, instanceFilter);
 		
 		List<MetricsFetcher> callablesPrep = this.createMetricsFetchers(instanceList);
 		

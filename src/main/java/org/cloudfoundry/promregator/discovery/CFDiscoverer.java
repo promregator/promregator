@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
+
+import javax.validation.constraints.Null;
 
 import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
@@ -47,13 +50,13 @@ public class CFDiscoverer {
 	// TODO requires mentioning in the documentation
 	private int expiryTimeout;
 	
-	public List<Instance> discover() {
+	public List<Instance> discover(@Null Predicate<? super String> applicationIdFilter, @Null Predicate<? super Instance> instanceFilter) {
 		log.debug(String.format("We have %d targets configured", this.promregatorConfiguration.getTargets().size()));
 		
 		List<ResolvedTarget> resolvedTargets = this.targetResolver.resolveTargets(this.promregatorConfiguration.getTargets());
 		log.debug(String.format("Raw list contains %d resolved targets", resolvedTargets.size()));
 		
-		List<Instance> instanceList = this.appInstanceScanner.determineInstancesFromTargets(resolvedTargets);
+		List<Instance> instanceList = this.appInstanceScanner.determineInstancesFromTargets(resolvedTargets, applicationIdFilter, instanceFilter);
 		log.debug(String.format("Raw list contains %d instances", instanceList.size()));
 
 		// ensure that the instances are registered / touched properly
