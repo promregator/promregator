@@ -185,6 +185,12 @@ Specifies the way how authentication shall be verified, if a request reaches the
 * *NONE*: no authentication verification is required (default)
 * *BASIC*: an authentication verification using HTTP Basic Authentication is performed. Valid credentials are taken from `promregator.authentication.basic.username` and `promregator.authentication.basic.password`.
 
+#### Option "promregator.metrics.requestLatency" (optional)
+A boolean which specifies, if the additional metrics `promregator_request_latency`, a histogram metric measuring the latency generated for each Cloud Foundry Application Instance, shall be recorded and exposed to Prometheus. 
+
+The default of this option is "false", which disables the recording. 
+
+If you have many targets (or many instances) which shall be scraped, the data volume of this metric may become huge and thus may cause performance issues (especially w.r.t. memory throughput and thus cause high load situations for the JVM garbage collector). That is why the default is set to "false".
 
 #### Option "promregator.metrics.internal" (optional)
 Specifies, if additional internal metrics shall be exposed describing the internal state of Promregator.

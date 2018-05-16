@@ -12,7 +12,7 @@ import io.prometheus.client.Histogram;
 
 /**
  * A class storing information about metrics, which are being used to measure
- * the behaviour of MetricsFetchers
+ * the behavior of MetricsFetchers
  */
 public class MetricsFetcherMetrics {
 	/* references to metrics which we create and expose by our own */
@@ -20,6 +20,7 @@ public class MetricsFetcherMetrics {
 	private static Histogram requestLatency = Histogram.build("promregator_request_latency", "The latency, which the targets of the promregator produce")
 			.labelNames(CFMetricFamilySamplesEnricher.getEnrichingLabelNames())
 			.register();
+	private boolean requestLatencyEnabled;
 	
 	private static Counter failedRequests = Counter.build("promregator_request_failure", "Requests, which responded, but the HTTP code indicated an error or the connection dropped/timed out")
 			.labelNames(CFMetricFamilySamplesEnricher.getEnrichingLabelNames())
@@ -33,14 +34,16 @@ public class MetricsFetcherMetrics {
 	private Gauge up;
 
 	private String[] ownTelemetryLabels;
+
 	
-	public MetricsFetcherMetrics(AbstractMetricFamilySamplesEnricher mfse, Gauge up) {
+	public MetricsFetcherMetrics(AbstractMetricFamilySamplesEnricher mfse, Gauge up, boolean requestLatencyEnabled) {
 		super();
 		
 		List<String> labelValues = mfse.getEnrichedLabelValues(new LinkedList<>());
 		this.ownTelemetryLabels = labelValues.toArray(new String[0]);
 
 		this.up = up;
+		this.requestLatencyEnabled = requestLatencyEnabled;
 	}
 
 	public String[] getOwnTelemetryLabels() {
@@ -49,6 +52,9 @@ public class MetricsFetcherMetrics {
 
 	public Histogram.Child getLatencyRequest() {
 		if (requestLatency == null)
+			return null;
+		
+		if (!this.requestLatencyEnabled)
 			return null;
 		
 		return requestLatency.labels(this.ownTelemetryLabels);
