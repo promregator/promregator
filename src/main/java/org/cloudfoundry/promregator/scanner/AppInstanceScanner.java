@@ -22,4 +22,5 @@ public interface AppInstanceScanner {
 	 * @return the list of instances containing the access URL and the instance identifier
 	 */
 	List<Instance> determineInstancesFromTargets(List<Target> targets, @Null Predicate<? super Instance> instanceFilter);
+
 }
