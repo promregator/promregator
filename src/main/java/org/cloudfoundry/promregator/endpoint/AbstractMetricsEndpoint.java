@@ -100,16 +100,16 @@ public abstract class AbstractMetricsEndpoint {
 	}
 	
 	public String handleRequest(@Null Predicate<? super String> applicationIdFilter, @Null Predicate<? super Instance> instanceFilter) {
-		log.info(String.format("Received request to a metrics endpoint; we have %d targets configured", this.promregatorConfiguration.getTargets().size()));
+		log.debug(String.format("Received request to a metrics endpoint; we have %d targets configured", this.promregatorConfiguration.getTargets().size()));
 		Instant start = Instant.now();
 		
 		this.up.clear();
 		
 		List<ResolvedTarget> resolvedTargets = this.targetResolver.resolveTargets(this.promregatorConfiguration.getTargets());
-		log.info(String.format("Raw list contains %d resolved targets", resolvedTargets.size()));
+		log.debug(String.format("Raw list contains %d resolved targets", resolvedTargets.size()));
 		
 		List<Instance> instanceList = this.appInstanceScanner.determineInstancesFromTargets(resolvedTargets, applicationIdFilter, instanceFilter);
-		log.info(String.format("Raw list contains %d instances", instanceList.size()));
+		log.debug(String.format("Raw list contains %d instances", instanceList.size()));
 		
 		if (instanceList.isEmpty()) {
 			throw new HttpClientErrorException(HttpStatus.NOT_FOUND);
@@ -118,7 +118,7 @@ public abstract class AbstractMetricsEndpoint {
 		List<MetricsFetcher> callablesPrep = this.createMetricsFetchers(instanceList);
 		
 		LinkedList<Future<HashMap<String, MetricFamilySamples>>> futures = this.startMetricsFetchers(callablesPrep);
-		log.info(String.format("Fetching metrics from %d distinct endpoints", futures.size()));
+		log.debug(String.format("Fetching metrics from %d distinct endpoints", futures.size()));
 		
 		MergableMetricFamilySamples mmfs = waitForMetricsFetchers(futures);
 		
@@ -202,7 +202,7 @@ public abstract class AbstractMetricsEndpoint {
 		
 		List<MetricsFetcher> callablesList = new LinkedList<>();
 		for (Instance instance : instanceList) {
-			log.info(String.format("Creating Metrics Fetcher for instance %s", instance.getInstanceId()));
+			log.debug(String.format("Creating Metrics Fetcher for instance %s", instance.getInstanceId()));
 			
 			ResolvedTarget target = instance.getTarget();
 			String orgName = target.getOrgName();
