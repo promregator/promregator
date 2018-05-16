@@ -125,7 +125,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		});
 		
 		if (applicationIdFilter != null) {
-			Flux.zip(initialInstancesOnlyApplication, initialInstancesOnlyApplication.flatMap(ii -> ii.applicationId))
+			initialInstancesOnlyApplication = Flux.zip(initialInstancesOnlyApplication, initialInstancesOnlyApplication.flatMap(ii -> ii.applicationId))
 				.filter(tuple -> {
 					String applicationId = tuple.getT2();
 					return applicationIdFilter.test(applicationId);
