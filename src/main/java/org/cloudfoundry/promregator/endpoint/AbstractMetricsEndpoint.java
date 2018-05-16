@@ -97,7 +97,7 @@ public abstract class AbstractMetricsEndpoint {
 		
 		this.up.clear();
 		
-		List<Instance> instanceList = this.appInstanceScanner.determineInstancesFromTargets(this.promregatorConfiguration.getTargets());
+		List<Instance> instanceList = this.appInstanceScanner.determineInstancesFromTargets(this.promregatorConfiguration.getTargets(), null);
 		log.info(String.format("Raw list contains %d instances", instanceList.size()));
 
 		instanceList = this.filterInstanceList(instanceList);

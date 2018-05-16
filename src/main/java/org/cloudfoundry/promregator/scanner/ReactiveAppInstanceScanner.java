@@ -3,6 +3,7 @@ package org.cloudfoundry.promregator.scanner;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
 import javax.annotation.PostConstruct;
 
@@ -104,7 +105,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	}
 	
 	
-	public List<Instance> determineInstancesFromTargets(List<Target> targets) {
+	public List<Instance> determineInstancesFromTargets(List<Target> targets, Predicate<? super Instance> instanceFilter) {
 		LinkedList<Instance> result = new LinkedList<>();
 		
 		Flux<Target> initialFlux = Flux.fromIterable(targets);
@@ -123,7 +124,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		
 		Flux<InternalInstance> instancesOfApplications = this.getInstances(initialInstancesOnlyApplication);
 		
-		instancesOfApplications.flatMap(instance -> {
+		Flux<Instance> instancesFlux = instancesOfApplications.flatMap(instance -> {
 			Mono<String> applUrlMono = this.getApplicationUrl(instance.applicationId, instance.target.getProtocol());
 			
 			Mono<String> accessUrlMono = Mono.zip(applUrlMono, Mono.just(instance.target.getPath()))
@@ -149,7 +150,14 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			});
 			
 			return newInstance;
-		}).map(internalInstance -> internalInstance.toInstance()).toIterable().forEach(result::add);
+		}).map(internalInstance -> internalInstance.toInstance());
+		
+		// perform pre-filtering, if available
+		if (instanceFilter != null) {
+			instancesFlux = instancesFlux.filter(instanceFilter);
+		}
+		
+		instancesFlux.toIterable().forEach(result::add);
 		
 		return result;
 	}
