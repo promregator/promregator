@@ -50,7 +50,7 @@ public class MassReactiveAppInstanceScannerTest {
 		
 		Instant start = Instant.now();
 		
-		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, null);
+		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, null, null);
 		
 		Instant stop = Instant.now();
 		
@@ -81,7 +81,7 @@ public class MassReactiveAppInstanceScannerTest {
 		
 		Instant start = Instant.now();
 		
-		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, instance -> {
+		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, null, instance -> {
 			// filters out all instances, but only the instance "0" is kept
 			
 			if (instance.getInstanceId().endsWith(":0"))

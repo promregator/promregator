@@ -52,7 +52,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	private CFAccessor cfAccessor;
 	
 	@Override
-	public List<Instance> determineInstancesFromTargets(List<ResolvedTarget> targets, @Null Predicate<? super Instance> instanceFilter) {
+	public List<Instance> determineInstancesFromTargets(List<ResolvedTarget> targets, @Null Predicate<? super String> applicationIdFilter, @Null Predicate<? super Instance> instanceFilter) {
 		Flux<ResolvedTarget> targetsFlux = Flux.fromIterable(targets);
 		
 		Flux<OSAVector> initialOSAVectorFlux = targetsFlux.map(target -> {
@@ -82,6 +82,11 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			v.applicationId = tuple.getT2();
 			return v;
 		});
+		
+		// perform pre-filtering, if available
+		if (applicationIdFilter != null) {
+			OSAVectorApplicationFlux = OSAVectorApplicationFlux.filter(v -> applicationIdFilter.test(v.applicationId));
+		}
 		
 		Flux<String> applicationURLFlux = OSAVectorApplicationFlux.flatMap(v -> this.getApplicationUrl(v.applicationId, v.target.getProtocol()));
 		Flux<OSAVector> OSAVectorURLFlux = Flux.zip(OSAVectorApplicationFlux, applicationURLFlux).map(tuple -> {

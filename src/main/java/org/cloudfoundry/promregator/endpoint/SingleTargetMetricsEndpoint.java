@@ -42,7 +42,8 @@ public class SingleTargetMetricsEndpoint extends AbstractMetricsEndpoint {
 		
 		String instanceId = String.format("%s:%s", applicationId, instanceNumber);
 		
-		return this.handleRequest(instance -> {
+		return this.handleRequest( discoveredApplicationId -> applicationId.equals(discoveredApplicationId)
+		, instance -> {
 			if (instance.getInstanceId().equals(instanceId)) {
 				return true;
 			}

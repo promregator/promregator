@@ -13,7 +13,7 @@ import org.springframework.web.client.HttpClientErrorException;
 public class SingleTargetMetricsEndpointInternalTest extends SingleTargetMetricsEndpoint {
 
 	@Override
-	public String handleRequest(Predicate <? super Instance> instanceFilter) {
+	public String handleRequest(Predicate<? super String> applicationIdFilter, Predicate<? super Instance> instanceFilter) {
 		// necessary for proper test isolation
 		return null;
 	}
