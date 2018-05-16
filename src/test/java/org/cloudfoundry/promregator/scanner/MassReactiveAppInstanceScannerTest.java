@@ -61,4 +61,42 @@ public class MassReactiveAppInstanceScannerTest {
 		Assert.assertTrue(d.minusSeconds(6).isNegative());
 	}
 
+	@Test
+	public void testPerformanceWithFilter() {
+		List<Target> targets = new LinkedList<>();
+		
+		Target t = null;
+		
+		final int numberOfApps = 10000;
+		
+		for (int i = 0;i<numberOfApps;i++) {
+			t = new Target();
+			t.setOrgName("unittestorg");
+			t.setSpaceName("unittestspace");
+			t.setApplicationName("testapp"+i);
+			t.setPath("/testpath");
+			t.setProtocol("http");
+			targets.add(t);
+		}
+		
+		Instant start = Instant.now();
+		
+		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, instance -> {
+			// filters out all instances, but only the instance "0" is kept
+			
+			if (instance.getInstanceId().endsWith(":0"))
+				return true;
+			
+			return false;
+		});
+		
+		Instant stop = Instant.now();
+		
+		Assert.assertEquals(numberOfApps*1, result.size());
+		
+		// test to be faster than 6 seconds
+		Duration d = Duration.between(start, stop);
+		Assert.assertTrue(d.minusSeconds(6).isNegative());
+	}
+
 }

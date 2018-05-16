@@ -72,5 +72,51 @@ public class ReactiveAppInstanceScannerTest {
 		Assert.assertTrue(testapp1_instance2);
 		Assert.assertTrue(testapp2_instance1);
 	}
+	
+	@Test
+	public void testWithPrefiltering() {
+		List<Target> targets = new LinkedList<>();
+		
+		Target t = new Target();
+		t.setOrgName("unittestorg");
+		t.setSpaceName("unittestspace");
+		t.setApplicationName("testapp");
+		t.setPath("/testpath1");
+		t.setProtocol("http");
+		targets.add(t);
+		
+		t = new Target();
+		t.setOrgName("unittestorg");
+		t.setSpaceName("unittestspace");
+		t.setApplicationName("testapp2");
+		t.setPath("/testpath2");
+		t.setProtocol("https");
+		targets.add(t);
+		
+		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, instance -> {
+			if (instance.getInstanceId().startsWith(CFAccessorMock.UNITTEST_APP1_UUID))
+				// the instances of app1 are being filtered away
+				return false;
+			
+			return true;
+		});
+		
+		boolean testapp2_instance1 = false;
+		
+		for (Instance instance : result) {
+			String instanceId = instance.getInstanceId();
+			
+			if (instanceId.equals(CFAccessorMock.UNITTEST_APP1_UUID+":0")) {
+				Assert.fail("should have been filtered");
+			} else if (instanceId.equals(CFAccessorMock.UNITTEST_APP1_UUID+":1")) {
+				Assert.fail("should have been filtered");
+			} else if (instanceId.equals(CFAccessorMock.UNITTEST_APP2_UUID+":0")) {
+				testapp2_instance1 = true;
+				Assert.assertEquals("https://hostapp2.shared.domain.example.org/additionalPath/testpath2", instance.getAccessUrl());
+			}
+		}
+		Assert.assertTrue(testapp2_instance1);
+	}
+
 
 }
