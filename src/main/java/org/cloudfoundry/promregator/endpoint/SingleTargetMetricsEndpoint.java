@@ -37,6 +37,7 @@ public class SingleTargetMetricsEndpoint extends AbstractMetricsEndpoint {
 		return this.handleRequest( discoveredApplicationId -> applicationId.equals(discoveredApplicationId)
 		, instance -> {
 			if (instance.getInstanceId().equals(instanceId)) {
+				this.instance = instance;
 				return true;
 			}
 			

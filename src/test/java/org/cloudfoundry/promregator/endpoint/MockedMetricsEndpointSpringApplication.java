@@ -1,5 +1,6 @@
 package org.cloudfoundry.promregator.endpoint;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -14,7 +15,6 @@ import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.config.Target;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.Instance;
-import org.junit.Assert;
 import org.springframework.boot.autoconfigure.AutoConfigurationExcludeFilter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.TypeExcludeFilter;
@@ -43,9 +43,6 @@ public class MockedMetricsEndpointSpringApplication {
 
 			@Override
 			public List<Instance> determineInstancesFromTargets(List<Target> targets,@Null Predicate<? super String> applicationIdFilter, Predicate<? super Instance> instanceFilter) {
-				Assert.assertNull(applicationIdFilter); // not supported yet by this implementation
-				Assert.assertNull(instanceFilter); // not supported yet by this implementation
-				
 				LinkedList<Instance> result = new LinkedList<>();
 
 				Target t = new Target();
@@ -65,6 +62,22 @@ public class MockedMetricsEndpointSpringApplication {
 				t.setProtocol("http");
 				result.add(new Instance(t, "1142a717-e27d-4028-89d8-b42a0c973300:0", "http://localhost:1235"));
 
+				if (applicationIdFilter != null) {
+					for (Iterator<Instance> it = result.iterator(); it.hasNext();) {
+						Instance instance = it.next();
+						if (!applicationIdFilter.test(instance.getApplicationId()))
+							it.remove();
+					}
+				}
+				
+				if (instanceFilter != null) {
+					for (Iterator<Instance> it = result.iterator(); it.hasNext();) {
+						Instance instance = it.next();
+						if (!instanceFilter.test(instance))
+							it.remove();
+					}
+				}
+				
 				return result;
 			}
 
