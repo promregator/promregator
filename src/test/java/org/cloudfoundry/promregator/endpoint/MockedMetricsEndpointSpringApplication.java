@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Predicate;
 
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.auth.NullEnricher;
@@ -13,6 +14,7 @@ import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
 import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.cloudfoundry.promregator.scanner.TrivialTargetResolver;
+import org.junit.Assert;
 import org.springframework.boot.autoconfigure.AutoConfigurationExcludeFilter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.TypeExcludeFilter;
@@ -40,7 +42,9 @@ public class MockedMetricsEndpointSpringApplication {
 		return new AppInstanceScanner() {
 
 			@Override
-			public List<Instance> determineInstancesFromTargets(List<ResolvedTarget> targets) {
+			public List<Instance> determineInstancesFromTargets(List<ResolvedTarget> targets, Predicate<? super Instance> instanceFilter) {
+				Assert.assertNull(instanceFilter); // not supported yet by this implementation
+				
 				LinkedList<Instance> result = new LinkedList<>();
 
 				ResolvedTarget t = new ResolvedTarget();

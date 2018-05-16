@@ -1,6 +1,9 @@
 package org.cloudfoundry.promregator.scanner;
 
 import java.util.List;
+import java.util.function.Predicate;
+
+import javax.validation.constraints.Null;
 
 public interface AppInstanceScanner {
 
@@ -13,7 +16,8 @@ public interface AppInstanceScanner {
 	 * - one target does not resolve to any instance, if the application has been
 	 * misconfigured or if the application is currently not running.
 	 * @param targets the list of targets, for which the properties of instances shall be determined
+	 * @param instanceFilter an optional filter function allowing to prefilter results early, indicating whether an instance is in scope or not
 	 * @return the list of instances containing the access URL and the instance identifier
 	 */
-	List<Instance> determineInstancesFromTargets(List<ResolvedTarget> targets);
+	List<Instance> determineInstancesFromTargets(List<ResolvedTarget> targets, @Null Predicate<? super Instance> instanceFilter);
 }

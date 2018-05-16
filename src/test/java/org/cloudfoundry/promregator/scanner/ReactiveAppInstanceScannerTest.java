@@ -48,7 +48,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setProtocol("https");
 		targets.add(t);
 		
-		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets);
+		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, null);
 		
 		boolean testapp1_instance1 = false;
 		boolean testapp1_instance2 = false;

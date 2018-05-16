@@ -104,7 +104,7 @@ public abstract class AbstractMetricsEndpoint {
 		List<ResolvedTarget> resolvedTargets = this.targetResolver.resolveTargets(this.promregatorConfiguration.getTargets());
 		log.info(String.format("Raw list contains %d resolved targets", resolvedTargets.size()));
 		
-		List<Instance> instanceList = this.appInstanceScanner.determineInstancesFromTargets(resolvedTargets);
+		List<Instance> instanceList = this.appInstanceScanner.determineInstancesFromTargets(resolvedTargets, null);
 		log.info(String.format("Raw list contains %d instances", instanceList.size()));
 
 		instanceList = this.filterInstanceList(instanceList);
