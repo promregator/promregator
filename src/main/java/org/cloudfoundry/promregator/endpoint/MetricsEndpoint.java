@@ -28,7 +28,7 @@ public class MetricsEndpoint extends AbstractMetricsEndpoint {
 
 	@RequestMapping(method = RequestMethod.GET, produces=TextFormat.CONTENT_TYPE_004)
 	public String getMetrics() {
-		return this.handleRequest();
+		return this.handleRequest(null /* no filtering intended */);
 	}
 
 	@Override

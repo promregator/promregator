@@ -2,6 +2,7 @@ package org.cloudfoundry.promregator.endpoint;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.cloudfoundry.promregator.config.Target;
 import org.cloudfoundry.promregator.scanner.Instance;
@@ -12,7 +13,7 @@ import org.springframework.web.client.HttpClientErrorException;
 public class SingleTargetMetricsEndpointInternalTest extends SingleTargetMetricsEndpoint {
 
 	@Override
-	public String handleRequest() {
+	public String handleRequest(Predicate <? super Instance> instanceFilter) {
 		// necessary for proper test isolation
 		return null;
 	}
