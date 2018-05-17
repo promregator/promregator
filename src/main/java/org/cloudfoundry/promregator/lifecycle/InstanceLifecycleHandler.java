@@ -14,7 +14,6 @@ import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
 
 @Component
-// TODO requires Unit test coverage, including that it is triggered via JMS message! (cf. CFDiscoverer)
 public class InstanceLifecycleHandler {
 	private static final Logger log = Logger.getLogger(InstanceLifecycleHandler.class);
 	
