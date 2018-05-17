@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
@@ -28,6 +29,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class CFDiscoverer {
 	private static final Logger log = Logger.getLogger(CFDiscoverer.class);
+
+	private static Random jitterRandom = new Random();
 	
 	@Autowired
 	private TargetResolver targetResolver;
@@ -40,6 +43,7 @@ public class CFDiscoverer {
 
 	@Autowired
 	private JmsTemplate jmsTemplate;
+	
 
 	@Autowired
 	private Clock clock;
@@ -49,6 +53,12 @@ public class CFDiscoverer {
 	@Value("${cf.cache.timeout.instance:300}")
 	// TODO requires mentioning in the documentation
 	private int expiryTimeout;
+	
+	private int jitterUpperLimitInMillis;
+	
+	public CFDiscoverer() {
+		this.jitterUpperLimitInMillis = this.expiryTimeout * 1000 /* in milliseconds */ / 100 /* 1% of it */;
+	}
 	
 	public List<Instance> discover(@Null Predicate<? super String> applicationIdFilter, @Null Predicate<? super Instance> instanceFilter) {
 		log.debug(String.format("We have %d targets configured", this.promregatorConfiguration.getTargets().size()));
@@ -75,7 +85,11 @@ public class CFDiscoverer {
 	}
 
 	private Instant nextTimeout() {
-		Instant timeout = Instant.now(this.clock).plus(this.expiryTimeout, ChronoUnit.SECONDS);
+		// introduce a little jitter to ensure that not all instances invalidate right at the same time
+		int jitter = this.jitterUpperLimitInMillis > 0 ? jitterRandom.nextInt(this.jitterUpperLimitInMillis) : 0;
+
+		Instant timeout = Instant.now(this.clock).plus(this.expiryTimeout, ChronoUnit.SECONDS).plusMillis(jitter);
+		
 		return timeout;
 	}
 	
