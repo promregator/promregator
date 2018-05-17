@@ -59,7 +59,7 @@ public abstract class AbstractMetricsEndpoint {
 	private CollectorRegistry collectorRegistry;
 	
 	@Autowired
-	private CFDiscoverer discoverer;
+	private CFDiscoverer cfDiscoverer;
 	
 	@Value("${cf.proxyHost:@null}")
 	private String proxyHost;
@@ -99,7 +99,7 @@ public abstract class AbstractMetricsEndpoint {
 		
 		this.up.clear();
 		
-		List<Instance> instanceList = this.discoverer.discover(applicationIdFilter, instanceFilter);
+		List<Instance> instanceList = this.cfDiscoverer.discover(applicationIdFilter, instanceFilter);
 		
 		List<MetricsFetcher> callablesPrep = this.createMetricsFetchers(instanceList);
 		

@@ -25,7 +25,7 @@ public class DiscoveryEndpoint {
 	private static final Logger log = Logger.getLogger(DiscoveryEndpoint.class);
 	
 	@Autowired
-	private CFDiscoverer discoverer;
+	private CFDiscoverer cfDiscoverer;
 
 	@Value("${promregator.discovery.hostname:#{null}}")
 	private String myHostname;
@@ -110,7 +110,7 @@ public class DiscoveryEndpoint {
 	@RequestMapping(method = RequestMethod.GET, produces=MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public DiscoveryResponse[] getDiscovery(HttpServletRequest request) {
 		
-		List<Instance> instances = this.discoverer.discover(null, null);
+		List<Instance> instances = this.cfDiscoverer.discover(null, null);
 		
 		String localHostname = this.myHostname != null ? this.myHostname : request.getLocalName();
 		int localPort = this.myPort != 0 ? this.myPort : request.getLocalPort();
