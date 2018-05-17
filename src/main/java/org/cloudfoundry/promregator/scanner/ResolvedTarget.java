@@ -133,7 +133,6 @@ public class ResolvedTarget {
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
-	// TODO requires unit test coverage
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("ResolvedTarget [orgName=");
