@@ -1,6 +1,6 @@
 package org.cloudfoundry.promregator.fetcher;
 
-import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -10,8 +10,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 
-import io.prometheus.client.Gauge;
 import io.prometheus.client.Collector.MetricFamilySamples;
+import io.prometheus.client.Gauge;
 import io.prometheus.client.Histogram.Timer;
 
 public class MetricsFetcherSimulator implements MetricsFetcher {
@@ -28,20 +28,33 @@ public class MetricsFetcherSimulator implements MetricsFetcher {
 	
 	static {
 		InputStream is = MetricsFetcherSimulator.class.getResourceAsStream("simulation.text004");
-		BufferedInputStream bis = new BufferedInputStream(is);
-		byte[] buffer = new byte[256*1024];
+		
+		assert is != null;
+		
+		ByteArrayOutputStream result = new ByteArrayOutputStream();
+		byte[] buffer = new byte[1024];
+		int length;
 		try {
-			int len = bis.read(buffer);
-			SIM_TEXT004 = new String(buffer, 0, len, "UTF-8");
+			while ((length = is.read(buffer)) != -1) {
+				result.write(buffer, 0, length);
+			}
+			SIM_TEXT004 = result.toString("UTF-8");
 		} catch (IOException e) {
 			SIM_TEXT004 = "";
 		} finally {
 			try {
-				bis.close();
+				result.close();
 			} catch (IOException e) {
-				SIM_TEXT004 = "";
+				// ignored
+			}
+			
+			try {
+				is.close();
+			} catch (IOException e) {
+				// ignored
 			}
 		}
+		
 	}
 	
 	public MetricsFetcherSimulator(String accessURL, AuthenticationEnricher ae,
