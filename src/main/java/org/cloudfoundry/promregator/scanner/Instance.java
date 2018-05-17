@@ -10,6 +10,10 @@ public class Instance {
 	private String instanceId;
 	private String accessUrl;
 	
+	public Instance() {
+		super();
+	}
+
 	public Instance(ResolvedTarget target, String instanceId, String accessUrl) {
 		super();
 		this.target = target;
@@ -37,6 +41,28 @@ public class Instance {
 	public String getApplicationId() {
 		String[] parts = this.instanceId.split(":");
 		return parts[0];
+	}
+
+	
+	/**
+	 * @param target the target to set
+	 */
+	public void setTarget(ResolvedTarget target) {
+		this.target = target;
+	}
+
+	/**
+	 * @param instanceId the instanceId to set
+	 */
+	public void setInstanceId(String instanceId) {
+		this.instanceId = instanceId;
+	}
+
+	/**
+	 * @param accessUrl the accessUrl to set
+	 */
+	public void setAccessUrl(String accessUrl) {
+		this.accessUrl = accessUrl;
 	}
 
 	/* (non-Javadoc)

@@ -77,7 +77,6 @@ public class CFDiscoverer {
 		log.debug(String.format("Raw list contains %d instances", instanceList.size()));
 
 		// ensure that the instances are registered / touched properly
-		// TODO requires unit test coverage that the instance list really properly touches the timestamps ==> TestableCFDiscoverer
 		for (Instance instance : instanceList) {
 			this.registerInstance(instance);
 		}
@@ -114,7 +113,6 @@ public class CFDiscoverer {
 	 * This method is automatically called by the Spring framework in regular intervals asynchronously.
 	 */
 	@Scheduled(fixedDelay=60*1000)
-	// TODO requires unit test that really the marked instances are removed (and the message is sent through the bus)
 	public void cleanup() {
 		Instant now = Instant.now(this.clock);
 		
@@ -133,5 +131,9 @@ public class CFDiscoverer {
 			
 			it.remove();
 		}
+	}
+	
+	public void setClock(Clock newClock) {
+		this.clock = newClock;
 	}
 }
