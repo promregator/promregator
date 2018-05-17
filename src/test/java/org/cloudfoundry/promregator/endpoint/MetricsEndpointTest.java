@@ -3,7 +3,6 @@ package org.cloudfoundry.promregator.endpoint;
 import java.util.HashMap;
 
 import org.cloudfoundry.promregator.fetcher.TextFormat004Parser;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,7 +13,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Collector.MetricFamilySamples.Sample;
-import io.prometheus.client.CollectorRegistry;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = MockedMetricsEndpointSpringApplication.class)
