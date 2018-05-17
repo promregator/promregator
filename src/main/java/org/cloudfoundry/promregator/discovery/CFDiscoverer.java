@@ -60,6 +60,13 @@ public class CFDiscoverer {
 		this.jitterUpperLimitInMillis = this.expiryTimeout * 1000 /* in milliseconds */ / 100 /* 1% of it */;
 	}
 	
+	/**
+	 * performs the discovery based on the configured set of targets in the configuration, (pre-)filtering the returned set applying the filter criteria supplied.
+	 * The instances discovered are automatically registered at this Discoverer
+	 * @param applicationIdFilter the (pre-)filter based on ApplicationIds, allowing to early filter the list of instances to discover
+	 * @param instanceFilter the (pre-)filter based on the Instance instance, allowing to filter the lost if instances to discover
+	 * @return the list of Instances which were discovered (and registered).
+	 */
 	public List<Instance> discover(@Null Predicate<? super String> applicationIdFilter, @Null Predicate<? super Instance> instanceFilter) {
 		log.debug(String.format("We have %d targets configured", this.promregatorConfiguration.getTargets().size()));
 		
@@ -83,6 +90,15 @@ public class CFDiscoverer {
 		this.instanceExpiryMap.put(instance, timeout);
 		// NB: If already in the map, then the timeout is overwritten => refreshing/touching
 	}
+	
+	/**
+	 * checks whether a given instance is known at this Discoverer (or may already have expired)
+	 * @param instance the instance which shall be checked
+	 * @return <code>true</code> if the instance is registered; <code>false</code> otherwise. Note that the response is independent whether the validity of the instance has already expired or not!
+	 */
+	public boolean isInstanceRegistered(Instance instance) {
+		return this.instanceExpiryMap.containsKey(instance);
+	}
 
 	private Instant nextTimeout() {
 		// introduce a little jitter to ensure that not all instances invalidate right at the same time
@@ -93,6 +109,10 @@ public class CFDiscoverer {
 		return timeout;
 	}
 	
+	/**
+	 * checks the list of registered Instances to be expired.
+	 * This method is automatically called by the Spring framework in regular intervals asynchronously.
+	 */
 	@Scheduled(fixedDelay=60*1000)
 	// TODO requires unit test that really the marked instances are removed (and the message is sent through the bus)
 	public void cleanup() {
