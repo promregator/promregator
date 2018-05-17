@@ -11,6 +11,7 @@ import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
+import javax.annotation.PostConstruct;
 import javax.validation.constraints.Null;
 
 import org.apache.log4j.Logger;
@@ -55,8 +56,10 @@ public class CFDiscoverer {
 	private int expiryTimeout;
 	
 	private int jitterUpperLimitInMillis;
-	
-	public CFDiscoverer() {
+
+	@PostConstruct
+	@SuppressWarnings("PMD.UnusedPrivateMethod") // method is really required
+	private void setupJitterUpperLimitInMillis() {
 		this.jitterUpperLimitInMillis = this.expiryTimeout * 1000 /* in milliseconds */ / 100 /* 1% of it */;
 	}
 	
