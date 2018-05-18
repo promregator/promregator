@@ -47,8 +47,7 @@ public class CFDiscoverer {
 	
 	private Map<Instance, Instant> instanceExpiryMap = new ConcurrentHashMap<>();
 	
-	@Value("${cf.cache.timeout.instance:300}")
-	// TODO requires mentioning in the documentation
+	@Value("${promregator.discoverer.timeout:600}")
 	private int expiryTimeout;
 	
 	/**

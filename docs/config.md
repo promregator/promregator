@@ -150,6 +150,20 @@ Specifies the way how authentication shall be verified, if a request reaches the
 * *NONE*: no authentication verification is required (default)
 * *BASIC*: an authentication verification using HTTP Basic Authentication is performed. Valid credentials are taken from `promregator.authentication.basic.username` and `promregator.authentication.basic.password`.
 
+### Subgroup "promregator.discoverer"
+Configures how the way how the discoverer (mind the difference to the discover**y**) resolves non-complete target configurations with the help of the metadata provided by Cloud Foundry.
+
+The primary task of the discovere**r** is to resolve target configurations, which do *not* refer to a single application. The discoverer introspects the Cloud Foundry Organizations, Spaces and Applications and provides a list of applications, which are selected for scraping.
+
+#### Option "promregator.discoverer.timeout" (optional)
+This option allows you to specify how long (in seconds) the discoverer should consider a once-fetched application to be valid.
+
+The primary relevance of this option is to determine the point in time, how low [(internal) metrics](enrichment.md) generated shall be considered valid. The timeout is automatically prolonged, if the instance still is seen on the Cloud Foundry platform. Once the application is gone (for example, it has been deleted), this timeout (counting from the point of time it was seen last) comes into play. If the application does not reappear within this time frame, also the samples of the internal metrics will be deleted.
+If the application reappears after the deletion, it is considered "a new application" and the internal metrics start from zero.
+
+The default value is 600 seconds (i.e. 10 minutes).
+
+
 ### Subgroup "promregator.endpoint"
 Configures the way how the metrics endpoints `/metrics` and `/singleTargetMetrics` behave.
 
