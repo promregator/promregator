@@ -34,7 +34,7 @@ public class PromregatorApplicationTest {
 	}
 
 	@AfterClass
-	public static void cleanupEnvironment() {
+	public static void cleanUp() {
 		JUnitTestUtils.cleanUpAll();
 	}
 }

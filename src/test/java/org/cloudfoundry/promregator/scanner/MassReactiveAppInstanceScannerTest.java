@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorMassMock;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -15,8 +16,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import io.prometheus.client.CollectorRegistry;
-
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = MockedMassReactiveAppInstanceScannerSpringApplication.class)
 @TestPropertySource(locations="default.properties")
@@ -26,8 +25,8 @@ public class MassReactiveAppInstanceScannerTest {
 	private AppInstanceScanner appInstanceScanner;
 	
 	@AfterClass
-	public static void releaseInternalMetrics() {
-		CollectorRegistry.defaultRegistry.clear();
+	public static void cleanUp() {
+		JUnitTestUtils.cleanUpAll();
 	}
 	
 	@Test

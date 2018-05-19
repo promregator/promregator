@@ -14,8 +14,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import io.prometheus.client.CollectorRegistry;
-
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = MockedReactiveAppInstanceScannerSpringApplication.class)
 @TestPropertySource(locations="default.properties")
@@ -25,7 +23,7 @@ public class ReactiveAppInstanceScannerTest {
 	private AppInstanceScanner appInstanceScanner;
 	
 	@AfterClass
-	public static void cleanupEnvironment() {
+	public static void cleanUp() {
 		JUnitTestUtils.cleanUpAll();
 	}
 	
