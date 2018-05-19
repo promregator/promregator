@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.http.client.methods.HttpGet;
 import org.cloudfoundry.promregator.JUnitTestUtils;
@@ -63,7 +65,11 @@ public class MetricsFetcherTest {
 	public void testStraightForward() throws Exception {
 		String instanceId = "abcd:4";
 		NullMetricFamilySamplesEnricher dummymfse = new NullMetricFamilySamplesEnricher("dummy", "dummy", "dummy", "dummy:0");
-		CFMetricsFetcher subject = new CFMetricsFetcher("http://localhost:9002/metrics", instanceId, null, dummymfse, new MetricsFetcherMetrics(dummymfse, null));
+		List<String> labelValues = dummymfse.getEnrichedLabelValues(new LinkedList<>());
+		String[] ownTelemetryLabelValues = labelValues.toArray(new String[0]);
+		
+		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, false);
+		CFMetricsFetcher subject = new CFMetricsFetcher("http://localhost:9002/metrics", instanceId, null, dummymfse, mfm, null);
 		
 		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
 		
@@ -95,7 +101,11 @@ public class MetricsFetcherTest {
 		String instanceId = "abcd:2";
 		TestAuthenticationEnricher ae = new TestAuthenticationEnricher();
 		NullMetricFamilySamplesEnricher dummymfse = new NullMetricFamilySamplesEnricher("dummy", "dummy", "dummy", "dummy:0");
-		CFMetricsFetcher subject = new CFMetricsFetcher("http://localhost:9002/metrics", instanceId, ae, dummymfse, new MetricsFetcherMetrics(dummymfse, null));
+		List<String> labelValues = dummymfse.getEnrichedLabelValues(new LinkedList<>());
+		String[] ownTelemetryLabelValues = labelValues.toArray(new String[0]);
+		
+		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, false);
+		CFMetricsFetcher subject = new CFMetricsFetcher("http://localhost:9002/metrics", instanceId, ae, dummymfse, mfm, null);
 		
 		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
 		

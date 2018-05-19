@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 
+import io.prometheus.client.Gauge;
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Histogram.Timer;
 
@@ -38,6 +39,7 @@ public class CFMetricsFetcher implements MetricsFetcher {
 	private final RequestConfig config;
 	private AuthenticationEnricher ae;
 	
+	private Gauge.Child up;
 	
 	private AbstractMetricFamilySamplesEnricher mfse;
 
@@ -46,12 +48,14 @@ public class CFMetricsFetcher implements MetricsFetcher {
 	private MetricsFetcherMetrics mfm;
 
 	public CFMetricsFetcher(String endpointUrl, String instanceId, AuthenticationEnricher ae, AbstractMetricFamilySamplesEnricher mfse, 
-			String proxyHost, int proxyPort, MetricsFetcherMetrics mfm) {
+			String proxyHost, int proxyPort, MetricsFetcherMetrics mfm, Gauge.Child up) {
 		this.endpointUrl = endpointUrl;
 		this.instanceId = instanceId;
 		this.ae = ae;
 		this.mfse = mfse;
 		this.mfm = mfm;
+		
+		this.up = up;
 
 		if (proxyHost != null && proxyPort != 0) {
 			this.config = RequestConfig.custom().setProxy(new HttpHost(proxyHost, proxyPort, "http")).build();
@@ -71,8 +75,8 @@ public class CFMetricsFetcher implements MetricsFetcher {
 	 * May be <code>null</code> in which case no enriching takes place.
 	 */
 	public CFMetricsFetcher(String endpointUrl, String instanceId, AuthenticationEnricher ae, AbstractMetricFamilySamplesEnricher mfse, 
-			MetricsFetcherMetrics mfm) {
-		this(endpointUrl, instanceId, ae, mfse, null, 0, mfm);
+			MetricsFetcherMetrics mfm, Gauge.Child up) {
+		this(endpointUrl, instanceId, ae, mfse, null, 0, mfm, up);
 	}
 
 	@Override
@@ -143,14 +147,14 @@ public class CFMetricsFetcher implements MetricsFetcher {
 				}
 			}
 			
-			if (this.mfm.getUp() != null) {
+			if (this.up != null) {
 				if (available) {
-					this.mfm.getUp().set(1.0);
+					this.up.set(1.0);
 				} else {
 					if (this.mfm.getFailedRequests() != null)
 						this.mfm.getFailedRequests().inc();
 					
-					this.mfm.getUp().set(0.0);
+					this.up.set(0.0);
 				}
 			}
 		}

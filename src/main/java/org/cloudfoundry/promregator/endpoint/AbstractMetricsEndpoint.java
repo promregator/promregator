@@ -10,29 +10,31 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Predicate;
 
 import javax.annotation.PostConstruct;
+import javax.validation.constraints.Null;
 
 import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
-import org.cloudfoundry.promregator.config.PromregatorConfiguration;
+import org.cloudfoundry.promregator.discovery.CFDiscoverer;
 import org.cloudfoundry.promregator.fetcher.CFMetricsFetcher;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcher;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcherMetrics;
+import org.cloudfoundry.promregator.fetcher.MetricsFetcherSimulator;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.CFMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.GenericMetricFamilySamplesPrefixRewriter;
 import org.cloudfoundry.promregator.rewrite.MergableMetricFamilySamples;
-import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
-import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Gauge;
+import io.prometheus.client.Gauge.Child;
 
 /**
  * An abstract class allowing to easily build a spring-framework HTTP REST-server endpoint, 
@@ -47,17 +49,17 @@ public abstract class AbstractMetricsEndpoint {
 	
 	private static final Logger log = Logger.getLogger(AbstractMetricsEndpoint.class);
 	
-	@Autowired
-	private TargetResolver targetResolver;
-	
-	@Autowired
-	private AppInstanceScanner appInstanceScanner;
+	@Value("${promregator.simulation.enabled:false}")
+	private boolean simulationMode;
 	
 	@Autowired
 	private ExecutorService metricsFetcherPool;
 	
 	@Autowired
 	private CollectorRegistry collectorRegistry;
+	
+	@Autowired
+	private CFDiscoverer cfDiscoverer;
 	
 	@Value("${cf.proxyHost:@null}")
 	private String proxyHost;
@@ -69,10 +71,10 @@ public abstract class AbstractMetricsEndpoint {
 	private int maxProcessingTime;
 	
 	@Autowired
-	private PromregatorConfiguration promregatorConfiguration;
-	
-	@Autowired
 	private AuthenticationEnricher ae;
+	
+	@Value("${promregator.metrics.requestLatency:false}")
+	private boolean recordRequestLatency;
 	
 	private GenericMetricFamilySamplesPrefixRewriter gmfspr = new GenericMetricFamilySamplesPrefixRewriter("promregator");
 	
@@ -91,25 +93,18 @@ public abstract class AbstractMetricsEndpoint {
 				.register(this.requestRegistry);
 	}
 	
-	public String handleRequest() {
-		log.info(String.format("Received request to a metrics endpoint; we have %d targets configured", this.promregatorConfiguration.getTargets().size()));
+	public String handleRequest(@Null Predicate<? super String> applicationIdFilter, @Null Predicate<? super Instance> instanceFilter) {
+		log.debug("Received request to a metrics endpoint");
 		Instant start = Instant.now();
 		
 		this.up.clear();
 		
-		List<ResolvedTarget> resolvedTargets = this.targetResolver.resolveTargets(this.promregatorConfiguration.getTargets());
-		log.info(String.format("Raw list contains %d resolved targets", resolvedTargets.size()));
-		
-		List<Instance> instanceList = this.appInstanceScanner.determineInstancesFromTargets(resolvedTargets);
-		log.info(String.format("Raw list contains %d instances", instanceList.size()));
-
-		instanceList = this.filterInstanceList(instanceList);
-		log.info(String.format("Post filtering, %d instances will be fetched", instanceList.size()));
+		List<Instance> instanceList = this.cfDiscoverer.discover(applicationIdFilter, instanceFilter);
 		
 		List<MetricsFetcher> callablesPrep = this.createMetricsFetchers(instanceList);
 		
 		LinkedList<Future<HashMap<String, MetricFamilySamples>>> futures = this.startMetricsFetchers(callablesPrep);
-		log.info(String.format("Fetching metrics from %d distinct endpoints", futures.size()));
+		log.debug(String.format("Fetching metrics from %d distinct endpoints", futures.size()));
 		
 		MergableMetricFamilySamples mmfs = waitForMetricsFetchers(futures);
 		
@@ -145,13 +140,6 @@ public abstract class AbstractMetricsEndpoint {
 	 * <code>false</code> otherwise.
 	 */
 	protected abstract boolean isIncludeGlobalMetrics();
-
-	/**
-	 * allows to filter the list of detected instances.
-	 * Only those instances returned by this method will later be scraped
-	 * @return the (reduced) list of instances which shall be scraped
-	 */
-	protected abstract List<Instance> filterInstanceList(List<Instance> instanceList);
 
 	private MergableMetricFamilySamples waitForMetricsFetchers(LinkedList<Future<HashMap<String, MetricFamilySamples>>> futures) {
 		long starttime = System.currentTimeMillis();
@@ -200,7 +188,7 @@ public abstract class AbstractMetricsEndpoint {
 		
 		List<MetricsFetcher> callablesList = new LinkedList<>();
 		for (Instance instance : instanceList) {
-			log.info(String.format("Creating Metrics Fetcher for instance %s", instance.getInstanceId()));
+			log.debug(String.format("Creating Metrics Fetcher for instance %s", instance.getInstanceId()));
 			
 			ResolvedTarget target = instance.getTarget();
 			String orgName = target.getOrgName();
@@ -215,14 +203,23 @@ public abstract class AbstractMetricsEndpoint {
 			}
 			
 			AbstractMetricFamilySamplesEnricher mfse = new CFMetricFamilySamplesEnricher(orgName, spaceName, appName, instance.getInstanceId());
-			MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(mfse, up);
+			List<String> labelValues = mfse.getEnrichedLabelValues(new LinkedList<>());
+			String[] ownTelemetryLabelValues = labelValues.toArray(new String[0]);
+			
+			MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, this.recordRequestLatency);
+			
+			Child upChild = this.up.labels(ownTelemetryLabelValues);
 
 			MetricsFetcher mf = null;
 			
-			if (this.proxyHost != null && this.proxyPort != 0) {
-				mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), this.ae, mfse, this.proxyHost, this.proxyPort, mfm);
+			if (this.simulationMode) {
+				mf = new MetricsFetcherSimulator(accessURL, this.ae, mfse, mfm, upChild);
 			} else {
-				mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), this.ae, mfse, mfm);
+				if (this.proxyHost != null && this.proxyPort != 0) {
+					mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), this.ae, mfse, this.proxyHost, this.proxyPort, mfm, upChild);
+				} else {
+					mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), this.ae, mfse, mfm, upChild);
+				}
 			}
 			callablesList.add(mf);
 		}

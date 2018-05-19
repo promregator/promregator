@@ -47,6 +47,7 @@ the caller via Prometheus metrics. For this, the following metrics are exposed:
 
 * `promregator_request_latency`: a [Prometheus histogram](https://prometheus.io/docs/practices/histograms/), 
   which returns the latency which was necessary to retrieve the metrics from the target.
+  Note that this metric is disabled by default due to high data volume. You may enable it with [configuration option](./config.md) `promregator.metrics.requestLatency`.
 * `promregator_request_size`: a [Prometheus histogram](https://prometheus.io/docs/practices/histograms/), which returns the size of the scraping document, which was sent from the target to Promregator.
 * `promregator_up`: a [Prometheus Gauge](https://prometheus.io/docs/concepts/metric_types/) which indicates whether an instance was reachable or not (similar to the [gauge provided for Prometheus' own monitoring](https://prometheus.io/docs/concepts/jobs_instances/)).
 * `promregator_request_failure`: a [Prometheus Gauge](https://prometheus.io/docs/concepts/metric_types/) which indicates the number of requests sent to the target, which have failed.

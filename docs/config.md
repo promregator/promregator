@@ -176,6 +176,20 @@ Specifies the way how authentication shall be verified, if a request reaches the
 * *NONE*: no authentication verification is required (default)
 * *BASIC*: an authentication verification using HTTP Basic Authentication is performed. Valid credentials are taken from `promregator.authentication.basic.username` and `promregator.authentication.basic.password`.
 
+### Subgroup "promregator.discoverer"
+Configures how the way how the discoverer (mind the difference to the discover**y**) resolves non-complete target configurations with the help of the metadata provided by Cloud Foundry.
+
+The primary task of the discovere**r** is to resolve target configurations, which do *not* refer to a single application. The discoverer introspects the Cloud Foundry Organizations, Spaces and Applications and provides a list of applications, which are selected for scraping.
+
+#### Option "promregator.discoverer.timeout" (optional)
+This option allows you to specify how long (in seconds) the discoverer should consider a once-fetched application to be valid.
+
+The primary relevance of this option is to determine the point in time, how low [(internal) metrics](enrichment.md) generated shall be considered valid. The timeout is automatically prolonged, if the instance still is seen on the Cloud Foundry platform. Once the application is gone (for example, it has been deleted), this timeout (counting from the point of time it was seen last) comes into play. If the application does not reappear within this time frame, also the samples of the internal metrics will be deleted.
+If the application reappears after the deletion, it is considered "a new application" and the internal metrics start from zero.
+
+The default value is 600 seconds (i.e. 10 minutes).
+
+
 ### Subgroup "promregator.endpoint"
 Configures the way how the metrics endpoints `/metrics` and `/singleTargetMetrics` behave.
 
@@ -211,6 +225,12 @@ Specifies the way how authentication shall be verified, if a request reaches the
 * *NONE*: no authentication verification is required (default)
 * *BASIC*: an authentication verification using HTTP Basic Authentication is performed. Valid credentials are taken from `promregator.authentication.basic.username` and `promregator.authentication.basic.password`.
 
+#### Option "promregator.metrics.requestLatency" (optional)
+A boolean which specifies, if the additional metrics `promregator_request_latency`, a histogram metric measuring the latency generated for each Cloud Foundry Application Instance, shall be recorded and exposed to Prometheus. 
+
+The default of this option is "false", which disables the recording. 
+
+If you have many targets (or many instances) which shall be scraped, the data volume of this metric may become huge and thus may cause performance issues (especially w.r.t. memory throughput and thus cause high load situations for the JVM garbage collector). That is why the default is set to "false".
 
 #### Option "promregator.metrics.internal" (optional)
 Specifies, if additional internal metrics shall be exposed describing the internal state of Promregator.
@@ -294,6 +314,18 @@ If not specified, `promregator` is defaulted.
 Specifies the (plain-text) password, which is used for HTTP Basic (inbound) authentication.
 
 If not specified, a random password is generated during startup. Its value is printed to the standard error device.
+
+### Option "promregator.gc.rate" (optional)
+
+Promregator is quite memory intensive in that sense that it temporarily may allocate quite large chunks of memory. Those memory blocks, however, are released very soon again. However, this may cause a challenge to garbage collection. 
+
+With this option, a rate (measured in seconds) can be specified after which the Java Virtual Machine shall be triggered to perform a (major) garbage collection by calling `System.gc()`. 
+
+By default, a value of 1200 seconds (20 minutes) is configured. In case you experience dumps with error messages
+```
+java.lang.OutOfMemoryError: Java heap space
+```
+you may try to *decrease* this value. A value below 120 (seconds) does not make sense, though.
 
 
 ## Further Options

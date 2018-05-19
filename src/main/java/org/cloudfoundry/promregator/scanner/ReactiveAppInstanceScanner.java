@@ -3,8 +3,10 @@ package org.cloudfoundry.promregator.scanner;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
 import javax.annotation.PostConstruct;
+import javax.validation.constraints.Null;
 
 import org.apache.commons.collections4.map.PassiveExpiringMap;
 import org.apache.log4j.Logger;
@@ -50,7 +52,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	private CFAccessor cfAccessor;
 	
 	@Override
-	public List<Instance> determineInstancesFromTargets(List<ResolvedTarget> targets) {
+	public List<Instance> determineInstancesFromTargets(List<ResolvedTarget> targets, @Null Predicate<? super String> applicationIdFilter, @Null Predicate<? super Instance> instanceFilter) {
 		Flux<ResolvedTarget> targetsFlux = Flux.fromIterable(targets);
 		
 		Flux<OSAVector> initialOSAVectorFlux = targetsFlux.map(target -> {
@@ -81,6 +83,11 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			return v;
 		});
 		
+		// perform pre-filtering, if available
+		if (applicationIdFilter != null) {
+			OSAVectorApplicationFlux = OSAVectorApplicationFlux.filter(v -> applicationIdFilter.test(v.applicationId));
+		}
+		
 		Flux<String> applicationURLFlux = OSAVectorApplicationFlux.flatMap(v -> this.getApplicationUrl(v.applicationId, v.target.getProtocol()));
 		Flux<OSAVector> OSAVectorURLFlux = Flux.zip(OSAVectorApplicationFlux, applicationURLFlux).map(tuple -> {
 			OSAVector v = tuple.getT1();
@@ -105,6 +112,11 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			
 			return Flux.fromIterable(instances);
 		});
+		
+		// perform pre-filtering, if available
+		if (instanceFilter != null) {
+			instancesFlux = instancesFlux.filter(instanceFilter);
+		}
 		
 		return instancesFlux.collectList().block();
 	}

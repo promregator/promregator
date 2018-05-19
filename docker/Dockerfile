@@ -1,5 +1,6 @@
 FROM openjdk:8-jre
 # Warning! We are currently unable to use openjdk9 due to https://github.com/docker-library/openjdk/issues/145
+# Warning! If changing to 9-jre, we also have to change the options "-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap" in data/promregator.sh
 
 ARG user=promregator
 ARG group=promregator

@@ -18,16 +18,7 @@ timestamps {
 		dir("build") {
 			checkout scm
 			
-			stage("Build") {
-				sh """#!/bin/bash -xe
-				export CF_PASSWORD=dummypassword
-				mvn -U -B clean verify
-				"""
-			}
-			
-			stage("Post-processing quality data") {
-				junit 'target/surefire-reports/*.xml'
-				
+			stage("Static Code Checks") {
 				step([
 					$class: 'FindBugsPublisher',
 					pattern: '**/findbugsXml.xml',
@@ -38,6 +29,17 @@ timestamps {
 					$class: 'PmdPublisher',
 					failedTotalAll: '100'
 				])
+			}
+			
+			stage("Build") {
+				sh """#!/bin/bash -xe
+				export CF_PASSWORD=dummypassword
+				mvn -U -B clean verify
+				"""
+			}
+			
+			stage("Post-processing quality data") {
+				junit 'target/surefire-reports/*.xml'
 				
 				step([
 					$class: 'JacocoPublisher'
