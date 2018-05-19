@@ -6,16 +6,14 @@ import java.util.List;
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.config.Target;
 import org.cloudfoundry.promregator.scanner.MockedCachingTargetResolverSpringApplication.MockedTargetResolver;
-import org.cloudfoundry.promregator.scanner.MockedCachingTargetResolverSpringApplication.RemovalHandler;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import org.junit.Assert;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = MockedCachingTargetResolverSpringApplication.class)
@@ -38,11 +36,6 @@ public class CachingTargetResolverTest {
 		( (MockedTargetResolver) targetResolver).resetRequestFlags();
 		
 	}
-	
-	@Autowired
-	private CachingTargetResolverRemovalListener testRemovalHandler;
-	
-	
 	@Test
 	public void testTwoPlainTargets() {
 		List<Target> list = new LinkedList<>();
@@ -155,21 +148,4 @@ public class CachingTargetResolverTest {
 		rt = actualList.get(1);
 		Assert.assertEquals(MockedTargetResolver.rTarget2, rt);
 	}
-
-	@Test
-	public void testRemovalHandlerIsCalled() {
-		List<Target> list = new LinkedList<>();
-		list.add(MockedTargetResolver.target1);
-		
-		// fill the cache
-		this.cachingTargetResolver.resolveTargets(list);
-		
-		// ensure that the @After method above did not fool us
-		( (RemovalHandler ) this.testRemovalHandler).reset();
-		
-		this.cachingTargetResolver.invalidateCache();
-		
-		Assert.assertTrue(( (RemovalHandler ) this.testRemovalHandler).isCalled());
-	}
-	
 }

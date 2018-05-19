@@ -101,27 +101,4 @@ public class MockedCachingTargetResolverSpringApplication {
 	public CachingTargetResolver cachingTargetResolver(TargetResolver targetResolver) {
 		return new CachingTargetResolver(targetResolver);
 	}
-	
-	public static class RemovalHandler implements CachingTargetResolverRemovalListener {
-		private boolean called = false;
-		
-		@Override
-		public void onRemoval(Target removedConfigTarget, List<ResolvedTarget> removedResolvedTargets) {
-			this.called = true;
-		}
-
-		public boolean isCalled() {
-			return called;
-		}
-		
-		public void reset() {
-			this.called = false;
-		}
-	}
-	
-	@Bean
-	public CachingTargetResolverRemovalListener testRemovalHandler() {
-		return new RemovalHandler();
-	}
-	
 }
