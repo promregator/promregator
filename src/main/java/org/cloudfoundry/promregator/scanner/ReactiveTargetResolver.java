@@ -23,7 +23,14 @@ public class ReactiveTargetResolver implements TargetResolver {
 	public List<ResolvedTarget> resolveTargets(List<Target> configTargets) {
 		
 		Flux<ResolvedTarget> resultFlux = Flux.fromIterable(configTargets)
-			// TODO add here a .parallel()
+			/* It would be possible to add .parallel() here
+			 * However, the current memory footprint (i.e. memory throughput)
+			 * is already a challenge for the garbage collector (see also
+			 * issue #54). That is why we currently refrain from also running
+			 * the requests here in parallel. 
+			 * If measurements in the future show that this would not be a problem,
+			 * we are still capable of introducing this later.
+			 */
 			.flatMap(configTarget -> this.resolveSingleTarget(configTarget));
 		
 		return resultFlux.collectList().block();
@@ -82,8 +89,9 @@ public class ReactiveTargetResolver implements TargetResolver {
 			return true;
 		}
 		
-		// TODO: To be enhanced, once we know of further states, which are
-		// also scrapable.
+		/* TODO: To be enhanced, once we know of further states, which are
+		 * also scrapable.
+		 */
 		
 		return false;
 	}
