@@ -7,7 +7,9 @@ import java.util.HashMap;
 import java.util.Random;
 
 import org.apache.http.client.methods.HttpGet;
+import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
+import org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
@@ -15,7 +17,8 @@ import io.prometheus.client.Gauge;
 import io.prometheus.client.Histogram.Timer;
 
 public class MetricsFetcherSimulator implements MetricsFetcher {
-
+	private static final Logger log = Logger.getLogger(MetricsFetcherSimulator.class);
+	
 	private String accessURL;
 	private AuthenticationEnricher ae;
 	private AbstractMetricFamilySamplesEnricher mfse;
@@ -45,13 +48,13 @@ public class MetricsFetcherSimulator implements MetricsFetcher {
 			try {
 				result.close();
 			} catch (IOException e) {
-				// ignored
+				log.warn(String.format("Unable to close result ByteArrayOutputStream having read the simulation data"));
 			}
 			
 			try {
 				is.close();
 			} catch (IOException e) {
-				// ignored
+				log.warn(String.format("Unable to close the input stream while reading the simulation data"));
 			}
 		}
 		
