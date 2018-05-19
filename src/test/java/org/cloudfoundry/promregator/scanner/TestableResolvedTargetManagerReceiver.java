@@ -7,18 +7,18 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class TestableResolvedTargetManagerReceiver {
-	private ResolvedTarget lastRt;
+	private Instance lastInstance;
 	
 	@JmsListener(destination=MessageBusDestination.DISCOVERER_INSTANCE_REMOVED, containerFactory=JMSSpringConfiguration.BEAN_NAME_JMS_LISTENER_CONTAINER_FACTORY)
-	public void receiver(ResolvedTarget rt) {
-		this.lastRt = rt;
+	public void receiver(Instance instance) {
+		this.lastInstance = instance;
 	}
 
 	/**
-	 * @return the lastRt
+	 * @return the lastInstance
 	 */
-	public ResolvedTarget getLastRt() {
-		return lastRt;
+	public Instance getLastRt() {
+		return lastInstance;
 	}
 	
 }
