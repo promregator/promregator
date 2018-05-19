@@ -31,7 +31,7 @@ public class PromregatorApplicationTest {
 	}
 
 	@AfterClass
-	public static void releaseInternalMetrics() {
-		CollectorRegistry.defaultRegistry.clear();
+	public static void cleanUp() {
+		JUnitTestUtils.cleanUpAll();
 	}
 }

@@ -4,6 +4,7 @@ import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcherMetrics;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.CFMetricFamilySamplesEnricher;
@@ -19,8 +20,8 @@ import io.prometheus.client.CollectorRegistry;
 public class InstanceLifecycleHandlerTest {
 
 	@AfterClass
-	public static void releaseInternalMetrics() {
-		CollectorRegistry.defaultRegistry.clear();
+	public static void cleanUp() {
+		JUnitTestUtils.cleanUpAll();
 	}
 	
 	@Test

@@ -5,6 +5,7 @@ import java.time.Duration;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorMock;
 import org.cloudfoundry.promregator.messagebus.MessageBusDestination;
 import org.cloudfoundry.promregator.scanner.Instance;
@@ -27,8 +28,8 @@ import io.prometheus.client.CollectorRegistry;
 public class CFDiscovererTest {
 	
 	@AfterClass
-	public static void releaseInternalMetrics() {
-		CollectorRegistry.defaultRegistry.clear();
+	public static void cleanUp() {
+		JUnitTestUtils.cleanUpAll();
 	}
 	
 	@Autowired
