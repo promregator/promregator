@@ -87,8 +87,13 @@ public class CFDiscovererTest {
 		Assert.assertTrue(this.cfDiscoverer.isInstanceRegistered(i2));
 		
 		// Wait a little to allow JMX do its job... (if it really did something)
-		Thread.sleep(100);
-		Assert.assertTrue(this.removerTriggerForInstances.isEmpty());
+		for (int i = 0;i<10;i++) {
+			if (!this.removerTriggerForInstances.isEmpty()) {
+				Thread.sleep(100);
+				continue;
+			}
+			Assert.assertTrue(this.removerTriggerForInstances.isEmpty());
+		}
 		
 		// later cleaning does...
 		this.cfDiscoverer.setClock(Clock.offset(this.clock, Duration.ofMinutes(10)));
@@ -98,10 +103,13 @@ public class CFDiscovererTest {
 		Assert.assertFalse(this.cfDiscoverer.isInstanceRegistered(i1));
 		Assert.assertFalse(this.cfDiscoverer.isInstanceRegistered(i2));
 		
-		// Wait a little to allow JMX do its job...
-		Thread.sleep(100);
-		
-		Assert.assertEquals(2, this.removerTriggerForInstances.size());
+		for (int i = 0;i<10;i++) {
+			if (this.removerTriggerForInstances.size() == 0) {
+				Thread.sleep(100);
+				continue;
+			}
+			Assert.assertEquals(2, this.removerTriggerForInstances.size());
+		}
 	}
 
 }
