@@ -150,6 +150,14 @@ Specifies the way how authentication shall be verified, if a request reaches the
 * *NONE*: no authentication verification is required (default)
 * *BASIC*: an authentication verification using HTTP Basic Authentication is performed. Valid credentials are taken from `promregator.authentication.basic.username` and `promregator.authentication.basic.password`.
 
+#### Option "promregator.discovery.ownMetricsEndpoint" (optional)
+Specifies, whether the document provided by the discovery endpoint should contain an additional scraping target, which refers to Promregator's own metrics endpoint, where promregator's own data is exposed (value `true`), or not (value `false`).
+
+Setting this option is optional. If not specified, the option is set to `true` by default. Thus, the metrics endpoint is also mentioned in the JSON document. 
+
+You might want to set this option here to `false`, if you want to run Promregator in a [high-availability setup](./ha-setup.md).
+
+
 ### Subgroup "promregator.discoverer"
 Configures how the way how the discoverer (mind the difference to the discover**y**) resolves non-complete target configurations with the help of the metadata provided by Cloud Foundry.
 
