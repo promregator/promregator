@@ -20,9 +20,8 @@ import io.prometheus.client.exporter.common.TextFormat;
 
 @RestController
 @Scope(value=WebApplicationContext.SCOPE_REQUEST) // see also https://github.com/promregator/promregator/issues/51
-@RequestMapping(SingleTargetMetricsEndpoint.ENDPOINT_PATH+"/{applicationId}/{instanceNumber}")
+@RequestMapping(EndpointConstants.ENDPOINT_PATH_SINGLE_TARGET_SCRAPING+"/{applicationId}/{instanceNumber}")
 public class SingleTargetMetricsEndpoint extends AbstractMetricsEndpoint {
-	public static final String ENDPOINT_PATH = "/singleTargetMetrics";
 	
 	private Instance instance;
 	

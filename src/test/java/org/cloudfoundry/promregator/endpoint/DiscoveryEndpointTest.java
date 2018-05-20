@@ -58,7 +58,7 @@ public class DiscoveryEndpointTest {
 		Assert.assertEquals("0", label.get__meta_promregator_target_instanceNumber());
 		Assert.assertEquals("unittestorg", label.get__meta_promregator_target_orgName());
 		Assert.assertEquals("unittestspace", label.get__meta_promregator_target_spaceName());
-		Assert.assertEquals("/singleTargetMetrics/faedbb0a-2273-4cb4-a659-bd31331f7daf/0", label.get__meta_promregator_target_path());
+		Assert.assertEquals(EndpointConstants.ENDPOINT_PATH_SINGLE_TARGET_SCRAPING+"/faedbb0a-2273-4cb4-a659-bd31331f7daf/0", label.get__meta_promregator_target_path());
 
 		label = response[1].getLabels();
 		Assert.assertEquals("faedbb0a-2273-4cb4-a659-bd31331f7daf", label.get__meta_promregator_target_applicationId());
@@ -67,7 +67,7 @@ public class DiscoveryEndpointTest {
 		Assert.assertEquals("1", label.get__meta_promregator_target_instanceNumber());
 		Assert.assertEquals("unittestorg", label.get__meta_promregator_target_orgName());
 		Assert.assertEquals("unittestspace", label.get__meta_promregator_target_spaceName());
-		Assert.assertEquals("/singleTargetMetrics/faedbb0a-2273-4cb4-a659-bd31331f7daf/1", label.get__meta_promregator_target_path());
+		Assert.assertEquals(EndpointConstants.ENDPOINT_PATH_SINGLE_TARGET_SCRAPING+"/faedbb0a-2273-4cb4-a659-bd31331f7daf/1", label.get__meta_promregator_target_path());
 
 		label = response[2].getLabels();
 		Assert.assertEquals("1142a717-e27d-4028-89d8-b42a0c973300", label.get__meta_promregator_target_applicationId());
@@ -76,7 +76,7 @@ public class DiscoveryEndpointTest {
 		Assert.assertEquals("0", label.get__meta_promregator_target_instanceNumber());
 		Assert.assertEquals("unittestorg", label.get__meta_promregator_target_orgName());
 		Assert.assertEquals("unittestspace", label.get__meta_promregator_target_spaceName());
-		Assert.assertEquals("/singleTargetMetrics/1142a717-e27d-4028-89d8-b42a0c973300/0", label.get__meta_promregator_target_path());
+		Assert.assertEquals(EndpointConstants.ENDPOINT_PATH_SINGLE_TARGET_SCRAPING+"/1142a717-e27d-4028-89d8-b42a0c973300/0", label.get__meta_promregator_target_path());
 
 		label = response[3].getLabels();
 		Assert.assertEquals(null, label.get__meta_promregator_target_applicationId());
@@ -85,7 +85,7 @@ public class DiscoveryEndpointTest {
 		Assert.assertEquals(null, label.get__meta_promregator_target_instanceNumber());
 		Assert.assertEquals(null, label.get__meta_promregator_target_orgName());
 		Assert.assertEquals(null, label.get__meta_promregator_target_spaceName());
-		Assert.assertEquals("/promregatorMetrics", label.get__meta_promregator_target_path());
+		Assert.assertEquals(EndpointConstants.ENDPOINT_PATH_PROMREGATOR_METRICS, label.get__meta_promregator_target_path());
 		
 	}
 

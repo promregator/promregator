@@ -3,6 +3,7 @@ package org.cloudfoundry.promregator.websecurity;
 import java.util.UUID;
 
 import org.cloudfoundry.promregator.config.InboundAuthorizationMode;
+import org.cloudfoundry.promregator.endpoint.EndpointConstants;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -107,10 +108,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		}
 
 		HttpSecurity sec = security;
-		sec = this.determineHttpSecurityForEndpoint(sec, "/discovery", this.discoveryAuth);
-		sec = this.determineHttpSecurityForEndpoint(sec, "/metrics", this.endpointAuth);
-		sec = this.determineHttpSecurityForEndpoint(sec, "/singleTargetMetrics/**", this.endpointAuth);
-		sec = this.determineHttpSecurityForEndpoint(sec, "/promregatorMetrics", this.promregatorMetricsAuth);
+		sec = this.determineHttpSecurityForEndpoint(sec, EndpointConstants.ENDPOINT_PATH_DISCOVERY, this.discoveryAuth);
+		sec = this.determineHttpSecurityForEndpoint(sec, EndpointConstants.ENDPOINT_PATH_SINGLE_ENDPOINT_SCRAPING, this.endpointAuth);
+		sec = this.determineHttpSecurityForEndpoint(sec, EndpointConstants.ENDPOINT_PATH_SINGLE_TARGET_SCRAPING+"/**", this.endpointAuth);
+		sec = this.determineHttpSecurityForEndpoint(sec, EndpointConstants.ENDPOINT_PATH_PROMREGATOR_METRICS, this.promregatorMetricsAuth);
 		sec = this.determineHttpSecurityForEndpoint(sec, "/cache/invalidate", this.cacheInvalidateAuth);
 
 		
@@ -143,10 +144,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 		WebSecurity web = webInitial;
 
-		web = this.determineWebSecurityForEndpoint(web, "/discovery", this.discoveryAuth);
-		web = this.determineWebSecurityForEndpoint(web, "/metrics", this.endpointAuth);
-		web = this.determineWebSecurityForEndpoint(web, "/singleTargetMetrics/**", this.endpointAuth);
-		web = this.determineWebSecurityForEndpoint(web, "/promregatorMetrics", this.promregatorMetricsAuth);
+		web = this.determineWebSecurityForEndpoint(web, EndpointConstants.ENDPOINT_PATH_DISCOVERY, this.discoveryAuth);
+		web = this.determineWebSecurityForEndpoint(web, EndpointConstants.ENDPOINT_PATH_SINGLE_ENDPOINT_SCRAPING, this.endpointAuth);
+		web = this.determineWebSecurityForEndpoint(web, EndpointConstants.ENDPOINT_PATH_SINGLE_TARGET_SCRAPING+"/**", this.endpointAuth);
+		web = this.determineWebSecurityForEndpoint(web, EndpointConstants.ENDPOINT_PATH_PROMREGATOR_METRICS, this.promregatorMetricsAuth);
 		web = this.determineWebSecurityForEndpoint(web, "/cache/invalidate", this.cacheInvalidateAuth);
 
 	}

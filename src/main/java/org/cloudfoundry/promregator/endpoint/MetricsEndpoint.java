@@ -23,7 +23,7 @@ import io.prometheus.client.exporter.common.TextFormat;
  */
 @RestController
 @Scope(value=WebApplicationContext.SCOPE_REQUEST) // see also https://github.com/promregator/promregator/issues/51
-@RequestMapping("/metrics")
+@RequestMapping(EndpointConstants.ENDPOINT_PATH_SINGLE_ENDPOINT_SCRAPING)
 public class MetricsEndpoint extends AbstractMetricsEndpoint {
 	private static final Logger log = Logger.getLogger(MetricsEndpoint.class);
 
