@@ -23,6 +23,7 @@ If Promregator is running on the same platform as the applications which you int
         protocol: https
         path: /promregatorMetrics
   ´´´
+  
   Note that setting the path is very important, as otherwise scraping will fail entirely, as you would be trying to
   scrape not just Promregator's own metrics, but all metrics (you get a fallback to Single Endpoint Scraping mode), which would lead to an endless recursive loop.
 
