@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/cache/invalidate")
+@RequestMapping(EndpointConstants.ENDPOINT_PATH_CACHE_INVALIDATION)
 public class InvalidateCacheEndpoint {
 
 	@Autowired
