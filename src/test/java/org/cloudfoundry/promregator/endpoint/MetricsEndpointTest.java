@@ -1,13 +1,17 @@
 package org.cloudfoundry.promregator.endpoint;
 
 import java.util.HashMap;
+import java.util.UUID;
 
 import org.cloudfoundry.promregator.fetcher.TextFormat004Parser;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -19,10 +23,13 @@ import io.prometheus.client.Collector.MetricFamilySamples.Sample;
 @TestPropertySource(locations="default.properties")
 public class MetricsEndpointTest {
 
+	@After
+	public void resetMockedHTTPServletRequest() {
+		Mockito.reset(MockedMetricsEndpointSpringApplication.mockedHttpServletRequest);
+	}
+	
 	@Autowired
 	private TestableMetricsEndpoint subject;
-	
-
 	
 	@Test
 	public void testGetMetrics() {
@@ -64,4 +71,19 @@ public class MetricsEndpointTest {
 		Assert.assertTrue(sample.labelValues.isEmpty());
 	}
 
+	@Test(expected=HttpMessageNotReadableException.class)
+	public void testNegativeIsLoopbackScrapingRequest() {
+		Mockito.when(MockedMetricsEndpointSpringApplication.mockedHttpServletRequest.getHeader(EndpointConstants.HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER))
+		.thenReturn(MockedMetricsEndpointSpringApplication.currentPromregatorInstanceIdentifier.toString());
+		
+		subject.getMetrics();
+	}
+	
+	@Test
+	public void testPositiveIsNotALoopbackScrapingRequest() {
+		Mockito.when(MockedMetricsEndpointSpringApplication.mockedHttpServletRequest.getHeader(EndpointConstants.HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER))
+		.thenReturn(UUID.randomUUID().toString());
+		
+		subject.getMetrics();
+	}
 }

@@ -9,6 +9,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Predicate;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Null;
 
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
@@ -20,6 +21,7 @@ import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
 import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.cloudfoundry.promregator.scanner.TrivialTargetResolver;
+import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.AutoConfigurationExcludeFilter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.TypeExcludeFilter;
@@ -42,6 +44,8 @@ import io.prometheus.client.CollectorRegistry;
 })
 @Import({ PromregatorConfiguration.class })
 public class MockedMetricsEndpointSpringApplication {
+	public final static UUID currentPromregatorInstanceIdentifier = UUID.randomUUID();
+	
 	@Bean
 	public AppInstanceScanner appInstanceScanner() {
 		return new AppInstanceScanner() {
@@ -121,6 +125,13 @@ public class MockedMetricsEndpointSpringApplication {
 
 	@Bean
 	public UUID promregatorInstanceIdentifier() {
-		return UUID.randomUUID();
+		return currentPromregatorInstanceIdentifier;
+	}
+
+	public static HttpServletRequest mockedHttpServletRequest = Mockito.mock(HttpServletRequest.class);
+	
+	@Bean
+	public HttpServletRequest httpServletRequest() {
+		return mockedHttpServletRequest;
 	}
 }
