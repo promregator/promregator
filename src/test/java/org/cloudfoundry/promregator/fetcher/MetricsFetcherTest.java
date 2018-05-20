@@ -10,6 +10,7 @@ import java.util.UUID;
 
 import org.apache.http.client.methods.HttpGet;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
+import org.cloudfoundry.promregator.endpoint.EndpointConstants;
 import org.cloudfoundry.promregator.mockServer.MetricsEndpointMockServer;
 import org.cloudfoundry.promregator.rewrite.CFMetricFamilySamplesEnricher;
 import org.junit.After;
@@ -63,7 +64,8 @@ public class MetricsFetcherTest {
 		String[] ownTelemetryLabelValues = labelValues.toArray(new String[0]);
 		
 		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, false);
-		CFMetricsFetcher subject = new CFMetricsFetcher("http://localhost:9002/metrics", instanceId, null, dummymfse, mfm, null, UUID.randomUUID());
+		UUID currentUUID = UUID.randomUUID();
+		CFMetricsFetcher subject = new CFMetricsFetcher("http://localhost:9002/metrics", instanceId, null, dummymfse, mfm, null, currentUUID);
 		
 		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
 		
@@ -71,6 +73,7 @@ public class MetricsFetcherTest {
 		
 		TextFormat004ParserTest.compareEMFS(this.expectedResult, Collections.enumeration(response.values()));
 		Assert.assertEquals(instanceId, this.mems.getMetricsEndpointHandler().getHeaders().getFirst("X-CF-APP-INSTANCE"));
+		Assert.assertEquals(currentUUID.toString(), this.mems.getMetricsEndpointHandler().getHeaders().getFirst(EndpointConstants.HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER));
 	}
 	
 	private static class TestAuthenticationEnricher implements AuthenticationEnricher {
