@@ -65,7 +65,7 @@ timestamps {
 						docker history ${imageName}
 					"""
 					
-					if (!currentVersion.contains("-SNAPSHOT")) {
+					if (!currentVersion.endsWith("-SNAPSHOT")) {
 						withCredentials([usernamePassword(
 							credentialsId: 'hub.github.com', 
 							passwordVariable: 'DOCKER_PASSWORD', 
