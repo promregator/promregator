@@ -2,6 +2,7 @@ package org.cloudfoundry.promregator.fetcher;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.UUID;
 
 import org.apache.http.HttpHost;
 import org.apache.http.client.ClientProtocolException;
@@ -13,6 +14,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
+import org.cloudfoundry.promregator.endpoint.EndpointConstants;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 
 import io.prometheus.client.Gauge;
@@ -47,8 +49,10 @@ public class CFMetricsFetcher implements MetricsFetcher {
 
 	private MetricsFetcherMetrics mfm;
 
+	private UUID promregatorUUID;
+
 	public CFMetricsFetcher(String endpointUrl, String instanceId, AuthenticationEnricher ae, AbstractMetricFamilySamplesEnricher mfse, 
-			String proxyHost, int proxyPort, MetricsFetcherMetrics mfm, Gauge.Child up) {
+			String proxyHost, int proxyPort, MetricsFetcherMetrics mfm, Gauge.Child up, UUID promregatorUUID) {
 		this.endpointUrl = endpointUrl;
 		this.instanceId = instanceId;
 		this.ae = ae;
@@ -56,6 +60,7 @@ public class CFMetricsFetcher implements MetricsFetcher {
 		this.mfm = mfm;
 		
 		this.up = up;
+		this.promregatorUUID = promregatorUUID;
 
 		if (proxyHost != null && proxyPort != 0) {
 			this.config = RequestConfig.custom().setProxy(new HttpHost(proxyHost, proxyPort, "http")).build();
@@ -75,8 +80,8 @@ public class CFMetricsFetcher implements MetricsFetcher {
 	 * May be <code>null</code> in which case no enriching takes place.
 	 */
 	public CFMetricsFetcher(String endpointUrl, String instanceId, AuthenticationEnricher ae, AbstractMetricFamilySamplesEnricher mfse, 
-			MetricsFetcherMetrics mfm, Gauge.Child up) {
-		this(endpointUrl, instanceId, ae, mfse, null, 0, mfm, up);
+			MetricsFetcherMetrics mfm, Gauge.Child up, UUID promregatorUUID) {
+		this(endpointUrl, instanceId, ae, mfse, null, 0, mfm, up, promregatorUUID);
 	}
 
 	@Override
@@ -91,6 +96,9 @@ public class CFMetricsFetcher implements MetricsFetcher {
 
 		// see also https://docs.cloudfoundry.org/concepts/http-routing.html
 		httpget.setHeader(HTTP_HEADER_CF_APP_INSTANCE, this.instanceId);
+		
+		// provided for recursive scraping / loopback detection
+		httpget.setHeader(EndpointConstants.HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER, this.promregatorUUID.toString());
 		
 		if (this.ae != null) {
 			this.ae.enrichWithAuthentication(httpget);

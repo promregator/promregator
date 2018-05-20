@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -13,6 +14,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
 
 import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Null;
 
 import org.apache.log4j.Logger;
@@ -75,6 +77,12 @@ public abstract class AbstractMetricsEndpoint {
 	
 	@Value("${promregator.metrics.requestLatency:false}")
 	private boolean recordRequestLatency;
+	
+	@Autowired
+	private UUID promregatorInstanceIdentifier;
+	
+	@Autowired
+	private HttpServletRequest httpServletRequest;
 	
 	private GenericMetricFamilySamplesPrefixRewriter gmfspr = new GenericMetricFamilySamplesPrefixRewriter("promregator");
 	
@@ -216,14 +224,42 @@ public abstract class AbstractMetricsEndpoint {
 				mf = new MetricsFetcherSimulator(accessURL, this.ae, mfse, mfm, upChild);
 			} else {
 				if (this.proxyHost != null && this.proxyPort != 0) {
-					mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), this.ae, mfse, this.proxyHost, this.proxyPort, mfm, upChild);
+					mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), this.ae, mfse, this.proxyHost, this.proxyPort, mfm, upChild, this.promregatorInstanceIdentifier);
 				} else {
-					mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), this.ae, mfse, mfm, upChild);
+					mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), this.ae, mfse, mfm, upChild, this.promregatorInstanceIdentifier);
 				}
 			}
 			callablesList.add(mf);
 		}
 		
 		return callablesList;
+	}
+	
+	/**
+	 * verifies if the current HTTP request is coming from the same Promregator instance 
+	 * (and thus we would have a loopback / recursive scraping request). This situation needs to be prohibited
+	 * as it might lead to an endless loop.
+	 * @return <code>true</code>, if a loopback was detected (which case the current request should be aborted); 
+	 * <code>false</code> otherwise.
+	 */
+	public boolean isLoopbackRequest() {
+		if (this.httpServletRequest == null) {
+			log.warn("Missing HTTP Servlet request reference; unable to verify whether this is a lookback request or not");
+			return false;
+		}
+		
+		String headerValue = this.httpServletRequest.getHeader(EndpointConstants.HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER);
+		if (headerValue == null) {
+			// the header was not set - so this can't be a Promregator instance anyway
+			return false;
+		}
+		
+		boolean loopback = this.promregatorInstanceIdentifier.toString().equals(headerValue);
+		
+		if (loopback) {
+			log.error("Errornous loopback request detected. One of your targets is improperly pointing back to Promregator itself. Please revise your configuration!");
+		}
+		
+		return loopback;
 	}
 }

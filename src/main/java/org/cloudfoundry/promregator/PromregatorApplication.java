@@ -1,6 +1,7 @@
 package org.cloudfoundry.promregator;
 
 import java.time.Clock;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -137,5 +138,14 @@ public class PromregatorApplication {
 	public void forceGC() {
 		log.info("Triggering major garbage collection");
 		System.gc();
+	}
+	
+	/**
+	 * a unique identifier for the currently running instance of Promregator
+	 * esp. required for detecting loopbacking scraping requests
+	 */
+	@Bean
+	public UUID promregatorInstanceIdentifer() {
+		return UUID.randomUUID();
 	}
 }

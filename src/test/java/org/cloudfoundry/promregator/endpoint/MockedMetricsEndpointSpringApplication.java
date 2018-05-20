@@ -4,6 +4,7 @@ import java.time.Clock;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Predicate;
@@ -118,4 +119,8 @@ public class MockedMetricsEndpointSpringApplication {
 		return new NullEnricher();
 	};
 
+	@Bean
+	public UUID promregatorInstanceIdentifier() {
+		return UUID.randomUUID();
+	}
 }
