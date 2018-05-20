@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.WebApplicationContext;
 
 @RestController
-@RequestMapping("/metrics")
+@RequestMapping(EndpointConstants.ENDPOINT_PATH_SINGLE_ENDPOINT_SCRAPING)
 @Scope(value=WebApplicationContext.SCOPE_REQUEST)
 public class TestableSingleTargetMetricsEndpoint extends SingleTargetMetricsEndpoint {
 

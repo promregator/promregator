@@ -16,11 +16,9 @@ import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.exporter.common.TextFormat;
 
 @RestController
-@RequestMapping(PromregatorMetricsEndpoint.ENDPOINT_PATH)
+@RequestMapping(EndpointConstants.ENDPOINT_PATH_PROMREGATOR_METRICS)
 @Scope(value=WebApplicationContext.SCOPE_REQUEST)
 public class PromregatorMetricsEndpoint {
-	public static final String ENDPOINT_PATH = "/promregatorMetrics";
-	
 	@Autowired
 	private CollectorRegistry collectorRegistry;
 	

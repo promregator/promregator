@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.WebApplicationContext;
 
 @RestController
-@RequestMapping("/discovery")
+@RequestMapping(EndpointConstants.ENDPOINT_PATH_DISCOVERY)
 @Scope(value=WebApplicationContext.SCOPE_REQUEST)
 public class DiscoveryEndpoint {
 
@@ -121,7 +121,7 @@ public class DiscoveryEndpoint {
 		List<DiscoveryResponse> result = new LinkedList<>();
 		for (Instance instance : instances) {
 			
-			String path = String.format(SingleTargetMetricsEndpoint.ENDPOINT_PATH+"/%s/%s", instance.getApplicationId(), instance.getInstanceNumber());
+			String path = String.format(EndpointConstants.ENDPOINT_PATH_SINGLE_TARGET_SCRAPING+"/%s/%s", instance.getApplicationId(), instance.getInstanceNumber());
 			DiscoveryLabel dl = new DiscoveryLabel(path, instance);
 			
 			DiscoveryResponse dr = new DiscoveryResponse(targets, dl);
@@ -129,7 +129,7 @@ public class DiscoveryEndpoint {
 		}
 		
 		// finally, also add our own metrics endpoint
-		DiscoveryLabel dl = new DiscoveryLabel(PromregatorMetricsEndpoint.ENDPOINT_PATH);
+		DiscoveryLabel dl = new DiscoveryLabel(EndpointConstants.ENDPOINT_PATH_PROMREGATOR_METRICS);
 		result.add(new DiscoveryResponse(targets, dl));
 		
 		log.info(String.format("Returing discovery document with %d targets", result.size()));
