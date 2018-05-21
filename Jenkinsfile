@@ -91,9 +91,10 @@ timestamps {
 			stage("Generate hash values and signature") {
 				// determine jar file hash values
 				sh """
-				cat >promregator-${currentVersion}.hashsums <<EOT
-SHA256(promregator-${currentVersion}.jar): `openssl dgst -sha256 -hex target/promregator-${currentVersion}.jar`
-MD5(promregator-${currentVersion}.jar): `openssl dgst -md5 -hex target/promregator-${currentVersion}.jar`
+				cd target
+				cat >../promregator-${currentVersion}.hashsums <<EOT
+`openssl dgst -sha256 -hex target/promregator-${currentVersion}.jar`
+`openssl dgst -md5 -hex target/promregator-${currentVersion}.jar`
 EOT
 				"""
 			
