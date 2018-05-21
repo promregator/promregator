@@ -132,7 +132,9 @@ EOT
 					}
 				}
 				
-				archiveArtifacts 'promregator*.hashsums'
+				sh "cat promregator-${currentVersion}.hashsums"
+				
+				archiveArtifacts "promregator-${currentVersion}.hashsums"
 			}
 			
 		}
