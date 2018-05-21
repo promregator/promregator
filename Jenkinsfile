@@ -119,7 +119,7 @@ EOT
 				withCredentials([file(credentialsId: 'PROMREGATOR_GPG_KEY', variable: 'GPGKEYFILE')]) {
 					try {
 						sh """
-							gpg --import ${GPGKEYFILE} || shred -vzn  3 ${GPGKEYFILE}
+							gpg --import ${GPGKEYFILE}
 							echo "C66B4B348F6D4071047318C52483051C0D49EDA0:6:" | gpg --import-ownertrust
 							gpg --clearsign promregator-${currentVersion}.hashsums
 						"""
@@ -128,7 +128,6 @@ EOT
 						sh """
 							gpg --batch --delete-secret-keys C66B4B348F6D4071047318C52483051C0D49EDA0
 							gpg --batch --delete-keys C66B4B348F6D4071047318C52483051C0D49EDA0
-							shred -vzn  3 ${GPGKEYFILE}
 						"""
 					}
 				}
