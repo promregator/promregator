@@ -122,7 +122,7 @@ EOT
 						sh """
 							gpg --import ${GPGKEYFILE}
 							echo "C66B4B348F6D4071047318C52483051C0D49EDA0:6:" | gpg --import-ownertrust
-							gpg --clearsign promregator-${currentVersion}.hashsums
+							gpg --clearsign --personal-digest-preferences SHA512,SHA384,SHA256,SHA224,SHA1 promregator-${currentVersion}.hashsums
 							mv promregator-${currentVersion}.hashsums.asc promregator-${currentVersion}.hashsums
 						"""
 					} finally {
