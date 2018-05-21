@@ -132,7 +132,7 @@ EOT
 					}
 				}
 				
-				archiveArtifacts 'target/promregator*.hashsums'
+				archiveArtifacts 'promregator*.hashsums'
 			}
 			
 		}
