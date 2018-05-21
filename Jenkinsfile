@@ -49,13 +49,15 @@ timestamps {
 			stage("Archive") {
 				archiveArtifacts 'target/promregator*.jar'
 			}
+
+			def currentVersion = getVersion()
+			println "Current version is ${currentVersion}"
+			
+			def imageName = "promregator/promregator:${currentVersion}"
 			
 			stage("Create Docker Container") {
-				def currentVersion = getVersion()
-				println "Current version is ${currentVersion}"
 				
 				dir("docker") {
-					def imageName = "promregator/promregator:${currentVersion}"
 				
 					sh """
 						ln ../target/promregator-${currentVersion}.jar data/promregator.jar
@@ -81,7 +83,57 @@ timestamps {
 							"""
 						}
 					}
+					
+
 				}
+			}
+			
+			stage("Generate hash values and signature") {
+				// determine jar file hash values
+				sh """
+				cat >promregator-${currentVersion}.hashsums <<EOT
+SHA256(promregator-${currentVersion}.jar): `openssl dgst -sha256 -hex target/promregator-${currentVersion}.jar`
+MD5(promregator-${currentVersion}.jar): `openssl dgst -md5 -hex target/promregator-${currentVersion}.jar`
+EOT
+				"""
+			
+				def dockerImageIdentifier = null
+			
+				// determine docker image version
+				dockerImageIdentifier = executeShell """
+					docker inspect --format='{{.RepoDigests}}' ${imageName}
+				"""
+				
+				if (!dockerImageIdentifier.equals("[]") {
+					// the docker image has a sha256 (note: SNAPSHOT versions do not have one!)
+					dockerImageIdentifier = executeShell """
+						docker inspect --format='{{index .RepoDigests 0}}' ${imageName}
+					"""
+					sh """
+					cat >>promregator-${currentVersion}.hashsums <<EOT
+Docker Image: ${dockerImageIdentifier}
+EOT
+					"""
+				}
+			
+				withCredentials([file(credentialsId: 'PROMREGATOR_GPG_KEY', variable: 'GPGKEYFILE')]) {
+					try {
+						sh """
+							gpg --import ${GPGKEYFILE} || shred -vzn  3 ${GPGKEYFILE}
+							echo "C66B4B348F6D4071047318C52483051C0D49EDA0:6:" | gpg --import-ownertrust
+							gpg --clearsign promregator-${currentVersion}.hashsums
+						"""
+					} finally {
+						// ensure that the valuable signing key is deleted again
+						sh """
+							gpg --batch --delete-secret-keys C66B4B348F6D4071047318C52483051C0D49EDA0
+							gpg --batch --delete-keys C66B4B348F6D4071047318C52483051C0D49EDA0
+							shred -vzn  3 ${GPGKEYFILE}
+						"""
+					}
+				}
+				
+				archiveArtifacts 'target/promregator*.hashsums'
 			}
 			
 		}
