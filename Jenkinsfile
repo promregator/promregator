@@ -104,7 +104,7 @@ EOT
 					docker inspect --format='{{.RepoDigests}}' ${imageName}
 				"""
 				
-				if (!dockerImageIdentifier.equals("[]") {
+				if (!dockerImageIdentifier.equals("[]")) {
 					// the docker image has a sha256 (note: SNAPSHOT versions do not have one!)
 					dockerImageIdentifier = executeShell """
 						docker inspect --format='{{index .RepoDigests 0}}' ${imageName}
