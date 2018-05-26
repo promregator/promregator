@@ -143,12 +143,12 @@ Specifies the name of the Cloud Foundry Application (within the Cloud Foundry Or
 
 If left out (and also "applicationRegex" is omitted), *all* applications within the specified Cloud Foundry Organization and Cloud Foundry Space are considered as targets. Only applications in the Cloud Foundry Application state "STARTED" are considered.
 
-By this, automatic detection of new applications is possible. Note that discovery of *new* applications within the space only takes place after the timeout of "cf.cache.timeout.application" has occurred. To enforce a discovery, you may [invalidate the application cache manually](./invalidate-cache.md).
+By this, automatic detection of new applications is possible. Note that discovery of *new* applications within the space only takes place after the timeout of "cf.cache.timeout.resolver" has occurred. To enforce a discovery, you may [invalidate the resolver cache manually](./invalidate-cache.md).
 
 #### Item property "promregator.targets[].applicationRegex" (optional)
 Specifies the regular expression (based on a [Java Regular expression](https://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html)) for scanning the application name of the Cloud Foundry Application (within the Cloud Foundry Organization and Space specified above), which hosts the application, which you want to query for metrics. Only applications, for which the name matches to this regular expression, are considered for scraping. 
 
-By this, automatic detection of new applications is possible. Note that discovery of *new* applications within the space only takes place after the timeout of "cf.cache.timeout.application" has occurred. To enforce a discovery, you may [invalidate the application cache manually](./invalidate-cache.md).
+By this, automatic detection of new applications is possible. Note that discovery of *new* applications within the space only takes place after the timeout of "cf.cache.timeout.resolver" has occurred. To enforce a discovery, you may [invalidate the resolver cache manually](./invalidate-cache.md).
 
 #### Item property "promregator.targets[].path" (optional)
 Specifies the path under which the application's endpoint provides its Prometheus metrics.
