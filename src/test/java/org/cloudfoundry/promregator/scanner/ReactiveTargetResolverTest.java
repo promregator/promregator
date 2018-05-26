@@ -82,6 +82,31 @@ public class ReactiveTargetResolverTest {
 	}
 
 	@Test
+	public void testWithApplicationRegex() {
+		List<Target> list = new LinkedList<>();
+		
+		Target t = new Target();
+		t.setOrgName("unittestorg");
+		t.setSpaceName("unittestspace");
+		t.setApplicationRegex(".*2");
+		t.setPath("path");
+		t.setProtocol("https");
+		list.add(t);
+		
+		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
+		
+		Assert.assertEquals(1, actualList.size());
+		
+		ResolvedTarget rt = actualList.get(0);
+		Assert.assertEquals(t, rt.getOriginalTarget());
+		Assert.assertEquals(t.getOrgName(), rt.getOrgName());
+		Assert.assertEquals(t.getSpaceName(), rt.getSpaceName());
+		Assert.assertEquals("testapp2", rt.getApplicationName());
+		Assert.assertEquals(t.getPath(), rt.getPath());
+		Assert.assertEquals(t.getProtocol(), rt.getProtocol());
+	}
+	
+	@Test
 	public void testEmpty() {
 		
 		List<Target> list = new LinkedList<>();

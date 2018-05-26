@@ -2,6 +2,8 @@ package org.cloudfoundry.promregator.scanner;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
@@ -59,6 +61,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 		Mono<ListApplicationsResponse> responseMono = Mono.zip(orgIdMono, spaceIdMono)
 			.flatMap( tuple -> this.cfAccessor.retrieveAllApplicationIdsInSpace(tuple.getT1(), tuple.getT2()));
 		
+		
 		Flux<String> applicationsInSpace = responseMono.map( r -> r.getResources())
 			.flatMapMany(resources -> {
 				List<String> appNames = new LinkedList<>();
@@ -73,7 +76,22 @@ public class ReactiveTargetResolver implements TargetResolver {
 				return Flux.fromIterable(appNames);
 			});
 		
-		Flux<ResolvedTarget> result = applicationsInSpace
+		/* NB: Now we have to consider two cases:
+		 * Case 1: both applicationName and applicationRegex is empty => select all apps
+		 * Case 2: applicationName is null, but applicationRegex is filled => filter all apps with the regex
+		 * In both cases we need the list of all apps in the space.
+		 */
+		Flux<String> filteredApplicationsInSpace = applicationsInSpace;
+		if (configTarget.getApplicationRegex() != null) {
+			final Pattern filterPattern = Pattern.compile(configTarget.getApplicationRegex());
+			
+			filteredApplicationsInSpace = applicationsInSpace.filter(appName -> {
+				Matcher m = filterPattern.matcher(appName);
+				return m.matches();
+			});
+		}
+		
+		Flux<ResolvedTarget> result = filteredApplicationsInSpace
 			.map(appName -> {
 				ResolvedTarget newTarget = new ResolvedTarget(configTarget);
 				newTarget.setApplicationName(appName);
