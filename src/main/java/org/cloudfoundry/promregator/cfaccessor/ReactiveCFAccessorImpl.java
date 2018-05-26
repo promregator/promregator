@@ -303,8 +303,6 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 				return;
 			}
 			
-			// TODO still needs to be tested
-			
 			// preload the cache with the responses we got
 			List<ApplicationResource> appResources = signal.get().getResources();
 			for(ApplicationResource ar : appResources) {
