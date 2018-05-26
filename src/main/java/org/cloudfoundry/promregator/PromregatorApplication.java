@@ -84,8 +84,13 @@ public class PromregatorApplication {
 	}
 	
 	@Bean
-	public CachingTargetResolver cachingTargetResolver() {
-		return new CachingTargetResolver(new ReactiveTargetResolver());
+	public ReactiveTargetResolver reactiveTargetResolver() {
+		return new ReactiveTargetResolver();
+	}
+	
+	@Bean
+	public CachingTargetResolver cachingTargetResolver(ReactiveTargetResolver reactiveTargetResolver) {
+		return new CachingTargetResolver(reactiveTargetResolver);
 	}
 	
 	@Bean

@@ -21,8 +21,8 @@ public class CachingTargetResolver implements TargetResolver {
 	
 	private PassiveExpiringMap<Target, List<ResolvedTarget>> targetResolutionCache;
 	
-	public CachingTargetResolver(TargetResolver targetResolver) {
-		this.parentTargetResolver = targetResolver;
+	public CachingTargetResolver(TargetResolver parentTargetResolver) {
+		this.parentTargetResolver = parentTargetResolver;
 	}
 	
 	@PostConstruct
