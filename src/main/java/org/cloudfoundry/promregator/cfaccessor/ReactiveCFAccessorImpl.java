@@ -208,6 +208,9 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 					return tuple.getT1();
 				})
 				.flatMap( requestFunction )
+				.doOnError(throwable -> {
+					log.error(String.format("Retrieval of %s with key %s raised a reactor error", logName, key), throwable);
+				})
 				// stop the timer
 				.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
 					tuple.getT2().stop();
