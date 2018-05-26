@@ -8,6 +8,7 @@ import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
+import javax.validation.constraints.Null;
 
 import org.apache.commons.collections4.map.PassiveExpiringMap;
 import org.apache.http.conn.util.InetAddressUtils;
@@ -184,24 +185,29 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	 * @param retrievalTypeName the name of type of the request which is being made; used for identification in internalMetrics
 	 * @param logName the name of the logger category, which shall be used for logging this Reactor operation
 	 * @param key the key for which the request is being made (e.g. orgId, orgId|spaceName, ...)
-	 * @param cacheMap the PassiveExpiringMap, which shall be used for caching the request
+	 * @param cacheMap the PassiveExpiringMap, which shall be used for caching the request; may be <code>null</code> to indicate that no caching shall take place
 	 * @param requestData an object which is being used as input parameter for the request
 	 * @param requestFunction a function which calls the CF API operation, which is being made, <code>requestData</code> is used as input parameter for this function.
 	 * @return
 	 */
-	private <P, R> Mono<P> performGenericRetrieval(String retrievalTypeName, String logName, String key, PassiveExpiringMap<String, Mono<P>> cacheMap, R requestData, Function<R, Mono<P>> requestFunction) {
+	private <P, R> Mono<P> performGenericRetrieval(String retrievalTypeName, String logName, String key, @Null PassiveExpiringMap<String, Mono<P>> cacheMap, R requestData, Function<R, Mono<P>> requestFunction) {
 		synchronized(key.intern()) {
-			Mono<P> cached = cacheMap.get(key);
-			if (cached != null) {
-				this.internalMetrics.countHit("cfaccessor."+retrievalTypeName);
-				return cached;
-			}
+			Mono<P> result = null;
 			
-			this.internalMetrics.countMiss("cfaccessor."+retrievalTypeName);
+			if (cacheMap != null) {
+				// caching takes place at all
+				result = cacheMap.get(key);
+				if (result != null) {
+					this.internalMetrics.countHit("cfaccessor."+retrievalTypeName);
+					return result;
+				}
+				
+				this.internalMetrics.countMiss("cfaccessor."+retrievalTypeName);
+			}
 
 			ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, retrievalTypeName);
 			
-			cached = Mono.just(requestData)
+			result = Mono.just(requestData)
 				// start the timer
 				.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
 					tuple.getT2().start();
@@ -220,9 +226,11 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 				.log(log.getName()+"."+logName, Level.FINE)
 				.cache();
 
-			cacheMap.put(key, cached);
+			if (cacheMap != null) {
+				cacheMap.put(key, result);
+			}
 			
-			return cached;
+			return result;
 		}
 	}
 	
@@ -270,6 +278,22 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	}
 	
 	/* (non-Javadoc)
+	 * @see org.cloudfoundry.promregator.cfaccessor.CFAccessor#retrieveAllApplicationIdsInSpace(java.lang.String, java.lang.String)
+	 */
+	@Override
+	public Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String orgId, String spaceId) {
+		String key = String.format("%s|%s", orgId, spaceId);
+		ListApplicationsRequest request = ListApplicationsRequest.builder()
+				.organizationId(orgId)
+				.spaceId(spaceId)
+				.build();
+		
+		return this.performGenericRetrieval("allApps", "retrieveAllApplicationIdsInSpace", key, null, 
+				request, r -> this.cloudFoundryClient.applicationsV2().list(r));
+	}
+
+	
+	/* (non-Javadoc)
 	 * @see org.cloudfoundry.promregator.cfaccessor.CFAccessor#retrieveRouteMapping(java.lang.String)
 	 */
 	@Override
@@ -313,5 +337,25 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		
 		return this.performGenericRetrieval("processes", "retrieveProcesses", key, this.processCache, 
 				request, r -> this.cloudFoundryClient.processes().list(r));
+	}
+
+	
+	public void invalidateCacheApplications() {
+		log.info("Invalidating application cache");
+		this.applicationCache.clear();
+		this.routeMappingCache.clear();
+		this.routeCache.clear();
+		this.domainCache.clear();
+		this.processCache.clear();
+	}
+	
+	public void invalidateCacheSpace() {
+		log.info("Invalidating space cache");
+		this.spaceCache.clear();
+	}
+
+	public void invalidateCacheOrg() {
+		log.info("Invalidating org cache");
+		this.orgCache.clear();
 	}
 }

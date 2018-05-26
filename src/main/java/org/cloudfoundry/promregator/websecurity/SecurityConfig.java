@@ -38,6 +38,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Value("${promregator.metrics.auth:NONE}")
 	private InboundAuthorizationMode promregatorMetricsAuth;
+	
+	@Value("${promregator.cache.invalidate.auth:NONE}")
+	private InboundAuthorizationMode cacheInvalidateAuth;
 
 	private boolean isInboundAuthSecurityEnabled() {
 		if (this.discoveryAuth != InboundAuthorizationMode.NONE)
@@ -49,6 +52,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		if (this.promregatorMetricsAuth != InboundAuthorizationMode.NONE)
 			return true;
 
+		if (this.cacheInvalidateAuth != InboundAuthorizationMode.NONE)
+			return true;
+		
 		return false;
 	}
 
@@ -106,6 +112,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		sec = this.determineHttpSecurityForEndpoint(sec, EndpointConstants.ENDPOINT_PATH_SINGLE_ENDPOINT_SCRAPING, this.endpointAuth);
 		sec = this.determineHttpSecurityForEndpoint(sec, EndpointConstants.ENDPOINT_PATH_SINGLE_TARGET_SCRAPING+"/**", this.endpointAuth);
 		sec = this.determineHttpSecurityForEndpoint(sec, EndpointConstants.ENDPOINT_PATH_PROMREGATOR_METRICS, this.promregatorMetricsAuth);
+		sec = this.determineHttpSecurityForEndpoint(sec, EndpointConstants.ENDPOINT_PATH_CACHE_INVALIDATION, this.cacheInvalidateAuth);
 
 		
 		// see also https://github.com/spring-projects/spring-security/issues/4242
@@ -141,6 +148,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		web = this.determineWebSecurityForEndpoint(web, EndpointConstants.ENDPOINT_PATH_SINGLE_ENDPOINT_SCRAPING, this.endpointAuth);
 		web = this.determineWebSecurityForEndpoint(web, EndpointConstants.ENDPOINT_PATH_SINGLE_TARGET_SCRAPING+"/**", this.endpointAuth);
 		web = this.determineWebSecurityForEndpoint(web, EndpointConstants.ENDPOINT_PATH_PROMREGATOR_METRICS, this.promregatorMetricsAuth);
+		web = this.determineWebSecurityForEndpoint(web, EndpointConstants.ENDPOINT_PATH_CACHE_INVALIDATION, this.cacheInvalidateAuth);
 
 	}
 

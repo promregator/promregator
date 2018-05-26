@@ -11,7 +11,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.rewrite.MFSUtils;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -21,7 +23,11 @@ import io.prometheus.client.Collector.MetricFamilySamples.Sample;
 import io.prometheus.client.Collector.Type;
 
 public class TextFormat004ParserTest {
-	
+	@AfterClass
+	public static void cleanupEnvironment() {
+		JUnitTestUtils.cleanUpAll();
+	}
+
 	public static void compareEMFS(Enumeration<MetricFamilySamples> expected, Enumeration<MetricFamilySamples> actual) {
 		HashMap<String, MetricFamilySamples> expectedMap = MFSUtils.convertToEMFSToHashMap(expected);
 		HashMap<String, MetricFamilySamples> actualMap = MFSUtils.convertToEMFSToHashMap(actual);

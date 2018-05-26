@@ -83,6 +83,8 @@ Note that organizations typically do not change often. That is why you should pi
 
 By default, this value is set to 3600 seconds, which means that the metadata is retrieved (again) after an hour.
 
+Caches can also be invalidated out of line by sending an HTTP REST request to Promregator. Further details can be found at the [Cache Invalidation page](./invalidate-cache.md).
+
 ### Option "cf.cache.timeout.space" (optional)
 For performance reasons the metadata of the Cloud Foundry environment (organization, space, applications, routes) is cached locally in Promregator.
 
@@ -92,16 +94,36 @@ Note that spaces typically do not change often. That is why you should pick a hi
 
 By default, this value is set to 3600 seconds, which means that the metadata is retrieved (again) after an hour.
 
+Caches can also be invalidated out of line by sending an HTTP REST request to Promregator. Further details can be found at the [Cache Invalidation page](./invalidate-cache.md).
+
 
 ### Option "cf.cache.timeout.application" (optional)
 For performance reasons the metadata of the Cloud Foundry environment (organization, space, applications, routes) is cached locally in Promregator.
 
 This option allows you to specify how often the metadata of the applications and routes you have selected in your targets shall be verified after they have been fetched. The value is a timeout after which the metadata is retrieved again. Its unit is seconds.
 
-Note that applications and routes *may* change often. That is why you should pick a quite *low* value here to ensure that you do not miss and update for long time. Otherwise, you might get metrics indicating that an app may be down, but in fact it is running, but you only deployed a new version of the app or you changed a route.
-
 By default, this value is set to 300 seconds, which means that the metadata is retrieved every five minutes.
 
+Note that applications and routes *may* change often. That is why you should pick a quite *low* value here to ensure that you do not miss and update for long time. Otherwise, you might get metrics indicating that an app may be down, but in fact it is running, but you only deployed a new version of the app or you changed a route.
+
+Caches can also be invalidated out of line by sending an HTTP REST request to Promregator. Further details can be found at the [Cache Invalidation page](./invalidate-cache.md).
+
+### Option "cf.cache.timeout.resolver" (optional)
+For performance reasons the metadata of the Cloud Foundry environment (organization, space, applications, routes) is cached locally in Promregator.
+
+This option allows you to specify how often the mapping between your configured targets and its resolution to Cloud Foundry Organization names, Cloud Foundry Space names and Cloud Foundry Application names takes place. This cache is used, if you do not explicitly specify the organization name, the space name and the application name in a target (e.g. you left out the application name to select all applications within a space). 
+
+The value is a timeout after which this mapping is invalidated and thus determined again. Its unit is seconds.
+
+By default, this value is set to 300 seconds, which means that the mapping is retrieved every five minutes.
+
+Caches can also be invalidated out of line by sending an HTTP REST request to Promregator. Further details can be found at the [Cache Invalidation page](./invalidate-cache.md).
+
+#### Option "promregator.cache.invalidate.auth" (optional)
+Specifies the way how authentication shall be verified, if a request reaches the [Cache Invalidation endpoint](./invalidate-cache.md). Valid values are:
+
+* *NONE*: no authentication verification is required (default)
+* *BASIC*: an authentication verification using HTTP Basic Authentication is performed. Valid credentials are taken from `promregator.authentication.basic.username` and `promregator.authentication.basic.password`.
 
 ## Group "promregator"
 This group configures the behavior of Promregator itself. It is mainly meant on how requests shall be handled, as soon as the Prometheus server starts to pull metrics.
@@ -116,8 +138,12 @@ Specifies the name of the Cloud Foundry Organization which hosts the application
 #### Item property "promregator.targets[].spaceName" (mandatory)
 Specifies the name of the Cloud Foundry Space (within the Cloud Foundry Organization specified above), which hosts the application, which you want to query for metrics.
 
-#### Item property "promregator.targets[].applicationName" (mandatory)
+#### Item property "promregator.targets[].applicationName" (optional)
 Specifies the name of the Cloud Foundry Application (within the Cloud Foundry Organization and Space specified above), which hosts the application, which you want to query for metrics.
+
+If left out, *all* applications within the specified Cloud Foundry Organization and Cloud Foundry Space are considered as targets. Only applications in the Cloud Foundry Application state "STARTED" are considered. 
+
+By this, automatic detection of new applications is possible. Note that discovery of *new* applications within the space only takes place after the timeout of "cf.cache.timeout.application" has occurred. To enforce a discovery, you may [invalidate the application cache manually](./invalidate-cache.md).
 
 #### Item property "promregator.targets[].path" (optional)
 Specifies the path under which the application's endpoint provides its Prometheus metrics.

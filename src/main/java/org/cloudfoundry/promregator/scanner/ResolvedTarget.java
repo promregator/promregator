@@ -1,6 +1,10 @@
 package org.cloudfoundry.promregator.scanner;
 
+import org.cloudfoundry.promregator.config.Target;
+
 public class ResolvedTarget {
+	private Target originalTarget;
+	
 	private String orgName;
 	
 	private String spaceName;
@@ -10,6 +14,19 @@ public class ResolvedTarget {
 	private String path;
 	
 	private String protocol;
+	
+	public ResolvedTarget() {
+		super();
+	}
+	
+	public ResolvedTarget(Target configTarget) {
+		this.originalTarget = configTarget;
+		this.orgName = configTarget.getOrgName();
+		this.spaceName = configTarget.getSpaceName();
+		this.applicationName = configTarget.getApplicationName();
+		this.path = configTarget.getPath();
+		this.protocol = configTarget.getProtocol();
+	}
 	
 	public String getOrgName() {
 		return orgName;
@@ -61,6 +78,14 @@ public class ResolvedTarget {
 		}
 	}
 
+	public Target getOriginalTarget() {
+		return originalTarget;
+	}
+
+	public void setOriginalTarget(Target originalTarget) {
+		this.originalTarget = originalTarget;
+	}
+	
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
@@ -148,5 +173,4 @@ public class ResolvedTarget {
 		builder.append("]");
 		return builder.toString();
 	}
-
 }

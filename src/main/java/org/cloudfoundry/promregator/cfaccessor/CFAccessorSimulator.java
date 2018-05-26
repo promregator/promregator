@@ -204,4 +204,28 @@ public class CFAccessorSimulator implements CFAccessor {
 		return null;
 	}
 
+	@Override
+	public Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String orgId, String spaceId) {
+		if (orgId.equals(ORG_UUID) && spaceId.equals(SPACE_UUID)) {
+			List<ApplicationResource> list = new LinkedList<>();
+
+			
+			for (int i = 0;i<100;i++) {
+				ApplicationResource ar = null;
+				ar = ApplicationResource.builder().entity(
+						ApplicationEntity.builder().name("testapp"+i).build()
+					).metadata(
+							Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(APP_UUID_PREFIX+i).build()
+					).build();
+			
+				list.add(ar);
+				
+			}
+			ListApplicationsResponse resp = ListApplicationsResponse.builder().addAllResources(list).build();
+			return Mono.just(resp);
+		}
+		log.error("Invalid retrieveAllApplicationIdsInSpace request");
+		return null;
+	}
+
 }

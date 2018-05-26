@@ -8,10 +8,12 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.http.client.methods.HttpGet;
+import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.mockServer.MetricsEndpointMockServer;
 import org.cloudfoundry.promregator.rewrite.CFMetricFamilySamplesEnricher;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,6 +44,11 @@ public class MetricsFetcherTest {
 		this.mems.stop();
 	}
 
+	@AfterClass
+	public static void cleanupEnvironment() {
+		JUnitTestUtils.cleanUpAll();
+	}
+	
 	private static class NullMetricFamilySamplesEnricher extends CFMetricFamilySamplesEnricher {
 
 		public NullMetricFamilySamplesEnricher(String orgName, String spaceName, String appName, String instance) {
