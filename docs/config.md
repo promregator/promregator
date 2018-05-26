@@ -287,6 +287,12 @@ java.lang.OutOfMemoryError: Java heap space
 ```
 you may try to *decrease* this value. A value below 120 (seconds) does not make sense, though.
 
+### Option "promregator.reactor.debug" (optional)
+
+For the purpose of debugging issues with asynchronous handling of operations esp. with regard to the communication to Cloud Foundry's Cloud Connector, it is possible to set the Java Reactor framework into a debug mode. This is done, if this option is set to `true`.
+
+Be default, this option is set to `false`.
+
 
 ## Further Options
 
