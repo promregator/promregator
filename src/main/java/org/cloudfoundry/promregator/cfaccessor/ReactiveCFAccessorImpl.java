@@ -2,6 +2,8 @@ package org.cloudfoundry.promregator.cfaccessor;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -13,6 +15,7 @@ import javax.validation.constraints.Null;
 import org.apache.commons.collections4.map.PassiveExpiringMap;
 import org.apache.http.conn.util.InetAddressUtils;
 import org.apache.log4j.Logger;
+import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.client.v2.applications.ListApplicationsRequest;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsRequest;
@@ -265,7 +268,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	 */
 	@Override
 	public Mono<ListApplicationsResponse> retrieveApplicationId(String orgId, String spaceId, String applicationName) {
-		String key = String.format("%s|%s|%s", orgId, spaceId, applicationName);
+		String key = determineApplicationCacheKey(orgId, spaceId, applicationName);
 		
 		ListApplicationsRequest request = ListApplicationsRequest.builder()
 			.organizationId(orgId)
@@ -275,6 +278,10 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		
 		return this.performGenericRetrieval("app", "retrieveApplicationId", key, this.applicationCache, 
 			request, r ->  this.cloudFoundryClient.applicationsV2().list(r));
+	}
+
+	private String determineApplicationCacheKey(String orgId, String spaceId, String applicationName) {
+		return String.format("%s|%s|%s", orgId, spaceId, applicationName);
 	}
 	
 	/* (non-Javadoc)
@@ -288,8 +295,31 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 				.spaceId(spaceId)
 				.build();
 		
-		return this.performGenericRetrieval("allApps", "retrieveAllApplicationIdsInSpace", key, null, 
+		Mono<ListApplicationsResponse> allAppsInSpace = this.performGenericRetrieval("allApps", "retrieveAllApplicationIdsInSpace", key, null, 
 				request, r -> this.cloudFoundryClient.applicationsV2().list(r));
+		
+		Mono<ListApplicationsResponse> allAppsInSpaceWithCacheFilled = allAppsInSpace.doOnEach(signal -> {
+			if (!signal.isOnNext()) {
+				return;
+			}
+			
+			// TODO still needs to be tested
+			
+			// preload the cache with the responses we got
+			List<ApplicationResource> appResources = signal.get().getResources();
+			for(ApplicationResource ar : appResources) {
+				String appName = ar.getEntity().getName();
+				String appKey = this.determineApplicationCacheKey(orgId, spaceId, appName);
+				
+				List<ApplicationResource> arList = new ArrayList<>();
+				arList.add(ar);
+				
+				ListApplicationsResponse cacheValue = ListApplicationsResponse.builder().addAllResources(arList).build();
+				this.applicationCache.putIfAbsent(appKey, Mono.just(cacheValue));
+			}
+		});
+		
+		return allAppsInSpaceWithCacheFilled;
 	}
 
 	
@@ -331,7 +361,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	 */
 	@Override
 	public Mono<ListProcessesResponse> retrieveProcesses(String orgId, String spaceId, String appId) {
-		String key = String.format("%s|%s|%s", orgId, spaceId, appId);
+		String key = determineApplicationCacheKey(orgId, spaceId, appId);
 		
 		ListProcessesRequest request = ListProcessesRequest.builder().organizationId(orgId).spaceId(spaceId).applicationId(appId).build();
 		
