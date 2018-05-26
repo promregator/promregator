@@ -28,7 +28,7 @@ public class MetricsEndpointTest {
 	public void testGetMetrics() {
 		Assert.assertNotNull(subject);
 		
-		String response = subject.getMetrics();
+		String response = subject.getMetrics().getBody();
 		
 		Assert.assertNotNull(response);
 		Assert.assertNotEquals("", response);
@@ -44,7 +44,7 @@ public class MetricsEndpointTest {
 	public void testIssue52() {
 		Assert.assertNotNull(subject);
 		
-		String response = subject.getMetrics();
+		String response = subject.getMetrics().getBody();
 		
 		Assert.assertNotNull(response);
 		Assert.assertNotEquals("", response);

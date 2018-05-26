@@ -118,7 +118,18 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			instancesFlux = instancesFlux.filter(instanceFilter);
 		}
 		
-		return instancesFlux.collectList().block();
+		
+		Mono<List<Instance>> listInstancesMono = instancesFlux.collectList();
+		
+		List<Instance> result = null;
+		try {
+			result = listInstancesMono.block();
+		} catch (RuntimeException e) {
+			log.error("Error during retrieving the instances of a list of targets", e);
+			result = null;
+		}
+		
+		return result;
 	}
 	
 	private Mono<String> getOrgId(String orgNameString) {

@@ -7,6 +7,8 @@ import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcher;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,8 +30,13 @@ public class MetricsEndpoint extends AbstractMetricsEndpoint {
 	private static final Logger log = Logger.getLogger(MetricsEndpoint.class);
 
 	@RequestMapping(method = RequestMethod.GET, produces=TextFormat.CONTENT_TYPE_004)
-	public String getMetrics() {
-		return this.handleRequest(null, null /* no filtering intended */);
+	public ResponseEntity<String> getMetrics() {
+		try {
+			String result = this.handleRequest(null, null /* no filtering intended */);
+			return new ResponseEntity<>(result, HttpStatus.OK);
+		} catch (ScrapingException e) {
+			return new ResponseEntity<>(e.toString(), HttpStatus.SERVICE_UNAVAILABLE);
+		}
 	}
 
 	@Override

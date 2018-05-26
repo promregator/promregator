@@ -28,7 +28,7 @@ public class SingleTargetMetricsEndpointTest {
 	public void testGetMetrics() {
 		Assert.assertNotNull(subject);
 		
-		String response = subject.getMetrics("faedbb0a-2273-4cb4-a659-bd31331f7daf", "0");
+		String response = subject.getMetrics("faedbb0a-2273-4cb4-a659-bd31331f7daf", "0").getBody();
 		
 		Assert.assertNotNull(response);
 		Assert.assertNotEquals("", response);
@@ -44,7 +44,7 @@ public class SingleTargetMetricsEndpointTest {
 	public void testIssue52() {
 		Assert.assertNotNull(subject);
 		
-		String response = subject.getMetrics("faedbb0a-2273-4cb4-a659-bd31331f7daf", "0");
+		String response = subject.getMetrics("faedbb0a-2273-4cb4-a659-bd31331f7daf", "0").getBody();
 		
 		Assert.assertNotNull(response);
 		Assert.assertNotEquals("", response);
@@ -68,7 +68,7 @@ public class SingleTargetMetricsEndpointTest {
 	public void testIssue51() {
 		Assert.assertNotNull(subject);
 		
-		String response = subject.getMetrics("faedbb0a-2273-4cb4-a659-bd31331f7daf", "0");
+		String response = subject.getMetrics("faedbb0a-2273-4cb4-a659-bd31331f7daf", "0").getBody();
 		
 		Assert.assertNotNull(response);
 		Assert.assertNotEquals("", response);

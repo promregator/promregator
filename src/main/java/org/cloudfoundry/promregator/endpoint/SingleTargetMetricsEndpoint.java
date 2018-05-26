@@ -8,6 +8,8 @@ import org.cloudfoundry.promregator.rewrite.CFMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -26,22 +28,29 @@ public class SingleTargetMetricsEndpoint extends AbstractMetricsEndpoint {
 	private Instance instance;
 	
 	@RequestMapping(method = RequestMethod.GET, produces=TextFormat.CONTENT_TYPE_004)
-	public String getMetrics(
+	public ResponseEntity<String> getMetrics(
 			@PathVariable String applicationId, 
 			@PathVariable String instanceNumber
 			) {
 		
 		String instanceId = String.format("%s:%s", applicationId, instanceNumber);
 		
-		return this.handleRequest( discoveredApplicationId -> applicationId.equals(discoveredApplicationId)
-		, instance -> {
-			if (instance.getInstanceId().equals(instanceId)) {
-				this.instance = instance;
-				return true;
-			}
-			
-			return false;
-		});
+		String response = null;
+		try {
+			response = this.handleRequest( discoveredApplicationId -> applicationId.equals(discoveredApplicationId)
+			, instance -> {
+				if (instance.getInstanceId().equals(instanceId)) {
+					this.instance = instance;
+					return true;
+				}
+				
+				return false;
+			});
+		} catch (ScrapingException e) {
+			return new ResponseEntity<>(e.toString(), HttpStatus.NOT_FOUND);
+		}
+		
+		return new ResponseEntity<String>(response, HttpStatus.OK);
 	}
 
 	@Override

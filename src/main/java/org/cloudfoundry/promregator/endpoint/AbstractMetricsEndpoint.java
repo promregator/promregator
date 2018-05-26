@@ -93,13 +93,17 @@ public abstract class AbstractMetricsEndpoint {
 				.register(this.requestRegistry);
 	}
 	
-	public String handleRequest(@Null Predicate<? super String> applicationIdFilter, @Null Predicate<? super Instance> instanceFilter) {
+	public String handleRequest(@Null Predicate<? super String> applicationIdFilter, @Null Predicate<? super Instance> instanceFilter) throws ScrapingException {
 		log.debug("Received request to a metrics endpoint");
 		Instant start = Instant.now();
 		
 		this.up.clear();
 		
 		List<Instance> instanceList = this.cfDiscoverer.discover(applicationIdFilter, instanceFilter);
+		
+		if (instanceList == null) {
+			throw new ScrapingException("Unable to determine any instance to scrape");
+		}
 		
 		List<MetricsFetcher> callablesPrep = this.createMetricsFetchers(instanceList);
 		
