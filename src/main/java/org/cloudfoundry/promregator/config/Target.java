@@ -6,6 +6,8 @@ public class Target {
 	private String spaceName;
 	
 	private String applicationName;
+	
+	private String applicationRegex;
 
 	private String path;
 	
@@ -35,6 +37,14 @@ public class Target {
 		this.applicationName = applicationName;
 	}
 
+	public String getApplicationRegex() {
+		return applicationRegex;
+	}
+	
+	public void setApplicationRegex(String applicationRegex) {
+		this.applicationRegex = applicationRegex;
+	}
+	
 	public String getPath() {
 		if (this.path == null)
 			return "/metrics";
