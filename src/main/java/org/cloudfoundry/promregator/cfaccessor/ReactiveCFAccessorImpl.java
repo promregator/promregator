@@ -208,6 +208,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 					return tuple.getT1();
 				})
 				.flatMap( requestFunction )
+				.retry(2)
 				.doOnError(throwable -> {
 					log.error(String.format("Retrieval of %s with key %s raised a reactor error", logName, key), throwable);
 				})
@@ -216,7 +217,8 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 					tuple.getT2().stop();
 					return tuple.getT1();
 				})
-				.log(log.getName()+"."+logName, Level.FINE);
+				.log(log.getName()+"."+logName, Level.FINE)
+				.cache();
 
 			cacheMap.put(key, cached);
 			
