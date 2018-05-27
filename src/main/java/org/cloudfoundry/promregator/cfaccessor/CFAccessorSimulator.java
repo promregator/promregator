@@ -114,6 +114,22 @@ public class CFAccessorSimulator implements CFAccessor {
 		return null;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.cloudfoundry.promregator.cfaccessor.CFAccessor#retrieveAllOrgIds()
+	 */
+	@Override
+	public Mono<ListOrganizationsResponse> retrieveAllOrgIds() {
+		return this.retrieveOrgId("simorg");
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.cloudfoundry.promregator.cfaccessor.CFAccessor#retrieveSpaceIdsInOrg(java.lang.String)
+	 */
+	@Override
+	public Mono<ListSpacesResponse> retrieveSpaceIdsInOrg(String orgId) {
+		return this.retrieveSpaceId(ORG_UUID, "simspace");
+	}
+	
 	@Override
 	public Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId) {
 		if (spaceId.equals(SPACE_UUID)) {

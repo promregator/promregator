@@ -218,6 +218,18 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	}
 	
 	/* (non-Javadoc)
+	 * @see org.cloudfoundry.promregator.cfaccessor.CFAccessor#retrieveAllOrgIds()
+	 */
+	@Override
+	public Mono<ListOrganizationsResponse> retrieveAllOrgIds() {
+		ListOrganizationsRequest orgsRequest = ListOrganizationsRequest.builder().build();
+		
+		return this.performGenericRetrieval("allOrgs", "retrieveAllOrgIds", "(empty)", orgsRequest, or -> {
+			return this.cloudFoundryClient.organizations().list(or);
+		}, this.requestTimeoutOrg);
+	}
+
+	/* (non-Javadoc)
 	 * @see org.cloudfoundry.promregator.cfaccessor.CFAccessor#retrieveSpaceId(java.lang.String, java.lang.String)
 	 */
 	@Override
@@ -231,6 +243,18 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		}, this.requestTimeoutSpace);
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.cloudfoundry.promregator.cfaccessor.CFAccessor#retrieveSpaceIdsInOrg(java.lang.String)
+	 */
+	@Override
+	public Mono<ListSpacesResponse> retrieveSpaceIdsInOrg(String orgId) {
+		ListSpacesRequest spacesRequest = ListSpacesRequest.builder().organizationId(orgId).build();
+		
+		return this.performGenericRetrieval("space", "retrieveSpaceId", orgId, spacesRequest, sr -> {
+			return this.cloudFoundryClient.spaces().list(sr);
+		}, this.requestTimeoutSpace);
+	}
+
 	/* (non-Javadoc)
 	 * @see org.cloudfoundry.promregator.cfaccessor.CFAccessor#retrieveAllApplicationIdsInSpace(java.lang.String, java.lang.String)
 	 */

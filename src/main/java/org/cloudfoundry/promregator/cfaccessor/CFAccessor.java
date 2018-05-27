@@ -10,8 +10,12 @@ import reactor.core.publisher.Mono;
 public interface CFAccessor {
 
 	Mono<ListOrganizationsResponse> retrieveOrgId(String orgName);
+	
+	Mono<ListOrganizationsResponse> retrieveAllOrgIds();
 
 	Mono<ListSpacesResponse> retrieveSpaceId(String orgId, String spaceName);
+	
+	Mono<ListSpacesResponse> retrieveSpaceIdsInOrg(String orgId);
 
 	Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String orgId, String spaceId);
 

@@ -135,4 +135,12 @@ public class CFAccessorMassMock implements CFAccessor {
 		return null;
 	}
 
+	public Mono<ListOrganizationsResponse> retrieveAllOrgIds() {
+		return this.retrieveOrgId("unittestorg");
+	}
+
+	@Override
+	public Mono<ListSpacesResponse> retrieveSpaceIdsInOrg(String orgId) {
+		return this.retrieveSpaceId(UNITTEST_ORG_UUID, "unittestspace");
+	}
 }
