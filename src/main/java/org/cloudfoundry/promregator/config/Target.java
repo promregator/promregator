@@ -3,7 +3,11 @@ package org.cloudfoundry.promregator.config;
 public class Target {
 	private String orgName;
 	
+	private String orgRegex;
+	
 	private String spaceName;
+	
+	private String spaceRegex;
 	
 	private String applicationName;
 	
@@ -22,6 +26,15 @@ public class Target {
 	public void setOrgName(String orgName) {
 		this.orgName = orgName;
 	}
+	
+
+	public String getOrgRegex() {
+		return orgRegex;
+	}
+
+	public void setOrgRegex(String orgRegex) {
+		this.orgRegex = orgRegex;
+	}
 
 	public String getSpaceName() {
 		return spaceName;
@@ -29,6 +42,14 @@ public class Target {
 
 	public void setSpaceName(String spaceName) {
 		this.spaceName = spaceName;
+	}
+
+	public String getSpaceRegex() {
+		return spaceRegex;
+	}
+
+	public void setSpaceRegex(String spaceRegex) {
+		this.spaceRegex = spaceRegex;
 	}
 
 	public String getApplicationName() {
