@@ -2,6 +2,7 @@ package org.cloudfoundry.promregator.scanner;
 
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorMock;
+import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -10,7 +11,7 @@ public class MockedReactiveTargetResolverSpringApplication {
 	
 	@Bean
 	public CFAccessor cfAccessor() {
-		return new CFAccessorMock();
+		return Mockito.spy(new CFAccessorMock());
 	}
 	
 	@Bean

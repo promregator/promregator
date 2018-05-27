@@ -58,40 +58,9 @@ public class ReactiveTargetResolver implements TargetResolver {
 			.map( e -> e.getMetadata())
 			.map( entry -> entry.getId());
 		
-		Mono<ListApplicationsResponse> responseMono = Mono.zip(orgIdMono, spaceIdMono)
-			.flatMap( tuple -> this.cfAccessor.retrieveAllApplicationIdsInSpace(tuple.getT1(), tuple.getT2()));
-		
-		
-		Flux<String> applicationsInSpace = responseMono.map( r -> r.getResources())
-			.flatMapMany(resources -> {
-				List<String> appNames = new LinkedList<>();
-				for (ApplicationResource ar : resources) {
-					if (!isApplicationInScrapableState(ar.getEntity().getState())) {
-						continue;
-					}
-					
-					appNames.add(ar.getEntity().getName());
-				}
-				
-				return Flux.fromIterable(appNames);
-			});
-		
-		/* NB: Now we have to consider two cases:
-		 * Case 1: both applicationName and applicationRegex is empty => select all apps
-		 * Case 2: applicationName is null, but applicationRegex is filled => filter all apps with the regex
-		 * In both cases we need the list of all apps in the space.
-		 */
-		Flux<String> filteredApplicationsInSpace = applicationsInSpace;
-		if (configTarget.getApplicationRegex() != null) {
-			final Pattern filterPattern = Pattern.compile(configTarget.getApplicationRegex());
-			
-			filteredApplicationsInSpace = applicationsInSpace.filter(appName -> {
-				Matcher m = filterPattern.matcher(appName);
-				return m.matches();
-			});
-		}
-		
-		Flux<ResolvedTarget> result = filteredApplicationsInSpace
+		Flux<String> applicationNamesFlux = selectApplications(configTarget, orgIdMono, spaceIdMono);
+
+		Flux<ResolvedTarget> result = applicationNamesFlux
 			.map(appName -> {
 				ResolvedTarget newTarget = new ResolvedTarget(configTarget);
 				newTarget.setApplicationName(appName);
@@ -101,6 +70,66 @@ public class ReactiveTargetResolver implements TargetResolver {
 		
 		return result;
 	}
+
+	private Flux<String> selectApplications(Target configTarget, Mono<String> orgIdMono, Mono<String> spaceIdMono) {
+		/* NB: Now we have to consider three cases:
+		 * Case 1: both applicationName and applicationRegex is empty => select all apps
+		 * Case 2: applicationName is null, but applicationRegex is filled => filter all apps with the regex
+		 * Case 3: applicationName is filled, but applicationRegeix is null => select a single app
+		 * In cases 1 and 2, we need the list of all apps in the space.
+		 */
+		
+		Flux<String> applicationsInSelection = null;
+		
+		if (configTarget.getApplicationRegex() == null && configTarget.getApplicationName() != null) {
+			// Case 3
+			Mono<ListApplicationsResponse> responseMono = Mono.zip(orgIdMono, spaceIdMono)
+				.flatMap( tuple -> this.cfAccessor.retrieveApplicationId(tuple.getT1(), tuple.getT2(), configTarget.getApplicationName()) );
+			
+			applicationsInSelection = responseMono.map( r -> r.getResources() )
+				.flatMapMany( resources -> {
+					List<String> appNames = new LinkedList<>();
+					for (ApplicationResource ar : resources) {
+						appNames.add(ar.getEntity().getName());
+					}
+					return Flux.fromIterable(appNames);
+				});
+			
+		} else {
+			// Case 1 & 2: Get all apps from space
+			Mono<ListApplicationsResponse> responseMono = Mono.zip(orgIdMono, spaceIdMono)
+				.flatMap( tuple -> this.cfAccessor.retrieveAllApplicationIdsInSpace(tuple.getT1(), tuple.getT2()));
+			
+			applicationsInSelection = responseMono.map( r -> r.getResources())
+				.flatMapMany(resources -> {
+					List<String> appNames = new LinkedList<>();
+					for (ApplicationResource ar : resources) {
+						if (!isApplicationInScrapableState(ar.getEntity().getState())) {
+							continue;
+						}
+						
+						appNames.add(ar.getEntity().getName());
+					}
+					
+					return Flux.fromIterable(appNames);
+				});
+		}
+
+		Flux<String> filteredApplicationsInSpace = applicationsInSelection;
+		if (configTarget.getApplicationRegex() != null) {
+			// Case 2
+			final Pattern filterPattern = Pattern.compile(configTarget.getApplicationRegex());
+			
+			filteredApplicationsInSpace = applicationsInSelection.filter(appName -> {
+				Matcher m = filterPattern.matcher(appName);
+				return m.matches();
+			});
+		}
+
+		return filteredApplicationsInSpace;
+	}
+	
+	
 	
 	private boolean isApplicationInScrapableState(String state) {
 		if ("STARTED".equals(state)) {

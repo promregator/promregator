@@ -4,11 +4,15 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
+import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
+import org.cloudfoundry.promregator.cfaccessor.CFAccessorMock;
 import org.cloudfoundry.promregator.config.Target;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -20,12 +24,21 @@ public class ReactiveTargetResolverTest {
 	public static void cleanupEnvironment() {
 		JUnitTestUtils.cleanUpAll();
 	}
+	
+	@After
+	public void resetCFAccessorMock() {
+		Mockito.reset(this.cfAccessor);
+	}
 
 	@Autowired
 	private TargetResolver targetResolver;
+	
+	@Autowired
+	private CFAccessor cfAccessor;
 
 	@Test
 	public void testFullyResolvedAlready() {
+		
 		List<Target> list = new LinkedList<>();
 		
 		Target t = new Target();
@@ -47,6 +60,10 @@ public class ReactiveTargetResolverTest {
 		Assert.assertEquals(t.getApplicationName(), rt.getApplicationName());
 		Assert.assertEquals(t.getPath(), rt.getPath());
 		Assert.assertEquals(t.getProtocol(), rt.getProtocol());
+		
+		Mockito.verify(this.cfAccessor, Mockito.times(0)).retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID);
+		Mockito.verify(this.cfAccessor, Mockito.times(0)).retrieveApplicationId(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID, "testapp");
+
 	}
 	
 	@Test
@@ -79,6 +96,8 @@ public class ReactiveTargetResolverTest {
 		Assert.assertEquals("testapp2", rt.getApplicationName());
 		Assert.assertEquals(t.getPath(), rt.getPath());
 		Assert.assertEquals(t.getProtocol(), rt.getProtocol());
+		
+		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID);
 	}
 
 	@Test
@@ -104,6 +123,8 @@ public class ReactiveTargetResolverTest {
 		Assert.assertEquals("testapp2", rt.getApplicationName());
 		Assert.assertEquals(t.getPath(), rt.getPath());
 		Assert.assertEquals(t.getProtocol(), rt.getProtocol());
+		
+		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID);
 	}
 	
 	@Test
