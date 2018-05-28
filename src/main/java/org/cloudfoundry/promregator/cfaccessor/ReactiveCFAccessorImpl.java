@@ -19,6 +19,8 @@ import org.apache.log4j.Logger;
 import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.client.v2.applications.ListApplicationsRequest;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
+import org.cloudfoundry.client.v2.info.GetInfoRequest;
+import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsRequest;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.routemappings.ListRouteMappingsRequest;
@@ -182,6 +184,11 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		PasswordGrantTokenProvider tokenProvider = this.tokenProvider();
 		
 		this.cloudFoundryClient = this.cloudFoundryClient(connectionContext, tokenProvider);
+		
+		GetInfoRequest request = GetInfoRequest.builder().build();
+		GetInfoResponse getInfo = this.cloudFoundryClient.info().get(request).block();
+		// NB: This also ensures that the connection has been established properly...
+		log.info(String.format("Target CF platform is running on API version %s", getInfo.getApiVersion()));
 	}
 
 	/**
