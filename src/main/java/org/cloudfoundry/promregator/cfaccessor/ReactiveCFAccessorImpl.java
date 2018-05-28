@@ -2,6 +2,7 @@ package org.cloudfoundry.promregator.cfaccessor;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -217,6 +218,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 					return tuple.getT1();
 				})
 				.flatMap( requestFunction )
+				.timeout(Duration.ofMillis(2500))
 				.retry(2)
 				.doOnError(throwable -> {
 					log.error(String.format("Retrieval of %s with key %s raised a reactor error", logName, key), throwable);
