@@ -89,6 +89,9 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	@Value("${cf.cache.timeout.application:300}")
 	private int timeoutCacheApplicationLevel;
 	
+	@Value("${promregator.internal.preCheckAPIVersion:true}")
+	private boolean performPrecheckOfAPIVersion;
+	
 	@Autowired
 	private InternalMetrics internalMetrics;
 
@@ -185,10 +188,12 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		
 		this.cloudFoundryClient = this.cloudFoundryClient(connectionContext, tokenProvider);
 		
-		GetInfoRequest request = GetInfoRequest.builder().build();
-		GetInfoResponse getInfo = this.cloudFoundryClient.info().get(request).block();
-		// NB: This also ensures that the connection has been established properly...
-		log.info(String.format("Target CF platform is running on API version %s", getInfo.getApiVersion()));
+		if (this.performPrecheckOfAPIVersion) {
+			GetInfoRequest request = GetInfoRequest.builder().build();
+			GetInfoResponse getInfo = this.cloudFoundryClient.info().get(request).block();
+			// NB: This also ensures that the connection has been established properly...
+			log.info(String.format("Target CF platform is running on API version %s", getInfo.getApiVersion()));
+		}
 	}
 
 	/**
