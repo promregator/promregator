@@ -102,7 +102,7 @@ $ curl http://hostname-of-promregator:8080/discovery > promregator.json
 
 The file then is downloaded to the file called `promregator.json`. This file contains references to the corresponding paths of endpoints which support the Single Target Scraping mode. 
 
-Note that the file has to explicitly mention the hostname and the port of your Promregator instance. Promregator tries to auto-detect this based on the request retrieved. However, for example if Promregator is running in a Docker container, this mechanism may fail. You then have to explicitly set the configuration parameters `promregator.discovery.hostname` and `promregator.discovery.port`. For further details on these two options, also refer to the (configuration options page)[config.md].
+Note that the file has to explicitly mention the hostname and the port of your Promregator instance as it is seen from Prometheus. Promregator tries to auto-detect this based on the request retrieved. However, for example if Promregator is running in a Docker container, this mechanism may fail. You then have to explicitly set the configuration parameters `promregator.discovery.hostname` and `promregator.discovery.port` accordingly. For further details on these two options, also refer to the (configuration options page)[config.md].
 
 A sample service discovery configuration at Prometheus then may look like this:
 
