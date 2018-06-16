@@ -16,8 +16,6 @@ import org.springframework.test.context.BootstrapWith;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import io.prometheus.client.CollectorRegistry;
-
 @RunWith(SpringRunner.class)
 @BootstrapWith(value=SpringBootTestContextBootstrapper.class)
 @ComponentScan(excludeFilters = { @Filter(type = FilterType.CUSTOM, classes = { TypeExcludeFilter.class }),

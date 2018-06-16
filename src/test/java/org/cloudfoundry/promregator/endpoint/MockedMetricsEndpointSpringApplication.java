@@ -38,9 +38,10 @@ import io.prometheus.client.CollectorRegistry;
 @EnableAutoConfiguration
 @ComponentScan(excludeFilters = { @Filter(type = FilterType.CUSTOM, classes = { TypeExcludeFilter.class }),
 		@Filter(type = FilterType.CUSTOM, classes = { AutoConfigurationExcludeFilter.class }),
-		@Filter(type = FilterType.REGEX, pattern = "org\\.cloudfoundry\\.promregator\\.endpoint\\.MetricsEndpoint")
+		@Filter(type = FilterType.REGEX, pattern = "org\\.cloudfoundry\\.promregator\\.endpoint\\.MetricsEndpoint"),
 		// NB: Handling is taken over by TestableMetricsEndpoint! That one is
 		// NOT excluded
+		@Filter(type = FilterType.REGEX, pattern = "org\\.cloudfoundry\\.promregator\\.endpoint\\.InvalidateCacheEndpoint")
 })
 @Import({ PromregatorConfiguration.class })
 public class MockedMetricsEndpointSpringApplication {

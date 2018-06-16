@@ -20,8 +20,6 @@ import org.springframework.jms.annotation.JmsListener;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import io.prometheus.client.CollectorRegistry;
-
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = CFDiscovererTestSpringApplication.class)
 @TestPropertySource(locations="default.properties")
