@@ -80,4 +80,14 @@ public class Target {
 	public void setAuthenticatorId(String authenticatorId) {
 		this.authenticatorId = authenticatorId;
 	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "Target [orgName=" + orgName + ", spaceName=" + spaceName + ", applicationName=" + applicationName
+				+ ", applicationRegex=" + applicationRegex + ", path=" + path + ", protocol=" + protocol + "]";
+	}
+	
 }
