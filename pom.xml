@@ -6,7 +6,7 @@
 
 	<groupId>org.cloudfoundry</groupId>
 	<artifactId>promregator</artifactId>
-	<version>0.4.0-SNAPSHOT-hasetuptest1</version>
+	<version>0.4.0-SNAPSHOT-hasetuptest2</version>
 	<packaging>jar</packaging>
 
 	<name>promregator</name>
