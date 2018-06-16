@@ -5,6 +5,8 @@ import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.auth.BasicAuthenticationEnricher;
@@ -21,6 +23,7 @@ import org.cloudfoundry.promregator.lifecycle.InstanceLifecycleHandler;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.ReactiveAppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.ReactiveTargetResolver;
+import org.cloudfoundry.promregator.scanner.CachingTargetResolver;
 import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.cloudfoundry.promregator.springconfig.BasicAuthenticationSpringConfiguration;
 import org.cloudfoundry.promregator.springconfig.ErrorSpringConfiguration;
@@ -38,6 +41,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.hotspot.DefaultExports;
+import reactor.core.publisher.Hooks;
 
 @SpringBootApplication
 @EnableScheduling
@@ -51,11 +55,20 @@ public class PromregatorApplication {
 	@Value("${promregator.simulation.instances:10}")
 	private int simulationInstances;
 	
+	@Value("${promregator.reactor.debug:false}")
+	private boolean reactorDebugEnabled;
+	
 	private static final Logger log = Logger.getLogger(PromregatorApplication.class);
 	
 	public static void main(String[] args) {
 		SpringApplication.run(PromregatorApplication.class, args);
-		// to be enabled for debugging reactor methods: Hooks.onOperatorDebug();
+	}
+	
+	@PostConstruct
+	public void enableReactorDebugging() {
+		if (this.reactorDebugEnabled) {
+			Hooks.onOperatorDebug();
+		}
 	}
 	
 	@Bean
@@ -72,8 +85,18 @@ public class PromregatorApplication {
 	}
 	
 	@Bean
-	public TargetResolver targetResolver() {
+	public ReactiveTargetResolver reactiveTargetResolver() {
 		return new ReactiveTargetResolver();
+	}
+	
+	@Bean
+	public CachingTargetResolver cachingTargetResolver(ReactiveTargetResolver reactiveTargetResolver) {
+		return new CachingTargetResolver(reactiveTargetResolver);
+	}
+	
+	@Bean
+	public TargetResolver targetResolver(CachingTargetResolver cachingTargetResolver) {
+		return cachingTargetResolver;
 	}
 	
 	@Bean

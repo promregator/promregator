@@ -3,8 +3,10 @@ package org.cloudfoundry.promregator.endpoint;
 import java.util.HashMap;
 import java.util.UUID;
 
+import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.fetcher.TextFormat004Parser;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,6 +14,8 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -21,6 +25,7 @@ import io.prometheus.client.Collector.MetricFamilySamples.Sample;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = MockedMetricsEndpointSpringApplication.class)
 @TestPropertySource(locations="default.properties")
+@DirtiesContext(classMode=ClassMode.AFTER_CLASS)
 public class MetricsEndpointTest {
 
 	@After
@@ -31,11 +36,16 @@ public class MetricsEndpointTest {
 	@Autowired
 	private TestableMetricsEndpoint subject;
 	
+	@AfterClass
+	public static void cleanupEnvironment() {
+		JUnitTestUtils.cleanUpAll();
+	}
+	
 	@Test
 	public void testGetMetrics() {
 		Assert.assertNotNull(subject);
 		
-		String response = subject.getMetrics();
+		String response = subject.getMetrics().getBody();
 		
 		Assert.assertNotNull(response);
 		Assert.assertNotEquals("", response);
@@ -51,7 +61,7 @@ public class MetricsEndpointTest {
 	public void testIssue52() {
 		Assert.assertNotNull(subject);
 		
-		String response = subject.getMetrics();
+		String response = subject.getMetrics().getBody();
 		
 		Assert.assertNotNull(response);
 		Assert.assertNotEquals("", response);

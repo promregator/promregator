@@ -102,8 +102,6 @@ $ curl http://hostname-of-promregator:8080/discovery > promregator.json
 
 The file then is downloaded to the file called `promregator.json`. This file contains references to the corresponding paths of endpoints which support the Single Target Scraping mode. 
 
-Note that the file has to explicitly mention the hostname and the port of your Promregator instance. Promregator tries to auto-detect this based on the request retrieved. However, for example if Promregator is running in a Docker container, this mechanism may fail. You then have to explicitly set the configuration parameters `promregator.discovery.hostname` and `promregator.discovery.port`. For further details on these two options, also refer to the (configuration options page)[config.md].
-
 A sample service discovery configuration at Prometheus then may look like this:
 
 ```yaml
@@ -112,6 +110,12 @@ A sample service discovery configuration at Prometheus then may look like this:
     - files:
       - promregator.json
 ```
+
+Note that the file has to explicitly mention the hostname and the port of your Promregator instance as it is seen from Prometheus. Promregator tries to auto-detect this based on the request retrieved. However, for example if Promregator is running in a Docker container, this mechanism may fail. You then have to explicitly set the configuration parameters `promregator.discovery.hostname` and `promregator.discovery.port` accordingly. For further details on these two options, also refer to the (configuration options page)[config.md].
+
+Moreover, it may be worth mentioning that querying the `/discovery` endpoint significantly more frequently than the application cache (see also configuration option `cf.cache.timeout.application`) and the resolver cache (see also `cf.cache.timeout.resolver`) is of little use: The results provided by the endpoint are mainly generated out of the values in these two caches. Extraordinary querying might still make sense, though, if you have [explicitly invalidated the caches manually](./invalidate-cache.md).
+
+
 
 #### Label Rewriting for Setting Metrics Path
 

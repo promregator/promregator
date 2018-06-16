@@ -204,4 +204,31 @@ public class CFAccessorMock implements CFAccessor {
 		return null;
 	}
 
+	@Override
+	public Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String orgId, String spaceId) {
+		if (orgId.equals(UNITTEST_ORG_UUID) && spaceId.equals(UNITTEST_SPACE_UUID)) {
+			List<ApplicationResource> list = new LinkedList<>();
+
+			ApplicationResource ar = ApplicationResource.builder().entity(
+					ApplicationEntity.builder().name("testapp").state("STARTED").build()
+				).metadata(
+						Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP1_UUID).build()
+				).build();
+			list.add(ar);
+			
+			ar = ApplicationResource.builder().entity(
+					ApplicationEntity.builder().name("testapp2").state("STARTED").build()
+				).metadata(
+						Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP2_UUID).build()
+				).build();
+			list.add(ar);
+			
+			ListApplicationsResponse resp = ListApplicationsResponse.builder().addAllResources(list).build();
+			return Mono.just(resp);
+		} 
+		
+		Assert.fail("Invalid process request");
+		return null;
+	}
+
 }

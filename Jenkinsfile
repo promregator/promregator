@@ -49,13 +49,15 @@ timestamps {
 			stage("Archive") {
 				archiveArtifacts 'target/promregator*.jar'
 			}
+
+			def currentVersion = getVersion()
+			println "Current version is ${currentVersion}"
+			
+			def imageName = "promregator/promregator:${currentVersion}"
 			
 			stage("Create Docker Container") {
-				def currentVersion = getVersion()
-				println "Current version is ${currentVersion}"
 				
 				dir("docker") {
-					def imageName = "promregator/promregator:${currentVersion}"
 				
 					sh """
 						ln ../target/promregator-${currentVersion}.jar data/promregator.jar
@@ -81,7 +83,61 @@ timestamps {
 							"""
 						}
 					}
+					
+
 				}
+			}
+			
+			stage("Generate hash values and signature") {
+				// determine jar file hash values
+				sh """
+					cd target
+					cat >../promregator-${currentVersion}.hashsums <<EOT
+commit(promregator.git)=`git rev-parse HEAD`
+`openssl dgst -sha256 -hex promregator-${currentVersion}.jar`
+`openssl dgst -md5 -hex promregator-${currentVersion}.jar`
+EOT
+				"""
+			
+				def dockerImageIdentifier = null
+			
+				// determine docker image version
+				dockerImageIdentifier = executeShell """
+					docker inspect --format='{{.RepoDigests}}' ${imageName}
+				"""
+				
+				if (!dockerImageIdentifier.equals("[]")) {
+					// the docker image has a sha256 (note: SNAPSHOT versions do not have one!)
+					dockerImageIdentifier = executeShell """
+						docker inspect --format='{{index .RepoDigests 0}}' ${imageName}
+					"""
+					sh """
+					cat >>promregator-${currentVersion}.hashsums <<EOT
+Docker Image: ${dockerImageIdentifier}
+EOT
+					"""
+				}
+			
+				withCredentials([file(credentialsId: 'PROMREGATOR_GPG_KEY', variable: 'GPGKEYFILE')]) {
+					try {
+						sh """
+							gpg --import ${GPGKEYFILE}
+							echo "C66B4B348F6D4071047318C52483051C0D49EDA0:6:" | gpg --import-ownertrust
+							gpg --clearsign --personal-digest-preferences SHA512,SHA384,SHA256,SHA224,SHA1 promregator-${currentVersion}.hashsums
+							mv promregator-${currentVersion}.hashsums.asc promregator-${currentVersion}.hashsums
+						"""
+					} finally {
+						// ensure that the valuable signing key is deleted again
+						sh """
+							gpg --batch --delete-secret-keys C66B4B348F6D4071047318C52483051C0D49EDA0
+							gpg --batch --delete-keys C66B4B348F6D4071047318C52483051C0D49EDA0
+						"""
+					}
+				}
+				
+				sh "cat promregator-${currentVersion}.hashsums"
+				
+				archiveArtifacts "promregator-${currentVersion}.hashsums"
 			}
 			
 		}
