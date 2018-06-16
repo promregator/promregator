@@ -55,7 +55,7 @@ The Basic Authentication scheme requires two additional configuration options, w
 * `username`: specifies the username which shall be used when authenticating.
 * `password`: specifies the password which shall be used when authenticating.
 
-Note that specifying the password plain-text in the configuration file is highly discouraged due to security reasons. For an alternative solution, please refer to this page. !!TODO!!
+Note that specifying the password plain-text in the configuration file is highly discouraged due to security reasons. For an alternative solution, please refer to [this page](./passwords-in-config.md).
 
 An example of a authentication configuration using basic authentication looks like this:
 
@@ -75,7 +75,7 @@ The OAuth2XSUAA Authentication scheme allows to set the following additional con
 * `client_secret` (mandatory): specifies the client secret which shall be used when authenticating at the OAuth2 server.
 * `scope` (optional): specifies the scopes which shall be requested from the OAuth2 server during the call. If not specified, an empty string is assumed, which will suppress a dedicated request of scopes. Usually, OAuth2 servers then provide a JWT, which contains all scopes allowed for the set of credentials provided.
 
-Note that specifying the secret plain-text in the configuration file is highly discouraged due to security reasons. For an alternative solution, please refer to this page. !!TODO!!
+Note that specifying the secret plain-text in the configuration file is highly discouraged due to security reasons. For an alternative solution, please refer to [this page](./passwords-in-config.md).
 
 An example of a authentication configuration using basic authentication looks like this:
 
