@@ -2,8 +2,10 @@ package org.cloudfoundry.promregator.endpoint;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.endpoint.DiscoveryEndpoint.DiscoveryLabel;
 import org.cloudfoundry.promregator.endpoint.DiscoveryEndpoint.DiscoveryResponse;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,6 +23,11 @@ public class DiscoveryEndpointNoPromregatorMetricsTest {
 
 	@Autowired
 	private DiscoveryEndpoint subject;
+
+	@AfterClass
+	public static void cleanupEnvironment() {
+		JUnitTestUtils.cleanUpAll();
+	}
 	
 	@Test
 	public void testStraightForward() {

@@ -41,7 +41,7 @@ import io.prometheus.client.CollectorRegistry;
 		@Filter(type = FilterType.REGEX, pattern = "org\\.cloudfoundry\\.promregator\\.endpoint\\.MetricsEndpoint"),
 		// NB: Handling is taken over by TestableMetricsEndpoint! That one is
 		// NOT excluded
-		@Filter(type = FilterType.REGEX, pattern = "org\\.cloudfoundry\\.promregator\\.endpoint\\.InvalidateCacheEndpoint")
+		@Filter(type = FilterType.ASSIGNABLE_TYPE, value=InvalidateCacheEndpoint.class)
 })
 @Import({ PromregatorConfiguration.class })
 public class MockedMetricsEndpointSpringApplication {
