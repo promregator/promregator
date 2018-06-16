@@ -61,7 +61,7 @@ public class AuthenticatorController {
 	}
 
 	/**
-	 * retrives the target-specific AuthenticationEnricher for a given target
+	 * retrieves the target-specific AuthenticationEnricher for a given target
 	 * @param target the target for which its AuthenticationEnricher shall be retrieved
 	 * @return the AuthenticationEnricher for the target, which was requested. If there is no
 	 * target-specific AuthenticationEnricher defined for the target, a fallback to the globally 
