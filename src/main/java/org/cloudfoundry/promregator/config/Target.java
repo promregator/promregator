@@ -13,6 +13,8 @@ public class Target {
 	
 	private String protocol;
 	
+	private String authenticatorId;
+	
 	public String getOrgName() {
 		return orgName;
 	}
@@ -71,5 +73,11 @@ public class Target {
 		}
 	}
 
-	
+	public String getAuthenticatorId() {
+		return authenticatorId;
+	}
+
+	public void setAuthenticatorId(String authenticatorId) {
+		this.authenticatorId = authenticatorId;
+	}
 }

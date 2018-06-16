@@ -15,6 +15,8 @@ public class PromregatorConfiguration {
 
 	private AuthenticatorConfiguration authenticatorConfiguration;
 	
+	private List<TargetAuthenticatorConfiguration> targetAuthenticators = new ArrayList<>();
+	
 	public List<Target> getTargets() {
 		return targets;
 	}
@@ -29,6 +31,14 @@ public class PromregatorConfiguration {
 
 	public void setAuthenticator(AuthenticatorConfiguration authenticatorConfiguration) {
 		this.authenticatorConfiguration = authenticatorConfiguration;
+	}
+
+	public List<TargetAuthenticatorConfiguration> getTargetAuthenticators() {
+		return targetAuthenticators;
+	}
+
+	public void setTargetAuthenticators(List<TargetAuthenticatorConfiguration> targetAuthenticators) {
+		this.targetAuthenticators = targetAuthenticators;
 	}
 	
 }
