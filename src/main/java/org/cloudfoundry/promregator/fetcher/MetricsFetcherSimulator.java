@@ -78,7 +78,10 @@ public class MetricsFetcherSimulator implements MetricsFetcher {
 		}
 		
 		HttpGet httpget = new HttpGet(this.accessURL);
-		this.ae.enrichWithAuthentication(httpget);
+		
+		if (this.ae != null) {
+			this.ae.enrichWithAuthentication(httpget);
+		}
 		
 		String result = SIM_TEXT004;
 		

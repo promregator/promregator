@@ -11,6 +11,7 @@ import java.util.function.Predicate;
 import javax.validation.constraints.Null;
 
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
+import org.cloudfoundry.promregator.auth.AuthenticatorController;
 import org.cloudfoundry.promregator.auth.NullEnricher;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.discovery.CFDiscoverer;
@@ -113,6 +114,11 @@ public class MockedMetricsEndpointSpringApplication {
 		return CollectorRegistry.defaultRegistry;
 	}
 
+	@Bean
+	public AuthenticatorController authenticatorController() {
+		return new AuthenticatorController();
+	}
+	
 	@Bean
 	public AuthenticationEnricher authenticationEnricher() {
 		return new NullEnricher();
