@@ -15,6 +15,7 @@ import org.cloudfoundry.client.v2.organizations.OrganizationResource;
 import org.cloudfoundry.client.v2.routes.RouteEntity;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
+import org.cloudfoundry.client.v3.processes.ProcessResource;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -252,8 +253,18 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		
 		return this.cfAccessor.retrieveProcesses(v.orgId, v.spaceId, v.applicationId)
 			.map(pr -> pr.getResources())
-			.map(list -> list.get(0))
-			.map(e -> e.getInstances());
+			.map(list -> {
+				if (list == null || list.isEmpty()) {
+					return 0;
+				}
+				
+				ProcessResource pr = list.get(0);
+				if (pr == null) {
+					return 0;
+				}
+				
+				return pr.getInstances();
+			});
 	}
 	
 	private String determineAccessURL(final String applicationUrl, final String path) {
