@@ -57,13 +57,22 @@ public class CFDiscoverer {
 	 * @param instanceFilter the (pre-)filter based on the Instance instance, allowing to filter the lost if instances to discover
 	 * @return the list of Instances which were discovered (and registered).
 	 */
+	@Null
 	public List<Instance> discover(@Null Predicate<? super String> applicationIdFilter, @Null Predicate<? super Instance> instanceFilter) {
 		log.debug(String.format("We have %d targets configured", this.promregatorConfiguration.getTargets().size()));
 		
 		List<ResolvedTarget> resolvedTargets = this.targetResolver.resolveTargets(this.promregatorConfiguration.getTargets());
+		if (resolvedTargets == null) {
+			log.warn("Target resolved was unable to resolve configured targets");
+			return null;
+		}
 		log.debug(String.format("Raw list contains %d resolved targets", resolvedTargets.size()));
 		
 		List<Instance> instanceList = this.appInstanceScanner.determineInstancesFromTargets(resolvedTargets, applicationIdFilter, instanceFilter);
+		if (instanceList == null) {
+			log.warn("Instance Scanner unable to determine instances from provided targets");
+			return null;
+		}
 		log.debug(String.format("Raw list contains %d instances", instanceList.size()));
 
 		// ensure that the instances are registered / touched properly
