@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Random;
 
 import org.apache.http.client.methods.HttpGet;
+import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 
@@ -14,7 +15,9 @@ import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Histogram.Timer;
 
 public class MetricsFetcherSimulator implements MetricsFetcher {
-
+	
+	private static final Logger log = Logger.getLogger(MetricsFetcherSimulator.class);
+	
 	private String accessURL;
 	private AuthenticationEnricher ae;
 	private AbstractMetricFamilySamplesEnricher mfse;
@@ -70,6 +73,7 @@ public class MetricsFetcherSimulator implements MetricsFetcher {
 		emfs = this.mfse.determineEnumerationOfMetricFamilySamples(emfs);
 		
 		int latency = this.randomLatency.nextInt(300);
+		log.info(String.format("Simulating scraping at %s with latency of %d ms", this.accessURL, latency));
 		
 		Thread.sleep(latency);
 		
