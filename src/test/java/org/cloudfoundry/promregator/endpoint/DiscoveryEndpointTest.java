@@ -12,6 +12,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -33,7 +34,8 @@ public class DiscoveryEndpointTest {
 	public void testStraightForward() {
 		HttpServletRequest requestMock = Mockito.mock(HttpServletRequest.class);
 		
-		DiscoveryResponse[] response = this.subject.getDiscovery(requestMock);
+		ResponseEntity<DiscoveryResponse[]> responseE = this.subject.getDiscovery(requestMock);
+		DiscoveryResponse[] response = responseE.getBody();
 		
 		Assert.assertEquals(4, response.length);
 		

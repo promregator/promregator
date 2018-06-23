@@ -77,7 +77,10 @@ public class MetricsFetcherSimulator implements MetricsFetcher {
 		}
 		
 		HttpGet httpget = new HttpGet(this.accessURL);
-		this.ae.enrichWithAuthentication(httpget);
+		
+		if (this.ae != null) {
+			this.ae.enrichWithAuthentication(httpget);
+		}
 		
 		String result = SIM_TEXT004;
 		
@@ -88,6 +91,7 @@ public class MetricsFetcherSimulator implements MetricsFetcher {
 		
 		int latency = this.randomLatency.nextInt(300);
 		
+		log.info(String.format("Simulating scraping at %s with latency of %d ms", this.accessURL, latency));
 		Thread.sleep(latency);
 		
 		this.up.set(1);

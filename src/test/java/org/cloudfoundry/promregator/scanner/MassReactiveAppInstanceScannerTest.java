@@ -35,7 +35,7 @@ public class MassReactiveAppInstanceScannerTest {
 		
 		ResolvedTarget t = null;
 		
-		final int numberOfApps = 10000;
+		final int numberOfApps = 100;
 		
 		for (int i = 0;i<numberOfApps;i++) {
 			t = new ResolvedTarget();
@@ -66,7 +66,7 @@ public class MassReactiveAppInstanceScannerTest {
 		
 		ResolvedTarget t = null;
 		
-		final int numberOfApps = 10000;
+		final int numberOfApps = 100;
 		
 		for (int i = 0;i<numberOfApps;i++) {
 			t = new ResolvedTarget();
@@ -104,7 +104,7 @@ public class MassReactiveAppInstanceScannerTest {
 		
 		ResolvedTarget t = null;
 		
-		final int numberOfApps = 10000;
+		final int numberOfApps = 100;
 		
 		for (int i = 0;i<numberOfApps;i++) {
 			t = new ResolvedTarget();
@@ -142,4 +142,35 @@ public class MassReactiveAppInstanceScannerTest {
 		Assert.assertTrue(d.minusSeconds(3).isNegative());
 	}
 	
+	@Test
+	public void testPathsAreNotMixedUpIssue59() {
+		// see also https://github.com/promregator/promregator/issues/59#issuecomment-399037194
+		
+		final int numberOfApps = 100;
+		
+		List<ResolvedTarget> targets = new LinkedList<>();
+
+		ResolvedTarget t = null;
+		
+		for (int i = 0;i<numberOfApps;i++) {
+			t = new ResolvedTarget();
+			t.setOrgName("unittestorg");
+			t.setSpaceName("unittestspace");
+			t.setApplicationName("testapp"+i);
+			t.setPath("/testpath"+i);
+			t.setProtocol("http");
+			targets.add(t);
+		}
+		
+		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, null, null);
+		
+		Assert.assertEquals(numberOfApps*10, result.size());
+
+		for (Instance instance : result) {
+			String targetNumber = instance.getTarget().getApplicationName().substring(7);
+			
+			Assert.assertEquals("/testpath"+targetNumber, instance.getTarget().getPath());
+			Assert.assertTrue(instance.getAccessUrl().endsWith(targetNumber));
+		}
+	}
 }

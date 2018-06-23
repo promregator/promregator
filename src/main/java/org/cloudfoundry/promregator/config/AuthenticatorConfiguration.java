@@ -1,6 +1,6 @@
 package org.cloudfoundry.promregator.config;
 
-public class AuthenticationConfiguration {
+public class AuthenticatorConfiguration {
 	private String type;
 	
 	private BasicAuthenticationConfiguration basic;

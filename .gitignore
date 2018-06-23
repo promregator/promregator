@@ -32,4 +32,5 @@ application.yaml
 
 
 /application.yml
+/.factorypath
 /.springBeans

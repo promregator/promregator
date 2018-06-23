@@ -13,7 +13,9 @@ import org.springframework.context.annotation.Configuration;
 public class PromregatorConfiguration {
 	private List<Target> targets = new ArrayList<>();
 
-	private AuthenticationConfiguration authenticationConfiguration;
+	private AuthenticatorConfiguration authenticatorConfiguration;
+	
+	private List<TargetAuthenticatorConfiguration> targetAuthenticators = new ArrayList<>();
 	
 	public List<Target> getTargets() {
 		return targets;
@@ -23,12 +25,20 @@ public class PromregatorConfiguration {
 		this.targets = targets;
 	}
 
-	public AuthenticationConfiguration getAuthenticator() {
-		return authenticationConfiguration;
+	public AuthenticatorConfiguration getAuthenticator() {
+		return authenticatorConfiguration;
 	}
 
-	public void setAuthenticator(AuthenticationConfiguration authenticationConfiguration) {
-		this.authenticationConfiguration = authenticationConfiguration;
+	public void setAuthenticator(AuthenticatorConfiguration authenticatorConfiguration) {
+		this.authenticatorConfiguration = authenticatorConfiguration;
+	}
+
+	public List<TargetAuthenticatorConfiguration> getTargetAuthenticators() {
+		return targetAuthenticators;
+	}
+
+	public void setTargetAuthenticators(List<TargetAuthenticatorConfiguration> targetAuthenticators) {
+		this.targetAuthenticators = targetAuthenticators;
 	}
 	
 }

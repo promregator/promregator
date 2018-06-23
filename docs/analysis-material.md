@@ -77,4 +77,4 @@ In case you change your mind and want your data you have sent to us to be destro
 
 ## Organizational Comment
 
-This is the procedure for the time being. We reserve the right to change the procedure depicted above. Expect though, that the data protection policy will be similarly rigid as stated above.
+This is the procedure for the time being. We reserve the right to change the procedure described above. Expect though, that the data protection policy will be similarly rigid as stated above.

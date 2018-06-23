@@ -4,6 +4,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
+import org.cloudfoundry.promregator.auth.AuthenticatorController;
 import org.cloudfoundry.promregator.auth.NullEnricher;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl;
@@ -137,6 +138,11 @@ public class MockedAppInstanceScannerEndpointSpringApplication {
 		return CollectorRegistry.defaultRegistry;
 	}
 
+	@Bean
+	public AuthenticatorController authenticatorController() {
+		return new AuthenticatorController();
+	}
+	
 	@Bean
 	public AuthenticationEnricher authenticationEnricher() {
 		return new NullEnricher();

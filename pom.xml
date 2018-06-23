@@ -6,7 +6,7 @@
 
 	<groupId>org.cloudfoundry</groupId>
 	<artifactId>promregator</artifactId>
-	<version>0.4.0-SNAPSHOT-hasetuptest2</version>
+	<version>0.4.0-SNAPSHOT-hasetuptest3</version>
 	<packaging>jar</packaging>
 
 	<name>promregator</name>
@@ -62,6 +62,12 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-configuration-processor</artifactId>
+			<optional>true</optional>
 		</dependency>
 
 		<dependency>

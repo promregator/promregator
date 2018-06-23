@@ -11,7 +11,9 @@ import org.cloudfoundry.promregator.scanner.Instance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -111,9 +113,12 @@ public class DiscoveryEndpoint {
 	}
 	
 	@RequestMapping(method = RequestMethod.GET, produces=MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public DiscoveryResponse[] getDiscovery(HttpServletRequest request) {
+	public ResponseEntity<DiscoveryResponse[]> getDiscovery(HttpServletRequest request) {
 		
 		List<Instance> instances = this.cfDiscoverer.discover(null, null);
+		if (instances == null) {
+			return new ResponseEntity<DiscoveryResponse[]>(HttpStatus.SERVICE_UNAVAILABLE);
+		}
 		
 		String localHostname = this.myHostname != null ? this.myHostname : request.getLocalName();
 		int localPort = this.myPort != 0 ? this.myPort : request.getLocalPort();
@@ -139,6 +144,6 @@ public class DiscoveryEndpoint {
 		
 		log.info(String.format("Returing discovery document with %d targets", result.size()));
 		
-		return result.toArray(new DiscoveryResponse[0]);
+		return new ResponseEntity<DiscoveryResponse[]>(result.toArray(new DiscoveryResponse[0]), HttpStatus.OK);
 	}
 }

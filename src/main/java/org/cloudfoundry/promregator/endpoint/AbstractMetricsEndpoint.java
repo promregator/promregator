@@ -19,6 +19,7 @@ import javax.validation.constraints.Null;
 
 import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
+import org.cloudfoundry.promregator.auth.AuthenticatorController;
 import org.cloudfoundry.promregator.discovery.CFDiscoverer;
 import org.cloudfoundry.promregator.fetcher.CFMetricsFetcher;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcher;
@@ -62,6 +63,9 @@ public abstract class AbstractMetricsEndpoint {
 	
 	@Autowired
 	private CFDiscoverer cfDiscoverer;
+
+	@Autowired
+	private AuthenticatorController authenticatorController;
 	
 	@Value("${cf.proxyHost:@null}")
 	private String proxyHost;
@@ -71,9 +75,6 @@ public abstract class AbstractMetricsEndpoint {
 
 	@Value("${promregator.endpoint.maxProcessingTime:5000}")
 	private int maxProcessingTime;
-	
-	@Autowired
-	private AuthenticationEnricher ae;
 	
 	@Value("${promregator.metrics.requestLatency:false}")
 	private boolean recordRequestLatency;
@@ -224,13 +225,15 @@ public abstract class AbstractMetricsEndpoint {
 
 			MetricsFetcher mf = null;
 			
+			AuthenticationEnricher ae = this.authenticatorController.getAuthenticationEnricherByTarget(instance.getTarget().getOriginalTarget());
+			
 			if (this.simulationMode) {
-				mf = new MetricsFetcherSimulator(accessURL, this.ae, mfse, mfm, upChild);
+				mf = new MetricsFetcherSimulator(accessURL, ae, mfse, mfm, upChild);
 			} else {
 				if (this.proxyHost != null && this.proxyPort != 0) {
-					mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), this.ae, mfse, this.proxyHost, this.proxyPort, mfm, upChild, this.promregatorInstanceIdentifier);
+					mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), ae, mfse, this.proxyHost, this.proxyPort, mfm, upChild, this.promregatorInstanceIdentifier);
 				} else {
-					mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), this.ae, mfse, mfm, upChild, this.promregatorInstanceIdentifier);
+					mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), ae, mfse, mfm, upChild, this.promregatorInstanceIdentifier);
 				}
 			}
 			callablesList.add(mf);
