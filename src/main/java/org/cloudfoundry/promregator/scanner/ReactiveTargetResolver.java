@@ -33,7 +33,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 			 * If measurements in the future show that this would not be a problem,
 			 * we are still capable of introducing this later.
 			 */
-			.flatMap(configTarget -> this.resolveSingleTarget(configTarget));
+			.flatMapSequential(configTarget -> this.resolveSingleTarget(configTarget));
 		
 		return resultFlux.collectList().block();
 	}
@@ -75,7 +75,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 		/* NB: Now we have to consider three cases:
 		 * Case 1: both applicationName and applicationRegex is empty => select all apps
 		 * Case 2: applicationName is null, but applicationRegex is filled => filter all apps with the regex
-		 * Case 3: applicationName is filled, but applicationRegeix is null => select a single app
+		 * Case 3: applicationName is filled, but applicationRegex is null => select a single app
 		 * In cases 1 and 2, we need the list of all apps in the space.
 		 */
 		
