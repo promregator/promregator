@@ -2,6 +2,9 @@ promregator:
   simulation:
     enabled: true
     instances: 2
+    
+  internal:
+    preCheckAPIVersion: false
 
   metrics:
     internal: true
