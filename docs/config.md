@@ -160,6 +160,12 @@ Specifies the protocol (`http` or `https`) which shall be used to retrieve the m
 
 Defaults to `https` if not set otherwise.
 
+#### Item property "promregator.targets[].authenticatorId" (optional)
+Specifies the identifier of the *target-specific* authentication configuration, which shall be used for **outbound authentication**, when this target shall be scraped. 
+
+If not specified, the global authentication configuration is applied for this target.
+
+
 ### Subgroup "promregator.discovery"
 Configures the way how the discovery endpoint `/discovery` behaves.
 
@@ -256,27 +262,24 @@ Note that these metrics are not meant for productive usage. As they are primaril
 ### Subgroup "promregator.authenticator"
 Configures the way how authentication shall happen between Promregator and the targets configured above (**outbound** authentication). Mind the difference to the settings provided in `promregator.authentication`!
 
-Please note that as of writing, there is no support of multiple authentication schemes across different targets. That is to say: all targets
-are queried using the same authentication scheme. If you want to have different schemes configured, then you have to run multiple instances of
-Promregator
+This subgroup only defines the "fallback case" of the outbound authentication to targets ("Global Authentication"). 
 
-#### Option "promregator.authenticator.type" (mandatory)
-Specifies the type of the Authenticator which shall be used when connecting to targeted Cloud Foundry Applications. Valid options are:
-
-* *basic*: Enables the Basic Authentication scheme using plain-text-based Basic Authentication as defined in [RFC2617](https://www.ietf.org/rfc/rfc2617.txt).
-  Additional options must be provided to complete the configuration.
-* *OAuth2XSUAA*: Enables the OAuth2/JWT-based authentication scheme using grant type "Client Credentials" as used for XSUAA servers. 
-  Additional options must be provided to complete the configuration.
-* *null* or *none*: Disables any additional authentication scheme; requests will be sent as unauthenticated HTTP(s) GET requests (depending of the protocol specified for the target). No further options need to be provided.
+Configuration of outbound authentication may become complex. Therefore, for further details (including a verbose example), refer to the [outbound authentication page](./outbound-authentication.md).
 
 *Note!*
 This option does not have any influence on how Promregator authenticates to the Cloud Foundry platform's API, but only has an impact to the way how Promregator tries to authenticate on scraping Cloud Foundry Applications.
 
+#### Option "promregator.authenticator.type" (mandatory)
+Specifies the type of the Authenticator which shall be used when connecting to targeted Cloud Foundry Applications as a fallback ("Global Authentication"). 
+
+If this option is omitted, a "Null authentication scheme" is applied, e.g. no authentication takes places in case that global authentication takes place.
+
+
 #### Option "promregator.authenticator.basic.username" (mandatory, if using promregator.authenticator.type=basic)
-Specifies the username which is being used for authenticating the call to the Prometheus client (CF application).
+specifies the username which is being used for authenticating the call to the Prometheus client (CF application) in case of global authentication.
 
 #### Option "promregator.authenticator.basic.password" (mandatory, if using promregator.authenticator.type=basic)
-Specifies the password which is being used for authenticating the call to the Prometheus client (CF application).
+Specifies the password which is being used for authenticating the call to the Prometheus client (CF application) in case of global authentication.
 
 *WARNING!* 
 Due to security reasons, it is *neither* recommended to store this value in your YAML file, nor to put it into the command line when starting Promregator.
@@ -290,14 +293,13 @@ java -Dspring.config.location=file:/path/to/your/myconfig.yaml -jar promregator-
 ```
 
 #### Option "promregator.authenticator.oauth2xsuaa.tokenServiceURL" (mandatory, if using promregator.authenticator.type=OAuth2XSUAA)
-Specifies the URL of the OAuth2 endpoint, which contains the token service of your authorization server. Typically, this is the endpoint with the path `/oauth/token`,
-as Promregator will try to perform to establish a ["Client Credentials"-based authentication](https://www.digitalocean.com/community/tutorials/an-introduction-to-oauth-2#grant-type-client-credentials).
+Specifies the URL of the OAuth2 endpoint, which contains the token service of your authorization server in case of global authentication. Typically, this is the endpoint with the path `/oauth/token`, as Promregator will try to perform to establish a ["Client Credentials"-based authentication](https://www.digitalocean.com/community/tutorials/an-introduction-to-oauth-2#grant-type-client-credentials).
 
 #### Option "promregator.authenticator.oauth2xsuaa.client_id" (mandatory, if using promregator.authenticator.type=OAuth2XSUAA)
-Specifies the client identifier (a.k.a. "client_id") which shall be used during the OAuth2 request based on the Grant Type Client Credentials flow.
+Specifies the client identifier (a.k.a. "client_id") which shall be used during the OAuth2 request based on the Grant Type Client Credentials flow in case of global authentication.
 
 #### Option "promregator.authenticator.oauth2xsuaa.client_secret" (mandatory, if using promregator.authenticator.type=OAuth2XSUAA)
-Specifies the client secret (a.k.a. "client_secret") which shall be used during the OAuth2 request based on the Grant Type Client Credentials flow.
+Specifies the client secret (a.k.a. "client_secret") which shall be used during the OAuth2 request based on the Grant Type Client Credentials flow in case of global authentication.
 
 *WARNING!* 
 Due to security reasons, it is *neither* recommended to store this value in your YAML file, nor to put it into the command line when starting Promregator.
@@ -311,7 +313,17 @@ java -Dspring.config.location=file:/path/to/your/myconfig.yaml -jar promregator-
 ```
 
 #### Option "promregator.authenticator.oauth2xsuaa.scopes" (optional, only available if using promregator.authenticator.type=OAuth2XSUAA)
-Specifies the set of scopes/authorities (format itself is a comma-separated string of explicit scopes, see also https://www.oauth.com/oauth2-servers/access-tokens/client-credentials/), which shall be requested from the OAuth2 server when using the Grant Type Client Credentials flow. If not specified, an empty string is assumed, which will suppress a dedicated request of scopes. Usually, OAuth2 servers then provide a JWT, which contains all scopes allowed for the set of credentials provided.
+Specifies the set of scopes/authorities (format itself is a comma-separated string of explicit scopes, see also https://www.oauth.com/oauth2-servers/access-tokens/client-credentials/), which shall be requested from the OAuth2 server when using the Grant Type Client Credentials flow in case of global authentication. 
+
+### Subgroup "promregator.targetAuthenticator[]"
+Configures the way how authentication shall happen between Promregator and the targets configured above (**outbound** authentication). Mind the difference to the settings provided in `promregator.authentication`!
+
+This subgroup only defines the target-specific case of the outbound authentication to targets ("Target-specific Authentication"). Multiple instances may be defined in this subgroup.
+
+Configuration of outbound authentication may become complex. Therefore, for further details (including a verbose example), refer to the [outbound authentication page](./outbound-authentication.md).
+
+*Note!*
+This option does not have any influence on how Promregator authenticates to the Cloud Foundry platform's API, but only has an impact to the way how Promregator tries to authenticate on scraping Cloud Foundry Applications.
 
 
 ### Subgroup "promregator.authentication"
