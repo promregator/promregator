@@ -63,21 +63,21 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			return v;
 		});
 		
-		Flux<String> orgIdFlux = initialOSAVectorFlux.flatMap(v -> this.getOrgId(v.target.getOrgName()));
+		Flux<String> orgIdFlux = initialOSAVectorFlux.flatMapSequential(v -> this.getOrgId(v.target.getOrgName()));
 		Flux<OSAVector> OSAVectorOrgFlux = Flux.zip(initialOSAVectorFlux, orgIdFlux).map(tuple -> {
 			OSAVector v = tuple.getT1();
 			v.orgId = tuple.getT2();
 			return v;
 		});
 		
-		Flux<String> spaceIdFlux = OSAVectorOrgFlux.flatMap(v -> this.getSpaceId(v.orgId, v.target.getSpaceName()));
+		Flux<String> spaceIdFlux = OSAVectorOrgFlux.flatMapSequential(v -> this.getSpaceId(v.orgId, v.target.getSpaceName()));
 		Flux<OSAVector> OSAVectorSpaceFlux = Flux.zip(OSAVectorOrgFlux, spaceIdFlux).map(tuple -> {
 			OSAVector v = tuple.getT1();
 			v.spaceId = tuple.getT2();
 			return v;
 		});
 		
-		Flux<String> applicationIdFlux = OSAVectorSpaceFlux.flatMap(v -> this.getApplicationId(v.orgId, v.spaceId, v.target.getApplicationName()));
+		Flux<String> applicationIdFlux = OSAVectorSpaceFlux.flatMapSequential(v -> this.getApplicationId(v.orgId, v.spaceId, v.target.getApplicationName()));
 		Flux<OSAVector> OSAVectorApplicationFlux = Flux.zip(OSAVectorSpaceFlux, applicationIdFlux).map(tuple -> {
 			OSAVector v = tuple.getT1();
 			v.applicationId = tuple.getT2();
@@ -89,14 +89,14 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			OSAVectorApplicationFlux = OSAVectorApplicationFlux.filter(v -> applicationIdFilter.test(v.applicationId));
 		}
 		
-		Flux<String> applicationURLFlux = OSAVectorApplicationFlux.flatMap(v -> this.getApplicationUrl(v.applicationId, v.target.getProtocol()));
+		Flux<String> applicationURLFlux = OSAVectorApplicationFlux.flatMapSequential(v -> this.getApplicationUrl(v.applicationId, v.target.getProtocol()));
 		Flux<OSAVector> OSAVectorURLFlux = Flux.zip(OSAVectorApplicationFlux, applicationURLFlux).map(tuple -> {
 			OSAVector v = tuple.getT1();
 			v.accessURL = this.determineAccessURL(tuple.getT2(), v.target.getPath());
 			return v;
 		});
 		
-		Flux<Integer> numberOfInstancesFlux = OSAVectorApplicationFlux.flatMap(v -> this.getNumberOfProcesses(v));
+		Flux<Integer> numberOfInstancesFlux = OSAVectorApplicationFlux.flatMapSequential(v -> this.getNumberOfProcesses(v));
 		
 		Flux<OSAVector> OSAVectorCompleteFlux = Flux.zip(OSAVectorURLFlux, numberOfInstancesFlux).map(tuple -> { 
 			OSAVector v = tuple.getT1();
@@ -104,7 +104,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			return v;
 		});
 		
-		Flux<Instance> instancesFlux = OSAVectorCompleteFlux.flatMap(v -> {
+		Flux<Instance> instancesFlux = OSAVectorCompleteFlux.flatMapSequential(v -> {
 			List<Instance> instances = new ArrayList<>(v.numberOfInstances);
 			for (int i = 0; i<v.numberOfInstances; i++) {
 				Instance inst = new Instance(v.target, String.format("%s:%d", v.applicationId, i), v.accessURL);
