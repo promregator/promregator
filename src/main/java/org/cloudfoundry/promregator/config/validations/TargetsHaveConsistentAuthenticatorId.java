@@ -21,7 +21,10 @@ public class TargetsHaveConsistentAuthenticatorId implements ConfigurationValida
 
 		final HashSet<String> authenticatorIds = new HashSet<>();
 
+		log.debug("The following target authenticators are registered");
 		for (TargetAuthenticatorConfiguration tac : promregatorConfiguration.getTargetAuthenticators()) {
+			log.debug(tac.getId());
+			
 			authenticatorIds.add(tac.getId());
 		}
 
