@@ -101,7 +101,7 @@ promregator:
      username: globalUsername
      password: globalPassword
 
-  targetAuthenticator:
+  targetAuthenticators:
    - id: targetAuthenticator1
      type: basic
        username: targetUsername

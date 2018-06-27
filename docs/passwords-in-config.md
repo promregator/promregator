@@ -18,7 +18,7 @@ Please find here an example how this can be done:
 
 ```yaml
 promregator:
-  targetAuthenticator:
+  targetAuthenticators:
     - id: testAuthenticator
       type: basic
       basic: 

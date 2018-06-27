@@ -307,7 +307,7 @@ java -Dspring.config.location=file:/path/to/your/myconfig.yaml -jar promregator-
 #### Option "promregator.authenticator.oauth2xsuaa.scopes" (optional, only available if using promregator.authenticator.type=OAuth2XSUAA)
 Specifies the set of scopes/authorities (format itself is a comma-separated string of explicit scopes, see also https://www.oauth.com/oauth2-servers/access-tokens/client-credentials/), which shall be requested from the OAuth2 server when using the Grant Type Client Credentials flow in case of global authentication. 
 
-### Subgroup "promregator.targetAuthenticator[]"
+### Subgroup "promregator.targetAuthenticators[]"
 Configures the way how authentication shall happen between Promregator and the targets configured above (**outbound** authentication). Mind the difference to the settings provided in `promregator.authentication`!
 
 This subgroup only defines the target-specific case of the outbound authentication to targets ("Target-specific Authentication"). Multiple instances may be defined in this subgroup.
