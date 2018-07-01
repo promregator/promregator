@@ -25,22 +25,25 @@ If Promregator is running on the same platform as the applications which you int
         protocol: https
         path: /promregatorMetrics
   ```
-  Note that setting the path is very important, as otherwise scraping will fail entirely, as you would be trying to
+  Note that setting the path is very important, as otherwise scraping will fail badly, as you would be trying to
   scrape not just Promregator's own metrics, but all metrics (you get a fallback to Single Endpoint Scraping mode), which would lead to an endless recursive loop.
 
 By this, Promregator's own metrics will be scraped like all the metrics provided by the other applications. This also implies that the `promregator_*` metrics will be enriched with the labels of its scraping origin, i.e. each Promregator metric will also have `orgName`, `spaceName`, `applicationName` and -- most important -- `instanceId` assigned. By using the `instanceId` you are able to determine from which instance of Promregator the metrics are coming from. (As usual) special care has to be taken, if you are aggregating across multiple `instanceId`s.
 
+Note that if you protect your `/promregatorMetrics` (e.g. via `promregator.metrics.auth`) it is necessary to add an `authenticatorId` attribute to your target mentioned above. Promregator behaves here like any other target. So, for details you may refer to the [outbound authentication page](./outbound-authentication.md)
+
+
 ### Recommendations on Deployment
 
-#### Running on Docker
+#### Running as Docker Image on Cloud Foundry
 
-Running multiple instances of promregator using docker is fairly trivial. You can use the already available docker images from Docker hub and just add your configuration in as in the following Dockerfile:
+Running multiple instances of promregator using docker is fairly easy. You can use the already available docker images from Docker hub and just add your configuration in as in the following Dockerfile:
 ```
 FROM promregator/promregator:latest
 
 ADD promregator.yaml /etc/promregator/promregator.yml
 ```
 
-The setting that worked the best is using 1G memory and one CPU per instance. It also proved useful to deploy with a health-check timeout of 180 seconds. You can achieve this using the command `cf push -t 180` as mentioned in the official Cloud Foundry documentation (https://docs.cloudfoundry.org/devguide/deploy-apps/large-app-deploy.html).
+As best practice, assign 1G memory and one CPU per instance. It also proved useful to deploy with a health-check timeout of 180 seconds. You can achieve this using the command `cf push -t 180` as mentioned in the [official Cloud Foundry documentation](https://docs.cloudfoundry.org/devguide/deploy-apps/large-app-deploy.html).
 
-Monitoring the individual instances is possible since the label `cf_instance_number` is provided. A sample Grafana dashboard for monitoring multiple instances of promregator can found at https://gist.github.com/vervas/306afdf50b679594b4b0692ff6741d2f
+Monitoring the individual instances is possible since the label `cf_instance_number` is provided. A sample Grafana dashboard for monitoring multiple instances of promregator can found at https://gist.github.com/vervas/306afdf50b679594b4b0692ff6741d2f.
