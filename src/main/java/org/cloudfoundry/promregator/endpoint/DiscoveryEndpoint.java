@@ -35,6 +35,9 @@ public class DiscoveryEndpoint {
 	@Value("${promregator.discovery.port:0}")
 	private int myPort;
 	
+	@Value("${promregator.discovery.ownMetricsEndpoint:true}")
+	private boolean promregatorMetricsEndpoint;
+	
 	public static class DiscoveryLabel {
 		private String __meta_promregator_target_path;
 		private String __meta_promregator_target_orgName;
@@ -133,9 +136,11 @@ public class DiscoveryEndpoint {
 			result.add(dr);
 		}
 		
-		// finally, also add our own metrics endpoint
-		DiscoveryLabel dl = new DiscoveryLabel(EndpointConstants.ENDPOINT_PATH_PROMREGATOR_METRICS);
-		result.add(new DiscoveryResponse(targets, dl));
+		if (this.promregatorMetricsEndpoint) {
+			// finally, also add our own metrics endpoint
+			DiscoveryLabel dl = new DiscoveryLabel(EndpointConstants.ENDPOINT_PATH_PROMREGATOR_METRICS);
+			result.add(new DiscoveryResponse(targets, dl));
+		}
 		
 		log.info(String.format("Returing discovery document with %d targets", result.size()));
 		

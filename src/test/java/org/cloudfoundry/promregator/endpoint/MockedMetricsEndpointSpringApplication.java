@@ -4,10 +4,12 @@ import java.time.Clock;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Predicate;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Null;
 
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
@@ -20,6 +22,7 @@ import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
 import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.cloudfoundry.promregator.scanner.TrivialTargetResolver;
+import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.AutoConfigurationExcludeFilter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.TypeExcludeFilter;
@@ -36,12 +39,15 @@ import io.prometheus.client.CollectorRegistry;
 @EnableAutoConfiguration
 @ComponentScan(excludeFilters = { @Filter(type = FilterType.CUSTOM, classes = { TypeExcludeFilter.class }),
 		@Filter(type = FilterType.CUSTOM, classes = { AutoConfigurationExcludeFilter.class }),
-		@Filter(type = FilterType.REGEX, pattern = "org\\.cloudfoundry\\.promregator\\.endpoint\\.MetricsEndpoint")
+		@Filter(type = FilterType.REGEX, pattern = "org\\.cloudfoundry\\.promregator\\.endpoint\\.MetricsEndpoint"),
 		// NB: Handling is taken over by TestableMetricsEndpoint! That one is
 		// NOT excluded
+		@Filter(type = FilterType.ASSIGNABLE_TYPE, value=InvalidateCacheEndpoint.class)
 })
 @Import({ PromregatorConfiguration.class })
 public class MockedMetricsEndpointSpringApplication {
+	public final static UUID currentPromregatorInstanceIdentifier = UUID.randomUUID();
+	
 	@Bean
 	public AppInstanceScanner appInstanceScanner() {
 		return new AppInstanceScanner() {
@@ -124,4 +130,15 @@ public class MockedMetricsEndpointSpringApplication {
 		return new NullEnricher();
 	};
 
+	@Bean
+	public UUID promregatorInstanceIdentifier() {
+		return currentPromregatorInstanceIdentifier;
+	}
+
+	public static HttpServletRequest mockedHttpServletRequest = Mockito.mock(HttpServletRequest.class);
+	
+	@Bean
+	public HttpServletRequest httpServletRequest() {
+		return mockedHttpServletRequest;
+	}
 }

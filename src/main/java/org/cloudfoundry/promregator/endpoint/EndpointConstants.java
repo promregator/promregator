@@ -6,4 +6,6 @@ public interface EndpointConstants {
 	final static String ENDPOINT_PATH_SINGLE_TARGET_SCRAPING = "/singleTargetMetrics";
 	final static String ENDPOINT_PATH_PROMREGATOR_METRICS = "/promregatorMetrics";
 	final static String ENDPOINT_PATH_CACHE_INVALIDATION = "/cache/invalidate";
+	
+	final static String HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER = "X-Promregator-Instance";
 }
