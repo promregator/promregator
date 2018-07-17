@@ -178,7 +178,9 @@ public abstract class AbstractMetricsEndpoint {
 				log.warn("Exception thrown while fetching Metrics data from target", e);
 				continue;
 			} catch (TimeoutException e) {
-				log.info("Timeout while fetching metrics data from target", e);
+				log.info("Not all targets could be scraped within the current promregator.endpoint.maxProcessingTime. "
+						+ "Consider increasing promregator.endpoint.maxProcessingTime or promregator.endpoint.threads, "
+						+ "but mind the implications. See also https://github.com/promregator/promregator/wiki/Handling-Timeouts-on-Scraping");
 				continue; // process the other's as well!
 			}
 			
