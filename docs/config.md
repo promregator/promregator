@@ -225,8 +225,9 @@ Specifies how many threads may be used to query the list of targets.
 Note that for each target request sent, an own thread is required and stays blocked (synchronously) until the Cloud Foundry Application has returned a response. 
 Thus, it may be reasonable to allow more threads than you have cores in your environment where Promregator is running.
 
-In general, the more targets you have registered, the higher this value should be. However, running too many threads is simply a waste of resources.
-As an upper boundary, it does not make sense to allow more threads to run than you have specified targets in your configuration.
+In general, the more targets you have registered, the higher this value should be. However, running too many threads is simply a waste of resources. As an upper boundary, it does not make sense to allow more threads to run than you have specified targets in your configuration.
+
+Note that if you increase this value, more threads will spawned inside of Promregator. Be aware that these threads may consume memory and thus it will have impact on your memory configuration. For details on the latter, also refer to the [Java Memory Configuration page](jvm-mem-config.md).
 
 The default value of this option is 5.
 
