@@ -218,6 +218,8 @@ Targets which did not respond after this amount of time are considered non-funct
 
 The default value of this option is 5000ms (=5 seconds)
 
+Warning! The value should always be lower than the (shortest) scraping interval you expose Promregator to.
+
 #### Option "promregator.endpoint.threads" (optional)
 Specifies how many threads may be used to query the list of targets.
 Note that for each target request sent, an own thread is required and stays blocked (synchronously) until the Cloud Foundry Application has returned a response. 
