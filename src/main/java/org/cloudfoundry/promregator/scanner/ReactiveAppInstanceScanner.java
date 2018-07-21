@@ -14,6 +14,7 @@ import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.client.v2.organizations.OrganizationResource;
 import org.cloudfoundry.client.v2.routes.RouteEntity;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
+import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
 import org.cloudfoundry.client.v3.processes.ProcessResource;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
@@ -89,18 +90,19 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			OSAVectorApplicationFlux = OSAVectorApplicationFlux.filter(v -> applicationIdFilter.test(v.applicationId));
 		}
 		
-		Flux<String> applicationURLFlux = OSAVectorApplicationFlux.flatMapSequential(v -> this.getApplicationUrl(v.applicationId, v.target.getProtocol()));
-		Flux<OSAVector> OSAVectorURLFlux = Flux.zip(OSAVectorApplicationFlux, applicationURLFlux).map(tuple -> {
+		Flux<SpaceApplicationSummary> applicationSummaryFlux = OSAVectorApplicationFlux.flatMapSequential( v -> this.getApplicationSummary(v.spaceId, v.applicationId));
+		Flux<OSAVector> OSAVectorCompleteFlux = Flux.zip(OSAVectorApplicationFlux, applicationSummaryFlux).map(tuple-> {
 			OSAVector v = tuple.getT1();
-			v.accessURL = this.determineAccessURL(tuple.getT2(), v.target.getPath());
-			return v;
-		});
-		
-		Flux<Integer> numberOfInstancesFlux = OSAVectorApplicationFlux.flatMapSequential(v -> this.getNumberOfProcesses(v));
-		
-		Flux<OSAVector> OSAVectorCompleteFlux = Flux.zip(OSAVectorURLFlux, numberOfInstancesFlux).map(tuple -> { 
-			OSAVector v = tuple.getT1();
-			v.numberOfInstances = tuple.getT2();
+			SpaceApplicationSummary summary = tuple.getT2();
+			
+			List<String> urls = summary.getUrls();
+			if (urls != null && !urls.isEmpty()) {
+				String url = String.format("%s://%s", v.target.getProtocol(), urls.get(0));
+				v.accessURL = this.determineAccessURL(url, v.target.getPath());
+			}
+			
+			v.numberOfInstances = summary.getInstances();
+			
 			return v;
 		});
 		
@@ -193,6 +195,15 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			.cache();
 			
 		return applicationId;
+	}
+	
+	private Mono<SpaceApplicationSummary> getApplicationSummary(String spaceIdString, String applicationIdString) {
+		return this.cfAccessor.retrieveSpaceSummary(spaceIdString)
+			.flatMapMany( spaceSummary -> {
+				return Flux.fromIterable(spaceSummary.getApplications());
+			})
+			.filter(summary -> applicationIdString.equals(summary.getId()))
+			.single();
 	}
 	
 	private Mono<String> getApplicationUrl(String applicationId, String protocol) {

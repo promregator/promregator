@@ -19,6 +19,7 @@ import org.cloudfoundry.client.v2.routes.GetRouteResponse;
 import org.cloudfoundry.client.v2.routes.RouteEntity;
 import org.cloudfoundry.client.v2.shareddomains.GetSharedDomainResponse;
 import org.cloudfoundry.client.v2.shareddomains.SharedDomainEntity;
+import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceEntity;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
@@ -232,6 +233,12 @@ public class CFAccessorMassMock implements CFAccessor {
 		}
 		Assert.fail("Invalid retrieveAllApplicationIdsInSpace request");
 		return null;
+	}
+	
+	@Override
+	public Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId) {
+		// TODO Auto-generated method stub
+		throw new Error("still to be implemented");
 	}
 
 }
