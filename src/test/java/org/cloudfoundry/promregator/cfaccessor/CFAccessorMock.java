@@ -1,5 +1,6 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -10,23 +11,11 @@ import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.organizations.OrganizationEntity;
 import org.cloudfoundry.client.v2.organizations.OrganizationResource;
-import org.cloudfoundry.client.v2.routemappings.ListRouteMappingsResponse;
-import org.cloudfoundry.client.v2.routemappings.RouteMappingEntity;
-import org.cloudfoundry.client.v2.routemappings.RouteMappingResource;
-import org.cloudfoundry.client.v2.routes.GetRouteResponse;
-import org.cloudfoundry.client.v2.routes.RouteEntity;
-import org.cloudfoundry.client.v2.shareddomains.GetSharedDomainResponse;
-import org.cloudfoundry.client.v2.shareddomains.SharedDomainEntity;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
+import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v2.spaces.SpaceEntity;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
-import org.cloudfoundry.client.v3.processes.Data;
-import org.cloudfoundry.client.v3.processes.HealthCheck;
-import org.cloudfoundry.client.v3.processes.HealthCheckType;
-import org.cloudfoundry.client.v3.processes.ListProcessesResponse;
-import org.cloudfoundry.client.v3.processes.ProcessResource;
-import org.cloudfoundry.client.v3.processes.ProcessResource.Builder;
 import org.junit.Assert;
 
 import reactor.core.publisher.Mono;
@@ -119,93 +108,6 @@ public class CFAccessorMock implements CFAccessor {
 	}
 
 	@Override
-	public Mono<ListRouteMappingsResponse> retrieveRouteMapping(String appId) {
-		RouteMappingEntity entity = null;
-		if (appId.equals(UNITTEST_APP1_UUID)) {
-			entity = RouteMappingEntity.builder().applicationId(appId).routeId(UNITTEST_APP1_ROUTE_UUID).build();
-		} else if (appId.equals(UNITTEST_APP2_UUID)) {
-			entity = RouteMappingEntity.builder().applicationId(appId).routeId(UNITTEST_APP2_ROUTE_UUID).build();
-		}
-		
-		if (entity == null) {
-			Assert.fail("Invalid route mapping request");
-			return null;
-		}
-
-		RouteMappingResource rmr = null;
-		rmr = RouteMappingResource.builder().entity(entity).build();
-
-		List<RouteMappingResource> list = new LinkedList<>();
-		list.add(rmr);
-		ListRouteMappingsResponse resp = ListRouteMappingsResponse.builder().addAllResources(list).build();
-		
-		return Mono.just(resp);
-	}
-
-	@Override
-	public Mono<GetRouteResponse> retrieveRoute(String routeId) {
-		
-		RouteEntity entity = null;
-		if (routeId.equals(UNITTEST_APP1_ROUTE_UUID)) {
-			entity = RouteEntity.builder().domainId(UNITTEST_SHARED_DOMAIN_UUID).host(UNITTEST_APP1_HOST).build();
-		} else if (routeId.equals(UNITTEST_APP2_ROUTE_UUID)) {
-			entity = RouteEntity.builder().domainId(UNITTEST_SHARED_DOMAIN_UUID).host(UNITTEST_APP2_HOST).path("additionalPath").build();
-		}
-		
-		if (entity == null) {
-			Assert.fail("Invalid route request");
-			return null;
-		}
-		
-		GetRouteResponse resp = GetRouteResponse.builder().entity(entity).build();
-		return Mono.just(resp);
-	}
-
-	@Override
-	public Mono<GetSharedDomainResponse> retrieveSharedDomain(String domainId) {
-		
-		if (domainId.equals(UNITTEST_SHARED_DOMAIN_UUID)) {
-			SharedDomainEntity entity = SharedDomainEntity.builder().name(UNITTEST_SHARED_DOMAIN).build();
-			GetSharedDomainResponse resp = GetSharedDomainResponse.builder().entity(entity).build();
-			
-			return Mono.just(resp);
-		}
-		
-		Assert.fail("Invalid shared domain request");
-		return null;
-	}
-
-	@Override
-	public Mono<ListProcessesResponse> retrieveProcesses(String orgId, String spaceId, String appId) {
-		if (orgId.equals(UNITTEST_ORG_UUID) && spaceId.equals(UNITTEST_SPACE_UUID)) {
-			List<ProcessResource> list = new LinkedList<>();
-			
-			Data data = Data.builder().timeout(100).build();
-			HealthCheck hc = HealthCheck.builder().type(HealthCheckType.HTTP).data(data).build();
-			Builder builder = ProcessResource.builder().type("dummy").command("dummycommand").memoryInMb(1024).diskInMb(1024)
-					.healthCheck(hc).createdAt(CREATED_AT_TIMESTAMP).updatedAt(UPDATED_AT_TIMESTAMP);
-			ProcessResource ar = null;
-			if (appId.equals(UNITTEST_APP1_UUID)) {
-				ar = builder.instances(2).id(UNITTEST_APP1_UUID).build();
-			} else if (appId.equals(UNITTEST_APP2_UUID)) {
-				ar = builder.instances(1).id(UNITTEST_APP2_UUID).build();
-			}
-			if (ar == null) {
-				Assert.fail("Invalid process request, invalid app id provided");
-				return null;
-			}
-			list.add(ar);
-			
-			ListProcessesResponse resp = ListProcessesResponse.builder().addAllResources(list).build();
-			
-			return Mono.just(resp);
-		}
-		
-		Assert.fail("Invalid process request");
-		return null;
-	}
-
-	@Override
 	public Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String orgId, String spaceId) {
 		if (orgId.equals(UNITTEST_ORG_UUID) && spaceId.equals(UNITTEST_SPACE_UUID)) {
 			List<ApplicationResource> list = new LinkedList<>();
@@ -234,8 +136,32 @@ public class CFAccessorMock implements CFAccessor {
 	
 	@Override
 	public Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId) {
-		// TODO Auto-generated method stub
-		throw new Error("still to be implemented");
+		if (spaceId.equals(UNITTEST_SPACE_UUID)) {
+			List<SpaceApplicationSummary> list = new LinkedList<>();
+			
+			final String[] urls1 = { UNITTEST_APP1_HOST + "." + UNITTEST_SHARED_DOMAIN }; 
+			SpaceApplicationSummary sas = SpaceApplicationSummary.builder()
+					.id(UNITTEST_APP1_UUID)
+					.addAllUrls(Arrays.asList(urls1))
+					.instances(2)
+					.build();
+			list.add(sas);
+			
+			final String[] urls2 = { UNITTEST_APP2_HOST + "." + UNITTEST_SHARED_DOMAIN + "/additionalPath" }; 
+			sas =  SpaceApplicationSummary.builder()
+					.id(UNITTEST_APP2_UUID)
+					.addAllUrls(Arrays.asList(urls2))
+					.instances(1)
+					.build();
+			list.add(sas);
+			
+			GetSpaceSummaryResponse resp = GetSpaceSummaryResponse.builder().addAllApplications(list).build();
+			
+			return Mono.just(resp);
+		}
+		
+		Assert.fail("Invalid retrieveSpaceSummary request");
+		return null;
 	}
 
 }

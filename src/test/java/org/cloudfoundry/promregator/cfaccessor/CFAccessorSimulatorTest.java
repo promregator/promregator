@@ -1,11 +1,15 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
+import java.util.List;
+
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.routemappings.ListRouteMappingsResponse;
 import org.cloudfoundry.client.v2.routes.GetRouteResponse;
 import org.cloudfoundry.client.v2.shareddomains.GetSharedDomainResponse;
+import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
+import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v3.processes.ListProcessesResponse;
 import org.junit.Assert;
 import org.junit.Test;
@@ -42,43 +46,39 @@ public class CFAccessorSimulatorTest {
 	}
 
 	@Test
-	public void testRetrieveRouteMapping() {
+	public void testRetrieveSpaceSummary() {
 		CFAccessorSimulator subject = new CFAccessorSimulator(2);
 		
-		Mono<ListRouteMappingsResponse> mono = subject.retrieveRouteMapping(CFAccessorSimulator.APP_UUID_PREFIX+"1");
-		ListRouteMappingsResponse result = mono.block();
-		Assert.assertEquals(CFAccessorSimulator.APP_ROUTE_UUID_PREFIX+"1", result.getResources().get(0).getEntity().getRouteId());
-	}
-
-	@Test
-	public void testRetrieveRoute() {
-		CFAccessorSimulator subject = new CFAccessorSimulator(2);
+		Mono<GetSpaceSummaryResponse> mono = subject.retrieveSpaceSummary(CFAccessorSimulator.SPACE_UUID);
+		GetSpaceSummaryResponse result = mono.block();
 		
-		Mono<GetRouteResponse> mono = subject.retrieveRoute(CFAccessorSimulator.APP_ROUTE_UUID_PREFIX+"1");
-		GetRouteResponse result = mono.block();
-		Assert.assertEquals(CFAccessorSimulator.APP_HOST_PREFIX+"1", result.getEntity().getHost());
-		Assert.assertEquals(CFAccessorSimulator.SHARED_DOMAIN_UUID, result.getEntity().getDomainId());
-	}
-
-	@Test
-	public void testRetrieveSharedDomain() {
-		CFAccessorSimulator subject = new CFAccessorSimulator(2);
+		Assert.assertNotNull(result);
+		Assert.assertNotNull(result.getApplications());
+		Assert.assertEquals(100, result.getApplications().size());
 		
-		Mono<GetSharedDomainResponse> mono = subject.retrieveSharedDomain(CFAccessorSimulator.SHARED_DOMAIN_UUID);
-		GetSharedDomainResponse result = mono.block();
-		Assert.assertEquals(CFAccessorSimulator.SHARED_DOMAIN, result.getEntity().getName());
-	}
-
-	@Test
-	public void testRetrieveProcesses() {
-		CFAccessorSimulator subject = new CFAccessorSimulator(2);
+		List<SpaceApplicationSummary> list = result.getApplications();
 		
-		for (int i = 0;i<10; i++) {
-			String appId = CFAccessorSimulator.APP_UUID_PREFIX+i;
-			Mono<ListProcessesResponse> mono = subject.retrieveProcesses(CFAccessorSimulator.ORG_UUID, CFAccessorSimulator.SPACE_UUID, appId);
-			ListProcessesResponse result = mono.block();
-			Assert.assertEquals(new Integer(2), result.getResources().get(0).getInstances());
+		boolean[] tests = new boolean[10+1];
+		
+		for(SpaceApplicationSummary item : list) {
+			String appNumber = item.getId().substring(CFAccessorSimulator.APP_UUID_PREFIX.length());
+			int appNumberInteger = Integer.parseInt(appNumber);
+			
+			Assert.assertEquals(2, item.getInstances().intValue());
+			Assert.assertTrue(item.getUrls().contains(CFAccessorSimulator.APP_HOST_PREFIX+appNumber+"."+CFAccessorSimulator.SHARED_DOMAIN));
+			
+			if (appNumberInteger >= 11) {
+				continue;
+			}
+			
+			tests[appNumberInteger] = true;
+		}
+		
+		for (int i = 1;i<=10;i++) {
+			Assert.assertTrue(tests[i]);
 		}
 	}
+
+	
 
 }

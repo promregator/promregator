@@ -1,6 +1,7 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -13,23 +14,12 @@ import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.organizations.OrganizationEntity;
 import org.cloudfoundry.client.v2.organizations.OrganizationResource;
-import org.cloudfoundry.client.v2.routemappings.ListRouteMappingsResponse;
-import org.cloudfoundry.client.v2.routemappings.RouteMappingEntity;
-import org.cloudfoundry.client.v2.routemappings.RouteMappingResource;
-import org.cloudfoundry.client.v2.routes.GetRouteResponse;
-import org.cloudfoundry.client.v2.routes.RouteEntity;
-import org.cloudfoundry.client.v2.shareddomains.GetSharedDomainResponse;
-import org.cloudfoundry.client.v2.shareddomains.SharedDomainEntity;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
+import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v2.spaces.SpaceEntity;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
-import org.cloudfoundry.client.v3.processes.Data;
-import org.cloudfoundry.client.v3.processes.HealthCheck;
-import org.cloudfoundry.client.v3.processes.HealthCheckType;
-import org.cloudfoundry.client.v3.processes.ListProcessesResponse;
-import org.cloudfoundry.client.v3.processes.ProcessResource;
-import org.cloudfoundry.client.v3.processes.ProcessResource.Builder;
+import org.junit.Assert;
 
 import reactor.core.publisher.Mono;
 
@@ -37,9 +27,7 @@ public class CFAccessorSimulator implements CFAccessor {
 	public final static String ORG_UUID = "eb51aa9c-2fa3-11e8-b467-0ed5f89f718b";
 	public final static String SPACE_UUID = "db08be9a-2fa4-11e8-b467-0ed5f89f718b";
 	public final static String APP_UUID_PREFIX = "55820b2c-2fa5-11e8-b467-";
-	public final static String APP_ROUTE_UUID_PREFIX = "57ac2ada-2fa6-11e8-b467-";
 	public final static String APP_HOST_PREFIX = "hostapp";
-	public final static String SHARED_DOMAIN_UUID = "be9b8696-2fa6-11e8-b467-0ed5f89f718b";
 	public final static String SHARED_DOMAIN = "shared.domain.example.org";
 	
 	private static final Logger log = Logger.getLogger(CFAccessorSimulator.class);
@@ -157,8 +145,26 @@ public class CFAccessorSimulator implements CFAccessor {
 
 	@Override
 	public Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId) {
-		// TODO Auto-generated method stub
-		throw new Error("still to be implemented");
+		if (spaceId.equals(SPACE_UUID)) {
+			List<SpaceApplicationSummary> list = new LinkedList<>();
+			
+			for (int i = 1;i<=100;i++) {
+				final String[] urls = { APP_HOST_PREFIX+i+"."+SHARED_DOMAIN }; 
+				SpaceApplicationSummary sas = SpaceApplicationSummary.builder()
+						.id(APP_UUID_PREFIX+i)
+						.addAllUrls(Arrays.asList(urls))
+						.instances(this.amountInstances)
+						.build();
+				list.add(sas);
+			}
+			
+			GetSpaceSummaryResponse resp = GetSpaceSummaryResponse.builder().addAllApplications(list).build();
+			
+			return Mono.just(resp).delayElement(this.getSleepRandomDuration());
+		}
+		
+		Assert.fail("Invalid retrieveSpaceSummary request");
+		return null;
 	}
 
 }
