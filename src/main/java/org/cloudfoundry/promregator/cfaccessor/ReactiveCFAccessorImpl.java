@@ -19,6 +19,8 @@ import org.apache.log4j.Logger;
 import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.client.v2.applications.ListApplicationsRequest;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
+import org.cloudfoundry.client.v2.applications.SummaryApplicationRequest;
+import org.cloudfoundry.client.v2.applications.SummaryApplicationResponse;
 import org.cloudfoundry.client.v2.info.GetInfoRequest;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsRequest;
@@ -29,10 +31,15 @@ import org.cloudfoundry.client.v2.routes.GetRouteRequest;
 import org.cloudfoundry.client.v2.routes.GetRouteResponse;
 import org.cloudfoundry.client.v2.shareddomains.GetSharedDomainRequest;
 import org.cloudfoundry.client.v2.shareddomains.GetSharedDomainResponse;
+import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryRequest;
+import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
+import org.cloudfoundry.client.v2.spaces.ListSpaceApplicationsRequest;
 import org.cloudfoundry.client.v2.spaces.ListSpacesRequest;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v3.processes.ListProcessesRequest;
 import org.cloudfoundry.client.v3.processes.ListProcessesResponse;
+import org.cloudfoundry.operations.applications.ApplicationSummary;
+import org.cloudfoundry.operations.applications.DefaultApplications;
 import org.cloudfoundry.promregator.config.ConfigurationException;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.cloudfoundry.reactor.ConnectionContext;
@@ -79,6 +86,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	private PassiveExpiringMap<String, Mono<GetRouteResponse>> routeCache;
 	private PassiveExpiringMap<String, Mono<GetSharedDomainResponse>> domainCache;
 	private PassiveExpiringMap<String, Mono<ListProcessesResponse>> processCache;
+	private PassiveExpiringMap<String, Mono<GetSpaceSummaryResponse>> spaceSummaryCache;
 	
 	@Value("${cf.cache.timeout.org:3600}")
 	private int timeoutCacheOrgLevel;
@@ -121,6 +129,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		this.routeCache = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
 		this.domainCache = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
 		this.processCache = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
+		this.spaceSummaryCache = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
 	}
 	
 	private DefaultConnectionContext connectionContext(ProxyConfiguration proxyConfiguration) throws ConfigurationException {
@@ -339,6 +348,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	 * @see org.cloudfoundry.promregator.cfaccessor.CFAccessor#retrieveRouteMapping(java.lang.String)
 	 */
 	@Override
+	@Deprecated
 	public Mono<ListRouteMappingsResponse> retrieveRouteMapping(String appId) {
 		ListRouteMappingsRequest mappingRequest = ListRouteMappingsRequest.builder().applicationId(appId).build();
 		
@@ -350,6 +360,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	 * @see org.cloudfoundry.promregator.cfaccessor.CFAccessor#retrieveRoute(java.lang.String)
 	 */
 	@Override
+	@Deprecated
 	public Mono<GetRouteResponse> retrieveRoute(String routeId) {
 		GetRouteRequest getRequest = GetRouteRequest.builder().routeId(routeId).build();
 		
@@ -361,6 +372,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	 * @see org.cloudfoundry.promregator.cfaccessor.CFAccessor#retrieveSharedDomain(java.lang.String)
 	 */
 	@Override
+	@Deprecated
 	public Mono<GetSharedDomainResponse> retrieveSharedDomain(String domainId) {
 		GetSharedDomainRequest domainRequest = GetSharedDomainRequest.builder().sharedDomainId(domainId).build();
 		
@@ -372,6 +384,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	 * @see org.cloudfoundry.promregator.cfaccessor.CFAccessor#retrieveProcesses(java.lang.String, java.lang.String, java.lang.String)
 	 */
 	@Override
+	@Deprecated
 	public Mono<ListProcessesResponse> retrieveProcesses(String orgId, String spaceId, String appId) {
 		String key = determineApplicationCacheKey(orgId, spaceId, appId);
 		
@@ -379,6 +392,14 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		
 		return this.performGenericRetrieval("processes", "retrieveProcesses", key, this.processCache, 
 				request, r -> this.cloudFoundryClient.processes().list(r));
+	}
+	
+	@Override
+	public Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId) {
+		GetSpaceSummaryRequest request = GetSpaceSummaryRequest.builder().spaceId(spaceId).build();
+		
+		return this.performGenericRetrieval("spaceSummary", "retrieveSpaceSummary", spaceId, this.spaceSummaryCache, 
+				request, r -> this.cloudFoundryClient.spaces().getSummary(r));
 	}
 
 	
@@ -400,5 +421,6 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		log.info("Invalidating org cache");
 		this.orgCache.clear();
 	}
+
 
 }

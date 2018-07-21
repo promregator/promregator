@@ -6,6 +6,7 @@ import org.cloudfoundry.client.v2.shareddomains.GetSharedDomainResponse;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v3.processes.ListProcessesResponse;
+import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 
 import reactor.core.publisher.Mono;
@@ -20,12 +21,29 @@ public interface CFAccessor {
 
 	Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String orgId, String spaceId);
 	
+	/**
+	 * use retrieveSpaceSummary instead
+	 */
+	@Deprecated
 	Mono<ListRouteMappingsResponse> retrieveRouteMapping(String appId);
 
+	/**
+	 * use retrieveSpaceSummary instead
+	 */
+	@Deprecated
 	Mono<GetRouteResponse> retrieveRoute(String routeId);
 
+	/**
+	 * use retrieveSpaceSummary instead
+	 */
+	@Deprecated
 	Mono<GetSharedDomainResponse> retrieveSharedDomain(String domainId);
 
+	/**
+	 * use retrieveSpaceSummary instead
+	 */
+	@Deprecated
 	Mono<ListProcessesResponse> retrieveProcesses(String orgId, String spaceId, String appId);
 
+	Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId);
 }
