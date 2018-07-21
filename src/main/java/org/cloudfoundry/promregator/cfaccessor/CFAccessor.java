@@ -20,30 +20,6 @@ public interface CFAccessor {
 	Mono<ListApplicationsResponse> retrieveApplicationId(String orgId, String spaceId, String applicationName);
 
 	Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String orgId, String spaceId);
-	
-	/**
-	 * use retrieveSpaceSummary instead
-	 */
-	@Deprecated
-	Mono<ListRouteMappingsResponse> retrieveRouteMapping(String appId);
-
-	/**
-	 * use retrieveSpaceSummary instead
-	 */
-	@Deprecated
-	Mono<GetRouteResponse> retrieveRoute(String routeId);
-
-	/**
-	 * use retrieveSpaceSummary instead
-	 */
-	@Deprecated
-	Mono<GetSharedDomainResponse> retrieveSharedDomain(String domainId);
-
-	/**
-	 * use retrieveSpaceSummary instead
-	 */
-	@Deprecated
-	Mono<ListProcessesResponse> retrieveProcesses(String orgId, String spaceId, String appId);
 
 	Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId);
 }

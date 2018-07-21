@@ -19,27 +19,14 @@ import org.apache.log4j.Logger;
 import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.client.v2.applications.ListApplicationsRequest;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
-import org.cloudfoundry.client.v2.applications.SummaryApplicationRequest;
-import org.cloudfoundry.client.v2.applications.SummaryApplicationResponse;
 import org.cloudfoundry.client.v2.info.GetInfoRequest;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsRequest;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
-import org.cloudfoundry.client.v2.routemappings.ListRouteMappingsRequest;
-import org.cloudfoundry.client.v2.routemappings.ListRouteMappingsResponse;
-import org.cloudfoundry.client.v2.routes.GetRouteRequest;
-import org.cloudfoundry.client.v2.routes.GetRouteResponse;
-import org.cloudfoundry.client.v2.shareddomains.GetSharedDomainRequest;
-import org.cloudfoundry.client.v2.shareddomains.GetSharedDomainResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryRequest;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
-import org.cloudfoundry.client.v2.spaces.ListSpaceApplicationsRequest;
 import org.cloudfoundry.client.v2.spaces.ListSpacesRequest;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
-import org.cloudfoundry.client.v3.processes.ListProcessesRequest;
-import org.cloudfoundry.client.v3.processes.ListProcessesResponse;
-import org.cloudfoundry.operations.applications.ApplicationSummary;
-import org.cloudfoundry.operations.applications.DefaultApplications;
 import org.cloudfoundry.promregator.config.ConfigurationException;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.cloudfoundry.reactor.ConnectionContext;
@@ -82,10 +69,6 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	private PassiveExpiringMap<String, Mono<ListOrganizationsResponse>> orgCache;
 	private PassiveExpiringMap<String, Mono<ListSpacesResponse>> spaceCache;
 	private PassiveExpiringMap<String, Mono<ListApplicationsResponse>> applicationCache;
-	private PassiveExpiringMap<String, Mono<ListRouteMappingsResponse>> routeMappingCache;
-	private PassiveExpiringMap<String, Mono<GetRouteResponse>> routeCache;
-	private PassiveExpiringMap<String, Mono<GetSharedDomainResponse>> domainCache;
-	private PassiveExpiringMap<String, Mono<ListProcessesResponse>> processCache;
 	private PassiveExpiringMap<String, Mono<GetSpaceSummaryResponse>> spaceSummaryCache;
 	
 	@Value("${cf.cache.timeout.org:3600}")
@@ -125,10 +108,6 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		 * In short: both are very volatile and we need to query them often
 		 */
 		this.applicationCache = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
-		this.routeMappingCache = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
-		this.routeCache = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
-		this.domainCache = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
-		this.processCache = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
 		this.spaceSummaryCache = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
 	}
 	
@@ -342,57 +321,6 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		
 		return allAppsInSpaceWithCacheFilled;
 	}
-
-	
-	/* (non-Javadoc)
-	 * @see org.cloudfoundry.promregator.cfaccessor.CFAccessor#retrieveRouteMapping(java.lang.String)
-	 */
-	@Override
-	@Deprecated
-	public Mono<ListRouteMappingsResponse> retrieveRouteMapping(String appId) {
-		ListRouteMappingsRequest mappingRequest = ListRouteMappingsRequest.builder().applicationId(appId).build();
-		
-		return this.performGenericRetrieval("routeMapping", "retrieveRouteMapping", appId, this.routeMappingCache, 
-				mappingRequest, r ->  this.cloudFoundryClient.routeMappings().list(r));
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.cloudfoundry.promregator.cfaccessor.CFAccessor#retrieveRoute(java.lang.String)
-	 */
-	@Override
-	@Deprecated
-	public Mono<GetRouteResponse> retrieveRoute(String routeId) {
-		GetRouteRequest getRequest = GetRouteRequest.builder().routeId(routeId).build();
-		
-		return this.performGenericRetrieval("route", "retrieveRoute", routeId, this.routeCache, 
-				getRequest, r -> this.cloudFoundryClient.routes().get(r));
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.cloudfoundry.promregator.cfaccessor.CFAccessor#retrieveSharedDomain(java.lang.String)
-	 */
-	@Override
-	@Deprecated
-	public Mono<GetSharedDomainResponse> retrieveSharedDomain(String domainId) {
-		GetSharedDomainRequest domainRequest = GetSharedDomainRequest.builder().sharedDomainId(domainId).build();
-		
-		return this.performGenericRetrieval("domain", "retrieveSharedDomain", domainId, this.domainCache, 
-				domainRequest, r -> this.cloudFoundryClient.sharedDomains().get(r));
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.cloudfoundry.promregator.cfaccessor.CFAccessor#retrieveProcesses(java.lang.String, java.lang.String, java.lang.String)
-	 */
-	@Override
-	@Deprecated
-	public Mono<ListProcessesResponse> retrieveProcesses(String orgId, String spaceId, String appId) {
-		String key = determineApplicationCacheKey(orgId, spaceId, appId);
-		
-		ListProcessesRequest request = ListProcessesRequest.builder().organizationId(orgId).spaceId(spaceId).applicationId(appId).build();
-		
-		return this.performGenericRetrieval("processes", "retrieveProcesses", key, this.processCache, 
-				request, r -> this.cloudFoundryClient.processes().list(r));
-	}
 	
 	@Override
 	public Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId) {
@@ -406,10 +334,6 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	public void invalidateCacheApplications() {
 		log.info("Invalidating application cache");
 		this.applicationCache.clear();
-		this.routeMappingCache.clear();
-		this.routeCache.clear();
-		this.domainCache.clear();
-		this.processCache.clear();
 	}
 	
 	public void invalidateCacheSpace() {
