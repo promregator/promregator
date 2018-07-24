@@ -32,7 +32,9 @@ Here is the list of major features provided by Promregator:
   - [JWT](https://jwt.io/)-based authentication (with retrieval of JWT from [OAuth2](https://oauth.net/2/) server, JWT is cached)
   - Null Authentication (not recommended for productive environments!)
   
-  The Authentication schemes are easily extensible.
+  The available authentication schemes are easily extensible.
+  
+  *(>= 0.4.0)* Each target may be configured to use its own authentication scheme, thus you may authenticate to multiple CF apps using different credentials.
 * *(>= 0.2.0)* **Support for inbound authentication** (e.g. Prometheus authenticates to Promregator) using Basic HTTP Authentication. 
 * **Configuration using standard Spring properties** as defined by the Spring Framework (e.g. using `application.yml` file).
 * Simple **HTTP proxy support** is available for contacting CF app endpoints.
