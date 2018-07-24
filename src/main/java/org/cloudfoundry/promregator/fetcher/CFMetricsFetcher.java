@@ -86,7 +86,7 @@ public class CFMetricsFetcher implements MetricsFetcher {
 
 	@Override
 	public HashMap<String, MetricFamilySamples> call() throws Exception {
-		log.info(String.format("Reading metrics from %s for instance %s", this.endpointUrl, this.instanceId));
+		log.debug(String.format("Reading metrics from %s for instance %s", this.endpointUrl, this.instanceId));
 		
 		HttpGet httpget = new HttpGet(this.endpointUrl);
 		
@@ -122,7 +122,7 @@ public class CFMetricsFetcher implements MetricsFetcher {
 				log.warn(String.format("Target server at '%s' and instance '%s' responded with a non-200 status code: %d", this.endpointUrl, this.instanceId, response.getStatusLine().getStatusCode()));
 				return null;
 			}
-			log.info(String.format("Sucessfully received metrics from %s for instance %s", this.endpointUrl, this.instanceId));
+			log.debug(String.format("Successfully received metrics from %s for instance %s", this.endpointUrl, this.instanceId));
 			
 			String result = EntityUtils.toString(response.getEntity());
 			
