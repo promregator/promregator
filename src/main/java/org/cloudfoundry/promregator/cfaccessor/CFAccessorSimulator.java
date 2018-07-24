@@ -19,7 +19,6 @@ import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v2.spaces.SpaceEntity;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
-import org.junit.Assert;
 
 import reactor.core.publisher.Mono;
 
@@ -163,7 +162,7 @@ public class CFAccessorSimulator implements CFAccessor {
 			return Mono.just(resp).delayElement(this.getSleepRandomDuration());
 		}
 		
-		Assert.fail("Invalid retrieveSpaceSummary request");
+		log.error("Invalid retrieveSpaceSummary request");
 		return null;
 	}
 
