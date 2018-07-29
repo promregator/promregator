@@ -56,7 +56,8 @@ public class CFAccessorMock implements CFAccessor {
 		} else if ("doesnotexist".equals(orgName)) {
 			return Mono.just(org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse.builder().build());
 		} else if ("exception".equals(orgName)) {
-			throw new Error("exception org name provided");
+			return Mono.just(org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse.builder().build())
+					.map(x -> {throw new Error("exception org name provided");});
 		}
 		Assert.fail("Invalid OrgId request");
 		return null;
@@ -78,7 +79,7 @@ public class CFAccessorMock implements CFAccessor {
 		} else if ("doesnotexist".equals(spaceName)) {
 			return Mono.just(ListSpacesResponse.builder().build());
 		} else if ("exception".equals(spaceName)) {
-			throw new Error("exception space name provided");
+			return Mono.just(ListSpacesResponse.builder().build()).map(x -> { throw new Error("exception space name provided"); });
 		}
 		
 		Assert.fail("Invalid SpaceId request");
@@ -104,7 +105,7 @@ public class CFAccessorMock implements CFAccessor {
 			} else if (applicationName.equals("doesnotexist")) {
 				return Mono.just(ListApplicationsResponse.builder().build());
 			} else if (applicationName.equals("exception")) {
-				throw new Error("exception application name provided");
+				return Mono.just(ListApplicationsResponse.builder().build()).map( x-> { throw new Error("exception application name provided"); });
 			} else {
 				Assert.fail("Invalid ApplicationId request, application name is invalid");
 			}
