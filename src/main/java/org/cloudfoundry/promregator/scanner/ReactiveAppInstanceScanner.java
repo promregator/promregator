@@ -11,6 +11,7 @@ import javax.validation.constraints.Null;
 import org.apache.commons.collections4.map.PassiveExpiringMap;
 import org.apache.log4j.Logger;
 import org.cloudfoundry.client.v2.applications.ApplicationResource;
+import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.organizations.OrganizationResource;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
@@ -162,6 +163,9 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			
 			OrganizationResource organizationResource = resources.get(0);
 			return Mono.just(organizationResource.getMetadata().getId());
+		}).onErrorResume(e -> {
+			log.error(String.format("retrieving Org Id for org Name '%s' resulted in an exception", orgNameString), e);
+			return Mono.just(INVALID_ORG_ID);
 		}).cache();
 		
 		return orgId;
