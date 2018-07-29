@@ -48,12 +48,14 @@ public class ReactiveTargetResolver implements TargetResolver {
 			return Flux.just(rt);
 		}
 		
+		// TODO: It's unclear, if we have to handle the error situations here that the orgId may be invalid
 		Mono<String> orgIdMono = this.cfAccessor.retrieveOrgId(configTarget.getOrgName())
 				.map( r -> r.getResources())
 				.map( l -> l.get(0))
 				.map( e -> e.getMetadata()) 
 				.map( entry -> entry.getId());
 		
+		// TODO: It's unclear, if we have to handle the error situations here that the spaceId may be invalid
 		Mono<String> spaceIdMono = orgIdMono.flatMap(orgId -> {
 			return this.cfAccessor.retrieveSpaceId(orgId, configTarget.getSpaceName());
 		}).map( r -> r.getResources())
