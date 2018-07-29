@@ -173,5 +173,5 @@ public class ReactiveTargetResolverTest {
 		
 		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID_EXCEPTION);
 	}
-	
+
 }

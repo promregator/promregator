@@ -93,19 +93,8 @@ public class ReactiveTargetResolver implements TargetResolver {
 		Flux<String> applicationsInSelection = null;
 		
 		if (configTarget.getApplicationRegex() == null && configTarget.getApplicationName() != null) {
-			// Case 3
-			Mono<ListApplicationsResponse> responseMono = Mono.zip(orgIdMono, spaceIdMono)
-				.flatMap( tuple -> this.cfAccessor.retrieveApplicationId(tuple.getT1(), tuple.getT2(), configTarget.getApplicationName()) );
-			
-			applicationsInSelection = responseMono.map( r -> r.getResources() )
-				.flatMapMany( resources -> {
-					List<String> appNames = new LinkedList<>();
-					for (ApplicationResource ar : resources) {
-						appNames.add(ar.getEntity().getName());
-					}
-					return Flux.fromIterable(appNames);
-				});
-			
+			// Case 3: Should already have been covered in method "resolveSingleTarget" (immediate return there)
+			throw new InternalError("Logic should not have been reached");
 		} else {
 			// Case 1 & 2: Get all apps from space
 			Mono<ListApplicationsResponse> responseMono = Mono.zip(orgIdMono, spaceIdMono)
