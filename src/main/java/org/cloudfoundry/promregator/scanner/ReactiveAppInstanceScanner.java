@@ -27,6 +27,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	private static final Logger log = Logger.getLogger(ReactiveAppInstanceScanner.class);
 	private static final String INVALID_ORG_ID = "***invalid***";
 	private static final String INVALID_SPACE_ID = "***invalid***";
+	private static final String INVALID_APP_ID = "***invalid***";
 
 	private PassiveExpiringMap<String, Mono<String>> applicationUrlMap;
 	
@@ -87,10 +88,14 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		});
 		
 		Flux<String> applicationIdFlux = OSAVectorSpaceFlux.flatMapSequential(v -> this.getApplicationId(v.orgId, v.spaceId, v.target.getApplicationName()));
-		Flux<OSAVector> OSAVectorApplicationFlux = Flux.zip(OSAVectorSpaceFlux, applicationIdFlux).map(tuple -> {
+		Flux<OSAVector> OSAVectorApplicationFlux = Flux.zip(OSAVectorSpaceFlux, applicationIdFlux).flatMap(tuple -> {
 			OSAVector v = tuple.getT1();
+			if (INVALID_APP_ID.equals(tuple.getT2())) {
+				// NB: This drops the current target!
+				return Mono.empty();
+			}
 			v.applicationId = tuple.getT2();
-			return v;
+			return Mono.just(v);
 		});
 		
 		// perform pre-filtering, if available
@@ -189,12 +194,12 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			.flatMap(response -> {
 				List<ApplicationResource> resources = response.getResources();
 				if (resources == null) {
-					return Mono.empty();
+					return Mono.just(INVALID_APP_ID);
 				}
 				
 				if (resources.isEmpty()) {
 					log.warn(String.format("Received empty result on requesting application %s", applicationNameString));
-					return Mono.empty();
+					return Mono.just(INVALID_APP_ID);
 				}
 				
 				ApplicationResource applicationResource = resources.get(0);

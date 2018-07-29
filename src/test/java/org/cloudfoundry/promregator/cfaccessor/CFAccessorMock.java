@@ -101,6 +101,10 @@ public class CFAccessorMock implements CFAccessor {
 					).metadata(
 							Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP2_UUID).build()
 					).build();
+			} else if (applicationName.equals("doesnotexist")) {
+				return Mono.just(ListApplicationsResponse.builder().build());
+			} else if (applicationName.equals("exception")) {
+				throw new Error("exception application name provided");
 			} else {
 				Assert.fail("Invalid ApplicationId request, application name is invalid");
 			}
@@ -109,11 +113,7 @@ public class CFAccessorMock implements CFAccessor {
 			list.add(ar);
 			ListApplicationsResponse resp = ListApplicationsResponse.builder().addAllResources(list).build();
 			return Mono.just(resp);
-		} else if (applicationName.equals("doesnotexist")) {
-			return Mono.just(ListApplicationsResponse.builder().build());
-		} else if (applicationName.equals("exception")) {
-			throw new Error("exception application name provided");
-		}
+		} 
 		
 		Assert.fail("Invalid ApplicationId request");
 		return null;
