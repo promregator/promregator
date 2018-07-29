@@ -25,9 +25,10 @@ import reactor.core.publisher.Mono;
 public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	
 	private static final Logger log = Logger.getLogger(ReactiveAppInstanceScanner.class);
+	private static final String INVALID_ORG_ID = "***invalid***";
 
 	private PassiveExpiringMap<String, Mono<String>> applicationUrlMap;
-
+	
 	@Value("${cf.cache.timeout.application:300}")
 	private int timeoutCacheApplicationLevel;
 
@@ -63,10 +64,14 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		});
 		
 		Flux<String> orgIdFlux = initialOSAVectorFlux.flatMapSequential(v -> this.getOrgId(v.target.getOrgName()));
-		Flux<OSAVector> OSAVectorOrgFlux = Flux.zip(initialOSAVectorFlux, orgIdFlux).map(tuple -> {
+		Flux<OSAVector> OSAVectorOrgFlux = Flux.zip(initialOSAVectorFlux, orgIdFlux).flatMap(tuple -> {
 			OSAVector v = tuple.getT1();
+			if (INVALID_ORG_ID.equals(tuple.getT2())) {
+				// NB: This drops the current target!
+				return Mono.empty();
+			}
 			v.orgId = tuple.getT2();
-			return v;
+			return Mono.just(v);
 		});
 		
 		Flux<String> spaceIdFlux = OSAVectorOrgFlux.flatMapSequential(v -> this.getSpaceId(v.orgId, v.target.getSpaceName()));
@@ -137,12 +142,12 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		Mono<String> orgId = this.cfAccessor.retrieveOrgId(orgNameString).flatMap(response -> {
 			List<OrganizationResource> resources = response.getResources();
 			if (resources == null) {
-				return Mono.empty();
+				return Mono.just(INVALID_ORG_ID);
 			}
 			
 			if (resources.isEmpty()) {
 				log.warn(String.format("Received empty result on requesting org %s", orgNameString));
-				return Mono.empty();
+				return Mono.just(INVALID_ORG_ID);
 			}
 			
 			OrganizationResource organizationResource = resources.get(0);
