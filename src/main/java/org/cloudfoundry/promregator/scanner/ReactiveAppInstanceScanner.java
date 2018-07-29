@@ -211,8 +211,10 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				
 				ApplicationResource applicationResource = resources.get(0);
 				return Mono.just(applicationResource.getMetadata().getId());
-			})
-			.cache();
+			}).onErrorResume(e -> {
+				log.error(String.format("retrieving application id for org id '%s', space id '%s' and application name '%s' resulted in an exception", orgIdString, spaceIdString, applicationNameString), e);
+				return Mono.just(INVALID_APP_ID);
+			}).cache();
 			
 		return applicationId;
 	}
