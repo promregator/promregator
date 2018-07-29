@@ -28,6 +28,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	private static final String INVALID_ORG_ID = "***invalid***";
 	private static final String INVALID_SPACE_ID = "***invalid***";
 	private static final String INVALID_APP_ID = "***invalid***";
+	private static final SpaceApplicationSummary INVALID_SUMMARY = SpaceApplicationSummary.builder().id("***invalid***").build();
 
 	private PassiveExpiringMap<String, Mono<String>> applicationUrlMap;
 	
@@ -104,9 +105,14 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		}
 		
 		Flux<SpaceApplicationSummary> applicationSummaryFlux = OSAVectorApplicationFlux.flatMapSequential( v -> this.getApplicationSummary(v.spaceId, v.applicationId));
-		Flux<OSAVector> OSAVectorCompleteFlux = Flux.zip(OSAVectorApplicationFlux, applicationSummaryFlux).map(tuple-> {
+		Flux<OSAVector> OSAVectorCompleteFlux = Flux.zip(OSAVectorApplicationFlux, applicationSummaryFlux).flatMap(tuple-> {
 			OSAVector v = tuple.getT1();
 			SpaceApplicationSummary summary = tuple.getT2();
+			
+			if (summary == INVALID_SUMMARY) {
+				// NB: This drops the current target!
+				return Mono.empty();
+			}
 			
 			List<String> urls = summary.getUrls();
 			if (urls != null && !urls.isEmpty()) {
@@ -116,7 +122,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			
 			v.numberOfInstances = summary.getInstances();
 			
-			return v;
+			return Mono.just(v);
 		});
 		
 		Flux<Instance> instancesFlux = OSAVectorCompleteFlux.flatMapSequential(v -> {
@@ -220,11 +226,27 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	
 	private Mono<SpaceApplicationSummary> getApplicationSummary(String spaceIdString, String applicationIdString) {
 		return this.cfAccessor.retrieveSpaceSummary(spaceIdString)
-			.flatMapMany( spaceSummary -> {
-				return Flux.fromIterable(spaceSummary.getApplications());
-			})
-			.filter(summary -> applicationIdString.equals(summary.getId()))
-			.single();
+			.flatMap(response -> {
+				List<SpaceApplicationSummary> applications = response.getApplications();
+				if (applications == null) {
+					return Mono.just(INVALID_SUMMARY);
+				}
+				
+				SpaceApplicationSummary theOne = null;
+				for (SpaceApplicationSummary sum : applications) {
+					if (applicationIdString.equals(sum.getId())) {
+						theOne = sum;
+						break;
+					}
+				}
+				
+				if (theOne == null) {
+					// not found in the result set of the response
+					return Mono.just(INVALID_SUMMARY);
+				}
+				
+				return Mono.just(theOne);
+			});
 	}
 	
 	private String determineAccessURL(final String applicationUrl, final String path) {

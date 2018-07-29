@@ -23,6 +23,8 @@ import reactor.core.publisher.Mono;
 public class CFAccessorMock implements CFAccessor {
 	public final static String UNITTEST_ORG_UUID = "eb51aa9c-2fa3-11e8-b467-0ed5f89f718b";
 	public final static String UNITTEST_SPACE_UUID = "db08be9a-2fa4-11e8-b467-0ed5f89f718b";
+	public final static String UNITTEST_SPACE_UUID_SUMMARY_DOESNOTEXIST = "db08be9a-2fa4-11e8-b467-0ed5f89f718b-doesnotexist";
+	public final static String UNITTEST_SPACE_UUID_SUMMARY_EXCEPTION = "db08be9a-2fa4-11e8-b467-0ed5f89f718b-exception";
 	public final static String UNITTEST_APP1_UUID = "55820b2c-2fa5-11e8-b467-0ed5f89f718b";
 	public final static String UNITTEST_APP2_UUID = "5a0ead6c-2fa5-11e8-b467-0ed5f89f718b";
 	public final static String UNITTEST_APP1_ROUTE_UUID = "57ac2ada-2fa6-11e8-b467-0ed5f89f718b";
@@ -65,21 +67,42 @@ public class CFAccessorMock implements CFAccessor {
 
 	@Override
 	public Mono<ListSpacesResponse> retrieveSpaceId(String orgId, String spaceName) {
-		if ("unittestspace".equals(spaceName) && orgId.equals(UNITTEST_ORG_UUID)) {
-			
-			SpaceResource sr = SpaceResource.builder().entity(
-					SpaceEntity.builder().name(spaceName).build()
-				).metadata(
-					Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_SPACE_UUID).build()
-				).build();
-			List<SpaceResource> list = new LinkedList<>();
-			list.add(sr);
-			ListSpacesResponse resp = ListSpacesResponse.builder().addAllResources(list).build();
-			return Mono.just(resp);
-		} else if ("doesnotexist".equals(spaceName)) {
-			return Mono.just(ListSpacesResponse.builder().build());
-		} else if ("exception".equals(spaceName)) {
-			return Mono.just(ListSpacesResponse.builder().build()).map(x -> { throw new Error("exception space name provided"); });
+		if (orgId.equals(UNITTEST_ORG_UUID)) {
+			if ( "unittestspace".equals(spaceName)) {
+				SpaceResource sr = SpaceResource.builder().entity(
+						SpaceEntity.builder().name(spaceName).build()
+					).metadata(
+						Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_SPACE_UUID).build()
+					).build();
+				List<SpaceResource> list = new LinkedList<>();
+				list.add(sr);
+				ListSpacesResponse resp = ListSpacesResponse.builder().addAllResources(list).build();
+				return Mono.just(resp);
+			} else if ( "unittestspace-summarydoesnotexist".equals(spaceName)) {
+				SpaceResource sr = SpaceResource.builder().entity(
+						SpaceEntity.builder().name(spaceName).build()
+					).metadata(
+						Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_SPACE_UUID_SUMMARY_DOESNOTEXIST).build()
+					).build();
+				List<SpaceResource> list = new LinkedList<>();
+				list.add(sr);
+				ListSpacesResponse resp = ListSpacesResponse.builder().addAllResources(list).build();
+				return Mono.just(resp);
+			} else if ( "unittestspace-summaryexception".equals(spaceName)) {
+				SpaceResource sr = SpaceResource.builder().entity(
+						SpaceEntity.builder().name(spaceName).build()
+					).metadata(
+						Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_SPACE_UUID_SUMMARY_EXCEPTION).build()
+					).build();
+				List<SpaceResource> list = new LinkedList<>();
+				list.add(sr);
+				ListSpacesResponse resp = ListSpacesResponse.builder().addAllResources(list).build();
+				return Mono.just(resp);
+			} else if ("doesnotexist".equals(spaceName)) {
+				return Mono.just(ListSpacesResponse.builder().build());
+			} else if ("exception".equals(spaceName)) {
+				return Mono.just(ListSpacesResponse.builder().build()).map(x -> { throw new Error("exception space name provided"); });
+			}
 		}
 		
 		Assert.fail("Invalid SpaceId request");
@@ -88,33 +111,35 @@ public class CFAccessorMock implements CFAccessor {
 
 	@Override
 	public Mono<ListApplicationsResponse> retrieveApplicationId(String orgId, String spaceId, String applicationName) {
-		if (orgId.equals(UNITTEST_ORG_UUID) && spaceId.equals(UNITTEST_SPACE_UUID)) {
-			ApplicationResource ar = null;
-			if (applicationName.equals("testapp")) {
-				ar = ApplicationResource.builder().entity(
-						ApplicationEntity.builder().name(applicationName).build()
-					).metadata(
-							Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP1_UUID).build()
-					).build();
-			} else if (applicationName.equals("testapp2")) {
-				ar = ApplicationResource.builder().entity(
-						ApplicationEntity.builder().name(applicationName).build()
-					).metadata(
-							Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP2_UUID).build()
-					).build();
-			} else if (applicationName.equals("doesnotexist")) {
-				return Mono.just(ListApplicationsResponse.builder().build());
-			} else if (applicationName.equals("exception")) {
-				return Mono.just(ListApplicationsResponse.builder().build()).map( x-> { throw new Error("exception application name provided"); });
-			} else {
-				Assert.fail("Invalid ApplicationId request, application name is invalid");
+		if (orgId.equals(UNITTEST_ORG_UUID)) {
+			if (spaceId.equals(UNITTEST_SPACE_UUID) || spaceId.equals(UNITTEST_SPACE_UUID_SUMMARY_DOESNOTEXIST) || spaceId.equals(UNITTEST_SPACE_UUID_SUMMARY_EXCEPTION)) {
+				ApplicationResource ar = null;
+				if (applicationName.equals("testapp")) {
+					ar = ApplicationResource.builder().entity(
+							ApplicationEntity.builder().name(applicationName).build()
+						).metadata(
+								Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP1_UUID).build()
+						).build();
+				} else if (applicationName.equals("testapp2")) {
+					ar = ApplicationResource.builder().entity(
+							ApplicationEntity.builder().name(applicationName).build()
+						).metadata(
+								Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP2_UUID).build()
+						).build();
+				} else if (applicationName.equals("doesnotexist")) {
+					return Mono.just(ListApplicationsResponse.builder().build());
+				} else if (applicationName.equals("exception")) {
+					return Mono.just(ListApplicationsResponse.builder().build()).map( x-> { throw new Error("exception application name provided"); });
+				} else {
+					Assert.fail("Invalid ApplicationId request, application name is invalid");
+				}
+				
+				List<ApplicationResource> list = new LinkedList<>();
+				list.add(ar);
+				ListApplicationsResponse resp = ListApplicationsResponse.builder().addAllResources(list).build();
+				return Mono.just(resp);
 			}
-			
-			List<ApplicationResource> list = new LinkedList<>();
-			list.add(ar);
-			ListApplicationsResponse resp = ListApplicationsResponse.builder().addAllResources(list).build();
-			return Mono.just(resp);
-		} 
+		}
 		
 		Assert.fail("Invalid ApplicationId request");
 		return null;
@@ -179,14 +204,11 @@ public class CFAccessorMock implements CFAccessor {
 			GetSpaceSummaryResponse resp = GetSpaceSummaryResponse.builder().addAllApplications(list).build();
 			
 			return Mono.just(resp);
+		} else if (spaceId.equals(UNITTEST_SPACE_UUID_SUMMARY_DOESNOTEXIST)) {
+			return Mono.just(GetSpaceSummaryResponse.builder().build());
+		} else if (spaceId.equals(UNITTEST_SPACE_UUID_SUMMARY_EXCEPTION)) {
+			return Mono.just(GetSpaceSummaryResponse.builder().build()).map( x-> { throw new Error("exception on application summary"); });
 		}
-		/* TODO: Define an own (!) well-known spaceName, which maps to a well-known spaceId,
-		 * which then ends up here to return a Mono.empty()
-		 */
-		
-		/* TODO: Define an own (!) well-known spaceName, which maps to a well-known spaceId,
-		 * which then end up here to throw a new Error()
-		 */
 		
 		Assert.fail("Invalid retrieveSpaceSummary request");
 		return null;
