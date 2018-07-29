@@ -60,6 +60,7 @@ Running Promregator requires:
 * JRE8 or higher
 
 Compiling Promregator additionally requires:
+* JDK8 or higher
 * Maven 3.3.0 or higher
 
 Further dependencies required are automatically loaded when building the software. An internet connection to [Maven Central](https://search.maven.org/) is necessary for that.
