@@ -246,6 +246,9 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				}
 				
 				return Mono.just(theOne);
+			}).onErrorResume(e -> {
+				log.error(String.format("retrieving summary for space id '%s' and application id '%s' resulted in an exception", spaceIdString, applicationIdString), e);
+				return Mono.just(INVALID_SUMMARY);
 			});
 	}
 	
