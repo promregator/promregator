@@ -26,6 +26,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	
 	private static final Logger log = Logger.getLogger(ReactiveAppInstanceScanner.class);
 	private static final String INVALID_ORG_ID = "***invalid***";
+	private static final String INVALID_SPACE_ID = "***invalid***";
 
 	private PassiveExpiringMap<String, Mono<String>> applicationUrlMap;
 	
@@ -75,10 +76,14 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		});
 		
 		Flux<String> spaceIdFlux = OSAVectorOrgFlux.flatMapSequential(v -> this.getSpaceId(v.orgId, v.target.getSpaceName()));
-		Flux<OSAVector> OSAVectorSpaceFlux = Flux.zip(OSAVectorOrgFlux, spaceIdFlux).map(tuple -> {
+		Flux<OSAVector> OSAVectorSpaceFlux = Flux.zip(OSAVectorOrgFlux, spaceIdFlux).flatMap(tuple -> {
 			OSAVector v = tuple.getT1();
+			if (INVALID_SPACE_ID.equals(tuple.getT2())) {
+				// NB: This drops the current target!
+				return Mono.empty();
+			}
 			v.spaceId = tuple.getT2();
-			return v;
+			return Mono.just(v);
 		});
 		
 		Flux<String> applicationIdFlux = OSAVectorSpaceFlux.flatMapSequential(v -> this.getApplicationId(v.orgId, v.spaceId, v.target.getApplicationName()));
@@ -164,12 +169,12 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		Mono<String> spaceId = listSpacesResponse.flatMap(response -> {
 			List<SpaceResource> resources = response.getResources();
 			if (resources == null) {
-				return Mono.empty();
+				return Mono.just(INVALID_SPACE_ID);
 			}
 			
 			if (resources.isEmpty()) {
 				log.warn(String.format("Received empty result on requesting space %s", spaceNameString));
-				return Mono.empty();
+				return Mono.just(INVALID_SPACE_ID);
 			}
 			
 			SpaceResource spaceResource = resources.get(0);
