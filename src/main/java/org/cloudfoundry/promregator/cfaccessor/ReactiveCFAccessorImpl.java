@@ -185,14 +185,14 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	}
 
 	/**
-	 * performs standard, cached retrieval from the CF API server
+	 * performs standard, cached retrieval from the CF Cloud Controller
 	 * @param retrievalTypeName the name of type of the request which is being made; used for identification in internalMetrics
 	 * @param logName the name of the logger category, which shall be used for logging this Reactor operation
 	 * @param key the key for which the request is being made (e.g. orgId, orgId|spaceName, ...)
 	 * @param cacheMap the PassiveExpiringMap, which shall be used for caching the request; may be <code>null</code> to indicate that no caching shall take place
 	 * @param requestData an object which is being used as input parameter for the request
 	 * @param requestFunction a function which calls the CF API operation, which is being made, <code>requestData</code> is used as input parameter for this function.
-	 * @return
+	 * @return a Mono on the response provided by the CF Cloud Controller
 	 */
 	private <P, R> Mono<P> performGenericRetrieval(String retrievalTypeName, String logName, String key, @Null PassiveExpiringMap<String, Mono<P>> cacheMap, R requestData, Function<R, Mono<P>> requestFunction) {
 		synchronized(key.intern()) {
