@@ -53,6 +53,10 @@ public class CFAccessorMock implements CFAccessor {
 			ListOrganizationsResponse resp = org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse.builder().addAllResources(list).build();
 			
 			return Mono.just(resp);
+		} else if ("doesnotexist".equals(orgName)) {
+			return Mono.just(org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse.builder().build());
+		} else if ("exception".equals(orgName)) {
+			throw new Error("exception org name provided");
 		}
 		Assert.fail("Invalid OrgId request");
 		return null;
@@ -71,6 +75,10 @@ public class CFAccessorMock implements CFAccessor {
 			list.add(sr);
 			ListSpacesResponse resp = ListSpacesResponse.builder().addAllResources(list).build();
 			return Mono.just(resp);
+		} else if ("doesnotexist".equals(spaceName)) {
+			return Mono.just(ListSpacesResponse.builder().build());
+		} else if ("exception".equals(spaceName)) {
+			throw new Error("exception space name provided");
 		}
 		
 		Assert.fail("Invalid SpaceId request");
@@ -101,6 +109,10 @@ public class CFAccessorMock implements CFAccessor {
 			list.add(ar);
 			ListApplicationsResponse resp = ListApplicationsResponse.builder().addAllResources(list).build();
 			return Mono.just(resp);
+		} else if (applicationName.equals("doesnotexist")) {
+			return Mono.just(ListApplicationsResponse.builder().build());
+		} else if (applicationName.equals("exception")) {
+			throw new Error("exception application name provided");
 		}
 		
 		Assert.fail("Invalid ApplicationId request");
@@ -128,7 +140,15 @@ public class CFAccessorMock implements CFAccessor {
 			
 			ListApplicationsResponse resp = ListApplicationsResponse.builder().addAllResources(list).build();
 			return Mono.just(resp);
-		} 
+		}
+		
+		/* TODO: Define a well-known orgName and spaceName, which map to a well-known orgId and spaceId,
+		 * which then end up here to return a Mono.empty()
+		 */
+		
+		/* TODO: Define a well-known orgName and spaceName, which map to a well-known orgId and spaceId,
+		 * which then end up here to throw a new Error()
+		 */
 		
 		Assert.fail("Invalid process request");
 		return null;
@@ -159,6 +179,13 @@ public class CFAccessorMock implements CFAccessor {
 			
 			return Mono.just(resp);
 		}
+		/* TODO: Define an own (!) well-known spaceName, which maps to a well-known spaceId,
+		 * which then ends up here to return a Mono.empty()
+		 */
+		
+		/* TODO: Define an own (!) well-known spaceName, which maps to a well-known spaceId,
+		 * which then end up here to throw a new Error()
+		 */
 		
 		Assert.fail("Invalid retrieveSpaceSummary request");
 		return null;
