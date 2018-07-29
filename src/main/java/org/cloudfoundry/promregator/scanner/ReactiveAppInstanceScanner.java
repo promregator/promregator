@@ -11,7 +11,6 @@ import javax.validation.constraints.Null;
 import org.apache.commons.collections4.map.PassiveExpiringMap;
 import org.apache.log4j.Logger;
 import org.cloudfoundry.client.v2.applications.ApplicationResource;
-import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.organizations.OrganizationResource;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
