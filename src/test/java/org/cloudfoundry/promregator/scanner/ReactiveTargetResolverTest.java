@@ -137,5 +137,41 @@ public class ReactiveTargetResolverTest {
 		Assert.assertNotNull(actualList);
 		Assert.assertEquals(0, actualList.size());
 	}
+
+	@Test
+	public void testInvalidSpaceName() {
+		List<Target> list = new LinkedList<>();
+		
+		Target t = new Target();
+		t.setOrgName("unittestorg");
+		t.setSpaceName("unittestspace-summarydoesnotexist");
+		t.setPath("path");
+		t.setProtocol("https");
+		list.add(t);
+		
+		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
+		
+		Assert.assertEquals(0, actualList.size());
+		
+		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID_DOESNOTEXIST);
+	}
+	
+	@Test
+	public void testRetrieveAllApplicationIdsInSpaceThrowsException() {
+		List<Target> list = new LinkedList<>();
+		
+		Target t = new Target();
+		t.setOrgName("unittestorg");
+		t.setSpaceName("unittestspace-summaryexception");
+		t.setPath("path");
+		t.setProtocol("https");
+		list.add(t);
+		
+		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
+		
+		Assert.assertEquals(0, actualList.size());
+		
+		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID_EXCEPTION);
+	}
 	
 }

@@ -23,8 +23,8 @@ import reactor.core.publisher.Mono;
 public class CFAccessorMock implements CFAccessor {
 	public final static String UNITTEST_ORG_UUID = "eb51aa9c-2fa3-11e8-b467-0ed5f89f718b";
 	public final static String UNITTEST_SPACE_UUID = "db08be9a-2fa4-11e8-b467-0ed5f89f718b";
-	public final static String UNITTEST_SPACE_UUID_SUMMARY_DOESNOTEXIST = "db08be9a-2fa4-11e8-b467-0ed5f89f718b-doesnotexist";
-	public final static String UNITTEST_SPACE_UUID_SUMMARY_EXCEPTION = "db08be9a-2fa4-11e8-b467-0ed5f89f718b-exception";
+	public final static String UNITTEST_SPACE_UUID_DOESNOTEXIST = "db08be9a-2fa4-11e8-b467-0ed5f89f718b-doesnotexist";
+	public final static String UNITTEST_SPACE_UUID_EXCEPTION = "db08be9a-2fa4-11e8-b467-0ed5f89f718b-exception";
 	public final static String UNITTEST_APP1_UUID = "55820b2c-2fa5-11e8-b467-0ed5f89f718b";
 	public final static String UNITTEST_APP2_UUID = "5a0ead6c-2fa5-11e8-b467-0ed5f89f718b";
 	public final static String UNITTEST_APP1_ROUTE_UUID = "57ac2ada-2fa6-11e8-b467-0ed5f89f718b";
@@ -82,7 +82,7 @@ public class CFAccessorMock implements CFAccessor {
 				SpaceResource sr = SpaceResource.builder().entity(
 						SpaceEntity.builder().name(spaceName).build()
 					).metadata(
-						Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_SPACE_UUID_SUMMARY_DOESNOTEXIST).build()
+						Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_SPACE_UUID_DOESNOTEXIST).build()
 					).build();
 				List<SpaceResource> list = new LinkedList<>();
 				list.add(sr);
@@ -92,7 +92,7 @@ public class CFAccessorMock implements CFAccessor {
 				SpaceResource sr = SpaceResource.builder().entity(
 						SpaceEntity.builder().name(spaceName).build()
 					).metadata(
-						Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_SPACE_UUID_SUMMARY_EXCEPTION).build()
+						Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_SPACE_UUID_EXCEPTION).build()
 					).build();
 				List<SpaceResource> list = new LinkedList<>();
 				list.add(sr);
@@ -112,7 +112,7 @@ public class CFAccessorMock implements CFAccessor {
 	@Override
 	public Mono<ListApplicationsResponse> retrieveApplicationId(String orgId, String spaceId, String applicationName) {
 		if (orgId.equals(UNITTEST_ORG_UUID)) {
-			if (spaceId.equals(UNITTEST_SPACE_UUID) || spaceId.equals(UNITTEST_SPACE_UUID_SUMMARY_DOESNOTEXIST) || spaceId.equals(UNITTEST_SPACE_UUID_SUMMARY_EXCEPTION)) {
+			if (spaceId.equals(UNITTEST_SPACE_UUID) || spaceId.equals(UNITTEST_SPACE_UUID_DOESNOTEXIST) || spaceId.equals(UNITTEST_SPACE_UUID_EXCEPTION)) {
 				ApplicationResource ar = null;
 				if (applicationName.equals("testapp")) {
 					ar = ApplicationResource.builder().entity(
@@ -166,15 +166,11 @@ public class CFAccessorMock implements CFAccessor {
 			
 			ListApplicationsResponse resp = ListApplicationsResponse.builder().addAllResources(list).build();
 			return Mono.just(resp);
+		} else if (UNITTEST_SPACE_UUID_DOESNOTEXIST.equals(spaceId)) {
+			return Mono.just(ListApplicationsResponse.builder().build());
+		} else if (UNITTEST_SPACE_UUID_EXCEPTION.equals(spaceId)) {
+			return Mono.just(ListApplicationsResponse.builder().build()).map( x-> { throw new Error("exception on AllAppIdsInSpace"); });
 		}
-		
-		/* TODO: Define a well-known orgName and spaceName, which map to a well-known orgId and spaceId,
-		 * which then end up here to return a Mono.empty()
-		 */
-		
-		/* TODO: Define a well-known orgName and spaceName, which map to a well-known orgId and spaceId,
-		 * which then end up here to throw a new Error()
-		 */
 		
 		Assert.fail("Invalid process request");
 		return null;
@@ -204,9 +200,9 @@ public class CFAccessorMock implements CFAccessor {
 			GetSpaceSummaryResponse resp = GetSpaceSummaryResponse.builder().addAllApplications(list).build();
 			
 			return Mono.just(resp);
-		} else if (spaceId.equals(UNITTEST_SPACE_UUID_SUMMARY_DOESNOTEXIST)) {
+		} else if (spaceId.equals(UNITTEST_SPACE_UUID_DOESNOTEXIST)) {
 			return Mono.just(GetSpaceSummaryResponse.builder().build());
-		} else if (spaceId.equals(UNITTEST_SPACE_UUID_SUMMARY_EXCEPTION)) {
+		} else if (spaceId.equals(UNITTEST_SPACE_UUID_EXCEPTION)) {
 			return Mono.just(GetSpaceSummaryResponse.builder().build()).map( x-> { throw new Error("exception on application summary"); });
 		}
 		
