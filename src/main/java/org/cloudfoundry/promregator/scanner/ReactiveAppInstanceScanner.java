@@ -25,9 +25,13 @@ import reactor.core.publisher.Mono;
 public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	
 	private static final Logger log = Logger.getLogger(ReactiveAppInstanceScanner.class);
+	private static final String INVALID_ORG_ID = "***invalid***";
+	private static final String INVALID_SPACE_ID = "***invalid***";
+	private static final String INVALID_APP_ID = "***invalid***";
+	private static final SpaceApplicationSummary INVALID_SUMMARY = SpaceApplicationSummary.builder().id("***invalid***").build();
 
 	private PassiveExpiringMap<String, Mono<String>> applicationUrlMap;
-
+	
 	@Value("${cf.cache.timeout.application:300}")
 	private int timeoutCacheApplicationLevel;
 
@@ -63,24 +67,36 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		});
 		
 		Flux<String> orgIdFlux = initialOSAVectorFlux.flatMapSequential(v -> this.getOrgId(v.target.getOrgName()));
-		Flux<OSAVector> OSAVectorOrgFlux = Flux.zip(initialOSAVectorFlux, orgIdFlux).map(tuple -> {
+		Flux<OSAVector> OSAVectorOrgFlux = Flux.zip(initialOSAVectorFlux, orgIdFlux).flatMap(tuple -> {
 			OSAVector v = tuple.getT1();
+			if (INVALID_ORG_ID.equals(tuple.getT2())) {
+				// NB: This drops the current target!
+				return Mono.empty();
+			}
 			v.orgId = tuple.getT2();
-			return v;
+			return Mono.just(v);
 		});
 		
 		Flux<String> spaceIdFlux = OSAVectorOrgFlux.flatMapSequential(v -> this.getSpaceId(v.orgId, v.target.getSpaceName()));
-		Flux<OSAVector> OSAVectorSpaceFlux = Flux.zip(OSAVectorOrgFlux, spaceIdFlux).map(tuple -> {
+		Flux<OSAVector> OSAVectorSpaceFlux = Flux.zip(OSAVectorOrgFlux, spaceIdFlux).flatMap(tuple -> {
 			OSAVector v = tuple.getT1();
+			if (INVALID_SPACE_ID.equals(tuple.getT2())) {
+				// NB: This drops the current target!
+				return Mono.empty();
+			}
 			v.spaceId = tuple.getT2();
-			return v;
+			return Mono.just(v);
 		});
 		
 		Flux<String> applicationIdFlux = OSAVectorSpaceFlux.flatMapSequential(v -> this.getApplicationId(v.orgId, v.spaceId, v.target.getApplicationName()));
-		Flux<OSAVector> OSAVectorApplicationFlux = Flux.zip(OSAVectorSpaceFlux, applicationIdFlux).map(tuple -> {
+		Flux<OSAVector> OSAVectorApplicationFlux = Flux.zip(OSAVectorSpaceFlux, applicationIdFlux).flatMap(tuple -> {
 			OSAVector v = tuple.getT1();
+			if (INVALID_APP_ID.equals(tuple.getT2())) {
+				// NB: This drops the current target!
+				return Mono.empty();
+			}
 			v.applicationId = tuple.getT2();
-			return v;
+			return Mono.just(v);
 		});
 		
 		// perform pre-filtering, if available
@@ -89,9 +105,14 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		}
 		
 		Flux<SpaceApplicationSummary> applicationSummaryFlux = OSAVectorApplicationFlux.flatMapSequential( v -> this.getApplicationSummary(v.spaceId, v.applicationId));
-		Flux<OSAVector> OSAVectorCompleteFlux = Flux.zip(OSAVectorApplicationFlux, applicationSummaryFlux).map(tuple-> {
+		Flux<OSAVector> OSAVectorCompleteFlux = Flux.zip(OSAVectorApplicationFlux, applicationSummaryFlux).flatMap(tuple-> {
 			OSAVector v = tuple.getT1();
 			SpaceApplicationSummary summary = tuple.getT2();
+			
+			if (summary == INVALID_SUMMARY) {
+				// NB: This drops the current target!
+				return Mono.empty();
+			}
 			
 			List<String> urls = summary.getUrls();
 			if (urls != null && !urls.isEmpty()) {
@@ -101,7 +122,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			
 			v.numberOfInstances = summary.getInstances();
 			
-			return v;
+			return Mono.just(v);
 		});
 		
 		Flux<Instance> instancesFlux = OSAVectorCompleteFlux.flatMapSequential(v -> {
@@ -137,16 +158,19 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		Mono<String> orgId = this.cfAccessor.retrieveOrgId(orgNameString).flatMap(response -> {
 			List<OrganizationResource> resources = response.getResources();
 			if (resources == null) {
-				return Mono.empty();
+				return Mono.just(INVALID_ORG_ID);
 			}
 			
 			if (resources.isEmpty()) {
 				log.warn(String.format("Received empty result on requesting org %s", orgNameString));
-				return Mono.empty();
+				return Mono.just(INVALID_ORG_ID);
 			}
 			
 			OrganizationResource organizationResource = resources.get(0);
 			return Mono.just(organizationResource.getMetadata().getId());
+		}).onErrorResume(e -> {
+			log.error(String.format("retrieving Org Id for org Name '%s' resulted in an exception", orgNameString), e);
+			return Mono.just(INVALID_ORG_ID);
 		}).cache();
 		
 		return orgId;
@@ -159,16 +183,19 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		Mono<String> spaceId = listSpacesResponse.flatMap(response -> {
 			List<SpaceResource> resources = response.getResources();
 			if (resources == null) {
-				return Mono.empty();
+				return Mono.just(INVALID_SPACE_ID);
 			}
 			
 			if (resources.isEmpty()) {
 				log.warn(String.format("Received empty result on requesting space %s", spaceNameString));
-				return Mono.empty();
+				return Mono.just(INVALID_SPACE_ID);
 			}
 			
 			SpaceResource spaceResource = resources.get(0);
 			return Mono.just(spaceResource.getMetadata().getId());
+		}).onErrorResume(e -> {
+			log.error(String.format("retrieving space id for org id '%s' and space name '%s' resulted in an exception", orgIdString, spaceNameString), e);
+			return Mono.just(INVALID_SPACE_ID);
 		}).cache();
 		
 		return spaceId;
@@ -179,29 +206,50 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			.flatMap(response -> {
 				List<ApplicationResource> resources = response.getResources();
 				if (resources == null) {
-					return Mono.empty();
+					return Mono.just(INVALID_APP_ID);
 				}
 				
 				if (resources.isEmpty()) {
 					log.warn(String.format("Received empty result on requesting application %s", applicationNameString));
-					return Mono.empty();
+					return Mono.just(INVALID_APP_ID);
 				}
 				
 				ApplicationResource applicationResource = resources.get(0);
 				return Mono.just(applicationResource.getMetadata().getId());
-			})
-			.cache();
+			}).onErrorResume(e -> {
+				log.error(String.format("retrieving application id for org id '%s', space id '%s' and application name '%s' resulted in an exception", orgIdString, spaceIdString, applicationNameString), e);
+				return Mono.just(INVALID_APP_ID);
+			}).cache();
 			
 		return applicationId;
 	}
 	
 	private Mono<SpaceApplicationSummary> getApplicationSummary(String spaceIdString, String applicationIdString) {
 		return this.cfAccessor.retrieveSpaceSummary(spaceIdString)
-			.flatMapMany( spaceSummary -> {
-				return Flux.fromIterable(spaceSummary.getApplications());
-			})
-			.filter(summary -> applicationIdString.equals(summary.getId()))
-			.single();
+			.flatMap(response -> {
+				List<SpaceApplicationSummary> applications = response.getApplications();
+				if (applications == null) {
+					return Mono.just(INVALID_SUMMARY);
+				}
+				
+				SpaceApplicationSummary theOne = null;
+				for (SpaceApplicationSummary sum : applications) {
+					if (applicationIdString.equals(sum.getId())) {
+						theOne = sum;
+						break;
+					}
+				}
+				
+				if (theOne == null) {
+					// not found in the result set of the response
+					return Mono.just(INVALID_SUMMARY);
+				}
+				
+				return Mono.just(theOne);
+			}).onErrorResume(e -> {
+				log.error(String.format("retrieving summary for space id '%s' and application id '%s' resulted in an exception", spaceIdString, applicationIdString), e);
+				return Mono.just(INVALID_SUMMARY);
+			});
 	}
 	
 	private String determineAccessURL(final String applicationUrl, final String path) {

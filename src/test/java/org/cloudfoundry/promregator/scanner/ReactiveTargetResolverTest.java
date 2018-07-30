@@ -137,5 +137,169 @@ public class ReactiveTargetResolverTest {
 		Assert.assertNotNull(actualList);
 		Assert.assertEquals(0, actualList.size());
 	}
+
+	@Test
+	public void testSummaryDoesnotExist() {
+		List<Target> list = new LinkedList<>();
+		
+		Target t = new Target();
+		t.setOrgName("unittestorg");
+		t.setSpaceName("unittestspace-summarydoesnotexist");
+		t.setPath("path");
+		t.setProtocol("https");
+		list.add(t);
+		
+		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
+		
+		Assert.assertEquals(0, actualList.size());
+		
+		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID_DOESNOTEXIST);
+	}
 	
+	@Test
+	public void testRetrieveAllApplicationIdsInSpaceThrowsException() {
+		List<Target> list = new LinkedList<>();
+		
+		Target t = new Target();
+		t.setOrgName("unittestorg");
+		t.setSpaceName("unittestspace-summaryexception");
+		t.setPath("path");
+		t.setProtocol("https");
+		list.add(t);
+		
+		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
+		
+		Assert.assertEquals(0, actualList.size());
+		
+		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID_EXCEPTION);
+	}
+	
+	@Test
+	public void testInvalidOrgNameToResolve() {
+		List<Target> list = new LinkedList<>();
+		
+		Target t = new Target();
+		t.setOrgName("doesnotexist");
+		t.setSpaceName("unittestspace");
+		t.setPath("path");
+		t.setProtocol("https");
+		list.add(t);
+		
+		t = new Target();
+		t.setOrgName("unittestorg");
+		t.setSpaceName("unittestspace");
+		t.setApplicationName("testapp2");
+		t.setPath("path");
+		t.setProtocol("https");
+		list.add(t);
+		
+		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
+		
+		Assert.assertEquals(1, actualList.size());
+		
+		ResolvedTarget rt = actualList.get(0);
+		Assert.assertEquals(t, rt.getOriginalTarget());
+		Assert.assertEquals(t.getOrgName(), rt.getOrgName());
+		Assert.assertEquals(t.getSpaceName(), rt.getSpaceName());
+		Assert.assertEquals(t.getApplicationName(), rt.getApplicationName());
+		Assert.assertEquals(t.getPath(), rt.getPath());
+		Assert.assertEquals(t.getProtocol(), rt.getProtocol());
+	}
+	
+	@Test
+	public void testExceptionOrgNameToResolve() {
+		List<Target> list = new LinkedList<>();
+		
+		Target t = new Target();
+		t.setOrgName("exception");
+		t.setSpaceName("unittestspace");
+		t.setPath("path");
+		t.setProtocol("https");
+		list.add(t);
+		
+		t = new Target();
+		t.setOrgName("unittestorg");
+		t.setSpaceName("unittestspace");
+		t.setApplicationName("testapp2");
+		t.setPath("path");
+		t.setProtocol("https");
+		list.add(t);
+		
+		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
+		
+		Assert.assertEquals(1, actualList.size());
+		
+		ResolvedTarget rt = actualList.get(0);
+		Assert.assertEquals(t, rt.getOriginalTarget());
+		Assert.assertEquals(t.getOrgName(), rt.getOrgName());
+		Assert.assertEquals(t.getSpaceName(), rt.getSpaceName());
+		Assert.assertEquals(t.getApplicationName(), rt.getApplicationName());
+		Assert.assertEquals(t.getPath(), rt.getPath());
+		Assert.assertEquals(t.getProtocol(), rt.getProtocol());
+	}
+	
+	@Test
+	public void testInvalidSpaceNameToResolve() {
+		List<Target> list = new LinkedList<>();
+		
+		Target t = new Target();
+		t.setOrgName("unittestorg");
+		t.setSpaceName("doesnotexist");
+		t.setPath("path");
+		t.setProtocol("https");
+		list.add(t);
+		
+		t = new Target();
+		t.setOrgName("unittestorg");
+		t.setSpaceName("unittestspace");
+		t.setApplicationName("testapp2");
+		t.setPath("path");
+		t.setProtocol("https");
+		list.add(t);
+		
+		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
+		
+		Assert.assertEquals(1, actualList.size());
+		
+		ResolvedTarget rt = actualList.get(0);
+		Assert.assertEquals(t, rt.getOriginalTarget());
+		Assert.assertEquals(t.getOrgName(), rt.getOrgName());
+		Assert.assertEquals(t.getSpaceName(), rt.getSpaceName());
+		Assert.assertEquals(t.getApplicationName(), rt.getApplicationName());
+		Assert.assertEquals(t.getPath(), rt.getPath());
+		Assert.assertEquals(t.getProtocol(), rt.getProtocol());
+	}
+	
+	@Test
+	public void testExceptionSpaceNameToResolve() {
+		List<Target> list = new LinkedList<>();
+		
+		Target t = new Target();
+		t.setOrgName("unittestorg");
+		t.setSpaceName("exception");
+		t.setPath("path");
+		t.setProtocol("https");
+		list.add(t);
+		
+		t = new Target();
+		t.setOrgName("unittestorg");
+		t.setSpaceName("unittestspace");
+		t.setApplicationName("testapp2");
+		t.setPath("path");
+		t.setProtocol("https");
+		list.add(t);
+		
+		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
+		
+		Assert.assertEquals(1, actualList.size());
+		
+		ResolvedTarget rt = actualList.get(0);
+		Assert.assertEquals(t, rt.getOriginalTarget());
+		Assert.assertEquals(t.getOrgName(), rt.getOrgName());
+		Assert.assertEquals(t.getSpaceName(), rt.getSpaceName());
+		Assert.assertEquals(t.getApplicationName(), rt.getApplicationName());
+		Assert.assertEquals(t.getPath(), rt.getPath());
+		Assert.assertEquals(t.getProtocol(), rt.getProtocol());
+	}
+
 }

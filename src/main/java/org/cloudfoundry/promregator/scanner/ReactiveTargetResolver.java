@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
 import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
@@ -12,12 +13,14 @@ import org.cloudfoundry.promregator.config.Target;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Component
 public class ReactiveTargetResolver implements TargetResolver {
-
+	private static final Logger log = Logger.getLogger(ReactiveTargetResolver.class);
+	
 	@Autowired
 	private CFAccessor cfAccessor;
 	
@@ -45,12 +48,14 @@ public class ReactiveTargetResolver implements TargetResolver {
 			return Flux.just(rt);
 		}
 		
+		// on error handling: covered by "onErrorResume" in ths method a little below
 		Mono<String> orgIdMono = this.cfAccessor.retrieveOrgId(configTarget.getOrgName())
 				.map( r -> r.getResources())
 				.map( l -> l.get(0))
 				.map( e -> e.getMetadata()) 
 				.map( entry -> entry.getId());
 		
+		// on error handling: covered by "onErrorResume" in ths method a little below
 		Mono<String> spaceIdMono = orgIdMono.flatMap(orgId -> {
 			return this.cfAccessor.retrieveSpaceId(orgId, configTarget.getSpaceName());
 		}).map( r -> r.getResources())
@@ -58,7 +63,10 @@ public class ReactiveTargetResolver implements TargetResolver {
 			.map( e -> e.getMetadata())
 			.map( entry -> entry.getId());
 		
-		Flux<String> applicationNamesFlux = selectApplications(configTarget, orgIdMono, spaceIdMono);
+		Flux<String> applicationNamesFlux = selectApplications(configTarget, orgIdMono, spaceIdMono)
+			.doOnError( e -> {
+				log.warn(String.format("Exception was raised on resolving targets for org name '%s' and space name '%s'", configTarget.getOrgName(), configTarget.getSpaceName()), e);
+			}).onErrorResume(__ -> Flux.empty());
 
 		Flux<ResolvedTarget> result = applicationNamesFlux
 			.map(appName -> {
@@ -71,6 +79,14 @@ public class ReactiveTargetResolver implements TargetResolver {
 		return result;
 	}
 
+	private static class InvalidResponseFromCFCloudConnector extends Exception {
+		private static final long serialVersionUID = 3693506313317098423L;
+
+		public InvalidResponseFromCFCloudConnector(String arg0) {
+			super(arg0);
+		}
+	}
+	
 	private Flux<String> selectApplications(Target configTarget, Mono<String> orgIdMono, Mono<String> spaceIdMono) {
 		/* NB: Now we have to consider three cases:
 		 * Case 1: both applicationName and applicationRegex is empty => select all apps
@@ -82,39 +98,37 @@ public class ReactiveTargetResolver implements TargetResolver {
 		Flux<String> applicationsInSelection = null;
 		
 		if (configTarget.getApplicationRegex() == null && configTarget.getApplicationName() != null) {
-			// Case 3
-			Mono<ListApplicationsResponse> responseMono = Mono.zip(orgIdMono, spaceIdMono)
-				.flatMap( tuple -> this.cfAccessor.retrieveApplicationId(tuple.getT1(), tuple.getT2(), configTarget.getApplicationName()) );
-			
-			applicationsInSelection = responseMono.map( r -> r.getResources() )
-				.flatMapMany( resources -> {
-					List<String> appNames = new LinkedList<>();
-					for (ApplicationResource ar : resources) {
-						appNames.add(ar.getEntity().getName());
-					}
-					return Flux.fromIterable(appNames);
-				});
-			
+			// Case 3: Should already have been covered in method "resolveSingleTarget" (immediate return there)
+			throw new InternalError("Logic should not have been reached");
 		} else {
 			// Case 1 & 2: Get all apps from space
 			Mono<ListApplicationsResponse> responseMono = Mono.zip(orgIdMono, spaceIdMono)
-				.flatMap( tuple -> this.cfAccessor.retrieveAllApplicationIdsInSpace(tuple.getT1(), tuple.getT2()));
+				.flatMap( tuple -> { 
+					return this.cfAccessor.retrieveAllApplicationIdsInSpace(tuple.getT1(), tuple.getT2()); 
+				});
 			
-			applicationsInSelection = responseMono.map( r -> r.getResources())
-				.flatMapMany(resources -> {
-					List<String> appNames = new LinkedList<>();
-					for (ApplicationResource ar : resources) {
-						if (!isApplicationInScrapableState(ar.getEntity().getState())) {
-							continue;
-						}
-						
-						appNames.add(ar.getEntity().getName());
+			applicationsInSelection = responseMono.map( r -> {
+				List<ApplicationResource> resources = r.getResources();
+				if (resources == null) {
+					log.error(String.format("Error on resolving targets in org '%s' and space '%s'", configTarget.getOrgName(), configTarget.getSpaceName()));
+					throw Exceptions.propagate(new InvalidResponseFromCFCloudConnector("Unexpected empty response of the application resource list while reading all applications in a space"));
+				}
+				
+				return resources;
+			}).flatMapMany(resources -> {
+				List<String> appNames = new LinkedList<>();
+				for (ApplicationResource ar : resources) {
+					if (!isApplicationInScrapableState(ar.getEntity().getState())) {
+						continue;
 					}
 					
-					return Flux.fromIterable(appNames);
-				});
+					appNames.add(ar.getEntity().getName());
+				}
+				
+				return Flux.fromIterable(appNames);
+			});
 		}
-
+		
 		Flux<String> filteredApplicationsInSpace = applicationsInSelection;
 		if (configTarget.getApplicationRegex() != null) {
 			// Case 2
