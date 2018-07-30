@@ -48,14 +48,14 @@ public class ReactiveTargetResolver implements TargetResolver {
 			return Flux.just(rt);
 		}
 		
-		// TODO: It's unclear, if we have to handle the error situations here that the orgId may be invalid
+		// on error handling: covered by "onErrorResume" in ths method a little below
 		Mono<String> orgIdMono = this.cfAccessor.retrieveOrgId(configTarget.getOrgName())
 				.map( r -> r.getResources())
 				.map( l -> l.get(0))
 				.map( e -> e.getMetadata()) 
 				.map( entry -> entry.getId());
 		
-		// TODO: It's unclear, if we have to handle the error situations here that the spaceId may be invalid
+		// on error handling: covered by "onErrorResume" in ths method a little below
 		Mono<String> spaceIdMono = orgIdMono.flatMap(orgId -> {
 			return this.cfAccessor.retrieveSpaceId(orgId, configTarget.getSpaceName());
 		}).map( r -> r.getResources())
@@ -63,7 +63,10 @@ public class ReactiveTargetResolver implements TargetResolver {
 			.map( e -> e.getMetadata())
 			.map( entry -> entry.getId());
 		
-		Flux<String> applicationNamesFlux = selectApplications(configTarget, orgIdMono, spaceIdMono);
+		Flux<String> applicationNamesFlux = selectApplications(configTarget, orgIdMono, spaceIdMono)
+			.doOnError( e -> {
+				log.warn(String.format("Exception was raised on resolving targets for org name '%s' and space name '%s'", configTarget.getOrgName(), configTarget.getSpaceName()), e);
+			}).onErrorResume(__ -> Flux.empty());
 
 		Flux<ResolvedTarget> result = applicationNamesFlux
 			.map(appName -> {
@@ -100,7 +103,9 @@ public class ReactiveTargetResolver implements TargetResolver {
 		} else {
 			// Case 1 & 2: Get all apps from space
 			Mono<ListApplicationsResponse> responseMono = Mono.zip(orgIdMono, spaceIdMono)
-				.flatMap( tuple -> this.cfAccessor.retrieveAllApplicationIdsInSpace(tuple.getT1(), tuple.getT2()));
+				.flatMap( tuple -> { 
+					return this.cfAccessor.retrieveAllApplicationIdsInSpace(tuple.getT1(), tuple.getT2()); 
+				});
 			
 			applicationsInSelection = responseMono.map( r -> {
 				List<ApplicationResource> resources = r.getResources();
@@ -121,7 +126,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 				}
 				
 				return Flux.fromIterable(appNames);
-			}).onErrorResume(__ -> Flux.empty());
+			});
 		}
 		
 		Flux<String> filteredApplicationsInSpace = applicationsInSelection;
