@@ -6,6 +6,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
@@ -40,6 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import reactor.core.Exceptions;
 import reactor.core.publisher.Mono;
 
 @Component
@@ -221,7 +223,12 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 				.timeout(Duration.ofMillis(2500))
 				.retry(2)
 				.doOnError(throwable -> {
-					log.error(String.format("Retrieval of %s with key %s raised a reactor error", logName, key), throwable);
+					Throwable unwrappedThrowable = Exceptions.unwrap(throwable);
+					if (unwrappedThrowable instanceof TimeoutException) {
+						log.error(String.format("Async retrieval of %s with key %s caused a timeout even though we tried three times", logName, key));
+					} else {
+						log.error(String.format("Async retrieval of %s with key %s raised a reactor error", logName, key), unwrappedThrowable);
+					}
 				})
 				// stop the timer
 				.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
