@@ -10,24 +10,23 @@ As soon as more experience is available, this documentation will be adjusted.
 
 ## In the pre-delivered Docker Image
 
-The image provided by Promregator has a fixed memory configuration. As of writing it is [configured](https://github.com/promregator/promregator/blob/e615d8e567f97277f1b3996cfaed6c504c05caab/docker/data/promregator.sh#L6) using the following parameters:
+The image provided by Promregator has a fixed memory configuration. As of writing it is [configured](https://github.com/promregator/promregator/blob/deb2911fca311d0597515a6eddc29f296e0afeeb/docker/data/promregator.sh#L6) using the following (memory configuration) parameters:
 
 ```
--Xmx300m -Xms300m -Xss600k -XX:ReservedCodeCacheSize=256m -XX:MaxMetaspaceSize=300m
+-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Xss600k -XX:ReservedCodeCacheSize=256m -XX:MaxMetaspaceSize=300m
 ```
 
 In a nutshell this means:
-* The heap is limited to 300 megabytes at maximum.
-* All memory (for the heap) is allocated right from the beginning
 * Each thread may allocate a stack having up to 600 kilobytes
 * Metaspace (non-Heap) is limited to 300 megabytes at maximum (but may grow dynamically).
 * There are 256 megabytes (within metaspace) reserved for Code Caching.
+* The rest of the memory, which is granted via the cgroup (e.g. the memory which you grant to the container), is used for the heap.
 
 These are standard values which should permit Promregator to run in most of the usual environments properly.
 
-Given this memory configuration, a maximal memory allocation **for the Docker container** of 700 megabytes shall be enough for Promregator to run properly.
+Given this memory configuration, a maximal memory allocation **for the Docker container** of 700 megabytes shall be enough for Promregator to run properly. With [issue #66](https://github.com/promregator/promregator/issues/66) we have seen that granting only 512 megabytes to the container is not enough to permit Promregator run properly.
 
-Note that with the fixed memory configuration in the image for the Java Virtual Machine, it does not provide any benefit to increase the memory allocation for the Docker container **alone**. Instead, you have to provide your own set of memory configuration parameters by providing an own configuration in the environment variable `JAVA_MEM_OPTS`. Assuming that you wanted to increase the maximal heap memory size (and only that one!) to 400 megabytes, you would have to start the Docker container like this:
+If you want influence the memory configuration directly, you are able to define your own set of memory configuration parameters by providing an own configuration in the environment variable `JAVA_MEM_OPTS`. Assuming that you wanted to set the maximal heap memory size to 400 megabytes (while leaving all other configuration parameters unchanged), you would have to start the Docker container like this:
 
 ```bash
 $ docker run -d -m 800m --env JAVA_MEM_OPTS="-Xmx400m -Xms300m -Xss600k -XX:ReservedCodeCacheSize=256m -XX:MaxMetaspaceSize=300m" promregator/promregator:0.x.y [...]
