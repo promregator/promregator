@@ -1,0 +1,33 @@
+promregator:
+  metrics:
+    internal: true
+  
+  authenticator:
+    type: none
+    
+  endpoint:
+#    auth: BASIC
+    
+  discovery:
+    hostname: localhost
+  
+  targets:
+    - orgName: ibm@schmoigl-online.de
+      spaceName: dev
+      applicationName: testapp
+      path: /metrics
+
+    - orgName: ibm@schmoigl-online.de
+      spaceName: dev
+      applicationName: testapp2
+      path: /metrics
+
+cf:
+  api_host: api.eu-gb.bluemix.net
+  username: ibm@schmoigl-online.de
+  
+  cache:
+    timeout:
+      org: 60
+      space: 30
+      application: 10
