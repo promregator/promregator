@@ -22,3 +22,9 @@ logging:
       Mono:
         OnAssembly: WARN
 
+# To be enabled, if you want to have Promregator -> CF Cloud Controller communication being logged
+# Warning! This will expose internal and sensitive information in the logs!
+#      ipc:
+#        netty:
+#          http: DEBUG
+#          channel: DEBUG
