@@ -104,6 +104,7 @@ promregator:
   targetAuthenticators:
    - id: targetAuthenticator1
      type: basic
+     basic:
        username: targetUsername
        password: targetPassword
 
