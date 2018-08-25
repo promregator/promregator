@@ -119,11 +119,6 @@ By default, this value is set to 300 seconds, which means that the mapping is re
 
 Caches can also be invalidated out of line by sending an HTTP REST request to Promregator. Further details can be found at the [Cache Invalidation page](./invalidate-cache.md).
 
-#### Option "promregator.cache.invalidate.auth" (optional)
-Specifies the way how authentication shall be verified, if a request reaches the [Cache Invalidation endpoint](./invalidate-cache.md). Valid values are:
-
-* *NONE*: no authentication verification is required (default)
-* *BASIC*: an authentication verification using HTTP Basic Authentication is performed. Valid credentials are taken from `promregator.authentication.basic.username` and `promregator.authentication.basic.password`.
 
 ## Group "promregator"
 This group configures the behavior of Promregator itself. It is mainly meant on how requests shall be handled, as soon as the Prometheus server starts to pull metrics.
@@ -342,6 +337,12 @@ If not specified, `promregator` is defaulted.
 Specifies the (plain-text) password, which is used for HTTP Basic (inbound) authentication.
 
 If not specified, a random password is generated during startup. Its value is printed to the standard error device.
+
+### Option "promregator.cache.invalidate.auth" (optional)
+Specifies the authentication schema, which shall be used to for the [Cache Invalidation endpoint](./invalidate-cache.md). Valid values are:
+
+* *NONE*: no authentication verification is required (default)
+* *BASIC*: an authentication verification using HTTP Basic Authentication is performed. Valid credentials are taken from `promregator.authentication.basic.username` and `promregator.authentication.basic.password`.
 
 ### Option "promregator.gc.rate" (optional)
 
