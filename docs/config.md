@@ -150,32 +150,25 @@ By default, this value is set to 2500 milliseconds.
 
 
 ### Option "cf.request.timeout.routeMapping" (optional)
-During discovery Promregator needs to retrieve metadata from the Cloud Foundry platform. To prevent congestion on requests, which may be caused by ongoing requests of scraping by Prometheus, requests sent to the Cloud Foundry platform have to respond within a certain timeframe (the "request timeout"). 
-
-This option defines the request timeout value for sending requests retrieving data about the association between applications and its associated routes. Its unit always is specified in milliseconds.
-
-By default, this value is set to 2500 milliseconds.
-
+This option became obsolete with version 0.5.0. If applicable, consider using `cf.request.timeout.appSummary` instead.
+Any value specified for this option will be ignored in higher versions.
 
 ### Option "cf.request.timeout.route" (optional)
-During discovery Promregator needs to retrieve metadata from the Cloud Foundry platform. To prevent congestion on requests, which may be caused by ongoing requests of scraping by Prometheus, requests sent to the Cloud Foundry platform have to respond within a certain timeframe (the "request timeout"). 
-
-This option defines the request timeout value for sending requests retrieving data about a single route. Its unit always is specified in milliseconds.
-
-By default, this value is set to 2500 milliseconds.
+This option became obsolete with version 0.5.0. If applicable, consider using `cf.request.timeout.appSummary` instead.
+Any value specified for this option will be ignored in higher versions.
 
 ### Option "cf.request.timeout.sharedDomain" (optional)
-During discovery Promregator needs to retrieve metadata from the Cloud Foundry platform. To prevent congestion on requests, which may be caused by ongoing requests of scraping by Prometheus, requests sent to the Cloud Foundry platform have to respond within a certain timeframe (the "request timeout"). 
-
-This option defines the request timeout value for sending requests retrieving data about a single shared domain. Its unit always is specified in milliseconds.
-
-By default, this value is set to 2500 milliseconds.
-
+This option became obsolete with version 0.5.0. If applicable, consider using `cf.request.timeout.appSummary` instead.
+Any value specified for this option will be ignored in higher versions.
 
 ### Option "cf.request.timeout.process" (optional)
+This option became obsolete with version 0.5.0. If applicable, consider using `cf.request.timeout.appSummary` instead.
+Any value specified for this option will be ignored in higher versions.
+
+### Option "cf.request.timeout.appSummary" (optional)
 During discovery Promregator needs to retrieve metadata from the Cloud Foundry platform. To prevent congestion on requests, which may be caused by ongoing requests of scraping by Prometheus, requests sent to the Cloud Foundry platform have to respond within a certain timeframe (the "request timeout"). 
 
-This option defines the request timeout value for sending requests retrieving data about processes run by applications. Its unit always is specified in milliseconds.
+This option defines the request timeout value for sending requests retrieving a detailed (summary) configurations of applications within a space. Its unit always is specified in milliseconds.
 
 By default, this value is set to 2500 milliseconds.
 
