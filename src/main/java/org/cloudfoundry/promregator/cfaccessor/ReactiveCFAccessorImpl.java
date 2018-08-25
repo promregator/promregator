@@ -70,6 +70,30 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	@Value("${cf.proxyPort:0}") 
 	private int proxyPort;
 	
+	@Value("${cf.request.timeout.org:2500}")
+	private int requestTimeoutOrg;
+
+	@Value("${cf.request.timeout.space:2500}")
+	private int requestTimeoutSpace;
+
+	@Value("${cf.request.timeout.app:2500}")
+	private int requestTimeoutApplication;
+	
+	@Value("${cf.request.timeout.appInSpace:2500}")
+	private int requestTimeoutAppInSpace;
+	
+	@Value("${cf.request.timeout.routeMapping:2500}")
+	private int requestTimeoutRouteMapping;
+	
+	@Value("${cf.request.timeout.route:2500}")
+	private int requestTimeoutRoute;
+	
+	@Value("${cf.request.timeout.sharedDomain:2500}")
+	private int requestTimeoutSharedDomain;
+	
+	@Value("${cf.request.timeout.process:2500}")
+	private int requestTimeoutProcess;
+	
 	/* Cache-related attributes */
 
 	private PassiveExpiringMap<String, Mono<ListOrganizationsResponse>> orgCache;
@@ -206,7 +230,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	 * @param requestFunction a function which calls the CF API operation, which is being made, <code>requestData</code> is used as input parameter for this function.
 	 * @return
 	 */
-	private <P, R> Mono<P> performGenericRetrieval(String retrievalTypeName, String logName, String key, @Null PassiveExpiringMap<String, Mono<P>> cacheMap, R requestData, Function<R, Mono<P>> requestFunction) {
+	private <P, R> Mono<P> performGenericRetrieval(String retrievalTypeName, String logName, String key, @Null PassiveExpiringMap<String, Mono<P>> cacheMap, R requestData, Function<R, Mono<P>> requestFunction, int timeoutInMS) {
 		synchronized(key.intern()) {
 			Mono<P> result = null;
 			
@@ -230,7 +254,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 					return tuple.getT1();
 				})
 				.flatMap( requestFunction )
-				.timeout(Duration.ofMillis(2500))
+				.timeout(Duration.ofMillis(timeoutInMS))
 				.retry(2)
 				.doOnError(throwable -> {
 					log.error(String.format("Retrieval of %s with key %s raised a reactor error", logName, key), throwable);
@@ -260,7 +284,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		
 		return this.performGenericRetrieval("org", "retrieveOrgId", orgName, this.orgCache, orgsRequest, or -> {
 			return this.cloudFoundryClient.organizations().list(or);
-		});
+		}, this.requestTimeoutOrg);
 	}
 	
 	/* (non-Javadoc)
@@ -274,7 +298,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		
 		return this.performGenericRetrieval("space", "retrieveSpaceId", key, this.spaceCache, spacesRequest, sr -> {
 			return this.cloudFoundryClient.spaces().list(sr);
-		});
+		}, this.requestTimeoutSpace);
 	}
 	
 	/* (non-Javadoc)
@@ -291,7 +315,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 			.build();
 		
 		return this.performGenericRetrieval("app", "retrieveApplicationId", key, this.applicationCache, 
-			request, r ->  this.cloudFoundryClient.applicationsV2().list(r));
+			request, r ->  this.cloudFoundryClient.applicationsV2().list(r), this.requestTimeoutApplication);
 	}
 
 	private String determineApplicationCacheKey(String orgId, String spaceId, String applicationName) {
@@ -310,7 +334,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 				.build();
 		
 		Mono<ListApplicationsResponse> allAppsInSpace = this.performGenericRetrieval("allApps", "retrieveAllApplicationIdsInSpace", key, null, 
-				request, r -> this.cloudFoundryClient.applicationsV2().list(r));
+				request, r -> this.cloudFoundryClient.applicationsV2().list(r), this.requestTimeoutAppInSpace);
 		
 		Mono<ListApplicationsResponse> allAppsInSpaceWithCacheFilled = allAppsInSpace.doOnEach(signal -> {
 			if (!signal.isOnNext()) {
@@ -343,7 +367,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		ListRouteMappingsRequest mappingRequest = ListRouteMappingsRequest.builder().applicationId(appId).build();
 		
 		return this.performGenericRetrieval("routeMapping", "retrieveRouteMapping", appId, this.routeMappingCache, 
-				mappingRequest, r ->  this.cloudFoundryClient.routeMappings().list(r));
+				mappingRequest, r ->  this.cloudFoundryClient.routeMappings().list(r), this.requestTimeoutRouteMapping);
 	}
 	
 	/* (non-Javadoc)
@@ -354,7 +378,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		GetRouteRequest getRequest = GetRouteRequest.builder().routeId(routeId).build();
 		
 		return this.performGenericRetrieval("route", "retrieveRoute", routeId, this.routeCache, 
-				getRequest, r -> this.cloudFoundryClient.routes().get(r));
+				getRequest, r -> this.cloudFoundryClient.routes().get(r), this.requestTimeoutRoute);
 	}
 	
 	/* (non-Javadoc)
@@ -365,7 +389,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		GetSharedDomainRequest domainRequest = GetSharedDomainRequest.builder().sharedDomainId(domainId).build();
 		
 		return this.performGenericRetrieval("domain", "retrieveSharedDomain", domainId, this.domainCache, 
-				domainRequest, r -> this.cloudFoundryClient.sharedDomains().get(r));
+				domainRequest, r -> this.cloudFoundryClient.sharedDomains().get(r), this.requestTimeoutSharedDomain);
 	}
 	
 	/* (non-Javadoc)
@@ -378,7 +402,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		ListProcessesRequest request = ListProcessesRequest.builder().organizationId(orgId).spaceId(spaceId).applicationId(appId).build();
 		
 		return this.performGenericRetrieval("processes", "retrieveProcesses", key, this.processCache, 
-				request, r -> this.cloudFoundryClient.processes().list(r));
+				request, r -> this.cloudFoundryClient.processes().list(r), this.requestTimeoutProcess);
 	}
 
 	
