@@ -240,7 +240,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 				.doOnError(throwable -> {
 					Throwable unwrappedThrowable = Exceptions.unwrap(throwable);
 					if (unwrappedThrowable instanceof TimeoutException) {
-						log.error(String.format("Async retrieval of %s with key %s caused a timeout even though we tried three times", logName, key));
+						log.error(String.format("Async retrieval of %s with key %s caused a timeout after %d even though we tried three times", logName, key, timeoutInMS));
 					} else {
 						log.error(String.format("Async retrieval of %s with key %s raised a reactor error", logName, key), unwrappedThrowable);
 					}
