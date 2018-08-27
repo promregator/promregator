@@ -1,6 +1,7 @@
 package org.cloudfoundry.promregator;
 
 import java.time.Clock;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -132,15 +133,44 @@ public class PromregatorApplication {
 		return new InternalMetrics();
 	}
 	
-	@Value("${promregator.endpoint.threads:5}")
+	@Value("${promregator.endpoint.threads:#{null}}")
+	@Deprecated
+	/**
+	 * use threadPoolSize instead
+	 */
+	private Optional<Integer> threadPoolSizeOld;
+
+	@Value("${promregator.scraping.threads:5}")
 	private int threadPoolSize;
+	
+	@PostConstruct
+	public void warnOnDeprecatedThreadValue() {
+		if (this.threadPoolSizeOld.isPresent()) {
+			log.warn("You are still using the deprecated option promregator.endpoint.threads. "
+					+ "Please switch to promregator.scraping.threads (same meaning) instead and remove the old one.");
+		}
+	}
 	
 	@Bean
 	public ExecutorService metricsFetcherPool() {
-		log.info(String.format("Thread Pool size is set to %d", this.threadPoolSize));
+		log.info(String.format("Thread Pool size is set to %d", this.getThreadPoolSize()));
 		return Executors.newFixedThreadPool(this.threadPoolSize);
 	}
 	
+	private Object getThreadPoolSize() {
+		if (this.threadPoolSize != 5) {
+			// different value than the default, so someone must have set it explicitly.
+			return this.threadPoolSize;
+		}
+		
+		if (this.threadPoolSizeOld.isPresent()) {
+			// the deprecated value still is set; use that one
+			return this.threadPoolSizeOld.get();
+		}
+		
+		return this.threadPoolSize; // which means: 5
+	}
+
 	/* see also https://github.com/promregator/promregator/issues/54 */
 	@Scheduled(fixedRateString = "${promregator.gc.rate:1200}000")
 	@SuppressFBWarnings(value="DM_GC", justification="Similar situation as with RMI, which uses this approach")

@@ -260,7 +260,23 @@ The default value is 600 seconds (i.e. 10 minutes).
 ### Subgroup "promregator.endpoint"
 Configures the way how the metrics endpoints `/metrics` and `/singleTargetMetrics` behave.
 
-#### Option "promregator.endpoint.maxProcessingTime" (optional)
+#### Option "promregator.endpoint.maxProcessingTime" (optional, *deprecated*)
+This option is deprecated since version 0.5.0. Please use `promregator.scraping.maxProcessTime` instead.
+
+#### Option "promregator.endpoint.threads" (optional, *deprecated*)
+This option is deprecated since version 0.5.0. Please use `promregator.scraping.threads` instead.
+
+#### Option "promregator.endpoint.auth" (optional)
+Specifies the way how authentication shall be verified, if a request reaches the scraping endpoints of Promregator (e.g. `/metrics` and `/singleTargetMetrics`). Valid values are:
+
+* *NONE*: no authentication verification is required (default)
+* *BASIC*: an authentication verification using HTTP Basic Authentication is performed. Valid credentials are taken from `promregator.authentication.basic.username` and `promregator.authentication.basic.password`.
+
+
+### Subgroup "promregator.scraping"
+Configures the way how the scraping is performed.
+
+#### Option "promregator.scraping.maxProcessingTime" (optional)
 Specifies the maximal time which may be used to query (all) targets. The value is expected to be specified in milliseconds. 
 Targets which did not respond after this amount of time are considered non-functional and no result will be returned to the Prometheus server.
 
@@ -268,7 +284,7 @@ The default value of this option is 5000ms (=5 seconds)
 
 Warning! The value should always be lower than the (shortest) scraping interval you expose Promregator to.
 
-#### Option "promregator.endpoint.threads" (optional)
+#### Option "promregator.scraping.threads" (optional)
 Specifies how many threads may be used to query the list of targets.
 Note that for each target request sent, an own thread is required and stays blocked (synchronously) until the Cloud Foundry Application has returned a response. 
 Thus, it may be reasonable to allow more threads than you have cores in your environment where Promregator is running.
@@ -278,12 +294,6 @@ In general, the more targets you have registered, the higher this value should b
 Note that if you increase this value, more threads will spawned inside of Promregator. Be aware that these threads may consume memory and thus it will have impact on your memory configuration. For details on the latter, also refer to the [Java Memory Configuration page](jvm-mem-config.md).
 
 The default value of this option is 5.
-
-#### Option "promregator.endpoint.auth" (optional)
-Specifies the way how authentication shall be verified, if a request reaches the scraping endpoints of Promregator (e.g. `/metrics` and `/singleTargetMetrics`). Valid values are:
-
-* *NONE*: no authentication verification is required (default)
-* *BASIC*: an authentication verification using HTTP Basic Authentication is performed. Valid credentials are taken from `promregator.authentication.basic.username` and `promregator.authentication.basic.password`.
 
 
 ### Subgroup "promregator.metrics"

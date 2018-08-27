@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -73,7 +74,14 @@ public abstract class AbstractMetricsEndpoint {
 	@Value("${cf.proxyPort:0}")
 	private int proxyPort;
 
-	@Value("${promregator.endpoint.maxProcessingTime:5000}")
+	@Value("${promregator.endpoint.maxProcessingTime:#{null}}")
+	@Deprecated
+	/**
+	 * use maxProcessingTime instead
+	 */
+	private Optional<Integer> maxProcessingTimeOld;
+
+	@Value("${promregator.scraping.maxProcessingTime:5000}")
 	private int maxProcessingTime;
 	
 	@Value("${promregator.metrics.requestLatency:false}")
@@ -100,6 +108,14 @@ public abstract class AbstractMetricsEndpoint {
 		this.up = Gauge.build("promregator_up", "Indicator, whether the target of promregator is available")
 				.labelNames(CFMetricFamilySamplesEnricher.getEnrichingLabelNames())
 				.register(this.requestRegistry);
+	}
+	
+	@PostConstruct
+	public void warnOnDeprecatedMaxProcessingTime() {
+		if (this.maxProcessingTimeOld.isPresent()) {
+			log.warn("You are still using the deprecated option promregator.endpoint.maxProcessingTime. "
+					+ "Please switch to promregator.scraping.maxProcessingTime (same meaning) instead and remove the old one.");
+		}
 	}
 	
 	public String handleRequest(@Null Predicate<? super String> applicationIdFilter, @Null Predicate<? super Instance> instanceFilter) throws ScrapingException {
@@ -160,7 +176,7 @@ public abstract class AbstractMetricsEndpoint {
 		MergableMetricFamilySamples mmfs = new MergableMetricFamilySamples();
 		
 		for (Future<HashMap<String, MetricFamilySamples>> future : futures) {
-			long maxWaitTime = starttime + this.maxProcessingTime - System.currentTimeMillis();
+			long maxWaitTime = starttime + this.getMaxProcessingTime() - System.currentTimeMillis();
 			
 			try {
 				if (maxWaitTime < 0 && !future.isDone()) {
@@ -178,14 +194,28 @@ public abstract class AbstractMetricsEndpoint {
 				log.warn("Exception thrown while fetching Metrics data from target", e);
 				continue;
 			} catch (TimeoutException e) {
-				log.info("Not all targets could be scraped within the current promregator.endpoint.maxProcessingTime. "
-						+ "Consider increasing promregator.endpoint.maxProcessingTime or promregator.endpoint.threads, "
+				log.info("Not all targets could be scraped within the current promregator.scraping.maxProcessingTime. "
+						+ "Consider increasing promregator.scraping.maxProcessingTime or promregator.scraping.threads, "
 						+ "but mind the implications. See also https://github.com/promregator/promregator/wiki/Handling-Timeouts-on-Scraping");
 				continue; // process the other's as well!
 			}
 			
 		}
 		return mmfs;
+	}
+
+	private long getMaxProcessingTime() {
+		if (this.maxProcessingTime != 4000) {
+			// different value than the default, so someone must have set it explicitly.
+			return this.maxProcessingTime;
+		}
+		
+		if (this.maxProcessingTimeOld.isPresent()) {
+			// the deprecated value still is set; use that one
+			return this.maxProcessingTimeOld.get();
+		}
+		
+		return this.maxProcessingTime; // must have been the value 4000
 	}
 
 	private LinkedList<Future<HashMap<String, MetricFamilySamples>>> startMetricsFetchers(List<MetricsFetcher> callablesPrep) {
