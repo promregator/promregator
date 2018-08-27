@@ -170,7 +170,7 @@ During discovery Promregator needs to retrieve metadata from the Cloud Foundry p
 
 This option defines the request timeout value for sending requests retrieving a detailed (summary) configurations of applications within a space. Its unit always is specified in milliseconds.
 
-By default, this value is set to 2500 milliseconds.
+By default, this value is set to 4000 milliseconds.
 
 
 ## Group "promregator"
