@@ -32,7 +32,7 @@ public class InternalMetrics {
 				.labelNames("cache").register();
 		
 		this.latencyCFFetch = Histogram.build("promregator_cffetch_latency", "Latency on retrieving CF values")
-				.labelNames("request_type").linearBuckets(0.1, 0.1, 15).register();
+				.labelNames("request_type").linearBuckets(0.1, 0.1, 50).register();
 	}
 
 	
