@@ -3,21 +3,15 @@ package org.cloudfoundry.promregator.cfaccessor;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
-import javax.validation.constraints.Null;
 
-import org.apache.commons.collections4.map.PassiveExpiringMap;
 import org.apache.http.conn.util.InetAddressUtils;
 import org.apache.log4j.Logger;
-import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.client.v2.applications.ListApplicationsRequest;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.info.GetInfoRequest;
@@ -80,23 +74,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	
 	@Value("${cf.request.timeout.appSummary:4000}")
 	private int requestTimeoutAppSummary;
-	
-	/* Cache-related attributes */
 
-	private PassiveExpiringMap<String, Mono<ListOrganizationsResponse>> orgCache;
-	private PassiveExpiringMap<String, Mono<ListSpacesResponse>> spaceCache;
-	private PassiveExpiringMap<String, Mono<ListApplicationsResponse>> applicationCache;
-	private PassiveExpiringMap<String, Mono<GetSpaceSummaryResponse>> spaceSummaryCache;
-	
-	@Value("${cf.cache.timeout.org:3600}")
-	private int timeoutCacheOrgLevel;
-
-	@Value("${cf.cache.timeout.space:3600}")
-	private int timeoutCacheSpaceLevel;
-	
-	@Value("${cf.cache.timeout.application:300}")
-	private int timeoutCacheApplicationLevel;
-	
 	@Value("${promregator.internal.preCheckAPIVersion:true}")
 	private boolean performPrecheckOfAPIVersion;
 	
@@ -108,25 +86,6 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	
 	private ReactorCloudFoundryClient cloudFoundryClient;
 
-	
-	
-	@PostConstruct
-	public void setupMaps() {
-		this.orgCache = new PassiveExpiringMap<>(this.timeoutCacheOrgLevel, TimeUnit.SECONDS);
-		this.spaceCache = new PassiveExpiringMap<>(this.timeoutCacheSpaceLevel, TimeUnit.SECONDS);
-		/*
-		 * NB: There is little point in separating the timeouts between applicationCache
-		 * and hostnameMap:
-		 * - changes to routes may come easily and thus need to be detected fast
-		 * - apps can start and stop, we need to see this, too
-		 * - instances can be added to apps
-		 * - Blue/green deployment may alter both of them
-		 * 
-		 * In short: both are very volatile and we need to query them often
-		 */
-		this.applicationCache = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
-		this.spaceSummaryCache = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
-	}
 	
 	private DefaultConnectionContext connectionContext(ProxyConfiguration proxyConfiguration) throws ConfigurationException {
 		if (apiHost != null && PATTERN_HTTP_BASED_PROTOCOL_PREFIX.matcher(apiHost).find()) {
@@ -211,20 +170,9 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	 * @param requestFunction a function which calls the CF API operation, which is being made, <code>requestData</code> is used as input parameter for this function.
 	 * @return a Mono on the response provided by the CF Cloud Controller
 	 */
-	private <P, R> Mono<P> performGenericRetrieval(String retrievalTypeName, String logName, String key, @Null PassiveExpiringMap<String, Mono<P>> cacheMap, R requestData, Function<R, Mono<P>> requestFunction, int timeoutInMS) {
+	private <P, R> Mono<P> performGenericRetrieval(String retrievalTypeName, String logName, String key, R requestData, Function<R, Mono<P>> requestFunction, int timeoutInMS) {
 		synchronized(key.intern()) {
 			Mono<P> result = null;
-			
-			if (cacheMap != null) {
-				// caching takes place at all
-				result = cacheMap.get(key);
-				if (result != null) {
-					this.internalMetrics.countHit("cfaccessor."+retrievalTypeName);
-					return result;
-				}
-				
-				this.internalMetrics.countMiss("cfaccessor."+retrievalTypeName);
-			}
 
 			ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, retrievalTypeName);
 			
@@ -252,10 +200,6 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 				})
 				.log(log.getName()+"."+logName, Level.FINE)
 				.cache();
-
-			if (cacheMap != null) {
-				cacheMap.put(key, result);
-			}
 			
 			return result;
 		}
@@ -268,7 +212,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	public Mono<ListOrganizationsResponse> retrieveOrgId(String orgName) {
 		ListOrganizationsRequest orgsRequest = ListOrganizationsRequest.builder().name(orgName).build();
 		
-		return this.performGenericRetrieval("org", "retrieveOrgId", orgName, this.orgCache, orgsRequest, or -> {
+		return this.performGenericRetrieval("org", "retrieveOrgId", orgName, orgsRequest, or -> {
 			return this.cloudFoundryClient.organizations().list(or);
 		}, this.requestTimeoutOrg);
 	}
@@ -282,7 +226,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		
 		ListSpacesRequest spacesRequest = ListSpacesRequest.builder().organizationId(orgId).name(spaceName).build();
 		
-		return this.performGenericRetrieval("space", "retrieveSpaceId", key, this.spaceCache, spacesRequest, sr -> {
+		return this.performGenericRetrieval("space", "retrieveSpaceId", key, spacesRequest, sr -> {
 			return this.cloudFoundryClient.spaces().list(sr);
 		}, this.requestTimeoutSpace);
 	}
@@ -300,7 +244,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 			.name(applicationName)
 			.build();
 		
-		return this.performGenericRetrieval("app", "retrieveApplicationId", key, this.applicationCache, 
+		return this.performGenericRetrieval("app", "retrieveApplicationId", key, 
 			request, r ->  this.cloudFoundryClient.applicationsV2().list(r), this.requestTimeoutApplication);
 	}
 
@@ -319,55 +263,17 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 				.spaceId(spaceId)
 				.build();
 		
-		Mono<ListApplicationsResponse> allAppsInSpace = this.performGenericRetrieval("allApps", "retrieveAllApplicationIdsInSpace", key, null, 
+		return this.performGenericRetrieval("allApps", "retrieveAllApplicationIdsInSpace", key, 
 				request, r -> this.cloudFoundryClient.applicationsV2().list(r), this.requestTimeoutAppInSpace);
-		
-		Mono<ListApplicationsResponse> allAppsInSpaceWithCacheFilled = allAppsInSpace.doOnEach(signal -> {
-			if (!signal.isOnNext()) {
-				return;
-			}
-			
-			// preload the cache with the responses we got
-			List<ApplicationResource> appResources = signal.get().getResources();
-			for(ApplicationResource ar : appResources) {
-				String appName = ar.getEntity().getName();
-				String appKey = this.determineApplicationCacheKey(orgId, spaceId, appName);
-				
-				List<ApplicationResource> arList = new ArrayList<>();
-				arList.add(ar);
-				
-				ListApplicationsResponse cacheValue = ListApplicationsResponse.builder().addAllResources(arList).build();
-				this.applicationCache.putIfAbsent(appKey, Mono.just(cacheValue));
-			}
-		});
-		
-		return allAppsInSpaceWithCacheFilled;
 	}
 	
 	@Override
 	public Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId) {
 		GetSpaceSummaryRequest request = GetSpaceSummaryRequest.builder().spaceId(spaceId).build();
 		
-		return this.performGenericRetrieval("spaceSummary", "retrieveSpaceSummary", spaceId, this.spaceSummaryCache, 
+		return this.performGenericRetrieval("spaceSummary", "retrieveSpaceSummary", spaceId, 
 				request, r -> this.cloudFoundryClient.spaces().getSummary(r), this.requestTimeoutAppSummary);
 
 	}
-
-	
-	public void invalidateCacheApplications() {
-		log.info("Invalidating application cache");
-		this.applicationCache.clear();
-	}
-	
-	public void invalidateCacheSpace() {
-		log.info("Invalidating space cache");
-		this.spaceCache.clear();
-	}
-
-	public void invalidateCacheOrg() {
-		log.info("Invalidating org cache");
-		this.orgCache.clear();
-	}
-
 
 }

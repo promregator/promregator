@@ -1,7 +1,6 @@
 package org.cloudfoundry.promregator.endpoint;
 
-import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
-import org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl;
+import org.cloudfoundry.promregator.cfaccessor.CFAccessorCache;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.CachingTargetResolver;
 import org.cloudfoundry.promregator.scanner.ReactiveAppInstanceScanner;
@@ -19,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class InvalidateCacheEndpoint {
 
 	@Autowired
-	private CFAccessor cfAccessor;
+	private CFAccessorCache cfAccessorCache;
 	
 	@Autowired
 	private AppInstanceScanner appInstanceScanner;
@@ -35,21 +34,19 @@ public class InvalidateCacheEndpoint {
 			@RequestParam(name = "resolver", required = false) boolean resolver
 			) {
 
-		ReactiveCFAccessorImpl reactiveCFAccessor = (ReactiveCFAccessorImpl) this.cfAccessor;
-		
 		ReactiveAppInstanceScanner reactiveAppInstanceScanner = (ReactiveAppInstanceScanner) this.appInstanceScanner;
 		
 		if (application) {
 			reactiveAppInstanceScanner.invalidateApplicationUrlCache();
-			reactiveCFAccessor.invalidateCacheApplications();
+			cfAccessorCache.invalidateCacheApplications();
 		}
 		
 		if (space) {
-			reactiveCFAccessor.invalidateCacheSpace();
+			cfAccessorCache.invalidateCacheSpace();
 		}
 		
 		if (org) {
-			reactiveCFAccessor.invalidateCacheOrg();
+			cfAccessorCache.invalidateCacheOrg();
 		}
 		
 		if (resolver) {

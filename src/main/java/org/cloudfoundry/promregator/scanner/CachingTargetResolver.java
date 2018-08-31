@@ -10,9 +10,7 @@ import javax.annotation.PostConstruct;
 import org.apache.commons.collections4.map.PassiveExpiringMap;
 import org.cloudfoundry.promregator.config.Target;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
-@Component
 public class CachingTargetResolver implements TargetResolver {
 	@Value("${cf.cache.timeout.resolver:300}")
 	private int timeoutCacheResolverLevel;

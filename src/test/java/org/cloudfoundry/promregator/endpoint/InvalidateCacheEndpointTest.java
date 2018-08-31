@@ -2,8 +2,9 @@ package org.cloudfoundry.promregator.endpoint;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
+import org.cloudfoundry.promregator.cfaccessor.CFAccessorCache;
 import org.cloudfoundry.promregator.endpoint.MockedAppInstanceScannerEndpointSpringApplication.MockedCachingTargetResolver;
-import org.cloudfoundry.promregator.endpoint.MockedAppInstanceScannerEndpointSpringApplication.MockedReactiveCFAccessorImpl;
+import org.cloudfoundry.promregator.endpoint.MockedAppInstanceScannerEndpointSpringApplication.MockedCFAccessorCache;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.junit.AfterClass;
@@ -35,7 +36,7 @@ public class InvalidateCacheEndpointTest {
 	private AppInstanceScanner appInstanceScanner;
 	
 	@Autowired
-	private CFAccessor cfAccessor;
+	private CFAccessorCache cfAccessorCache;
 	
 	@Autowired
 	private TargetResolver targetResolver;
@@ -51,7 +52,7 @@ public class InvalidateCacheEndpointTest {
 		MockedAppInstanceScannerEndpointSpringApplication.MockedReactiveAppInstanceScanner ais = (MockedAppInstanceScannerEndpointSpringApplication.MockedReactiveAppInstanceScanner) this.appInstanceScanner;
 		Assert.assertTrue(ais.isAppURLInvalidated());
 		
-		MockedReactiveCFAccessorImpl cfa = (MockedReactiveCFAccessorImpl) this.cfAccessor;
+		MockedCFAccessorCache cfa = (MockedCFAccessorCache) this.cfAccessorCache;
 		Assert.assertTrue(cfa.isApplicationCache());
 		Assert.assertTrue(cfa.isOrgCache());
 		Assert.assertTrue(cfa.isSpaceCache());

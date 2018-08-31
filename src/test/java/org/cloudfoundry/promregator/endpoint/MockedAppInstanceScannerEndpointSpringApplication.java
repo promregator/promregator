@@ -7,6 +7,7 @@ import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.auth.AuthenticatorController;
 import org.cloudfoundry.promregator.auth.NullEnricher;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
+import org.cloudfoundry.promregator.cfaccessor.CFAccessorCache;
 import org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
@@ -15,6 +16,7 @@ import org.cloudfoundry.promregator.scanner.CachingTargetResolver;
 import org.cloudfoundry.promregator.scanner.ReactiveAppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigurationExcludeFilter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.TypeExcludeFilter;
@@ -53,7 +55,11 @@ public class MockedAppInstanceScannerEndpointSpringApplication {
 
 	}
 	
-	public class MockedReactiveCFAccessorImpl extends ReactiveCFAccessorImpl {
+	public class MockedCFAccessorCache extends CFAccessorCache {
+		public MockedCFAccessorCache() {
+			super(null);
+		}
+
 		private boolean applicationCache = false;
 		private boolean spaceCache = false;
 		private boolean orgCache = false;
@@ -105,7 +111,12 @@ public class MockedAppInstanceScannerEndpointSpringApplication {
 	
 	@Bean
 	public CFAccessor cfAccessor() {
-		return new MockedReactiveCFAccessorImpl();
+		return new MockedCFAccessorCache();
+	}
+	
+	@Bean
+	public CFAccessorCache cfAccessorCache(@Qualifier("cfAccessor") CFAccessor cfAccessor) {
+		return (CFAccessorCache) cfAccessor;
 	}
 	
 	@Bean
