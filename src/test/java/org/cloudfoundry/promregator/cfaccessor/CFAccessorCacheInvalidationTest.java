@@ -1,5 +1,7 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
+import org.cloudfoundry.promregator.JUnitTestUtils;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,6 +37,11 @@ public class CFAccessorCacheInvalidationTest {
 		this.subject.invalidateCacheApplications();
 		this.subject.invalidateCacheSpace();
 		this.subject.invalidateCacheOrg();
+	}
+	
+	@AfterClass
+	public static void runCleanup() {
+		JUnitTestUtils.cleanUpAll();
 	}
 	
 	@Test
