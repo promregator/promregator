@@ -25,8 +25,6 @@ import reactor.core.publisher.Mono;
 public class CFAccessorCache implements CFAccessor {
 	private static final Logger log = Logger.getLogger(CFAccessorCache.class);
 
-	/* Cache-related attributes */
-
 	private PassiveExpiringMap<String, Mono<ListOrganizationsResponse>> orgCache;
 	private PassiveExpiringMap<CacheKeySpace, Mono<ListSpacesResponse>> spaceCache;
 	private PassiveExpiringMap<CacheKeyApplication, Mono<ListApplicationsResponse>> applicationCache;
