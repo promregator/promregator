@@ -1,7 +1,6 @@
 package org.cloudfoundry.promregator.scanner;
 
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
-import org.cloudfoundry.promregator.cfaccessor.CFAccessorCache;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorMock;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.springframework.context.annotation.Bean;
