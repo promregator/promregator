@@ -28,8 +28,8 @@ public class CFAccessorCache implements CFAccessor {
 	/* Cache-related attributes */
 
 	private PassiveExpiringMap<String, Mono<ListOrganizationsResponse>> orgCache;
-	private PassiveExpiringMap<String, Mono<ListSpacesResponse>> spaceCache;
-	private PassiveExpiringMap<String, Mono<ListApplicationsResponse>> applicationCache;
+	private PassiveExpiringMap<CacheKeySpace, Mono<ListSpacesResponse>> spaceCache;
+	private PassiveExpiringMap<CacheKeyApplication, Mono<ListApplicationsResponse>> applicationCache;
 	private PassiveExpiringMap<String, Mono<GetSpaceSummaryResponse>> spaceSummaryCache;
 	
 	@Value("${cf.cache.timeout.org:3600}")
@@ -68,7 +68,7 @@ public class CFAccessorCache implements CFAccessor {
 		this.spaceSummaryCache = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
 	}
 
-	private <P> Mono<P> cacheRetrieval(@NotNull final String retrievalTypeName, @NotNull final String key, @NotNull final PassiveExpiringMap<String, Mono<P>> cacheMap, Function<Void, Mono<P>> requestFunction) {
+	private <P, CK> Mono<P> cacheRetrieval(@NotNull final String retrievalTypeName, @NotNull final CK key, @NotNull final PassiveExpiringMap<CK, Mono<P>> cacheMap, Function<Void, Mono<P>> requestFunction) {
 		// try to fetch result with dirty cache read
 		Mono<P> result = cacheMap.get(key);
 		if (result != null) {
@@ -76,8 +76,13 @@ public class CFAccessorCache implements CFAccessor {
 			return result;
 		}
 		
+		Object lockObject = key;
+		if (key instanceof String) {
+			lockObject = ((String) key).intern();
+		}
+		
 		// dirty cache read failed; trying synchronized one
-		synchronized (key.intern()) {
+		synchronized (lockObject) {
 			result = cacheMap.get(key);
 			if (result != null) {
 				// result was retrieved in the meantime
@@ -108,7 +113,7 @@ public class CFAccessorCache implements CFAccessor {
 
 	@Override
 	public Mono<ListSpacesResponse> retrieveSpaceId(String orgId, String spaceName) {
-		final String key = String.format("%s|%s", orgId, spaceName);
+		final CacheKeySpace key = new CacheKeySpace(orgId, spaceName);
 		
 		return this.cacheRetrieval("space", key, this.spaceCache, nil -> {
 			return this.parent.retrieveSpaceId(orgId, spaceName);
@@ -117,15 +122,11 @@ public class CFAccessorCache implements CFAccessor {
 
 	@Override
 	public Mono<ListApplicationsResponse> retrieveApplicationId(String orgId, String spaceId, String applicationName) {
-		final String key = this.determineApplicationCacheKey(orgId, spaceId, applicationName);
+		final CacheKeyApplication key = new CacheKeyApplication(orgId, spaceId, applicationName);
 		
 		return this.cacheRetrieval("app", key, this.applicationCache, nil -> {
 			return this.parent.retrieveApplicationId(orgId, spaceId, applicationName);
 		});
-	}
-
-	private String determineApplicationCacheKey(String orgId, String spaceId, String applicationName) {
-		return String.format("%s|%s|%s", orgId, spaceId, applicationName);
 	}
 	
 	@Override
@@ -148,7 +149,7 @@ public class CFAccessorCache implements CFAccessor {
 			List<ApplicationResource> appResources = signal.get().getResources();
 			for(ApplicationResource ar : appResources) {
 				String appName = ar.getEntity().getName();
-				String appKey = this.determineApplicationCacheKey(orgId, spaceId, appName);
+				CacheKeyApplication appKey = new CacheKeyApplication(orgId, spaceId, appName);
 				
 				List<ApplicationResource> arList = new ArrayList<>();
 				arList.add(ar);
