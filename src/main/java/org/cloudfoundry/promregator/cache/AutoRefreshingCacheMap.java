@@ -156,6 +156,14 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 		return super.remove(key);
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.apache.commons.collections4.map.AbstractMapDecorator#clear()
+	 */
+	@Override
+	public void clear() {
+		super.clear();
+		this.entryPropertiesMap.clear();
+	}
 
 	private static class RefresherThread<K, V> extends Thread {
 		private static final Logger log = Logger.getLogger(RefresherThread.class);
