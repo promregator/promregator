@@ -3,13 +3,9 @@ package org.cloudfoundry.promregator.cfaccessor;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 
 import javax.annotation.PostConstruct;
-import javax.validation.constraints.NotNull;
 
-import org.apache.commons.collections4.map.PassiveExpiringMap;
 import org.apache.log4j.Logger;
 import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
@@ -17,20 +13,17 @@ import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.promregator.cache.AutoRefreshingCacheMap;
-import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import reactor.core.publisher.Mono;
-
 
 public class CFAccessorCache implements CFAccessor {
 	private static final Logger log = Logger.getLogger(CFAccessorCache.class);
 
 	private AutoRefreshingCacheMap<String, Mono<ListOrganizationsResponse>> orgCache;
-	private PassiveExpiringMap<CacheKeySpace, Mono<ListSpacesResponse>> spaceCache;
-	private PassiveExpiringMap<CacheKeyApplication, Mono<ListApplicationsResponse>> applicationCache;
-	private PassiveExpiringMap<String, Mono<GetSpaceSummaryResponse>> spaceSummaryCache;
+	private AutoRefreshingCacheMap<CacheKeySpace, Mono<ListSpacesResponse>> spaceCache;
+	private AutoRefreshingCacheMap<CacheKeyApplication, Mono<ListApplicationsResponse>> applicationCache;
+	private AutoRefreshingCacheMap<String, Mono<GetSpaceSummaryResponse>> spaceSummaryCache;
 	
 	@Value("${cf.cache.timeout.org:3600}")
 	private int timeoutCacheOrgLevel;
@@ -41,9 +34,6 @@ public class CFAccessorCache implements CFAccessor {
 	@Value("${cf.cache.timeout.application:300}")
 	private int timeoutCacheApplicationLevel;
 	
-	@Autowired
-	private InternalMetrics internalMetrics;
-	
 	private CFAccessor parent;
 	
 	public CFAccessorCache(CFAccessor parent) {
@@ -53,58 +43,25 @@ public class CFAccessorCache implements CFAccessor {
 	@PostConstruct
 	public void setupMaps() {
 		this.orgCache = new AutoRefreshingCacheMap<>(Duration.ofSeconds(this.timeoutCacheOrgLevel), Duration.ofSeconds(this.timeoutCacheOrgLevel * 2 / 3), this::orgCacheLoader);
-		this.spaceCache = new PassiveExpiringMap<>(this.timeoutCacheSpaceLevel, TimeUnit.SECONDS);
-		/*
-		 * NB: There is little point in separating the timeouts between applicationCache
-		 * and hostnameMap:
-		 * - changes to routes may come easily and thus need to be detected fast
-		 * - apps can start and stop, we need to see this, too
-		 * - instances can be added to apps
-		 * - Blue/green deployment may alter both of them
-		 * 
-		 * In short: both are very volatile and we need to query them often
-		 */
-		this.applicationCache = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
-		this.spaceSummaryCache = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
+		this.spaceCache = new AutoRefreshingCacheMap<>(Duration.ofSeconds(this.timeoutCacheSpaceLevel), Duration.ofSeconds(this.timeoutCacheSpaceLevel * 2 / 3), this::spaceCacheLoader);
+		this.applicationCache = new AutoRefreshingCacheMap<>(Duration.ofSeconds(this.timeoutCacheApplicationLevel), Duration.ofSeconds(this.timeoutCacheApplicationLevel * 2 / 3), this::applicationCacheLoader);
+		this.spaceSummaryCache = new AutoRefreshingCacheMap<>(Duration.ofSeconds(this.timeoutCacheApplicationLevel), Duration.ofSeconds(this.timeoutCacheApplicationLevel * 2 / 3), this::spaceSummaryCacheLoader);
 	}
 
 	private Mono<ListOrganizationsResponse> orgCacheLoader(String orgName) {
 		return this.parent.retrieveOrgId(orgName);
 	}
 	
-	private <P, CK> Mono<P> cacheRetrieval(@NotNull final String retrievalTypeName, @NotNull final CK key, @NotNull final PassiveExpiringMap<CK, Mono<P>> cacheMap, Function<Void, Mono<P>> requestFunction) {
-		// try to fetch result with dirty cache read
-		Mono<P> result = cacheMap.get(key);
-		if (result != null) {
-			this.internalMetrics.countHit("cfaccessor."+retrievalTypeName);
-			return result;
-		}
-		
-		Object lockObject = key;
-		if (key instanceof String) {
-			lockObject = ((String) key).intern();
-		}
-		
-		// dirty cache read failed; trying synchronized one
-		synchronized (lockObject) {
-			result = cacheMap.get(key);
-			if (result != null) {
-				// result was retrieved in the meantime
-				this.internalMetrics.countHit("cfaccessor."+retrievalTypeName);
-				return result;
-			}
-			
-			this.internalMetrics.countMiss("cfaccessor."+retrievalTypeName);
-			
-			result = requestFunction.apply(null);
-			// TODO Error handling
-			if (result != null) {
-				cacheMap.put(key, result);
-			}
-		}
-		
-		return result;
-
+	private Mono<ListSpacesResponse> spaceCacheLoader(CacheKeySpace cacheKey) {
+		return this.parent.retrieveSpaceId(cacheKey.getOrgId(), cacheKey.getSpaceName());
+	}
+	
+	private Mono<ListApplicationsResponse> applicationCacheLoader(CacheKeyApplication cacheKey) {
+		return this.parent.retrieveApplicationId(cacheKey.getOrgId(), cacheKey.getSpaceId(), cacheKey.getApplicationName());
+	}
+	
+	private Mono<GetSpaceSummaryResponse> spaceSummaryCacheLoader(String spaceId) {
+		return this.parent.retrieveSpaceSummary(spaceId);
 	}
 	
 	@Override
@@ -116,18 +73,14 @@ public class CFAccessorCache implements CFAccessor {
 	public Mono<ListSpacesResponse> retrieveSpaceId(String orgId, String spaceName) {
 		final CacheKeySpace key = new CacheKeySpace(orgId, spaceName);
 		
-		return this.cacheRetrieval("space", key, this.spaceCache, nil -> {
-			return this.parent.retrieveSpaceId(orgId, spaceName);
-		});
+		return this.spaceCache.get(key);
 	}
 
 	@Override
 	public Mono<ListApplicationsResponse> retrieveApplicationId(String orgId, String spaceId, String applicationName) {
 		final CacheKeyApplication key = new CacheKeyApplication(orgId, spaceId, applicationName);
 		
-		return this.cacheRetrieval("app", key, this.applicationCache, nil -> {
-			return this.parent.retrieveApplicationId(orgId, spaceId, applicationName);
-		});
+		return this.applicationCache.get(key);
 	}
 	
 	@Override
@@ -165,9 +118,7 @@ public class CFAccessorCache implements CFAccessor {
 
 	@Override
 	public Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId) {
-		return this.cacheRetrieval("spaceSummary", spaceId, this.spaceSummaryCache, nil -> {
-			return this.parent.retrieveSpaceSummary(spaceId);
-		});
+		return this.spaceSummaryCache.get(spaceId);
 	}
 
 	public void invalidateCacheApplications() {
