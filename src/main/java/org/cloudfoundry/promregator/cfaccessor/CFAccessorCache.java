@@ -1,5 +1,6 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -15,6 +16,7 @@ import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
+import org.cloudfoundry.promregator.cache.AutoRefreshingCacheMap;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,7 +27,7 @@ import reactor.core.publisher.Mono;
 public class CFAccessorCache implements CFAccessor {
 	private static final Logger log = Logger.getLogger(CFAccessorCache.class);
 
-	private PassiveExpiringMap<String, Mono<ListOrganizationsResponse>> orgCache;
+	private AutoRefreshingCacheMap<String, Mono<ListOrganizationsResponse>> orgCache;
 	private PassiveExpiringMap<CacheKeySpace, Mono<ListSpacesResponse>> spaceCache;
 	private PassiveExpiringMap<CacheKeyApplication, Mono<ListApplicationsResponse>> applicationCache;
 	private PassiveExpiringMap<String, Mono<GetSpaceSummaryResponse>> spaceSummaryCache;
@@ -50,7 +52,7 @@ public class CFAccessorCache implements CFAccessor {
 	
 	@PostConstruct
 	public void setupMaps() {
-		this.orgCache = new PassiveExpiringMap<>(this.timeoutCacheOrgLevel, TimeUnit.SECONDS);
+		this.orgCache = new AutoRefreshingCacheMap<>(Duration.ofSeconds(this.timeoutCacheOrgLevel), Duration.ofSeconds(this.timeoutCacheOrgLevel * 2 / 3), this::orgCacheLoader);
 		this.spaceCache = new PassiveExpiringMap<>(this.timeoutCacheSpaceLevel, TimeUnit.SECONDS);
 		/*
 		 * NB: There is little point in separating the timeouts between applicationCache
@@ -66,6 +68,10 @@ public class CFAccessorCache implements CFAccessor {
 		this.spaceSummaryCache = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
 	}
 
+	private Mono<ListOrganizationsResponse> orgCacheLoader(String orgName) {
+		return this.parent.retrieveOrgId(orgName);
+	}
+	
 	private <P, CK> Mono<P> cacheRetrieval(@NotNull final String retrievalTypeName, @NotNull final CK key, @NotNull final PassiveExpiringMap<CK, Mono<P>> cacheMap, Function<Void, Mono<P>> requestFunction) {
 		// try to fetch result with dirty cache read
 		Mono<P> result = cacheMap.get(key);
@@ -103,10 +109,7 @@ public class CFAccessorCache implements CFAccessor {
 	
 	@Override
 	public Mono<ListOrganizationsResponse> retrieveOrgId(String orgName) {
-		
-		return this.cacheRetrieval("org", orgName, this.orgCache, nil -> {
-			return this.parent.retrieveOrgId(orgName);
-		});
+		return this.orgCache.get(orgName);
 	}
 
 	@Override

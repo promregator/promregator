@@ -99,6 +99,10 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 			if (value != null) {
 				this.put((K) key, value);
 				ep = this.entryPropertiesMap.get(key);
+				if (ep == null) {
+					ep = new EntryProperties();
+					this.entryPropertiesMap.put((K) key, ep);
+				}
 				ep.justUsed();
 			}
 		}
