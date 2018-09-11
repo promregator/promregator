@@ -142,7 +142,7 @@ public class DiscoveryEndpoint {
 			result.add(new DiscoveryResponse(targets, dl));
 		}
 		
-		log.info(String.format("Returing discovery document with %d targets", result.size()));
+		log.info(String.format("Returning discovery document with %d targets", result.size()));
 		
 		return new ResponseEntity<DiscoveryResponse[]>(result.toArray(new DiscoveryResponse[0]), HttpStatus.OK);
 	}
