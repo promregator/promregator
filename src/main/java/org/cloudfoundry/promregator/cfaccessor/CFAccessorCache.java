@@ -34,19 +34,19 @@ public class CFAccessorCache implements CFAccessor {
 	@Value("${cf.cache.timeout.application:300}")
 	private int timeoutCacheApplicationLevelInSeconds;
 	
-	@Value("${cf.request.timeout.org:2500}")
+	@Value("${cf.request.timeout.org:2500}") // Warning! Default value defined multiple times in the source code!
 	private int requestTimeoutOrgInMilliseconds;
 
-	@Value("${cf.request.timeout.space:2500}")
+	@Value("${cf.request.timeout.space:2500}") // Warning! Default value defined multiple times in the source code!
 	private int requestTimeoutSpaceInMilliseconds;
 
-	@Value("${cf.request.timeout.app:2500}")
+	@Value("${cf.request.timeout.app:2500}") // Warning! Default value defined multiple times in the source code!
 	private int requestTimeoutApplicationInMilliseconds;
 	
-	@Value("${cf.request.timeout.appInSpace:2500}")
+	@Value("${cf.request.timeout.appInSpace:2500}") // Warning! Default value defined multiple times in the source code!
 	private int requestTimeoutAppInSpaceInMilliseconds;
 	
-	@Value("${cf.request.timeout.appSummary:4000}")
+	@Value("${cf.request.timeout.appSummary:4000}") // Warning! Default value defined multiple times in the source code!
 	private int requestTimeoutAppSummaryInMilliseconds;
 
 	

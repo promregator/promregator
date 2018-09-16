@@ -60,19 +60,19 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	@Value("${cf.proxyPort:0}") 
 	private int proxyPort;
 	
-	@Value("${cf.request.timeout.org:2500}")
+	@Value("${cf.request.timeout.org:2500}") // Warning! Default value defined multiple times in the source code!
 	private int requestTimeoutOrg;
 
-	@Value("${cf.request.timeout.space:2500}")
+	@Value("${cf.request.timeout.space:2500}") // Warning! Default value defined multiple times in the source code!
 	private int requestTimeoutSpace;
 
-	@Value("${cf.request.timeout.app:2500}")
+	@Value("${cf.request.timeout.app:2500}") // Warning! Default value defined multiple times in the source code!
 	private int requestTimeoutApplication;
 	
-	@Value("${cf.request.timeout.appInSpace:2500}")
+	@Value("${cf.request.timeout.appInSpace:2500}") // Warning! Default value defined multiple times in the source code!
 	private int requestTimeoutAppInSpace;
 	
-	@Value("${cf.request.timeout.appSummary:4000}")
+	@Value("${cf.request.timeout.appSummary:4000}") // Warning! Default value defined multiple times in the source code!
 	private int requestTimeoutAppSummary;
 
 	@Value("${promregator.internal.preCheckAPIVersion:true}")
