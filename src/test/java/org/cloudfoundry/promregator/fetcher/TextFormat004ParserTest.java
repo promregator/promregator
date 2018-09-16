@@ -499,6 +499,47 @@ public class TextFormat004ParserTest {
 		compareEMFS(expected, result);
 	}
 	
+	@Test
+	public void testHistogramSpecificationWithoutHelp() { // see also issue #73
+		String textToParse = "# A histogram, which has a pretty complex representation in the text format:\n" + 
+				"# TYPE http_request_duration_seconds histogram\n" + 
+				"http_request_duration_seconds_bucket{le=\"0.05\"} 24054\n" + 
+				"http_request_duration_seconds_bucket{le=\"0.1\"} 33444\n" + 
+				"http_request_duration_seconds_bucket{le=\"0.2\"} 100392\n" + 
+				"http_request_duration_seconds_bucket{le=\"0.5\"} 129389\n" + 
+				"http_request_duration_seconds_bucket{le=\"1\"} 133988\n" + 
+				"http_request_duration_seconds_bucket{le=\"+Inf\"} 144320\n" + 
+				"http_request_duration_seconds_sum 53423\n" + 
+				"http_request_duration_seconds_count 144320";
+		
+		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
+		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
+		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
+
+		// creating expected result
+		LinkedList<Collector.MetricFamilySamples> expectedList = new LinkedList<>();
+
+		List<Sample> samples = new LinkedList<>();
+		
+		Sample sample = null;
+		sample = createSampleForHistogram("http_request_duration_seconds_bucket", "0.05", 24054); samples.add(sample);
+		sample = createSampleForHistogram("http_request_duration_seconds_bucket", "0.1", 33444); samples.add(sample);
+		sample = createSampleForHistogram("http_request_duration_seconds_bucket", "0.2", 100392); samples.add(sample);
+		sample = createSampleForHistogram("http_request_duration_seconds_bucket", "0.5", 129389); samples.add(sample);
+		sample = createSampleForHistogram("http_request_duration_seconds_bucket", "1", 133988); samples.add(sample);
+		sample = createSampleForHistogram("http_request_duration_seconds_bucket", "+Inf", 144320); samples.add(sample);
+		sample = new Sample("http_request_duration_seconds_sum", new LinkedList<>(), new LinkedList<>(), 53423); samples.add(sample);
+		sample = new Sample("http_request_duration_seconds_count", new LinkedList<>(), new LinkedList<>(), 144320); samples.add(sample);
+		
+		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("http_request_duration_seconds", Type.HISTOGRAM, "", samples);
+		expectedList.add(expectedMFS);
+		
+		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
+		
+		// compare
+		compareEMFS(expected, result);
+	}
+	
 	private static Sample createSampleForHistogram(String bucketMetricName, String leValue, double value) {
 		List<String> labelNames = new LinkedList<>();
 		labelNames.add("le");
@@ -509,6 +550,7 @@ public class TextFormat004ParserTest {
 		return sample;
 	}
 	
+
 	@Test
 	public void testSummarySpecificationExample() {
 		String textToParse = "# Finally a summary, which has a complex representation, too:\n" + 
@@ -541,6 +583,45 @@ public class TextFormat004ParserTest {
 		sample = new Sample("rpc_duration_seconds_count", new LinkedList<>(), new LinkedList<>(), 2693); samples.add(sample);
 		
 		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("rpc_duration_seconds", Type.SUMMARY, "A summary of the RPC duration in seconds.", samples);
+		expectedList.add(expectedMFS);
+		
+		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
+		
+		// compare
+		compareEMFS(expected, result);
+	}
+	
+	@Test
+	public void testSummarySpecificationWithoutHelp() { // see also issue #73
+		String textToParse = "# Finally a summary, which has a complex representation, too:\n" + 
+				"# TYPE rpc_duration_seconds summary\n" + 
+				"rpc_duration_seconds{quantile=\"0.01\"} 3102\n" + 
+				"rpc_duration_seconds{quantile=\"0.05\"} 3272\n" + 
+				"rpc_duration_seconds{quantile=\"0.5\"} 4773\n" + 
+				"rpc_duration_seconds{quantile=\"0.9\"} 9001\n" + 
+				"rpc_duration_seconds{quantile=\"0.99\"} 76656\n" + 
+				"rpc_duration_seconds_sum 1.7560473e+07\n" + 
+				"rpc_duration_seconds_count 2693";
+		
+		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
+		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
+		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
+
+		// creating expected result
+		LinkedList<Collector.MetricFamilySamples> expectedList = new LinkedList<>();
+
+		List<Sample> samples = new LinkedList<>();
+		
+		Sample sample = null;
+		sample = createSampleForSummary("rpc_duration_seconds", "0.01", 3102); samples.add(sample);
+		sample = createSampleForSummary("rpc_duration_seconds", "0.05", 3272); samples.add(sample);
+		sample = createSampleForSummary("rpc_duration_seconds", "0.5", 4773); samples.add(sample);
+		sample = createSampleForSummary("rpc_duration_seconds", "0.9", 9001); samples.add(sample);
+		sample = createSampleForSummary("rpc_duration_seconds", "0.99", 76656); samples.add(sample);
+		sample = new Sample("rpc_duration_seconds_sum", new LinkedList<>(), new LinkedList<>(), 1.7560473e+07); samples.add(sample);
+		sample = new Sample("rpc_duration_seconds_count", new LinkedList<>(), new LinkedList<>(), 2693); samples.add(sample);
+		
+		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("rpc_duration_seconds", Type.SUMMARY, "", samples);
 		expectedList.add(expectedMFS);
 		
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
