@@ -26,13 +26,29 @@ public class CFAccessorCache implements CFAccessor {
 	private AutoRefreshingCacheMap<String, Mono<GetSpaceSummaryResponse>> spaceSummaryCache;
 	
 	@Value("${cf.cache.timeout.org:3600}")
-	private int timeoutCacheOrgLevel;
+	private int timeoutCacheOrgLevelInSeconds;
 
 	@Value("${cf.cache.timeout.space:3600}")
-	private int timeoutCacheSpaceLevel;
+	private int timeoutCacheSpaceLevelInSeconds;
 	
 	@Value("${cf.cache.timeout.application:300}")
-	private int timeoutCacheApplicationLevel;
+	private int timeoutCacheApplicationLevelInSeconds;
+	
+	@Value("${cf.request.timeout.org:2500}")
+	private int requestTimeoutOrgInMilliseconds;
+
+	@Value("${cf.request.timeout.space:2500}")
+	private int requestTimeoutSpaceInMilliseconds;
+
+	@Value("${cf.request.timeout.app:2500}")
+	private int requestTimeoutApplicationInMilliseconds;
+	
+	@Value("${cf.request.timeout.appInSpace:2500}")
+	private int requestTimeoutAppInSpaceInMilliseconds;
+	
+	@Value("${cf.request.timeout.appSummary:4000}")
+	private int requestTimeoutAppSummaryInMilliseconds;
+
 	
 	private CFAccessor parent;
 	
@@ -42,10 +58,44 @@ public class CFAccessorCache implements CFAccessor {
 	
 	@PostConstruct
 	public void setupMaps() {
-		this.orgCache = new AutoRefreshingCacheMap<>(Duration.ofSeconds(this.timeoutCacheOrgLevel), Duration.ofSeconds(this.timeoutCacheOrgLevel * 2 / 3), this::orgCacheLoader);
-		this.spaceCache = new AutoRefreshingCacheMap<>(Duration.ofSeconds(this.timeoutCacheSpaceLevel), Duration.ofSeconds(this.timeoutCacheSpaceLevel * 2 / 3), this::spaceCacheLoader);
-		this.applicationCache = new AutoRefreshingCacheMap<>(Duration.ofSeconds(this.timeoutCacheApplicationLevel), Duration.ofSeconds(this.timeoutCacheApplicationLevel * 2 / 3), this::applicationCacheLoader);
-		this.spaceSummaryCache = new AutoRefreshingCacheMap<>(Duration.ofSeconds(this.timeoutCacheApplicationLevel), Duration.ofSeconds(this.timeoutCacheApplicationLevel * 2 / 3), this::spaceSummaryCacheLoader);
+		/* 
+		 * calculate refresh intervals
+		 */
+		
+		long refreshOrgInMilliseconds = this.timeoutCacheOrgLevelInSeconds * 1000 - 3 * this.requestTimeoutOrgInMilliseconds;
+		if (refreshOrgInMilliseconds < 0) {
+			log.warn("The request timeout for org requests is too long for your cache. Falling back to default values.");
+			refreshOrgInMilliseconds = 3600 * 1000 - 3 * 2500;
+		}
+		
+		long refreshSpaceInMilliseconds = this.timeoutCacheSpaceLevelInSeconds * 1000 - 3 * this.requestTimeoutSpaceInMilliseconds;
+		if (refreshSpaceInMilliseconds < 0) {
+			log.warn("The request timeout for space requests is too long for your cache. Falling back to default values.");
+			refreshSpaceInMilliseconds = 3600 * 1000 - 3 * 2500;
+		}
+		
+		long refreshAppInMilliseconds = this.timeoutCacheApplicationLevelInSeconds * 1000 - 3 * Math.max(this.requestTimeoutApplicationInMilliseconds,  this.requestTimeoutAppInSpaceInMilliseconds);
+		if (refreshAppInMilliseconds < 0) {
+			log.warn("The request timeout for app requests is too long for your cache. Falling back to default values.");
+			refreshAppInMilliseconds = 300 * 1000 - 3 * 2500;
+		}
+		
+		long refreshAppSummaryInMilliseconds = this.timeoutCacheApplicationLevelInSeconds * 1000 - 3 * this.requestTimeoutAppSummaryInMilliseconds;
+		if (refreshAppSummaryInMilliseconds < 0) {
+			log.warn("The request timeout for app summary requests is too long for your cache. Falling back to default values.");
+			refreshAppSummaryInMilliseconds = 300 * 1000 - 3 * 4000;
+		}
+		
+		log.info(String.format("Cache refresh timings: org cache: %dms, space cache: %dms, app cache: %dms, app summary cache: %dms", 
+				refreshOrgInMilliseconds, refreshSpaceInMilliseconds, refreshAppInMilliseconds, refreshAppSummaryInMilliseconds));
+		
+		/*
+		 * initializing caches
+		 */
+		this.orgCache = new AutoRefreshingCacheMap<>(Duration.ofSeconds(this.timeoutCacheOrgLevelInSeconds), Duration.ofMillis(refreshOrgInMilliseconds), this::orgCacheLoader);
+		this.spaceCache = new AutoRefreshingCacheMap<>(Duration.ofSeconds(this.timeoutCacheSpaceLevelInSeconds), Duration.ofMillis(refreshSpaceInMilliseconds), this::spaceCacheLoader);
+		this.applicationCache = new AutoRefreshingCacheMap<>(Duration.ofSeconds(this.timeoutCacheApplicationLevelInSeconds), Duration.ofMillis(refreshAppInMilliseconds), this::applicationCacheLoader);
+		this.spaceSummaryCache = new AutoRefreshingCacheMap<>(Duration.ofSeconds(this.timeoutCacheApplicationLevelInSeconds), Duration.ofMillis(refreshAppSummaryInMilliseconds), this::spaceSummaryCacheLoader);
 	}
 
 	private Mono<ListOrganizationsResponse> orgCacheLoader(String orgName) {
