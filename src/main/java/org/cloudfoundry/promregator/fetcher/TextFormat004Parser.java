@@ -169,6 +169,12 @@ public class TextFormat004Parser {
 				samples.add(sample);
 
 				String docString = this.mapHelps.get(metricName);
+				/*
+				 * mfs.help must not be empty - see also  https://github.com/promregator/promregator/issues/73
+				 */
+				if (docString == null) {
+					docString = "";
+				}
 
 				Collector.MetricFamilySamples mfs = new Collector.MetricFamilySamples(metricName, type, docString, samples);
 				this.mapMFS.put(metricName, mfs);
@@ -180,7 +186,15 @@ public class TextFormat004Parser {
 			Collector.MetricFamilySamples mfs = this.mapMFS.get(baseMetricName);
 			if (mfs == null) {
 				// no, we have to create a new one
+
 				String docString = this.mapHelps.get(baseMetricName);
+				/*
+				 * mfs.help must not be empty - see also  https://github.com/promregator/promregator/issues/73
+				 */
+				if (docString == null) {
+					docString = "";
+				}
+				
 				mfs = new Collector.MetricFamilySamples(baseMetricName, type, docString, new LinkedList<>());
 				this.mapMFS.put(baseMetricName, mfs);
 			}
@@ -195,7 +209,15 @@ public class TextFormat004Parser {
 			Collector.MetricFamilySamples mfs = this.mapMFS.get(baseMetricName);
 			if (mfs == null) {
 				// no, we have to create a new one
+				
 				String docString = this.mapHelps.get(baseMetricName);
+				/*
+				 * mfs.help must not be empty - see also  https://github.com/promregator/promregator/issues/73
+				 */
+				if (docString == null) {
+					docString = "";
+				}
+				
 				mfs = new Collector.MetricFamilySamples(baseMetricName, type, docString, new LinkedList<>());
 				this.mapMFS.put(baseMetricName, mfs);
 			}
