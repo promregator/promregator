@@ -58,7 +58,7 @@ public class TextFormat004ParserTest {
 		Sample sample = new Sample("metric_without_timestamp_and_labels", new LinkedList<String>(), new LinkedList<String>(), 12.47);
 		samples.add(sample);
 		
-		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("metric_without_timestamp_and_labels", Type.UNTYPED, null, samples);
+		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("metric_without_timestamp_and_labels", Type.UNTYPED, "", samples);
 		expectedList.add(expectedMFS);
 		
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
@@ -84,7 +84,7 @@ public class TextFormat004ParserTest {
 		Sample sample = new Sample("metric_without_labels", new LinkedList<String>(), new LinkedList<String>(), 12.47);
 		samples.add(sample);
 		
-		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("metric_without_labels", Type.UNTYPED, null, samples);
+		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("metric_without_labels", Type.UNTYPED, "", samples);
 		expectedList.add(expectedMFS);
 		
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
@@ -110,7 +110,7 @@ public class TextFormat004ParserTest {
 		Sample sample = new Sample("metric_without_labels", new LinkedList<String>(), new LinkedList<String>(), 1.7560473e+07);
 		samples.add(sample);
 		
-		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("metric_without_labels", Type.UNTYPED, null, samples);
+		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("metric_without_labels", Type.UNTYPED, "", samples);
 		expectedList.add(expectedMFS);
 		
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
@@ -136,7 +136,7 @@ public class TextFormat004ParserTest {
 		Sample sample = new Sample("metric_without_labels", new LinkedList<String>(), new LinkedList<String>(), Double.POSITIVE_INFINITY);
 		samples.add(sample);
 		
-		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("metric_without_labels", Type.UNTYPED, null, samples);
+		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("metric_without_labels", Type.UNTYPED, "", samples);
 		expectedList.add(expectedMFS);
 		
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
@@ -162,7 +162,7 @@ public class TextFormat004ParserTest {
 		Sample sample = new Sample("metric_without_labels", new LinkedList<String>(), new LinkedList<String>(), Double.NEGATIVE_INFINITY);
 		samples.add(sample);
 		
-		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("metric_without_labels", Type.UNTYPED, null, samples);
+		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("metric_without_labels", Type.UNTYPED, "", samples);
 		expectedList.add(expectedMFS);
 		
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
@@ -237,7 +237,7 @@ public class TextFormat004ParserTest {
 		Sample sample = new Sample("metric_without_labels", new LinkedList<String>(), new LinkedList<String>(), 12.47);
 		samples.add(sample);
 		
-		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("metric_without_labels", Type.GAUGE, null, samples);
+		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("metric_without_labels", Type.GAUGE, "", samples);
 		expectedList.add(expectedMFS);
 		
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
@@ -264,7 +264,7 @@ public class TextFormat004ParserTest {
 		Sample sample = new Sample("metric_without_labels", new LinkedList<String>(), new LinkedList<String>(), 12.47);
 		samples.add(sample);
 		
-		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("metric_without_labels", Type.COUNTER, null, samples);
+		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("metric_without_labels", Type.COUNTER, "", samples);
 		expectedList.add(expectedMFS);
 		
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
@@ -349,7 +349,7 @@ public class TextFormat004ParserTest {
 		Sample sample = new Sample("metric_with_label", labelNames, labelValues, 12.47);
 		samples.add(sample);
 		
-		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("metric_with_label", Type.GAUGE, null, samples);
+		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("metric_with_label", Type.GAUGE, "", samples);
 		expectedList.add(expectedMFS);
 		
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
@@ -384,7 +384,7 @@ public class TextFormat004ParserTest {
 		Sample sample = new Sample("metric_with_label", labelNames, labelValues, 12.47);
 		samples.add(sample);
 		
-		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("metric_with_label", Type.GAUGE, null, samples);
+		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("metric_with_label", Type.GAUGE, "", samples);
 		expectedList.add(expectedMFS);
 		
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
@@ -415,7 +415,7 @@ public class TextFormat004ParserTest {
 		Sample sample = new Sample("metric_with_label", labelNames, labelValues, 12.47);
 		samples.add(sample);
 		
-		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("metric_with_label", Type.GAUGE, null, samples);
+		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("metric_with_label", Type.GAUGE, "", samples);
 		expectedList.add(expectedMFS);
 		
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
@@ -448,7 +448,7 @@ public class TextFormat004ParserTest {
 		Sample sample = new Sample("msdos_file_access_time_seconds", labelNames, labelValues, 1.458255915e9);
 		samples.add(sample);
 		
-		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("msdos_file_access_time_seconds", Type.UNTYPED, null, samples);
+		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("msdos_file_access_time_seconds", Type.UNTYPED, "", samples);
 		expectedList.add(expectedMFS);
 		
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
@@ -687,7 +687,7 @@ public class TextFormat004ParserTest {
 		Sample sample = new Sample("rpc_duration_seconds", labelNames, labelValues, 3102);
 		samples.add(sample);
 
-		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("rpc_duration_seconds", Type.UNTYPED, null, samples);
+		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("rpc_duration_seconds", Type.UNTYPED, "", samples);
 		expectedList.add(expectedMFS);
 
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
