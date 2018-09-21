@@ -10,7 +10,7 @@ public class AutoRefreshingCacheMapTest {
 
 	@Test
 	public void testPutAndGet() {
-		AutoRefreshingCacheMap<String, String> subject = new AutoRefreshingCacheMap<>("test", Duration.ofSeconds(1), Duration.ofSeconds(1), key -> {
+		AutoRefreshingCacheMap<String, String> subject = new AutoRefreshingCacheMap<>("test", null, Duration.ofSeconds(1), Duration.ofSeconds(1), key -> {
 			Assert.fail("should not be reached");
 			return null;
 		});
@@ -23,7 +23,7 @@ public class AutoRefreshingCacheMapTest {
 	
 	@Test
 	public void testAutoLoad() {
-		AutoRefreshingCacheMap<String, String> subject = new AutoRefreshingCacheMap<>("test", Duration.ofSeconds(1), Duration.ofSeconds(1), key -> {
+		AutoRefreshingCacheMap<String, String> subject = new AutoRefreshingCacheMap<>("test", null, Duration.ofSeconds(1), Duration.ofSeconds(1), key -> {
 			char[] source = key.toCharArray();
 			char[] target = new char[source.length];
 			for (int i = 0;i<source.length;i++) {
@@ -38,7 +38,7 @@ public class AutoRefreshingCacheMapTest {
 	
 	@Test
 	public void testExpiry() throws InterruptedException {
-		AutoRefreshingCacheMap<String, String> subject = new AutoRefreshingCacheMap<>("test", Duration.ofMillis(100), Duration.ofSeconds(10), key -> {
+		AutoRefreshingCacheMap<String, String> subject = new AutoRefreshingCacheMap<>("test", null, Duration.ofMillis(100), Duration.ofSeconds(10), key -> {
 			char[] source = key.toCharArray();
 			char[] target = new char[source.length];
 			for (int i = 0;i<source.length;i++) {
@@ -72,7 +72,7 @@ public class AutoRefreshingCacheMapTest {
 	public void testAutoRefresh() throws InterruptedException {
 		final Counter counter = new Counter();
 		
-		AutoRefreshingCacheMap<String, String> subject = new AutoRefreshingCacheMap<>("test", Duration.ofSeconds(10), Duration.ofMillis(500), key -> {
+		AutoRefreshingCacheMap<String, String> subject = new AutoRefreshingCacheMap<>("test", null, Duration.ofSeconds(10), Duration.ofMillis(500), key -> {
 			counter.increase();
 			return "refreshed";
 		});
@@ -135,7 +135,7 @@ public class AutoRefreshingCacheMapTest {
 	
 	@Test
 	public void testMassRun() throws InterruptedException {
-		AutoRefreshingCacheMap<String, String> subject = new AutoRefreshingCacheMap<>("test", Duration.ofMillis(200), Duration.ofMillis(200), key -> {
+		AutoRefreshingCacheMap<String, String> subject = new AutoRefreshingCacheMap<>("test", null, Duration.ofMillis(200), Duration.ofMillis(200), key -> {
 			char[] source = key.toCharArray();
 			char[] target = new char[source.length];
 			for (int i = 0;i<source.length;i++) {

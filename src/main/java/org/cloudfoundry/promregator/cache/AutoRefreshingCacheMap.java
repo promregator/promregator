@@ -12,6 +12,7 @@ import java.util.function.Function;
 import org.apache.commons.collections4.map.AbstractMapDecorator;
 import org.apache.log4j.Logger;
 import org.apache.log4j.MDC;
+import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 
 public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 
@@ -19,6 +20,8 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 	private Duration expiryDuration;
 	private Function<K, V> loaderFunction;
 	private RefresherThread<K, V> refresherThread;
+	
+	private InternalMetrics internalMetrics;
 
 	private static class EntryProperties {
 		private Instant lastUsed;
@@ -57,9 +60,10 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 	private Map<K, EntryProperties> entryPropertiesMap = Collections.synchronizedMap(new HashMap<K, EntryProperties>());
 	private String name;
 	
-	public AutoRefreshingCacheMap(String cacheMapName, Duration expiryDuration, Duration refreshInterval, Function<K, V> loaderFunction) {
+	public AutoRefreshingCacheMap(String cacheMapName, InternalMetrics internalMetrics, Duration expiryDuration, Duration refreshInterval, Function<K, V> loaderFunction) {
 		super(Collections.synchronizedMap(new HashMap<K, V>()));
 		this.refreshInterval = refreshInterval;
+		this.internalMetrics = internalMetrics;
 		this.expiryDuration = expiryDuration;
 		this.loaderFunction = loaderFunction;
 		this.name = cacheMapName;
@@ -221,6 +225,11 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 			Instant expiryEntry = Instant.now().minus(this.map.expiryDuration);
 			Instant refreshEntryInstant = Instant.now().minus(this.map.refreshInterval);
 			
+			if (this.map.internalMetrics != null) {
+				this.map.internalMetrics.setTimestampAutoRefreshingCacheMapRefreshScan(this.map.getName());
+				this.map.internalMetrics.setAutoRefreshingCacheMapSize(this.map.getName(), this.map.size());
+			}
+			
 			List<K> deleteList = new LinkedList<K>();
 			List<K> refreshList = new LinkedList<K>();
 			for (Entry<K, EntryProperties> entry : this.map.entryPropertiesMap.entrySet()) {
@@ -234,6 +243,9 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 
 			// delete what is expired
 			for (K key : deleteList) {
+				if (this.map.internalMetrics != null) {
+					this.map.internalMetrics.countAutoRefreshingCacheMapExpiry(this.map.getName());
+				}
 				log.debug(String.format("Deleting expired value for key %s", key));
 				this.map.remove(key);
 			}
@@ -244,8 +256,14 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 				V value = this.map.loaderFunction.apply(key);
 				if (value != null) {
 					this.map.put(key, value);
+					if (this.map.internalMetrics != null) {
+						this.map.internalMetrics.countAutoRefreshingCacheMapRefreshSuccess(this.map.getName());
+					}
 				} else {
 					log.debug(String.format("Loader did not provide a value for key %s", key.toString()));
+					if (this.map.internalMetrics != null) {
+						this.map.internalMetrics.countAutoRefreshingCacheMapRefreshFailure(this.map.getName());
+					}
 				}
 			}
 		}
