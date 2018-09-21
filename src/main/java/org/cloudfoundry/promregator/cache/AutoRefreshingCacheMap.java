@@ -55,15 +55,24 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 	}
 	
 	private Map<K, EntryProperties> entryPropertiesMap = Collections.synchronizedMap(new HashMap<K, EntryProperties>());
+	private String name;
 	
-	public AutoRefreshingCacheMap(Duration expiryDuration, Duration refreshInterval, Function<K, V> loaderFunction) {
+	public AutoRefreshingCacheMap(String cacheMapName, Duration expiryDuration, Duration refreshInterval, Function<K, V> loaderFunction) {
 		super(Collections.synchronizedMap(new HashMap<K, V>()));
 		this.refreshInterval = refreshInterval;
 		this.expiryDuration = expiryDuration;
 		this.loaderFunction = loaderFunction;
+		this.name = cacheMapName;
 		
 		this.refresherThread = new RefresherThread<K, V>(this);
 		this.refresherThread.start();
+	}
+
+	/**
+	 * @return the name
+	 */
+	public String getName() {
+		return name;
 	}
 
 	/* (non-Javadoc)
@@ -177,7 +186,7 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 		private boolean shouldRun = true;
 		
 		public RefresherThread(AutoRefreshingCacheMap<K, V> map) {
-			super(String.format("RefresherThread for AutoRefreshingCacheMap"));
+			super(String.format("RefresherThread for AutoRefreshingCacheMap '%s'", map.getName()));
 			this.setDaemon(true);
 			this.map = map;
 		}
@@ -187,7 +196,7 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 		 */
 		@Override
 		public void run() {
-			MDC.put("AutoRefreshingCacheMap", this.map.hashCode()+"");
+			MDC.put("AutoRefreshingCacheMap", this.map.getName());
 			log.debug("Starting checks for this AutoRefreshingCacheMap");
 			while (this.shouldRun) {
 				try {

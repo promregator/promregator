@@ -92,10 +92,10 @@ public class CFAccessorCache implements CFAccessor {
 		/*
 		 * initializing caches
 		 */
-		this.orgCache = new AutoRefreshingCacheMap<>(Duration.ofSeconds(this.timeoutCacheOrgLevelInSeconds), Duration.ofMillis(refreshOrgInMilliseconds), this::orgCacheLoader);
-		this.spaceCache = new AutoRefreshingCacheMap<>(Duration.ofSeconds(this.timeoutCacheSpaceLevelInSeconds), Duration.ofMillis(refreshSpaceInMilliseconds), this::spaceCacheLoader);
-		this.applicationCache = new AutoRefreshingCacheMap<>(Duration.ofSeconds(this.timeoutCacheApplicationLevelInSeconds), Duration.ofMillis(refreshAppInMilliseconds), this::applicationCacheLoader);
-		this.spaceSummaryCache = new AutoRefreshingCacheMap<>(Duration.ofSeconds(this.timeoutCacheApplicationLevelInSeconds), Duration.ofMillis(refreshAppSummaryInMilliseconds), this::spaceSummaryCacheLoader);
+		this.orgCache = new AutoRefreshingCacheMap<>("org", Duration.ofSeconds(this.timeoutCacheOrgLevelInSeconds), Duration.ofMillis(refreshOrgInMilliseconds), this::orgCacheLoader);
+		this.spaceCache = new AutoRefreshingCacheMap<>("space", Duration.ofSeconds(this.timeoutCacheSpaceLevelInSeconds), Duration.ofMillis(refreshSpaceInMilliseconds), this::spaceCacheLoader);
+		this.applicationCache = new AutoRefreshingCacheMap<>("application", Duration.ofSeconds(this.timeoutCacheApplicationLevelInSeconds), Duration.ofMillis(refreshAppInMilliseconds), this::applicationCacheLoader);
+		this.spaceSummaryCache = new AutoRefreshingCacheMap<>("spaceSummary", Duration.ofSeconds(this.timeoutCacheApplicationLevelInSeconds), Duration.ofMillis(refreshAppSummaryInMilliseconds), this::spaceSummaryCacheLoader);
 	}
 
 	private Mono<ListOrganizationsResponse> orgCacheLoader(String orgName) {
