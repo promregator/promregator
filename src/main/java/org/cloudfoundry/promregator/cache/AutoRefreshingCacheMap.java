@@ -201,7 +201,7 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 		@Override
 		public void run() {
 			MDC.put("AutoRefreshingCacheMap", this.map.getName());
-			log.debug("Starting checks for this AutoRefreshingCacheMap");
+			log.debug(String.format("Starting checks for this AutoRefreshingCacheMap; expiry: %dms, refresh: %dms", this.map.expiryDuration.toMillis(), this.map.refreshInterval.toMillis()));
 			while (this.shouldRun) {
 				try {
 					this.refreshMap();
