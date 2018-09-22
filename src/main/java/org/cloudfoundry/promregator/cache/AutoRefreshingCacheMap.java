@@ -68,10 +68,22 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 		this.loaderFunction = loaderFunction;
 		this.name = cacheMapName;
 		
-		this.refresherThread = new RefresherThread<K, V>(this);
-		this.refresherThread.start();
+		/*
+		 * Warning! Due to spring bootstraping, this constructor can be called multiple times,
+		 * which then may create "empty" instances.
+		 * To prevent our statistics to be obfuscated across the instances, 
+		 * we start the refresherThread only lazily: Upon the first record to be arriving at the map...
+		 * See also ensureRefresherThreadIsRunning()
+		 */
 	}
 
+	private void ensureRefresherThreadIsRunning() {
+		if (this.refresherThread == null) {
+			this.refresherThread = new RefresherThread<K, V>(this);
+			this.refresherThread.start();
+		}
+	}
+	
 	/**
 	 * @return the name
 	 */
@@ -135,6 +147,8 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 	 */
 	@Override
 	public V put(K key, V value) {
+		this.ensureRefresherThreadIsRunning();
+		
 		this.touchKey(key);
 		
 		return super.put(key, value);
@@ -155,6 +169,8 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 	 */
 	@Override
 	public void putAll(Map<? extends K, ? extends V> mapToCopy) {
+		this.ensureRefresherThreadIsRunning();
+
 		for (K key : mapToCopy.keySet()) {
 			this.touchKey(key);
 		}
