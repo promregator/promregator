@@ -28,29 +28,23 @@ public class CFAccessorCache implements CFAccessor {
 	private AutoRefreshingCacheMap<String, Mono<GetSpaceSummaryResponse>> spaceSummaryCache;
 	
 	@Value("${cf.cache.timeout.org:3600}")
-	private int timeoutCacheOrgLevelInSeconds;
+	private int refreshCacheOrgLevelInSeconds;
 
 	@Value("${cf.cache.timeout.space:3600}")
-	private int timeoutCacheSpaceLevelInSeconds;
+	private int refreshCacheSpaceLevelInSeconds;
 	
 	@Value("${cf.cache.timeout.application:300}")
-	private int timeoutCacheApplicationLevelInSeconds;
-	
-	@Value("${cf.request.timeout.org:2500}") // Warning! Default value defined multiple times in the source code!
-	private int requestTimeoutOrgInMilliseconds;
+	private int refreshCacheApplicationLevelInSeconds;
+		
+	@Value("${cf.cache.expiry.org:120}")
+	private int expiryCacheOrgLevelInSeconds;
 
-	@Value("${cf.request.timeout.space:2500}") // Warning! Default value defined multiple times in the source code!
-	private int requestTimeoutSpaceInMilliseconds;
-
-	@Value("${cf.request.timeout.app:2500}") // Warning! Default value defined multiple times in the source code!
-	private int requestTimeoutApplicationInMilliseconds;
+	@Value("${cf.cache.expiry.space:120}")
+	private int expiryCacheSpaceLevelInSeconds;
 	
-	@Value("${cf.request.timeout.appInSpace:2500}") // Warning! Default value defined multiple times in the source code!
-	private int requestTimeoutAppInSpaceInMilliseconds;
+	@Value("${cf.cache.expiry.application:120}")
+	private int expiryCacheApplicationLevelInSeconds;
 	
-	@Value("${cf.request.timeout.appSummary:4000}") // Warning! Default value defined multiple times in the source code!
-	private int requestTimeoutAppSummaryInMilliseconds;
-
 	@Autowired
 	private InternalMetrics internalMetrics;
 	
@@ -62,44 +56,18 @@ public class CFAccessorCache implements CFAccessor {
 	
 	@PostConstruct
 	public void setupMaps() {
-		/* 
-		 * calculate refresh intervals
-		 */
-		
-		long refreshOrgInMilliseconds = this.timeoutCacheOrgLevelInSeconds * 1000 - 3 * this.requestTimeoutOrgInMilliseconds;
-		if (refreshOrgInMilliseconds < 0) {
-			log.warn("The request timeout for org requests is too long for your cache. Falling back to default values.");
-			refreshOrgInMilliseconds = 3600 * 1000 - 3 * 2500;
-		}
-		
-		long refreshSpaceInMilliseconds = this.timeoutCacheSpaceLevelInSeconds * 1000 - 3 * this.requestTimeoutSpaceInMilliseconds;
-		if (refreshSpaceInMilliseconds < 0) {
-			log.warn("The request timeout for space requests is too long for your cache. Falling back to default values.");
-			refreshSpaceInMilliseconds = 3600 * 1000 - 3 * 2500;
-		}
-		
-		long refreshAppInMilliseconds = this.timeoutCacheApplicationLevelInSeconds * 1000 - 3 * Math.max(this.requestTimeoutApplicationInMilliseconds,  this.requestTimeoutAppInSpaceInMilliseconds);
-		if (refreshAppInMilliseconds < 0) {
-			log.warn("The request timeout for app requests is too long for your cache. Falling back to default values.");
-			refreshAppInMilliseconds = 300 * 1000 - 3 * 2500;
-		}
-		
-		long refreshAppSummaryInMilliseconds = this.timeoutCacheApplicationLevelInSeconds * 1000 - 3 * this.requestTimeoutAppSummaryInMilliseconds;
-		if (refreshAppSummaryInMilliseconds < 0) {
-			log.warn("The request timeout for app summary requests is too long for your cache. Falling back to default values.");
-			refreshAppSummaryInMilliseconds = 300 * 1000 - 3 * 4000;
-		}
-		
-		log.info(String.format("Cache refresh timings: org cache: %dms, space cache: %dms, app cache: %dms, app summary cache: %dms", 
-				refreshOrgInMilliseconds, refreshSpaceInMilliseconds, refreshAppInMilliseconds, refreshAppSummaryInMilliseconds));
+		log.info(String.format("Cache refresh timings: org cache: %ds, space cache: %ds, app cache: %ds, app summary cache: %ds", 
+				this.refreshCacheOrgLevelInSeconds, this.refreshCacheSpaceLevelInSeconds, this.refreshCacheApplicationLevelInSeconds, this.refreshCacheApplicationLevelInSeconds));
+		log.info(String.format("Cache expiry timings: org cache: %ds, space cache: %ds, app cache: %ds, app summary cache: %ds", 
+				this.expiryCacheOrgLevelInSeconds, this.expiryCacheSpaceLevelInSeconds, this.expiryCacheApplicationLevelInSeconds, this.expiryCacheApplicationLevelInSeconds));
 		
 		/*
 		 * initializing caches
 		 */
-		this.orgCache = new AutoRefreshingCacheMap<>("org", this.internalMetrics, Duration.ofSeconds(this.timeoutCacheOrgLevelInSeconds), Duration.ofMillis(refreshOrgInMilliseconds), this::orgCacheLoader);
-		this.spaceCache = new AutoRefreshingCacheMap<>("space", this.internalMetrics, Duration.ofSeconds(this.timeoutCacheSpaceLevelInSeconds), Duration.ofMillis(refreshSpaceInMilliseconds), this::spaceCacheLoader);
-		this.applicationCache = new AutoRefreshingCacheMap<>("application", this.internalMetrics, Duration.ofSeconds(this.timeoutCacheApplicationLevelInSeconds), Duration.ofMillis(refreshAppInMilliseconds), this::applicationCacheLoader);
-		this.spaceSummaryCache = new AutoRefreshingCacheMap<>("spaceSummary", this.internalMetrics, Duration.ofSeconds(this.timeoutCacheApplicationLevelInSeconds), Duration.ofMillis(refreshAppSummaryInMilliseconds), this::spaceSummaryCacheLoader);
+		this.orgCache = new AutoRefreshingCacheMap<>("org", this.internalMetrics, Duration.ofSeconds(this.expiryCacheOrgLevelInSeconds), Duration.ofSeconds(this.refreshCacheOrgLevelInSeconds), this::orgCacheLoader);
+		this.spaceCache = new AutoRefreshingCacheMap<>("space", this.internalMetrics, Duration.ofSeconds(this.expiryCacheSpaceLevelInSeconds), Duration.ofSeconds(refreshCacheSpaceLevelInSeconds), this::spaceCacheLoader);
+		this.applicationCache = new AutoRefreshingCacheMap<>("application", this.internalMetrics, Duration.ofSeconds(this.expiryCacheApplicationLevelInSeconds), Duration.ofSeconds(refreshCacheApplicationLevelInSeconds), this::applicationCacheLoader);
+		this.spaceSummaryCache = new AutoRefreshingCacheMap<>("spaceSummary", this.internalMetrics, Duration.ofSeconds(this.expiryCacheApplicationLevelInSeconds), Duration.ofSeconds(refreshCacheApplicationLevelInSeconds), this::spaceSummaryCacheLoader);
 	}
 
 	private Mono<ListOrganizationsResponse> orgCacheLoader(String orgName) {

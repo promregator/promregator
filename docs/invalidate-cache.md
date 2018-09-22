@@ -15,7 +15,10 @@ The application cache also is used in cases that you have not specified the appl
 
 ## Automatic Cache Invalidation
 
-Caches are automatically invalidated after a certain timeout. Each cache has a corresponding (default) timeout. Timeouts can be configured. See the sections `cf.cache.timeout.*` in our [configuration page](./config.md).
+Caches are automatically refreshed after a certain refresh timeout. Each cache has a corresponding (default) refresh timeout. Refresh timeouts can be configured. See the sections `cf.cache.timeout.*` in our [configuration page](./config.md).
+
+Caches also have an expiry timeout. Entries in the cache, which have not been *used* for the duration of the expiry timeout, will be deleted.  Each cache has a corresponding (default) expiry timeout. Expiry timeouts can be configured. See the sections `cf.cache.expiry.*` in our [configuration page](./config.md).
+
 
 ## Cache Invalidation via HTTP REST Endpoint
 
