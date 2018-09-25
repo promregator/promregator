@@ -66,27 +66,72 @@ public class CFAccessorCache implements CFAccessor {
 	}
 
 	private Mono<ListOrganizationsResponse> orgCacheLoader(String orgName) {
-		return this.parent.retrieveOrgId(orgName);
+		Mono<ListOrganizationsResponse> mono = this.parent.retrieveOrgId(orgName);
+		
+		/*
+		 * Note that the mono does not have any subscriber, yet! 
+		 * The cache which we are using is working "on-stock", i.e. we need to ensure
+		 * that the underlying calls to the CF API really is triggered.
+		 * Fortunately, we can do this very easily:
+		 */
+		mono.subscribe();
+		return mono;
 	}
 	
 	private Mono<ListSpacesResponse> spaceCacheLoader(CacheKeySpace cacheKey) {
-		return this.parent.retrieveSpaceId(cacheKey.getOrgId(), cacheKey.getSpaceName());
+		Mono<ListSpacesResponse> mono = this.parent.retrieveSpaceId(cacheKey.getOrgId(), cacheKey.getSpaceName());
+		
+		/*
+		 * Note that the mono does not have any subscriber, yet! 
+		 * The cache which we are using is working "on-stock", i.e. we need to ensure
+		 * that the underlying calls to the CF API really is triggered.
+		 * Fortunately, we can do this very easily:
+		 */
+		mono.subscribe();
+		return mono;
 	}
 	
 	private Mono<GetSpaceSummaryResponse> spaceSummaryCacheLoader(String spaceId) {
-		return this.parent.retrieveSpaceSummary(spaceId);
+		Mono<GetSpaceSummaryResponse> mono = this.parent.retrieveSpaceSummary(spaceId);
+		
+		/*
+		 * Note that the mono does not have any subscriber, yet! 
+		 * The cache which we are using is working "on-stock", i.e. we need to ensure
+		 * that the underlying calls to the CF API really is triggered.
+		 * Fortunately, we can do this very easily:
+		 */
+		mono.subscribe();
+		return mono;
 	}
 	
 	@Override
 	public Mono<ListOrganizationsResponse> retrieveOrgId(String orgName) {
-		return this.orgCache.get(orgName);
+		Mono<ListOrganizationsResponse> mono = this.orgCache.get(orgName);
+
+		/*
+		 * Note that the mono does not have any subscriber, yet! 
+		 * The cache which we are using is working "on-stock", i.e. we need to ensure
+		 * that the underlying calls to the CF API really is triggered.
+		 * Fortunately, we can do this very easily:
+		 */
+		mono.subscribe();
+		return mono;
 	}
 
 	@Override
 	public Mono<ListSpacesResponse> retrieveSpaceId(String orgId, String spaceName) {
 		final CacheKeySpace key = new CacheKeySpace(orgId, spaceName);
 		
-		return this.spaceCache.get(key);
+		Mono<ListSpacesResponse> mono = this.spaceCache.get(key);
+		
+		/*
+		 * Note that the mono does not have any subscriber, yet! 
+		 * The cache which we are using is working "on-stock", i.e. we need to ensure
+		 * that the underlying calls to the CF API really is triggered.
+		 * Fortunately, we can do this very easily:
+		 */
+		mono.subscribe();
+		return mono;
 	}
 
 	@Override
@@ -95,7 +140,6 @@ public class CFAccessorCache implements CFAccessor {
 		 * special case: we don't cache the result here in an own cache,
 		 * as we always want to have "fresh data".
 		 */
-		
 		Mono<ListApplicationsResponse> result = this.parent.retrieveAllApplicationIdsInSpace(orgId, spaceId);
 		
 		return result;
