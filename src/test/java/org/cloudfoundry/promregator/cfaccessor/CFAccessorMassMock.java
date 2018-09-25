@@ -145,6 +145,7 @@ public class CFAccessorMassMock implements CFAccessor {
 				final String[] urls = { "hostapp"+i+"."+UNITTEST_SHARED_DOMAIN }; 
 				SpaceApplicationSummary sas = SpaceApplicationSummary.builder()
 						.id(UNITTEST_APP_UUID_PREFIX+i)
+						.name("testapp"+i)
 						.addAllUrls(Arrays.asList(urls))
 						.instances(this.amountInstances)
 						.build();

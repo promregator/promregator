@@ -1,7 +1,10 @@
 package org.cloudfoundry.promregator.scanner;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
@@ -28,7 +31,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	private static final String INVALID_ORG_ID = "***invalid***";
 	private static final String INVALID_SPACE_ID = "***invalid***";
 	private static final String INVALID_APP_ID = "***invalid***";
-	private static final SpaceApplicationSummary INVALID_SUMMARY = SpaceApplicationSummary.builder().id("***invalid***").build();
+	private static final Map<String, SpaceApplicationSummary> INVALID_SUMMARY = new HashMap<>();
 
 	private PassiveExpiringMap<String, Mono<String>> applicationUrlMap;
 	
@@ -88,14 +91,33 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			return Mono.just(v);
 		});
 		
-		Flux<String> applicationIdFlux = OSAVectorSpaceFlux.flatMapSequential(v -> this.getApplicationId(v.orgId, v.spaceId, v.target.getApplicationName()));
-		Flux<OSAVector> OSAVectorApplicationFlux = Flux.zip(OSAVectorSpaceFlux, applicationIdFlux).flatMap(tuple -> {
+		Flux<Map<String, SpaceApplicationSummary>> spaceSummaryFlux = OSAVectorSpaceFlux.flatMapSequential(v -> this.getSpaceSummary(v.spaceId));
+		Flux<OSAVector> OSAVectorApplicationFlux = Flux.zip(OSAVectorSpaceFlux, spaceSummaryFlux).flatMap(tuple -> {
 			OSAVector v = tuple.getT1();
-			if (INVALID_APP_ID.equals(tuple.getT2())) {
+			
+			if (INVALID_SUMMARY == tuple.getT2()) {
 				// NB: This drops the current target!
 				return Mono.empty();
 			}
-			v.applicationId = tuple.getT2();
+			
+			Map<String, SpaceApplicationSummary> spaceSummaryMap = tuple.getT2();
+			SpaceApplicationSummary sas = spaceSummaryMap.get(v.target.getApplicationName());
+			
+			if (sas == null) {
+				// NB: This drops the current target!
+				return Mono.empty();
+			}
+			
+			v.applicationId = sas.getId();
+			
+			List<String> urls = sas.getUrls();
+			if (urls != null && !urls.isEmpty()) {
+				String url = String.format("%s://%s", v.target.getProtocol(), urls.get(0));
+				v.accessURL = this.determineAccessURL(url, v.target.getPath());
+			}
+			
+			v.numberOfInstances = sas.getInstances();
+			
 			return Mono.just(v);
 		});
 		
@@ -104,28 +126,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			OSAVectorApplicationFlux = OSAVectorApplicationFlux.filter(v -> applicationIdFilter.test(v.applicationId));
 		}
 		
-		Flux<SpaceApplicationSummary> applicationSummaryFlux = OSAVectorApplicationFlux.flatMapSequential( v -> this.getApplicationSummary(v.spaceId, v.applicationId));
-		Flux<OSAVector> OSAVectorCompleteFlux = Flux.zip(OSAVectorApplicationFlux, applicationSummaryFlux).flatMap(tuple-> {
-			OSAVector v = tuple.getT1();
-			SpaceApplicationSummary summary = tuple.getT2();
-			
-			if (summary == INVALID_SUMMARY) {
-				// NB: This drops the current target!
-				return Mono.empty();
-			}
-			
-			List<String> urls = summary.getUrls();
-			if (urls != null && !urls.isEmpty()) {
-				String url = String.format("%s://%s", v.target.getProtocol(), urls.get(0));
-				v.accessURL = this.determineAccessURL(url, v.target.getPath());
-			}
-			
-			v.numberOfInstances = summary.getInstances();
-			
-			return Mono.just(v);
-		});
-		
-		Flux<Instance> instancesFlux = OSAVectorCompleteFlux.flatMapSequential(v -> {
+		Flux<Instance> instancesFlux = OSAVectorApplicationFlux.flatMapSequential(v -> {
 			List<Instance> instances = new ArrayList<>(v.numberOfInstances);
 			for (int i = 0; i<v.numberOfInstances; i++) {
 				Instance inst = new Instance(v.target, String.format("%s:%d", v.applicationId, i), v.accessURL);
@@ -224,7 +225,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		return applicationId;
 	}
 	
-	private Mono<SpaceApplicationSummary> getApplicationSummary(String spaceIdString, String applicationIdString) {
+	private Mono<Map<String, SpaceApplicationSummary>> getSpaceSummary(String spaceIdString) {
 		return this.cfAccessor.retrieveSpaceSummary(spaceIdString)
 			.flatMap(response -> {
 				List<SpaceApplicationSummary> applications = response.getApplications();
@@ -232,22 +233,14 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 					return Mono.just(INVALID_SUMMARY);
 				}
 				
-				SpaceApplicationSummary theOne = null;
-				for (SpaceApplicationSummary sum : applications) {
-					if (applicationIdString.equals(sum.getId())) {
-						theOne = sum;
-						break;
-					}
+				Map<String, SpaceApplicationSummary> map = new HashMap<>(applications.size());
+				for (SpaceApplicationSummary sas : applications) {
+					map.put(sas.getName(), sas);
 				}
 				
-				if (theOne == null) {
-					// not found in the result set of the response
-					return Mono.just(INVALID_SUMMARY);
-				}
-				
-				return Mono.just(theOne);
+				return Mono.just(map);
 			}).onErrorResume(e -> {
-				log.error(String.format("retrieving summary for space id '%s' and application id '%s' resulted in an exception", spaceIdString, applicationIdString), e);
+				log.error(String.format("retrieving summary for space id '%s' resulted in an exception", spaceIdString), e);
 				return Mono.just(INVALID_SUMMARY);
 			});
 	}
