@@ -232,27 +232,6 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.cloudfoundry.promregator.cfaccessor.CFAccessor#retrieveApplicationId(java.lang.String, java.lang.String, java.lang.String)
-	 */
-	@Override
-	public Mono<ListApplicationsResponse> retrieveApplicationId(String orgId, String spaceId, String applicationName) {
-		String key = determineApplicationCacheKey(orgId, spaceId, applicationName);
-		
-		ListApplicationsRequest request = ListApplicationsRequest.builder()
-			.organizationId(orgId)
-			.spaceId(spaceId)
-			.name(applicationName)
-			.build();
-		
-		return this.performGenericRetrieval("app", "retrieveApplicationId", key, 
-			request, r ->  this.cloudFoundryClient.applicationsV2().list(r), this.requestTimeoutApplication);
-	}
-
-	private String determineApplicationCacheKey(String orgId, String spaceId, String applicationName) {
-		return String.format("%s|%s|%s", orgId, spaceId, applicationName);
-	}
-	
-	/* (non-Javadoc)
 	 * @see org.cloudfoundry.promregator.cfaccessor.CFAccessor#retrieveAllApplicationIdsInSpace(java.lang.String, java.lang.String)
 	 */
 	@Override

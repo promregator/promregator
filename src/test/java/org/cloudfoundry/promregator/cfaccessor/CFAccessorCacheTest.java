@@ -1,6 +1,5 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
-import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
@@ -61,16 +60,6 @@ public class CFAccessorCacheTest {
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveSpaceId("dummy1", "dummy2");
 		
 		Mono<ListSpacesResponse> response2 = subject.retrieveSpaceId("dummy1", "dummy2");
-		Assert.assertEquals(response1, response2);
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveOrgId("dummy");
-	}
-
-	@Test
-	public void testRetrieveApplicationId() {
-		Mono<ListApplicationsResponse> response1 = subject.retrieveApplicationId("dummy1", "dummy2", "dummy3");
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveApplicationId("dummy1", "dummy2", "dummy3");
-		
-		Mono<ListApplicationsResponse> response2 = subject.retrieveApplicationId("dummy1", "dummy2", "dummy3");
 		Assert.assertEquals(response1, response2);
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveOrgId("dummy");
 	}

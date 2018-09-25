@@ -21,7 +21,6 @@ public class CFAccessorCacheSpringApplication {
 		CFAccessor mock = Mockito.mock(CFAccessor.class);
 		Mockito.when(mock.retrieveOrgId("dummy")).thenReturn(Mockito.mock(Mono.class));
 		Mockito.when(mock.retrieveSpaceId("dummy1", "dummy2")).thenReturn(Mockito.mock(Mono.class));
-		Mockito.when(mock.retrieveApplicationId("dummy1", "dummy2", "dummy3")).thenReturn(Mockito.mock(Mono.class));
 		Mockito.when(mock.retrieveAllApplicationIdsInSpace("dummy1", "dummy2")).thenReturn(Mockito.mock(Mono.class));
 		Mockito.when(mock.retrieveSpaceSummary("dummy")).thenReturn(Mockito.mock(Mono.class));
 		return mock;

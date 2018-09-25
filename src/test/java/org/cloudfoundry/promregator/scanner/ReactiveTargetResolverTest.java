@@ -62,7 +62,7 @@ public class ReactiveTargetResolverTest {
 		Assert.assertEquals(t.getProtocol(), rt.getProtocol());
 		
 		Mockito.verify(this.cfAccessor, Mockito.times(0)).retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID);
-		Mockito.verify(this.cfAccessor, Mockito.times(0)).retrieveApplicationId(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID, "testapp");
+		Mockito.verify(this.cfAccessor, Mockito.times(0)).retrieveSpaceSummary(CFAccessorMock.UNITTEST_SPACE_UUID);
 
 	}
 	

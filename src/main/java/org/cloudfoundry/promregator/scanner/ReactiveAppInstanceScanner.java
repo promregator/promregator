@@ -202,29 +202,6 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		return spaceId;
 	}
 	
-	private Mono<String> getApplicationId(String orgIdString, String spaceIdString, String applicationNameString) {
-		Mono<String> applicationId = this.cfAccessor.retrieveApplicationId(orgIdString, spaceIdString, applicationNameString)
-			.flatMap(response -> {
-				List<ApplicationResource> resources = response.getResources();
-				if (resources == null) {
-					return Mono.just(INVALID_APP_ID);
-				}
-				
-				if (resources.isEmpty()) {
-					log.warn(String.format("Received empty result on requesting application %s", applicationNameString));
-					return Mono.just(INVALID_APP_ID);
-				}
-				
-				ApplicationResource applicationResource = resources.get(0);
-				return Mono.just(applicationResource.getMetadata().getId());
-			}).onErrorResume(e -> {
-				log.error(String.format("retrieving application id for org id '%s', space id '%s' and application name '%s' resulted in an exception", orgIdString, spaceIdString, applicationNameString), e);
-				return Mono.just(INVALID_APP_ID);
-			}).cache();
-			
-		return applicationId;
-	}
-	
 	private Mono<Map<String, SpaceApplicationSummary>> getSpaceSummary(String spaceIdString) {
 		return this.cfAccessor.retrieveSpaceSummary(spaceIdString)
 			.flatMap(response -> {

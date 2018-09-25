@@ -31,17 +31,6 @@ public class CFAccessorSimulatorTest {
 	}
 
 	@Test
-	public void testRetrieveApplicationId() {
-		CFAccessorSimulator subject = new CFAccessorSimulator(2);
-		
-		for (int i = 0;i<10;i++) {
-			Mono<ListApplicationsResponse> mono = subject.retrieveApplicationId(CFAccessorSimulator.ORG_UUID, CFAccessorSimulator.SPACE_UUID, "testapp"+i);
-			ListApplicationsResponse result = mono.block();
-			Assert.assertEquals(CFAccessorSimulator.APP_UUID_PREFIX+i, result.getResources().get(0).getMetadata().getId());
-		}
-	}
-
-	@Test
 	public void testRetrieveSpaceSummary() {
 		CFAccessorSimulator subject = new CFAccessorSimulator(2);
 		

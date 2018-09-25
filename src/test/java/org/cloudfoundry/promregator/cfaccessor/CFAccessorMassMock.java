@@ -87,32 +87,6 @@ public class CFAccessorMassMock implements CFAccessor {
 	}
 
 	@Override
-	public Mono<ListApplicationsResponse> retrieveApplicationId(String orgId, String spaceId, String applicationName) {
-		if (orgId.equals(UNITTEST_ORG_UUID) && spaceId.equals(UNITTEST_SPACE_UUID)) {
-			ApplicationResource ar = null;
-			
-			if (applicationName.startsWith("testapp")) {
-				String appNumber = applicationName.substring(7);
-				
-				ar = ApplicationResource.builder().entity(
-						ApplicationEntity.builder().name(applicationName).build()
-					).metadata(
-							Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP_UUID_PREFIX+appNumber).build()
-					).build();
-			} else {
-				Assert.fail("Invalid ApplicationId request, application name is invalid");
-			}
-			
-			List<ApplicationResource> list = new LinkedList<>();
-			list.add(ar);
-			ListApplicationsResponse resp = ListApplicationsResponse.builder().addAllResources(list).build();
-			return Mono.just(resp).delayElement(this.getSleepRandomDuration());
-		}
-		
-		Assert.fail("Invalid ApplicationId request");
-		return null;
-	}
-	@Override
 	public Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String orgId, String spaceId) {
 		if (orgId.equals(UNITTEST_ORG_UUID) && spaceId.equals(UNITTEST_SPACE_UUID)) {
 			List<ApplicationResource> list = new LinkedList<>();

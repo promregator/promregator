@@ -3,7 +3,7 @@ package org.cloudfoundry.promregator.mockServer;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
-import com.sun.net.httpserver.*;
+import com.sun.net.httpserver.HttpServer;
 
 public class AuthenticationMockServer {
 	private HttpServer server;

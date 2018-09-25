@@ -46,13 +46,13 @@ public class CFAccessorCacheInvalidationTest {
 	
 	@Test
 	public void testInvalidateCacheApplications() {
-		subject.retrieveApplicationId("dummy1", "dummy2", "dummy3");
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveApplicationId("dummy1", "dummy2", "dummy3");
+		subject.retrieveSpaceSummary("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveSpaceSummary("dummy");
 		
 		subject.invalidateCacheApplications();
 
-		subject.retrieveApplicationId("dummy1", "dummy2", "dummy3");
-		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveApplicationId("dummy1", "dummy2", "dummy3");
+		subject.retrieveSpaceSummary("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveSpaceSummary("dummy");
 	}
 
 	@Test

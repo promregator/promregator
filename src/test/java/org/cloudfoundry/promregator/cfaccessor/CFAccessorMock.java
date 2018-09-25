@@ -110,42 +110,6 @@ public class CFAccessorMock implements CFAccessor {
 	}
 
 	@Override
-	public Mono<ListApplicationsResponse> retrieveApplicationId(String orgId, String spaceId, String applicationName) {
-		if (orgId.equals(UNITTEST_ORG_UUID)) {
-			if (spaceId.equals(UNITTEST_SPACE_UUID) || spaceId.equals(UNITTEST_SPACE_UUID_DOESNOTEXIST) || spaceId.equals(UNITTEST_SPACE_UUID_EXCEPTION)) {
-				ApplicationResource ar = null;
-				if (applicationName.equals("testapp")) {
-					ar = ApplicationResource.builder().entity(
-							ApplicationEntity.builder().name(applicationName).build()
-						).metadata(
-								Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP1_UUID).build()
-						).build();
-				} else if (applicationName.equals("testapp2")) {
-					ar = ApplicationResource.builder().entity(
-							ApplicationEntity.builder().name(applicationName).build()
-						).metadata(
-								Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP2_UUID).build()
-						).build();
-				} else if (applicationName.equals("doesnotexist")) {
-					return Mono.just(ListApplicationsResponse.builder().build());
-				} else if (applicationName.equals("exception")) {
-					return Mono.just(ListApplicationsResponse.builder().build()).map( x-> { throw new Error("exception application name provided"); });
-				} else {
-					Assert.fail("Invalid ApplicationId request, application name is invalid");
-				}
-				
-				List<ApplicationResource> list = new LinkedList<>();
-				list.add(ar);
-				ListApplicationsResponse resp = ListApplicationsResponse.builder().addAllResources(list).build();
-				return Mono.just(resp);
-			}
-		}
-		
-		Assert.fail("Invalid ApplicationId request");
-		return null;
-	}
-
-	@Override
 	public Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String orgId, String spaceId) {
 		if (orgId.equals(UNITTEST_ORG_UUID) && spaceId.equals(UNITTEST_SPACE_UUID)) {
 			List<ApplicationResource> list = new LinkedList<>();

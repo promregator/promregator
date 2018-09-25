@@ -1,13 +1,10 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.annotation.PostConstruct;
 
 import org.apache.log4j.Logger;
-import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
@@ -24,7 +21,6 @@ public class CFAccessorCache implements CFAccessor {
 
 	private AutoRefreshingCacheMap<String, Mono<ListOrganizationsResponse>> orgCache;
 	private AutoRefreshingCacheMap<CacheKeySpace, Mono<ListSpacesResponse>> spaceCache;
-	private AutoRefreshingCacheMap<CacheKeyApplication, Mono<ListApplicationsResponse>> applicationCache;
 	private AutoRefreshingCacheMap<String, Mono<GetSpaceSummaryResponse>> spaceSummaryCache;
 	
 	@Value("${cf.cache.timeout.org:3600}")
@@ -66,7 +62,6 @@ public class CFAccessorCache implements CFAccessor {
 		 */
 		this.orgCache = new AutoRefreshingCacheMap<>("org", this.internalMetrics, Duration.ofSeconds(this.expiryCacheOrgLevelInSeconds), Duration.ofSeconds(this.refreshCacheOrgLevelInSeconds), this::orgCacheLoader);
 		this.spaceCache = new AutoRefreshingCacheMap<>("space", this.internalMetrics, Duration.ofSeconds(this.expiryCacheSpaceLevelInSeconds), Duration.ofSeconds(refreshCacheSpaceLevelInSeconds), this::spaceCacheLoader);
-		this.applicationCache = new AutoRefreshingCacheMap<>("application", this.internalMetrics, Duration.ofSeconds(this.expiryCacheApplicationLevelInSeconds), Duration.ofSeconds(refreshCacheApplicationLevelInSeconds), this::applicationCacheLoader);
 		this.spaceSummaryCache = new AutoRefreshingCacheMap<>("spaceSummary", this.internalMetrics, Duration.ofSeconds(this.expiryCacheApplicationLevelInSeconds), Duration.ofSeconds(refreshCacheApplicationLevelInSeconds), this::spaceSummaryCacheLoader);
 	}
 
@@ -76,10 +71,6 @@ public class CFAccessorCache implements CFAccessor {
 	
 	private Mono<ListSpacesResponse> spaceCacheLoader(CacheKeySpace cacheKey) {
 		return this.parent.retrieveSpaceId(cacheKey.getOrgId(), cacheKey.getSpaceName());
-	}
-	
-	private Mono<ListApplicationsResponse> applicationCacheLoader(CacheKeyApplication cacheKey) {
-		return this.parent.retrieveApplicationId(cacheKey.getOrgId(), cacheKey.getSpaceId(), cacheKey.getApplicationName());
 	}
 	
 	private Mono<GetSpaceSummaryResponse> spaceSummaryCacheLoader(String spaceId) {
@@ -99,43 +90,15 @@ public class CFAccessorCache implements CFAccessor {
 	}
 
 	@Override
-	public Mono<ListApplicationsResponse> retrieveApplicationId(String orgId, String spaceId, String applicationName) {
-		final CacheKeyApplication key = new CacheKeyApplication(orgId, spaceId, applicationName);
-		
-		return this.applicationCache.get(key);
-	}
-	
-	@Override
 	public Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String orgId, String spaceId) {
 		/*
 		 * special case: we don't cache the result here in an own cache,
 		 * as we always want to have "fresh data".
-		 * However, the result of the request we send is helpful for another cache, 
-		 * so we fill that one, too (if we anyhow have already retrieved the data for it).
 		 */
 		
 		Mono<ListApplicationsResponse> result = this.parent.retrieveAllApplicationIdsInSpace(orgId, spaceId);
 		
-		Mono<ListApplicationsResponse> resultProcessed = result.doOnEach(signal -> {
-			if (!signal.isOnNext()) {
-				return;
-			}
-			
-			// preload the cache with the responses we got
-			List<ApplicationResource> appResources = signal.get().getResources();
-			for(ApplicationResource ar : appResources) {
-				String appName = ar.getEntity().getName();
-				CacheKeyApplication appKey = new CacheKeyApplication(orgId, spaceId, appName);
-				
-				List<ApplicationResource> arList = new ArrayList<>();
-				arList.add(ar);
-				
-				ListApplicationsResponse cacheValue = ListApplicationsResponse.builder().addAllResources(arList).build();
-				this.applicationCache.putIfAbsent(appKey, Mono.just(cacheValue));
-			}
-		});
-		
-		return resultProcessed;
+		return result;
 	}
 
 	@Override
@@ -145,7 +108,7 @@ public class CFAccessorCache implements CFAccessor {
 
 	public void invalidateCacheApplications() {
 		log.info("Invalidating application cache");
-		this.applicationCache.clear();
+		this.spaceSummaryCache.clear();
 	}
 	
 	public void invalidateCacheSpace() {
