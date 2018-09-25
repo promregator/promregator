@@ -2,7 +2,6 @@ package org.cloudfoundry.promregator.scanner;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -13,7 +12,6 @@ import javax.validation.constraints.Null;
 
 import org.apache.commons.collections4.map.PassiveExpiringMap;
 import org.apache.log4j.Logger;
-import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.client.v2.organizations.OrganizationResource;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
@@ -30,7 +28,6 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	private static final Logger log = Logger.getLogger(ReactiveAppInstanceScanner.class);
 	private static final String INVALID_ORG_ID = "***invalid***";
 	private static final String INVALID_SPACE_ID = "***invalid***";
-	private static final String INVALID_APP_ID = "***invalid***";
 	private static final Map<String, SpaceApplicationSummary> INVALID_SUMMARY = new HashMap<>();
 
 	private PassiveExpiringMap<String, Mono<String>> applicationUrlMap;
