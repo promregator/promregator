@@ -48,14 +48,14 @@ public class ReactiveTargetResolver implements TargetResolver {
 			return Flux.just(rt);
 		}
 		
-		// on error handling: covered by "onErrorResume" in ths method a little below
+		// on error handling: covered by "onErrorResume" in this method a little below
 		Mono<String> orgIdMono = this.cfAccessor.retrieveOrgId(configTarget.getOrgName())
 				.map( r -> r.getResources())
 				.map( l -> l.get(0))
 				.map( e -> e.getMetadata()) 
 				.map( entry -> entry.getId());
 		
-		// on error handling: covered by "onErrorResume" in ths method a little below
+		// on error handling: covered by "onErrorResume" in this method a little below
 		Mono<String> spaceIdMono = orgIdMono.flatMap(orgId -> {
 			return this.cfAccessor.retrieveSpaceId(orgId, configTarget.getSpaceName());
 		}).map( r -> r.getResources())
