@@ -90,7 +90,32 @@ public class ReactiveTargetResolver implements TargetResolver {
 		}
 	}
 	
-	private Flux<String> selectSpaces(Target configTarget, Mono<String> orgIdMono) {
+	private static class SpaceDetails {
+		private String name;
+		private String id;
+		
+		public SpaceDetails(String name, String id) {
+			super();
+			this.name = name;
+			this.id = id;
+		}
+
+		/**
+		 * @return the name
+		 */
+		public String getName() {
+			return name;
+		}
+
+		/**
+		 * @return the id
+		 */
+		public String getId() {
+			return id;
+		}
+	}
+	
+	private Flux<SpaceDetails> resolveSpacesInConfigTarget(Target configTarget, Mono<String> orgIdMono) {
 		/* NB: Now we have to consider three cases:
 		 * Case 1: both spaceName and spaceRegex is empty => select all spaces
 		 * Case 2: spaceName is null, but spaceRegex is filled => filter all spaces with the regex
@@ -99,8 +124,19 @@ public class ReactiveTargetResolver implements TargetResolver {
 		 */
 		
 		if (configTarget.getSpaceRegex() == null && configTarget.getSpaceName() != null) {
-			// Case 3: trivial
-			return Flux.just(configTarget.getSpaceName());
+			// Case 3: we have the spaceName, but we also need its id
+			Mono<String> spaceIdMono = orgIdMono.flatMap( orgId -> {
+				return this.cfAccessor.retrieveSpaceId(orgId, configTarget.getSpaceName());
+			}).map(l -> l.getResources())
+			.map(l -> l.get(0))
+			.map(e -> e.getMetadata())
+			.map(md -> md.getId());
+			
+			Mono<SpaceDetails> spaceDetailsMono = spaceIdMono.map(spaceId -> {
+				return new SpaceDetails(configTarget.getSpaceName(), spaceId);
+			});
+			
+			return spaceDetailsMono.flux();
 		}
 		
 		// Case 1 & 2: Get all spaces from org
@@ -108,7 +144,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 			return this.cfAccessor.retrieveSpaceIdsInOrg(orgId);
 		});
 		
-		Flux<String> spacesInSelection = responseMono.map( r -> {
+		Flux<SpaceDetails> spacesInSelection = responseMono.map( r -> {
 			List<SpaceResource> resources = r.getResources();
 			if (resources == null) {
 				log.error(String.format("Error on resolving spaces in org '%s'", configTarget.getOrgName()));
@@ -117,19 +153,20 @@ public class ReactiveTargetResolver implements TargetResolver {
 			
 			return resources;
 		}).flatMapMany( resources -> {
-			List<String> spaceNames = new LinkedList<>();
+			List<SpaceDetails> spaceDetailsList = new LinkedList<>();
 			for (SpaceResource sr : resources) {
-				spaceNames.add(sr.getEntity().getName());
+				SpaceDetails sd = new SpaceDetails(sr.getEntity().getName(), sr.getMetadata().getId());
+				spaceDetailsList.add(sd);
 			}
-			return Flux.fromIterable(spaceNames);
+			return Flux.fromIterable(spaceDetailsList);
 		});
 		
-		Flux<String> filteredSpacesInOrg = spacesInSelection;
+		Flux<SpaceDetails> filteredSpacesInOrg = spacesInSelection;
 		if (configTarget.getSpaceRegex() != null) {
 			// Case 2
 			final Pattern filterPattern = Pattern.compile(configTarget.getSpaceRegex());
-			filteredSpacesInOrg = spacesInSelection.filter(spaceName -> {
-				Matcher m = filterPattern.matcher(spaceName);
+			filteredSpacesInOrg = spacesInSelection.filter(spaceDetail -> {
+				Matcher m = filterPattern.matcher(spaceDetail.getName());
 				return m.matches();
 			});
 		}
