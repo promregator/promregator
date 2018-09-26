@@ -8,6 +8,8 @@ import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
 import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
+import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
+import org.cloudfoundry.client.v2.spaces.SpaceResource;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.config.Target;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +44,8 @@ public class ReactiveTargetResolver implements TargetResolver {
 	}
 	
 	public Flux<ResolvedTarget> resolveSingleTarget(Target configTarget) {
-		if (configTarget.getApplicationName() != null) {
+		if (configTarget.getApplicationName() != null
+				&& configTarget.getSpaceName() != null) {
 			// config target is already resolved
 			ResolvedTarget rt = new ResolvedTarget(configTarget);
 			return Flux.just(rt);
@@ -85,6 +88,53 @@ public class ReactiveTargetResolver implements TargetResolver {
 		public InvalidResponseFromCFCloudConnector(String arg0) {
 			super(arg0);
 		}
+	}
+	
+	private Flux<String> selectSpaces(Target configTarget, Mono<String> orgIdMono) {
+		/* NB: Now we have to consider three cases:
+		 * Case 1: both spaceName and spaceRegex is empty => select all spaces
+		 * Case 2: spaceName is null, but spaceRegex is filled => filter all spaces with the regex
+		 * Case 3: spaceName is filled, but spaceRegex is null => select a single app
+		 * In cases 1 and 2, we need the list of all spaces in the space.
+		 */
+		
+		if (configTarget.getSpaceRegex() == null && configTarget.getSpaceName() != null) {
+			// Case 3: Should already have been covered in method "resolveSingleTarget" (immediate return there)
+			throw new InternalError("Logic should not have been reached");
+		}
+		
+		// Case 1 & 2: Get all spaces from org
+		Mono<ListSpacesResponse> responseMono = orgIdMono.flatMap(orgId -> {
+			return this.cfAccessor.retrieveSpaceIdsInOrg(orgId);
+		});
+		
+		Flux<String> spacesInSelection = responseMono.map( r -> {
+			List<SpaceResource> resources = r.getResources();
+			if (resources == null) {
+				log.error(String.format("Error on resolving spaces in org '%s'", configTarget.getOrgName()));
+				throw Exceptions.propagate(new InvalidResponseFromCFCloudConnector("Unexpected empty response of the space resource list while reading all spaces in an org"));
+			}
+			
+			return resources;
+		}).flatMapMany( resources -> {
+			List<String> spaceNames = new LinkedList<>();
+			for (SpaceResource sr : resources) {
+				spaceNames.add(sr.getEntity().getName());
+			}
+			return Flux.fromIterable(spaceNames);
+		});
+		
+		Flux<String> filteredSpacesInOrg = spacesInSelection;
+		if (configTarget.getSpaceRegex() != null) {
+			// Case 2
+			final Pattern filterPattern = Pattern.compile(configTarget.getSpaceRegex());
+			filteredSpacesInOrg = spacesInSelection.filter(spaceName -> {
+				Matcher m = filterPattern.matcher(spaceName);
+				return m.matches();
+			});
+		}
+		
+		return filteredSpacesInOrg;
 	}
 	
 	private Flux<String> selectApplications(Target configTarget, Mono<String> orgIdMono, Mono<String> spaceIdMono) {
