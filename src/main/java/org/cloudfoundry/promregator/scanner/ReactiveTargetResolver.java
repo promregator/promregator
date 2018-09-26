@@ -99,8 +99,8 @@ public class ReactiveTargetResolver implements TargetResolver {
 		 */
 		
 		if (configTarget.getSpaceRegex() == null && configTarget.getSpaceName() != null) {
-			// Case 3: Should already have been covered in method "resolveSingleTarget" (immediate return there)
-			throw new InternalError("Logic should not have been reached");
+			// Case 3: trivial
+			return Flux.just(configTarget.getSpaceName());
 		}
 		
 		// Case 1 & 2: Get all spaces from org
@@ -148,8 +148,8 @@ public class ReactiveTargetResolver implements TargetResolver {
 		Flux<String> applicationsInSelection = null;
 		
 		if (configTarget.getApplicationRegex() == null && configTarget.getApplicationName() != null) {
-			// Case 3: Should already have been covered in method "resolveSingleTarget" (immediate return there)
-			throw new InternalError("Logic should not have been reached");
+			// Case 3: trivial
+			return Flux.just(configTarget.getApplicationName());
 		} else {
 			// Case 1 & 2: Get all apps from space
 			Mono<ListApplicationsResponse> responseMono = Mono.zip(orgIdMono, spaceIdMono)
