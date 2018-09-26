@@ -1,6 +1,7 @@
 package org.cloudfoundry.promregator.scanner;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -59,7 +60,9 @@ public class CachingTargetResolver implements TargetResolver {
 			updateTargetResolutionCache(newlyResolvedTargets);
 		}
 		
-		return result;
+		/* see also issue #75: the list here might include duplicates, which we need to eliminate */
+		HashSet<ResolvedTarget> hset = new HashSet<>(result);
+		return new LinkedList<>(hset);
 	}
 
 	private void updateTargetResolutionCache(List<ResolvedTarget> newlyResolvedTargets) {
