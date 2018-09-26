@@ -29,6 +29,7 @@ hs_err_pid*
 
 
 # application.yaml for local tests
-/application.yml
+application.yml
+application.yaml
 /.factorypath
 /.springBeans
