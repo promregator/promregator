@@ -16,6 +16,7 @@ public class MockedCachingTargetResolverSpringApplication {
 		public final static Target target1 = new Target();
 		public final static Target target2 = new Target();
 		public final static Target targetAllInSpace = new Target();
+		public final static Target targetRegex = new Target();
 		
 		public static ResolvedTarget rTarget1;
 		public static ResolvedTarget rTarget2;
@@ -23,6 +24,7 @@ public class MockedCachingTargetResolverSpringApplication {
 		private boolean requestForTarget1 = false;
 		private boolean requestForTarget2 = false;
 		private boolean requestForTargetAllInSpace = false;
+		private boolean requestForTargetWithRegex = false;
 		
 		static {
 			target1.setOrgName("unittestorg");
@@ -62,6 +64,10 @@ public class MockedCachingTargetResolverSpringApplication {
 					this.requestForTargetAllInSpace = true;
 					response.add(rTarget1);
 					response.add(rTarget2);
+				} else if (t == targetRegex) {
+					this.requestForTargetWithRegex = true;
+					response.add(rTarget1);
+					response.add(rTarget2);
 				}
 			}
 			
@@ -80,10 +86,15 @@ public class MockedCachingTargetResolverSpringApplication {
 			return requestForTargetAllInSpace;
 		}
 		
+		public boolean isRequestForTargetWithRegex() {
+			return requestForTargetWithRegex;
+		}
+		
 		public void resetRequestFlags() {
 			this.requestForTarget1 = false;
 			this.requestForTarget2 = false;
 			this.requestForTargetAllInSpace = false;
+			this.requestForTargetWithRegex = false;
 		}
 	}
 	

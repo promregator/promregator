@@ -48,6 +48,7 @@ public class CachingTargetResolverTest {
 		Assert.assertTrue(mtr.isRequestForTarget1());
 		Assert.assertTrue(mtr.isRequestForTarget2());
 		Assert.assertFalse(mtr.isRequestForTargetAllInSpace());
+		Assert.assertFalse(mtr.isRequestForTargetWithRegex());
 		
 		Assert.assertEquals(2, actualList.size());
 		
@@ -78,6 +79,7 @@ public class CachingTargetResolverTest {
 		Assert.assertFalse(mtr.isRequestForTarget1());
 		Assert.assertFalse(mtr.isRequestForTarget2());
 		Assert.assertTrue(mtr.isRequestForTargetAllInSpace());
+		Assert.assertFalse(mtr.isRequestForTargetWithRegex());
 		
 		Assert.assertEquals(2, actualList.size());
 		
@@ -108,6 +110,7 @@ public class CachingTargetResolverTest {
 		Assert.assertTrue(mtr.isRequestForTarget1());
 		Assert.assertFalse(mtr.isRequestForTarget2());
 		Assert.assertFalse(mtr.isRequestForTargetAllInSpace());
+		Assert.assertFalse(mtr.isRequestForTargetWithRegex());
 		
 		Assert.assertEquals(1, actualList.size());
 		
@@ -141,6 +144,7 @@ public class CachingTargetResolverTest {
 		Assert.assertTrue(mtr.isRequestForTarget1());
 		Assert.assertFalse(mtr.isRequestForTarget2());
 		Assert.assertFalse(mtr.isRequestForTargetAllInSpace());
+		Assert.assertFalse(mtr.isRequestForTargetWithRegex());
 		
 		Assert.assertEquals(1, actualList.size());
 		
@@ -178,14 +182,15 @@ public class CachingTargetResolverTest {
 	public void testTargetDuplicateRequestDistincts() {
 		List<Target> list = new LinkedList<>();
 		list.add(MockedTargetResolver.target1);
-		list.add(MockedTargetResolver.targetAllInSpace);
+		list.add(MockedTargetResolver.targetRegex);
 		
 		List<ResolvedTarget> actualList = this.cachingTargetResolver.resolveTargets(list);
 		
 		MockedTargetResolver mtr = (MockedTargetResolver) targetResolver;
 		Assert.assertTrue(mtr.isRequestForTarget1());
 		Assert.assertFalse(mtr.isRequestForTarget2());
-		Assert.assertTrue(mtr.isRequestForTargetAllInSpace());
+		Assert.assertFalse(mtr.isRequestForTargetAllInSpace());
+		Assert.assertTrue(mtr.isRequestForTargetWithRegex());
 		
 		Assert.assertEquals(2, actualList.size());
 		
