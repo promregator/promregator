@@ -38,7 +38,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 			 */
 			.flatMapSequential(configTarget -> this.resolveSingleTarget(configTarget));
 		
-		return resultFlux.collectList().block();
+		return resultFlux.distinct().collectList().block();
 	}
 	
 	public Flux<ResolvedTarget> resolveSingleTarget(Target configTarget) {
