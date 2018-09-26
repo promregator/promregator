@@ -250,7 +250,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	public Mono<ListSpacesResponse> retrieveSpaceIdsInOrg(String orgId) {
 		ListSpacesRequest spacesRequest = ListSpacesRequest.builder().organizationId(orgId).build();
 		
-		return this.performGenericRetrieval("space", "retrieveSpaceId", orgId, spacesRequest, sr -> {
+		return this.performGenericRetrieval("space", "retrieveAllSpaceIdsInOrg", orgId, spacesRequest, sr -> {
 			return this.cloudFoundryClient.spaces().list(sr);
 		}, this.requestTimeoutSpace);
 	}
