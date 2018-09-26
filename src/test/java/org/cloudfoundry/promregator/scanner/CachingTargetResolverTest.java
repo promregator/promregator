@@ -51,11 +51,20 @@ public class CachingTargetResolverTest {
 		
 		Assert.assertEquals(2, actualList.size());
 		
-		ResolvedTarget rt = actualList.get(0);
-		Assert.assertEquals(MockedTargetResolver.rTarget1, rt);
 		
-		rt = actualList.get(1);
-		Assert.assertEquals(MockedTargetResolver.rTarget2, rt);
+		boolean target1Found = false;
+		boolean target2Found = false;
+		for (ResolvedTarget rt : actualList) {
+			if (rt == MockedTargetResolver.rTarget1) {
+				target1Found = true;
+			} else if (rt == MockedTargetResolver.rTarget2) {
+				target2Found = true;
+			} else {
+				Assert.fail("Unexpected target provided");
+			}
+		}
+		Assert.assertTrue(target1Found);
+		Assert.assertTrue(target2Found);
 	}
 	
 	@Test
@@ -72,11 +81,19 @@ public class CachingTargetResolverTest {
 		
 		Assert.assertEquals(2, actualList.size());
 		
-		ResolvedTarget rt = actualList.get(0);
-		Assert.assertEquals(MockedTargetResolver.rTarget1, rt);
-		
-		rt = actualList.get(1);
-		Assert.assertEquals(MockedTargetResolver.rTarget2, rt);
+		boolean target1Found = false;
+		boolean target2Found = false;
+		for (ResolvedTarget rt : actualList) {
+			if (rt == MockedTargetResolver.rTarget1) {
+				target1Found = true;
+			} else if (rt == MockedTargetResolver.rTarget2) {
+				target2Found = true;
+			} else {
+				Assert.fail("Unexpected target provided");
+			}
+		}
+		Assert.assertTrue(target1Found);
+		Assert.assertTrue(target2Found);
 	}
 	
 	@Test
@@ -142,10 +159,48 @@ public class CachingTargetResolverTest {
 		
 		Assert.assertEquals(2, actualList.size());
 		
-		rt = actualList.get(0);
-		Assert.assertEquals(MockedTargetResolver.rTarget1, rt);
-
-		rt = actualList.get(1);
-		Assert.assertEquals(MockedTargetResolver.rTarget2, rt);
+		boolean target1Found = false;
+		boolean target2Found = false;
+		for (ResolvedTarget rt2 : actualList) {
+			if (rt2 == MockedTargetResolver.rTarget1) {
+				target1Found = true;
+			} else if (rt2 == MockedTargetResolver.rTarget2) {
+				target2Found = true;
+			} else {
+				Assert.fail("Unexpected target provided");
+			}
+		}
+		Assert.assertTrue(target1Found);
+		Assert.assertTrue(target2Found);
+	}
+	
+	@Test
+	public void testTargetDuplicateRequestDistincts() {
+		List<Target> list = new LinkedList<>();
+		list.add(MockedTargetResolver.target1);
+		list.add(MockedTargetResolver.targetAllInSpace);
+		
+		List<ResolvedTarget> actualList = this.cachingTargetResolver.resolveTargets(list);
+		
+		MockedTargetResolver mtr = (MockedTargetResolver) targetResolver;
+		Assert.assertTrue(mtr.isRequestForTarget1());
+		Assert.assertFalse(mtr.isRequestForTarget2());
+		Assert.assertTrue(mtr.isRequestForTargetAllInSpace());
+		
+		Assert.assertEquals(2, actualList.size());
+		
+		boolean target1Found = false;
+		boolean target2Found = false;
+		for (ResolvedTarget rt : actualList) {
+			if (rt == MockedTargetResolver.rTarget1) {
+				target1Found = true;
+			} else if (rt == MockedTargetResolver.rTarget2) {
+				target2Found = true;
+			} else {
+				Assert.fail("Unexpected target provided");
+			}
+		}
+		Assert.assertTrue(target1Found);
+		Assert.assertTrue(target2Found);
 	}
 }
