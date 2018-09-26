@@ -146,6 +146,25 @@ public class CFAccessorCache implements CFAccessor {
 	}
 
 	@Override
+	public Mono<ListOrganizationsResponse> retrieveAllOrgIds() {
+		/*
+		 * special case: we don't cache the result here in an own cache,
+		 * as we always want to have "fresh data".
+		 */
+		return this.parent.retrieveAllOrgIds();
+	}
+
+	@Override
+	public Mono<ListSpacesResponse> retrieveSpaceIdsInOrg(String orgId) {
+		/*
+		 * special case: we don't cache the result here in an own cache,
+		 * as we always want to have "fresh data".
+		 */
+		return this.parent.retrieveSpaceIdsInOrg(orgId);
+	}
+
+	
+	@Override
 	public Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId) {
 		return this.spaceSummaryCache.get(spaceId);
 	}
@@ -164,4 +183,5 @@ public class CFAccessorCache implements CFAccessor {
 		log.info("Invalidating org cache");
 		this.orgCache.clear();
 	}
+
 }
