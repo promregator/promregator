@@ -302,4 +302,51 @@ public class ReactiveTargetResolverTest {
 		Assert.assertEquals(t.getProtocol(), rt.getProtocol());
 	}
 
+	@Test
+	public void testDistinctResolvedTargets() {
+		List<Target> list = new LinkedList<>();
+		
+		Target t = new Target();
+		t.setOrgName("unittestorg");
+		t.setSpaceName("unittestspace");
+		t.setApplicationRegex("testapp.*");
+		t.setPath("path");
+		t.setProtocol("https");
+		list.add(t);
+		
+		t = new Target();
+		t.setOrgName("unittestorg");
+		t.setSpaceName("unittestspace");
+		t.setApplicationName("testapp");
+		t.setPath("path");
+		t.setProtocol("https");
+		list.add(t);
+		
+		// NB: The regex target (first one) overlaps with the already fully resolved target (second one)
+		
+		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
+		
+		Assert.assertEquals(2, actualList.size()); // and not 3!
+		
+		boolean testappFound = false;
+		boolean testapp2Found = false;
+		for (ResolvedTarget rt : actualList) {
+			Assert.assertEquals(t.getOrgName(), rt.getOrgName());
+			Assert.assertEquals(t.getSpaceName(), rt.getSpaceName());
+			Assert.assertEquals(t.getPath(), rt.getPath());
+			Assert.assertEquals(t.getProtocol(), rt.getProtocol());
+			
+			if (rt.getApplicationName().equals("testapp2")) {
+				testapp2Found = true;
+			} else if (rt.getApplicationName().equals("testapp")) {
+				testappFound = true;
+			} else {
+				Assert.fail("Unknown application name returned");
+			}
+		}
+		
+		Assert.assertTrue(testappFound);
+		Assert.assertTrue(testapp2Found);
+	}
+
 }
