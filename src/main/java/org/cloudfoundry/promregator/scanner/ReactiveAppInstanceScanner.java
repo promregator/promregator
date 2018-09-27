@@ -3,6 +3,7 @@ package org.cloudfoundry.promregator.scanner;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
@@ -35,6 +36,15 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	@Value("${cf.cache.timeout.application:300}")
 	private int timeoutCacheApplicationLevel;
 
+	/*
+	 * see also https://github.com/promregator/promregator/issues/76
+	 * This is the locale, which we use to convert both "what we get from CF" and "the stuff, which we get 
+	 * from the configuration" into lower case before we try to match them.
+	 * 
+	 * Note that this might be wrong, if someone might have an app(/org/space) name in Turkish and expects a
+	 * Turkish case conversion.
+	 */
+	private static final Locale LOCALE_OF_LOWER_CASE_CONVERSION_FOR_IDENTIFIER_COMPARISON = Locale.ENGLISH;
 
 	@PostConstruct
 	public void setupMaps() {
@@ -98,7 +108,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			}
 			
 			Map<String, SpaceApplicationSummary> spaceSummaryMap = tuple.getT2();
-			SpaceApplicationSummary sas = spaceSummaryMap.get(v.target.getApplicationName());
+			SpaceApplicationSummary sas = spaceSummaryMap.get(v.target.getApplicationName().toLowerCase(LOCALE_OF_LOWER_CASE_CONVERSION_FOR_IDENTIFIER_COMPARISON));
 			
 			if (sas == null) {
 				// NB: This drops the current target!
@@ -209,7 +219,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				
 				Map<String, SpaceApplicationSummary> map = new HashMap<>(applications.size());
 				for (SpaceApplicationSummary sas : applications) {
-					map.put(sas.getName(), sas);
+					map.put(sas.getName().toLowerCase(LOCALE_OF_LOWER_CASE_CONVERSION_FOR_IDENTIFIER_COMPARISON), sas);
 				}
 				
 				return Mono.just(map);
