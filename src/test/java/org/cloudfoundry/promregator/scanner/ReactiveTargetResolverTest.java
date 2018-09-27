@@ -17,8 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import reactor.core.publisher.Hooks;
-
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = MockedReactiveTargetResolverSpringApplication.class)
 public class ReactiveTargetResolverTest {
@@ -378,4 +376,168 @@ public class ReactiveTargetResolverTest {
 		Assert.assertTrue(testapp2Found);
 	}
 
+	@Test
+	public void testMissingOrgName() {
+		List<Target> list = new LinkedList<>();
+		
+		Target t = new Target();
+		t.setSpaceName("unittestspace");
+		t.setApplicationName("testapp");
+		t.setPath("path");
+		t.setProtocol("https");
+		list.add(t);
+		
+		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
+		
+		Assert.assertEquals(1, actualList.size());
+		
+		ResolvedTarget rt = actualList.get(0);
+		Assert.assertEquals(t, rt.getOriginalTarget());
+		Assert.assertEquals("unittestorg", rt.getOrgName());
+		Assert.assertEquals(t.getSpaceName(), rt.getSpaceName());
+		Assert.assertEquals("testapp", rt.getApplicationName());
+		Assert.assertEquals(t.getPath(), rt.getPath());
+		Assert.assertEquals(t.getProtocol(), rt.getProtocol());
+		
+		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllOrgIds();
+		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID);
+	}
+
+	@Test
+	public void testWithOrgRegex() {
+		List<Target> list = new LinkedList<>();
+		
+		Target t = new Target();
+		t.setOrgRegex("unittest.*");
+		t.setSpaceName("unittestspace");
+		t.setApplicationName("testapp2");
+		t.setPath("path");
+		t.setProtocol("https");
+		list.add(t);
+		
+		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
+		
+		Assert.assertEquals(1, actualList.size());
+		
+		ResolvedTarget rt = actualList.get(0);
+		Assert.assertEquals(t, rt.getOriginalTarget());
+		Assert.assertEquals("unittestorg", rt.getOrgName());
+		Assert.assertEquals(t.getSpaceName(), rt.getSpaceName());
+		Assert.assertEquals("testapp2", rt.getApplicationName());
+		Assert.assertEquals(t.getPath(), rt.getPath());
+		Assert.assertEquals(t.getProtocol(), rt.getProtocol());
+		
+		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllOrgIds();
+		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID);
+	}
+	
+	@Test
+	public void testWithOrgRegexCaseInsensitive() {
+		List<Target> list = new LinkedList<>();
+		
+		Target t = new Target();
+		t.setOrgRegex("unit.*TOrg");
+		t.setSpaceName("unittestspace");
+		t.setApplicationName("testapp2");
+		t.setPath("path");
+		t.setProtocol("https");
+		list.add(t);
+		
+		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
+		
+		Assert.assertEquals(1, actualList.size());
+		
+		ResolvedTarget rt = actualList.get(0);
+		Assert.assertEquals(t, rt.getOriginalTarget());
+		Assert.assertEquals("unittestorg", rt.getOrgName());
+		Assert.assertEquals(t.getSpaceName(), rt.getSpaceName());
+		Assert.assertEquals("testapp2", rt.getApplicationName());
+		Assert.assertEquals(t.getPath(), rt.getPath());
+		Assert.assertEquals(t.getProtocol(), rt.getProtocol());
+		
+		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID);
+	}
+	
+	@Test
+	public void testMissingSpaceName() {
+		List<Target> list = new LinkedList<>();
+		
+		Target t = new Target();
+		t.setOrgName("unittestorg");
+		t.setApplicationName("testapp");
+		t.setPath("path");
+		t.setProtocol("https");
+		list.add(t);
+		
+		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
+		
+		Assert.assertEquals(1, actualList.size());
+		
+		ResolvedTarget rt = actualList.get(0);
+		Assert.assertEquals(t, rt.getOriginalTarget());
+		Assert.assertEquals("unittestorg", rt.getOrgName());
+		Assert.assertEquals("unittestspace", rt.getSpaceName());
+		Assert.assertEquals("testapp", rt.getApplicationName());
+		Assert.assertEquals(t.getPath(), rt.getPath());
+		Assert.assertEquals(t.getProtocol(), rt.getProtocol());
+		
+		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveSpaceIdsInOrg(CFAccessorMock.UNITTEST_ORG_UUID);
+		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID);
+	}
+
+	@Test
+	public void testWithSpaceRegex() {
+		List<Target> list = new LinkedList<>();
+		
+		Target t = new Target();
+		t.setOrgName("unittestorg");
+		t.setSpaceRegex("unitte.*");
+		t.setApplicationName("testapp2");
+		t.setPath("path");
+		t.setProtocol("https");
+		list.add(t);
+		
+		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
+		
+		Assert.assertEquals(1, actualList.size());
+		
+		ResolvedTarget rt = actualList.get(0);
+		Assert.assertEquals(t, rt.getOriginalTarget());
+		Assert.assertEquals("unittestorg", rt.getOrgName());
+		Assert.assertEquals("unittestspace", rt.getSpaceName());
+		Assert.assertEquals("testapp2", rt.getApplicationName());
+		Assert.assertEquals(t.getPath(), rt.getPath());
+		Assert.assertEquals(t.getProtocol(), rt.getProtocol());
+		
+		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveSpaceIdsInOrg(CFAccessorMock.UNITTEST_ORG_UUID);
+		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID);
+	}
+	
+	@Test
+	public void testWithSpaceRegexCaseInsensitive() {
+		List<Target> list = new LinkedList<>();
+		
+		Target t = new Target();
+		t.setOrgName("unittestorg");
+		t.setSpaceRegex("unit.*tSpace");
+		t.setApplicationName("testapp2");
+		t.setPath("path");
+		t.setProtocol("https");
+		list.add(t);
+		
+		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
+		
+		Assert.assertEquals(1, actualList.size());
+		
+		ResolvedTarget rt = actualList.get(0);
+		Assert.assertEquals(t, rt.getOriginalTarget());
+		Assert.assertEquals("unittestorg", rt.getOrgName());
+		Assert.assertEquals("unittestspace", rt.getSpaceName());
+		Assert.assertEquals("testapp2", rt.getApplicationName());
+		Assert.assertEquals(t.getPath(), rt.getPath());
+		Assert.assertEquals(t.getProtocol(), rt.getProtocol());
+		
+		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveSpaceIdsInOrg(CFAccessorMock.UNITTEST_ORG_UUID);
+		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID);
+	}
 }
