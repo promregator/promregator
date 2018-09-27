@@ -60,6 +60,17 @@ public class ReactiveTargetResolver implements TargetResolver {
 			rt.setPath(this.configTarget.getPath());
 			return rt;
 		}
+
+		/* (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public String toString() {
+			return "IntermediateTarget [configTarget=" + configTarget + ", resolvedOrgName=" + resolvedOrgName
+					+ ", resolvedOrgId=" + resolvedOrgId + ", resolvedSpaceName=" + resolvedSpaceName
+					+ ", resolvedSpaceId=" + resolvedSpaceId + ", resolvedApplicationName=" + resolvedApplicationName
+					+ ", resolvedApplicationId=" + resolvedApplicationId + "]";
+		}
 	}
 	
 	@Override
