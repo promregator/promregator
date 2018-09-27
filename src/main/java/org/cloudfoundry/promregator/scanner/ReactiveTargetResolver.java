@@ -164,7 +164,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 		Flux<SpaceDetails> filteredSpacesInOrg = spacesInSelection;
 		if (configTarget.getSpaceRegex() != null) {
 			// Case 2
-			final Pattern filterPattern = Pattern.compile(configTarget.getSpaceRegex());
+			final Pattern filterPattern = Pattern.compile(configTarget.getSpaceRegex(), Pattern.CASE_INSENSITIVE);
 			filteredSpacesInOrg = spacesInSelection.filter(spaceDetail -> {
 				Matcher m = filterPattern.matcher(spaceDetail.getName());
 				return m.matches();
