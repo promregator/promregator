@@ -99,7 +99,11 @@ public class ReactiveTargetResolver implements TargetResolver {
 						it.resolvedOrgName = res.getEntity().getName();
 						it.resolvedOrgId = res.getMetadata().getId();
 						return it;
-					});
+					})
+					.doOnError(e -> {
+						log.warn(String.format("Error on retrieving org id for org '%s'", it.configTarget.getOrgName()), e);
+					})
+					.onErrorResume(__ -> Mono.empty());
 			
 			return itMono.flux();
 		}
@@ -148,7 +152,10 @@ public class ReactiveTargetResolver implements TargetResolver {
 						it.resolvedSpaceName = res.getEntity().getName();
 						it.resolvedSpaceId = res.getMetadata().getId();
 						return it;
-					});
+					}).doOnError(e -> {
+						log.warn(String.format("Error on retrieving space id for org '%s' and space '%s'", it.resolvedOrgName, it.configTarget.getSpaceName()), e);
+					})
+					.onErrorResume(__ -> Mono.empty());
 			
 			return itMono.flux();
 		}
@@ -196,7 +203,9 @@ public class ReactiveTargetResolver implements TargetResolver {
 			Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveAllApplicationIdsInSpace(it.resolvedOrgId, it.resolvedSpaceId)
 					.map(lsr -> lsr.getResources())
 					.flatMapMany(list -> Flux.fromIterable(list))
-					.filter(appResource -> appNameToSearchFor.equals(appResource.getEntity().getName().toLowerCase(Locale.ENGLISH)))
+					.filter(appResource -> {
+						return appNameToSearchFor.equals(appResource.getEntity().getName().toLowerCase(Locale.ENGLISH));
+					})
 					.elementAt(0)
 					.filter( res -> {
 						return this.isApplicationInScrapableState(res.getEntity().getState());
@@ -205,7 +214,10 @@ public class ReactiveTargetResolver implements TargetResolver {
 						it.resolvedApplicationName = res.getEntity().getName();
 						it.resolvedApplicationId = res.getMetadata().getId();
 						return it;
-					});
+					}).doOnError(e -> {
+						log.warn(String.format("Error on retrieving application id for org '%s', space '%s' and application '%s'", it.resolvedOrgName, it.resolvedSpaceName, it.configTarget.getApplicationName()), e);
+					})
+					.onErrorResume(__ -> Mono.empty());
 			
 			return itMono.flux();
 		}
@@ -214,7 +226,11 @@ public class ReactiveTargetResolver implements TargetResolver {
 		Mono<ListApplicationsResponse> responseMono = this.cfAccessor.retrieveAllApplicationIdsInSpace(it.resolvedOrgId, it.resolvedSpaceId);
 
 		Flux<ApplicationResource> appResFlux = responseMono.map(resp -> resp.getResources())
-			.flatMapMany(list -> Flux.fromIterable(list));
+			.flatMapMany(list -> Flux.fromIterable(list))
+			.doOnError(e -> {
+				log.warn(String.format("Error on retrieving list of applications in org '%s' and space '%s'", it.resolvedOrgName, it.resolvedSpaceName), e);
+			})
+			.onErrorResume(__ -> Flux.empty());
 		
 		if (it.configTarget.getApplicationRegex() != null) {
 			// Case 2
