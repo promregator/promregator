@@ -132,7 +132,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 		Flux<String> filteredApplicationsInSpace = applicationsInSelection;
 		if (configTarget.getApplicationRegex() != null) {
 			// Case 2
-			final Pattern filterPattern = Pattern.compile(configTarget.getApplicationRegex());
+			final Pattern filterPattern = Pattern.compile(configTarget.getApplicationRegex(), Pattern.CASE_INSENSITIVE);
 			
 			filteredApplicationsInSpace = applicationsInSelection.filter(appName -> {
 				Matcher m = filterPattern.matcher(appName);

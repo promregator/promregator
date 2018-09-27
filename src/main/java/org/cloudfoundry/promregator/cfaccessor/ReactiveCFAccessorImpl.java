@@ -82,7 +82,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	private InternalMetrics internalMetrics;
 
 	
-	private static final Pattern PATTERN_HTTP_BASED_PROTOCOL_PREFIX = Pattern.compile("^https?://");
+	private static final Pattern PATTERN_HTTP_BASED_PROTOCOL_PREFIX = Pattern.compile("^https?://", Pattern.CASE_INSENSITIVE);
 	
 	private ReactorCloudFoundryClient cloudFoundryClient;
 
