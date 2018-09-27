@@ -40,10 +40,10 @@ public class CFAccessorMock implements CFAccessor {
 	@Override
 	public Mono<ListOrganizationsResponse> retrieveOrgId(String orgName) {
 		
-		if ("unittestorg".equals(orgName)) {
+		if ("unittestorg".equalsIgnoreCase(orgName)) {
 			
 			OrganizationResource or = OrganizationResource.builder().entity(
-					OrganizationEntity.builder().name(orgName).build()
+					OrganizationEntity.builder().name("unittestorg").build()
 				).metadata(
 					Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_ORG_UUID).build()
 					// Note that UpdatedAt is not set here, as this can also happen in real life!
@@ -68,9 +68,9 @@ public class CFAccessorMock implements CFAccessor {
 	@Override
 	public Mono<ListSpacesResponse> retrieveSpaceId(String orgId, String spaceName) {
 		if (orgId.equals(UNITTEST_ORG_UUID)) {
-			if ( "unittestspace".equals(spaceName)) {
+			if ( "unittestspace".equalsIgnoreCase(spaceName)) {
 				SpaceResource sr = SpaceResource.builder().entity(
-						SpaceEntity.builder().name(spaceName).build()
+						SpaceEntity.builder().name("unittestspace").build()
 					).metadata(
 						Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_SPACE_UUID).build()
 					).build();
