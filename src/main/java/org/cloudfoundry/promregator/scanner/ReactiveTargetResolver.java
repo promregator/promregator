@@ -1,13 +1,15 @@
 package org.cloudfoundry.promregator.scanner;
 
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
+import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
+import org.cloudfoundry.client.v2.organizations.OrganizationResource;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
@@ -15,10 +17,8 @@ import org.cloudfoundry.promregator.config.Target;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple2;
 
 @Component
 public class ReactiveTargetResolver implements TargetResolver {
@@ -27,222 +27,219 @@ public class ReactiveTargetResolver implements TargetResolver {
 	@Autowired
 	private CFAccessor cfAccessor;
 	
+	private static class IntermediateTarget {
+		public Target configTarget;
+		public String resolvedOrgName;
+		public String resolvedOrgId;
+		public String resolvedSpaceName;
+		public String resolvedSpaceId;
+		public String resolvedApplicationName;
+		public String resolvedApplicationId;
+		
+		public IntermediateTarget() {
+			super();
+		}
+		
+		public IntermediateTarget(IntermediateTarget source) {
+			this.configTarget = source.configTarget;
+			this.resolvedOrgName = source.resolvedOrgName;
+			this.resolvedOrgId = source.resolvedOrgId;
+			this.resolvedSpaceName = source.resolvedSpaceName;
+			this.resolvedSpaceId = source.resolvedSpaceId;
+			this.resolvedApplicationName = source.resolvedApplicationName;
+			this.resolvedApplicationId = source.resolvedApplicationId;
+		}
+		
+		public ResolvedTarget toResolvedTarget() {
+			ResolvedTarget rt = new ResolvedTarget();
+			rt.setOriginalTarget(this.configTarget);
+			rt.setOrgName(this.resolvedOrgName);
+			rt.setSpaceName(this.resolvedSpaceName);
+			rt.setApplicationName(this.resolvedApplicationName);
+			rt.setProtocol(this.configTarget.getProtocol());
+			rt.setPath(this.configTarget.getPath());
+			return rt;
+		}
+	}
+	
 	@Override
 	public List<ResolvedTarget> resolveTargets(List<Target> configTargets) {
 		
-		Flux<ResolvedTarget> resultFlux = Flux.fromIterable(configTargets)
-			/* It would be possible to add .parallel() here
-			 * However, the current memory footprint (i.e. memory throughput)
-			 * is already a challenge for the garbage collector (see also
-			 * issue #54). That is why we currently refrain from also running
-			 * the requests here in parallel. 
-			 * If measurements in the future show that this would not be a problem,
-			 * we are still capable of introducing this later.
-			 */
-			.flatMapSequential(configTarget -> this.resolveSingleTarget(configTarget));
+		Flux<IntermediateTarget> initialFlux = Flux.fromIterable(configTargets)
+				.map(configTarget -> {
+					IntermediateTarget it = new IntermediateTarget();
+					it.configTarget = configTarget;
+					
+					return it;
+				});
+		
+		Flux<IntermediateTarget> orgResolvedFlux = initialFlux.flatMap(it -> this.resolveOrg(it));
+		Flux<IntermediateTarget> spaceResolvedFlux = orgResolvedFlux.flatMap(it -> this.resolveSpace(it));
+		Flux<IntermediateTarget> applicationResolvedFlux = spaceResolvedFlux.flatMap(it -> this.resolveApplication(it));
+		
+		Flux<ResolvedTarget> resultFlux = applicationResolvedFlux.map(it -> it.toResolvedTarget());
 		
 		return resultFlux.distinct().collectList().block();
 	}
 	
-	public Flux<ResolvedTarget> resolveSingleTarget(Target configTarget) {
-		if (configTarget.getApplicationName() != null
-				&& configTarget.getSpaceName() != null) {
-			// config target is already resolved
-			ResolvedTarget rt = new ResolvedTarget(configTarget);
-			return Flux.just(rt);
+	private Flux<IntermediateTarget> resolveOrg(IntermediateTarget it) {
+		/* NB: Now we have to consider three cases:
+		 * Case 1: both orgName and orgRegex is empty => select all orgs
+		 * Case 2: orgName is null, but orgRegex is filled => filter all orgs with the regex
+		 * Case 3: orgName is filled, but orgRegex is null => select a single org
+		 * In cases 1 and 2, we need the list of all orgs on the platform.
+		 */
+		
+		if (it.configTarget.getOrgRegex() == null && it.configTarget.getOrgName() != null) {
+			// Case 3: we have the orgName, but we also need its id
+			Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveOrgId(it.configTarget.getOrgName())
+					.map(lor -> lor.getResources())
+					.map(list -> list.get(0))
+					.map(res -> {
+						it.resolvedOrgName = res.getEntity().getName();
+						it.resolvedOrgId = res.getMetadata().getId();
+						return it;
+					});
+			
+			return itMono.flux();
 		}
 		
-		// on error handling: covered by "onErrorResume" in this method a little below
-		Mono<String> orgIdMono = this.cfAccessor.retrieveOrgId(configTarget.getOrgName())
-				.map( r -> r.getResources())
-				.map( l -> l.get(0))
-				.map( e -> e.getMetadata()) 
-				.map( entry -> entry.getId());
+		// Case 1 & 2: Get all orgs from the platform
+		Mono<ListOrganizationsResponse> responseMono = this.cfAccessor.retrieveAllOrgIds();
+
+		Flux<OrganizationResource> orgResFlux = responseMono.map(resp -> resp.getResources())
+			.flatMapMany(list -> Flux.fromIterable(list));
 		
-		// on error handling: covered by "onErrorResume" in this method a little below
-		Flux<SpaceDetails> spaceDetails = this.resolveSpacesInConfigTarget(configTarget, orgIdMono);
-		Flux<Target> spaceUnfoldedTargetFlux = spaceDetails.map(sd -> {
-			Target unfoldedTarget = new Target(configTarget);
-			unfoldedTarget.setSpaceRegex(null);
-			unfoldedTarget.setSpaceName(sd.getName());
+		if (it.configTarget.getOrgRegex() != null) {
+			// Case 2
+			final Pattern filterPattern = Pattern.compile(it.configTarget.getOrgRegex(), Pattern.CASE_INSENSITIVE);
 			
-			return unfoldedTarget;
-		});
-		
-		Flux<Tuple2<String, Target>> applicationNameTargetFlux = Flux.zip(spaceUnfoldedTargetFlux, spaceDetails).flatMapSequential(tuple -> {
-			Target unfoldedTarget = tuple.getT1();
-			SpaceDetails sd = tuple.getT2();
-			
-			Flux<String> applicationNameFlux = selectApplications(unfoldedTarget, orgIdMono, Mono.just(sd.getId()));
-			Mono<Target> unfoldedTargetMono = Mono.just(unfoldedTarget).cache();
-			return Flux.zip(applicationNameFlux, unfoldedTargetMono);
-		}).doOnError( e -> {
-			log.warn(String.format("Exception was raised on resolving target '%s'", configTarget.toString()), e);
-		}).onErrorResume(__ -> Flux.empty());
-		
-		Flux<ResolvedTarget> result = applicationNameTargetFlux
-			.map(tuple -> {
-				String appName = tuple.getT1();
-				Target unfoldedTarget = tuple.getT2();
-				
-				ResolvedTarget newTarget = new ResolvedTarget(unfoldedTarget);
-				newTarget.setApplicationName(appName);
-				
-				return newTarget;
+			orgResFlux = orgResFlux.filter(orgRes -> {
+				Matcher m = filterPattern.matcher(orgRes.getEntity().getName());
+				return m.matches();
 			});
+		}
+		
+		Flux<IntermediateTarget> result = orgResFlux.map(orgRes -> {
+			IntermediateTarget itnew = new IntermediateTarget(it);
+			itnew.resolvedOrgId = orgRes.getMetadata().getId();
+			itnew.resolvedOrgName = orgRes.getEntity().getName();
+			
+			return itnew;
+		});
 		
 		return result;
 	}
-
-	private static class InvalidResponseFromCFCloudConnector extends Exception {
-		private static final long serialVersionUID = 3693506313317098423L;
-
-		public InvalidResponseFromCFCloudConnector(String arg0) {
-			super(arg0);
-		}
-	}
 	
-	private static class SpaceDetails {
-		private String name;
-		private String id;
-		
-		public SpaceDetails(String name, String id) {
-			super();
-			this.name = name;
-			this.id = id;
-		}
-
-		/**
-		 * @return the name
-		 */
-		public String getName() {
-			return name;
-		}
-
-		/**
-		 * @return the id
-		 */
-		public String getId() {
-			return id;
-		}
-	}
-	
-	private Flux<SpaceDetails> resolveSpacesInConfigTarget(Target configTarget, Mono<String> orgIdMono) {
+	private Flux<IntermediateTarget> resolveSpace(IntermediateTarget it) {
 		/* NB: Now we have to consider three cases:
-		 * Case 1: both spaceName and spaceRegex is empty => select all spaces
+		 * Case 1: both spaceName and spaceRegex is empty => select all spaces (within the org)
 		 * Case 2: spaceName is null, but spaceRegex is filled => filter all spaces with the regex
-		 * Case 3: spaceName is filled, but spaceRegex is null => select a single app
-		 * In cases 1 and 2, we need the list of all spaces in the space.
+		 * Case 3: spaceName is filled, but spaceRegex is null => select a single space
+		 * In cases 1 and 2, we need the list of all spaces in the org.
 		 */
 		
-		if (configTarget.getSpaceRegex() == null && configTarget.getSpaceName() != null) {
+		if (it.configTarget.getSpaceRegex() == null && it.configTarget.getSpaceName() != null) {
 			// Case 3: we have the spaceName, but we also need its id
-			Mono<String> spaceIdMono = orgIdMono.flatMap( orgId -> {
-				return this.cfAccessor.retrieveSpaceId(orgId, configTarget.getSpaceName());
-			}).map(l -> l.getResources())
-			.map(l -> l.get(0))
-			.map(e -> e.getMetadata())
-			.map(md -> md.getId());
+			Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveSpaceId(it.resolvedOrgId, it.configTarget.getSpaceName())
+					.map(lsr -> lsr.getResources())
+					.map(list -> list.get(0))
+					.map(res -> {
+						it.resolvedSpaceName = res.getEntity().getName();
+						it.resolvedSpaceId = res.getMetadata().getId();
+						return it;
+					});
 			
-			Mono<SpaceDetails> spaceDetailsMono = spaceIdMono.map(spaceId -> {
-				return new SpaceDetails(configTarget.getSpaceName(), spaceId);
-			});
-			
-			return spaceDetailsMono.flux();
+			return itMono.flux();
 		}
 		
-		// Case 1 & 2: Get all spaces from org
-		Mono<ListSpacesResponse> responseMono = orgIdMono.flatMap(orgId -> {
-			return this.cfAccessor.retrieveSpaceIdsInOrg(orgId);
-		});
+		// Case 1 & 2: Get all spaces in the current org
+		Mono<ListSpacesResponse> responseMono = this.cfAccessor.retrieveSpaceIdsInOrg(it.resolvedOrgId);
+
+		Flux<SpaceResource> spaceResFlux = responseMono.map(resp -> resp.getResources())
+			.flatMapMany(list -> Flux.fromIterable(list));
 		
-		Flux<SpaceDetails> spacesInSelection = responseMono.map( r -> {
-			List<SpaceResource> resources = r.getResources();
-			if (resources == null) {
-				log.error(String.format("Error on resolving spaces in org '%s'", configTarget.getOrgName()));
-				throw Exceptions.propagate(new InvalidResponseFromCFCloudConnector("Unexpected empty response of the space resource list while reading all spaces in an org"));
-			}
-			
-			return resources;
-		}).flatMapMany( resources -> {
-			List<SpaceDetails> spaceDetailsList = new LinkedList<>();
-			for (SpaceResource sr : resources) {
-				SpaceDetails sd = new SpaceDetails(sr.getEntity().getName(), sr.getMetadata().getId());
-				spaceDetailsList.add(sd);
-			}
-			return Flux.fromIterable(spaceDetailsList);
-		});
-		
-		Flux<SpaceDetails> filteredSpacesInOrg = spacesInSelection;
-		if (configTarget.getSpaceRegex() != null) {
+		if (it.configTarget.getSpaceRegex() != null) {
 			// Case 2
-			final Pattern filterPattern = Pattern.compile(configTarget.getSpaceRegex(), Pattern.CASE_INSENSITIVE);
-			filteredSpacesInOrg = spacesInSelection.filter(spaceDetail -> {
-				Matcher m = filterPattern.matcher(spaceDetail.getName());
+			final Pattern filterPattern = Pattern.compile(it.configTarget.getSpaceRegex(), Pattern.CASE_INSENSITIVE);
+			
+			spaceResFlux = spaceResFlux.filter(spaceRes -> {
+				Matcher m = filterPattern.matcher(spaceRes.getEntity().getName());
 				return m.matches();
 			});
 		}
 		
-		return filteredSpacesInOrg;
+		Flux<IntermediateTarget> result = spaceResFlux.map(spaceRes -> {
+			IntermediateTarget itnew = new IntermediateTarget(it);
+			itnew.resolvedSpaceId = spaceRes.getMetadata().getId();
+			itnew.resolvedSpaceName = spaceRes.getEntity().getName();
+			
+			return itnew;
+		});
+		
+		return result;
 	}
 	
-	private Flux<String> selectApplications(Target configTarget, Mono<String> orgIdMono, Mono<String> spaceIdMono) {
+	private Flux<IntermediateTarget> resolveApplication(IntermediateTarget it) {
 		/* NB: Now we have to consider three cases:
-		 * Case 1: both applicationName and applicationRegex is empty => select all apps
-		 * Case 2: applicationName is null, but applicationRegex is filled => filter all apps with the regex
-		 * Case 3: applicationName is filled, but applicationRegex is null => select a single app
-		 * In cases 1 and 2, we need the list of all apps in the space.
+		 * Case 1: both applicationName and applicationRegex is empty => select all applications (in the space)
+		 * Case 2: applicationName is null, but applicationRegex is filled => filter all applications with the regex
+		 * Case 3: applicationName is filled, but applicationRegex is null => select a single application
+		 * In cases 1 and 2, we need the list of all applications in the space.
 		 */
 		
-		Flux<String> applicationsInSelection = null;
-		
-		if (configTarget.getApplicationRegex() == null && configTarget.getApplicationName() != null) {
-			// Case 3: trivial
-			return Flux.just(configTarget.getApplicationName());
-		} else {
-			// Case 1 & 2: Get all apps from space
-			Mono<ListApplicationsResponse> responseMono = Mono.zip(orgIdMono, spaceIdMono)
-				.flatMap( tuple -> { 
-					return this.cfAccessor.retrieveAllApplicationIdsInSpace(tuple.getT1(), tuple.getT2()); 
-				});
+		if (it.configTarget.getApplicationRegex() == null && it.configTarget.getApplicationName() != null) {
+			// Case 3: we have the applicationName, but we also need its id
 			
-			applicationsInSelection = responseMono.map( r -> {
-				List<ApplicationResource> resources = r.getResources();
-				if (resources == null) {
-					log.error(String.format("Error on resolving targets in org '%s' and space '%s'", configTarget.getOrgName(), configTarget.getSpaceName()));
-					throw Exceptions.propagate(new InvalidResponseFromCFCloudConnector("Unexpected empty response of the application resource list while reading all applications in a space"));
-				}
-				
-				return resources;
-			}).flatMapMany(resources -> {
-				List<String> appNames = new LinkedList<>();
-				for (ApplicationResource ar : resources) {
-					if (!isApplicationInScrapableState(ar.getEntity().getState())) {
-						continue;
-					}
-					
-					appNames.add(ar.getEntity().getName());
-				}
-				
-				return Flux.fromIterable(appNames);
-			});
+			String appNameToSearchFor = it.configTarget.getApplicationName().toLowerCase(Locale.ENGLISH);
+			
+			Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveAllApplicationIdsInSpace(it.resolvedOrgId, it.resolvedSpaceId)
+					.map(lsr -> lsr.getResources())
+					.flatMapMany(list -> Flux.fromIterable(list))
+					.filter(appResource -> appNameToSearchFor.equals(appResource.getEntity().getName().toLowerCase(Locale.ENGLISH)))
+					.elementAt(0)
+					.filter( res -> {
+						return this.isApplicationInScrapableState(res.getEntity().getState());
+					})
+					.map(res -> {
+						it.resolvedApplicationName = res.getEntity().getName();
+						it.resolvedApplicationId = res.getMetadata().getId();
+						return it;
+					});
+			
+			return itMono.flux();
 		}
 		
-		Flux<String> filteredApplicationsInSpace = applicationsInSelection;
-		if (configTarget.getApplicationRegex() != null) {
+		// Case 1 & 2: Get all applications in the current space
+		Mono<ListApplicationsResponse> responseMono = this.cfAccessor.retrieveAllApplicationIdsInSpace(it.resolvedOrgId, it.resolvedSpaceId);
+
+		Flux<ApplicationResource> appResFlux = responseMono.map(resp -> resp.getResources())
+			.flatMapMany(list -> Flux.fromIterable(list));
+		
+		if (it.configTarget.getApplicationRegex() != null) {
 			// Case 2
-			final Pattern filterPattern = Pattern.compile(configTarget.getApplicationRegex(), Pattern.CASE_INSENSITIVE);
+			final Pattern filterPattern = Pattern.compile(it.configTarget.getApplicationRegex(), Pattern.CASE_INSENSITIVE);
 			
-			filteredApplicationsInSpace = applicationsInSelection.filter(appName -> {
-				Matcher m = filterPattern.matcher(appName);
+			appResFlux = appResFlux.filter(appRes -> {
+				Matcher m = filterPattern.matcher(appRes.getEntity().getName());
 				return m.matches();
 			});
 		}
-
-		return filteredApplicationsInSpace;
+		
+		Flux<ApplicationResource> scrapableFlux = appResFlux.filter(appRes -> {
+			return this.isApplicationInScrapableState(appRes.getEntity().getState());
+		});
+		
+		Flux<IntermediateTarget> result = scrapableFlux.map(appRes -> {
+			IntermediateTarget itnew = new IntermediateTarget(it);
+			itnew.resolvedApplicationId = appRes.getMetadata().getId();
+			itnew.resolvedApplicationName = appRes.getEntity().getName();
+			
+			return itnew;
+		});
+		
+		return result;
 	}
-	
-	
 	
 	private boolean isApplicationInScrapableState(String state) {
 		if ("STARTED".equals(state)) {
