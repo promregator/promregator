@@ -211,8 +211,34 @@ The subgroup expects an item list, which contains additional mandatory propertie
 #### Item property "promregator.targets[].orgName" (mandatory)
 Specifies the name of the Cloud Foundry Organization which hosts the application, which you want to query for metrics.
 
-#### Item property "promregator.targets[].spaceName" (mandatory)
-Specifies the name of the Cloud Foundry Space (within the Cloud Foundry Organization specified above), which hosts the application, which you want to query for metrics.
+To ensure consistency with the behavior of many Cloud Foundry implementations, the name is treated case-**in**sensitively since Promregator version 0.5.0.
+
+If left out (and also "orgRegex" is omitted), *all* organizations are considered as places for targets to searched for.
+
+By this, automatic detection of new applications is possible. Note that discovery of *new* applications within the space only takes place after the timeout of "cf.cache.timeout.resolver" has occurred. To enforce a discovery, you may [invalidate the resolver cache manually](./invalidate-cache.md).
+
+#### Item property "promregator.targets[].orgRegex" (optional)
+Specifies the regular expression (based on a [Java Regular expression](https://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html)) for scanning the organization name, which will contain applications, which you want to query for metrics. Only organizations, for which the name matches to this regular expression, are considered for searching for applications.
+
+To ensure consistency with the behavior of many Cloud Foundry implementations, the comparison is performed case-**in**sensitively since Promregator version 0.5.0.
+
+By this, automatic detection of new applications is possible. Note that discovery of *new* organizations only takes place after the timeout of "cf.cache.timeout.resolver" has occurred. To enforce a discovery, you may [invalidate the resolver cache manually](./invalidate-cache.md).
+
+#### Item property "promregator.targets[].spaceName" (optional)
+Specifies the name of the Cloud Foundry Space (within a Cloud Foundry Organization detected before), which hosts the application, which you want to query for metrics.
+
+To ensure consistency with the behavior of many Cloud Foundry implementations, the name is treated case-**in**sensitively since Promregator version 0.5.0.
+
+If left out (and also "spaceRegex" is omitted), *all* spaces within the specified Cloud Foundry Organization are considered as places for targets to be searched for.
+
+By this, automatic detection of new applications is possible. Note that discovery of *new* spaces within the organizations only takes place after the timeout of "cf.cache.timeout.resolver" has occurred. To enforce a discovery, you may [invalidate the resolver cache manually](./invalidate-cache.md).
+
+#### Item property "promregator.targets[].spaceRegex" (optional)
+Specifies the regular expression (based on a [Java Regular expression](https://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html)) for scanning the space name of the Cloud Foundry Application (within the Cloud Foundry Organization), which contains the application, which you want to query for metrics. Only spaces, for which the name matches to this regular expression, are considered for searching for applications. 
+
+To ensure consistency with the behavior of many Cloud Foundry implementations, the comparison is performed case-**in**sensitively since Promregator version 0.5.0.
+
+By this, automatic detection of new applications is possible. Note that discovery of *new* spaces within organizations only takes place after the timeout of "cf.cache.timeout.resolver" has occurred. To enforce a discovery, you may [invalidate the resolver cache manually](./invalidate-cache.md).
 
 #### Item property "promregator.targets[].applicationName" (optional)
 Specifies the name of the Cloud Foundry Application (within the Cloud Foundry Organization and Space specified above), which hosts the application, which you want to query for metrics.
