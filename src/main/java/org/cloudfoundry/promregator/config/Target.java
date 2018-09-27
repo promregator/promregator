@@ -1,6 +1,6 @@
 package org.cloudfoundry.promregator.config;
 
-public class Target {
+public class Target implements Cloneable {
 	private String orgName;
 	
 	private String orgRegex;
@@ -18,6 +18,26 @@ public class Target {
 	private String protocol;
 	
 	private String authenticatorId;
+	
+	public Target() {
+		super();
+	}
+	
+	/**
+	 * creates a copy of an existing Target
+	 * @param source the template which shall be used for copying
+	 */
+	public Target(Target source) {
+		this.orgName = source.orgName;
+		this.orgRegex = source.orgRegex;
+		this.spaceName = source.spaceName;
+		this.spaceRegex = source.spaceRegex;
+		this.applicationName = source.applicationName;
+		this.applicationRegex = source.applicationRegex;
+		this.path = source.path;
+		this.protocol = source.protocol;
+		this.authenticatorId = source.authenticatorId;
+	}
 	
 	public String getOrgName() {
 		return orgName;
@@ -110,5 +130,5 @@ public class Target {
 		return "Target [orgName=" + orgName + ", spaceName=" + spaceName + ", applicationName=" + applicationName
 				+ ", applicationRegex=" + applicationRegex + ", path=" + path + ", protocol=" + protocol + "]";
 	}
-	
+
 }

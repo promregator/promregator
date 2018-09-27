@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
 
 @Component
 public class ReactiveTargetResolver implements TargetResolver {
@@ -59,21 +60,32 @@ public class ReactiveTargetResolver implements TargetResolver {
 				.map( entry -> entry.getId());
 		
 		// on error handling: covered by "onErrorResume" in this method a little below
-		Mono<String> spaceIdMono = orgIdMono.flatMap(orgId -> {
-			return this.cfAccessor.retrieveSpaceId(orgId, configTarget.getSpaceName());
-		}).map( r -> r.getResources())
-			.map( l -> l.get(0))
-			.map( e -> e.getMetadata())
-			.map( entry -> entry.getId());
+		Flux<SpaceDetails> spaceDetails = this.resolveSpacesInConfigTarget(configTarget, orgIdMono);
+		Flux<Target> spaceUnfoldedTargetFlux = spaceDetails.map(sd -> {
+			Target unfoldedTarget = new Target(configTarget);
+			unfoldedTarget.setSpaceRegex(null);
+			unfoldedTarget.setSpaceName(sd.getName());
+			
+			return unfoldedTarget;
+		});
 		
-		Flux<String> applicationNamesFlux = selectApplications(configTarget, orgIdMono, spaceIdMono)
-			.doOnError( e -> {
-				log.warn(String.format("Exception was raised on resolving targets for org name '%s' and space name '%s'", configTarget.getOrgName(), configTarget.getSpaceName()), e);
-			}).onErrorResume(__ -> Flux.empty());
-
-		Flux<ResolvedTarget> result = applicationNamesFlux
-			.map(appName -> {
-				ResolvedTarget newTarget = new ResolvedTarget(configTarget);
+		Flux<Tuple2<String, Target>> applicationNameTargetFlux = Flux.zip(spaceUnfoldedTargetFlux, spaceDetails).flatMapSequential(tuple -> {
+			Target unfoldedTarget = tuple.getT1();
+			SpaceDetails sd = tuple.getT2();
+			
+			Flux<String> applicationNameFlux = selectApplications(unfoldedTarget, orgIdMono, Mono.just(sd.getId()));
+			Mono<Target> unfoldedTargetMono = Mono.just(unfoldedTarget).cache();
+			return Flux.zip(applicationNameFlux, unfoldedTargetMono);
+		}).doOnError( e -> {
+			log.warn(String.format("Exception was raised on resolving target '%s'", configTarget.toString()), e);
+		}).onErrorResume(__ -> Flux.empty());
+		
+		Flux<ResolvedTarget> result = applicationNameTargetFlux
+			.map(tuple -> {
+				String appName = tuple.getT1();
+				Target unfoldedTarget = tuple.getT2();
+				
+				ResolvedTarget newTarget = new ResolvedTarget(unfoldedTarget);
 				newTarget.setApplicationName(appName);
 				
 				return newTarget;
