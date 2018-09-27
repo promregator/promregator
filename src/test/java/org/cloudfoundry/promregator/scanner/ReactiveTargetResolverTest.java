@@ -128,6 +128,33 @@ public class ReactiveTargetResolverTest {
 	}
 	
 	@Test
+	public void testWithApplicationRegexCaseInsensitiveIssue76() {
+		List<Target> list = new LinkedList<>();
+		
+		Target t = new Target();
+		t.setOrgName("unittestorg");
+		t.setSpaceName("unittestspace");
+		t.setApplicationRegex("te.*App2");
+		t.setPath("path");
+		t.setProtocol("https");
+		list.add(t);
+		
+		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
+		
+		Assert.assertEquals(1, actualList.size());
+		
+		ResolvedTarget rt = actualList.get(0);
+		Assert.assertEquals(t, rt.getOriginalTarget());
+		Assert.assertEquals(t.getOrgName(), rt.getOrgName());
+		Assert.assertEquals(t.getSpaceName(), rt.getSpaceName());
+		Assert.assertEquals("testapp2", rt.getApplicationName());
+		Assert.assertEquals(t.getPath(), rt.getPath());
+		Assert.assertEquals(t.getProtocol(), rt.getProtocol());
+		
+		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID);
+	}
+	
+	@Test
 	public void testEmpty() {
 		
 		List<Target> list = new LinkedList<>();
