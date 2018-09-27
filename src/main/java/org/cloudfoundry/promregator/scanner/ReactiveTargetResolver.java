@@ -73,13 +73,43 @@ public class ReactiveTargetResolver implements TargetResolver {
 					return it;
 				});
 		
-		Flux<IntermediateTarget> orgResolvedFlux = initialFlux.flatMap(it -> this.resolveOrg(it));
-		Flux<IntermediateTarget> spaceResolvedFlux = orgResolvedFlux.flatMap(it -> this.resolveSpace(it));
-		Flux<IntermediateTarget> applicationResolvedFlux = spaceResolvedFlux.flatMap(it -> this.resolveApplication(it));
+		Flux<IntermediateTarget> orgResolvedFlux = initialFlux.flatMap(it -> this.resolveOrg(it)).log(log.getName()+".resolveOrg");
+		Flux<IntermediateTarget> spaceResolvedFlux = orgResolvedFlux.flatMap(it -> this.resolveSpace(it)).log(log.getName()+".resolveSpace");
+		Flux<IntermediateTarget> applicationResolvedFlux = spaceResolvedFlux.flatMap(it -> this.resolveApplication(it)).log(log.getName()+".resolveApplication")
+				.doOnNext(it -> {
+					if (it.resolvedOrgId == null) {
+						log.error(String.format("Target '%s' created a ResolvedTarget without resolved org id", it.configTarget));
+					}
+					
+					if (it.resolvedSpaceId == null) {
+						log.error(String.format("Target '%s' created a ResolvedTarget without resolved space id", it.configTarget));
+					}
+					
+					if (it.resolvedApplicationId == null) {
+						log.error(String.format("Target '%s' created a ResolvedTarget without resolved application id", it.configTarget));
+					}
+					
+					if (it.resolvedOrgName == null) {
+						log.error(String.format("Target '%s' created a ResolvedTarget without resolved org name", it.configTarget));
+					}
+					
+					if (it.resolvedSpaceName == null) {
+						log.error(String.format("Target '%s' created a ResolvedTarget without resolved space name", it.configTarget));
+					}
+					
+					if (it.resolvedApplicationName == null) {
+						log.error(String.format("Target '%s' created a ResolvedTarget without resolved application name", it.configTarget));
+					}
+				});
 		
 		Flux<ResolvedTarget> resultFlux = applicationResolvedFlux.map(it -> it.toResolvedTarget());
 		
-		return resultFlux.distinct().collectList().block();
+		List<ResolvedTarget> resultList = resultFlux.distinct().collectList().block();
+		if (log.isDebugEnabled()) {
+			log.debug(String.format("Successfully resolved %d configuration targets to %d resolved targets", configTargets.size(), resultList.size()));
+		}
+		
+		return resultList;
 	}
 	
 	private Flux<IntermediateTarget> resolveOrg(IntermediateTarget it) {
