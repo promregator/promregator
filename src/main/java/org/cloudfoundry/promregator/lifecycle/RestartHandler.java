@@ -23,6 +23,8 @@ public class RestartHandler implements ApplicationContextAware {
 		((AbstractApplicationContext) applicationContext).close();
 	}
 
+	// for watching for a trigger see also https://docs.oracle.com/javase/tutorial/essential/io/notification.html
+	
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
