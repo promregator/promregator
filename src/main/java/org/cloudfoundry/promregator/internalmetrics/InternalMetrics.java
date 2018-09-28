@@ -5,6 +5,7 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Counter;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.Histogram;
@@ -47,6 +48,15 @@ public class InternalMetrics {
 				.labelNames("cache_map_name").register();
 	}
 
+	// method is called when Spring ApplicationContext is about to be shut down 
+	public void destroy() {
+		CollectorRegistry.defaultRegistry.unregister(this.latencyCFFetch);
+		CollectorRegistry.defaultRegistry.unregister(this.autoRefreshingCacheMapSize);
+		CollectorRegistry.defaultRegistry.unregister(this.autoRefreshingCacheMapExpiry);
+		CollectorRegistry.defaultRegistry.unregister(this.autoRefreshingCacheMapRefreshSuccess);
+		CollectorRegistry.defaultRegistry.unregister(this.autoRefreshingCacheMapRefreshFailure);
+		CollectorRegistry.defaultRegistry.unregister(this.autoRefreshingCacheMapLastScan);
+	}
 	
 	public Timer startTimerCFFetch(String requestType) {
 		if (!this.enabled)

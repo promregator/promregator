@@ -165,7 +165,7 @@ public class PromregatorApplication implements ApplicationContextAware {
 		return new ConfigurationValidations();
 	}
 	
-	@Bean
+	@Bean(destroyMethod="destroy")
 	public InternalMetrics internalMetrics() {
 		return new InternalMetrics();
 	}
