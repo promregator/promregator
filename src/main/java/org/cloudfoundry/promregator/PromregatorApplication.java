@@ -28,12 +28,16 @@ import org.cloudfoundry.promregator.springconfig.BasicAuthenticationSpringConfig
 import org.cloudfoundry.promregator.springconfig.ErrorSpringConfiguration;
 import org.cloudfoundry.promregator.springconfig.JMSSpringConfiguration;
 import org.cloudfoundry.promregator.websecurity.SecurityConfig;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -47,7 +51,7 @@ import reactor.core.publisher.Hooks;
 @EnableScheduling
 @Import({ BasicAuthenticationSpringConfiguration.class, SecurityConfig.class, ErrorSpringConfiguration.class, JMSSpringConfiguration.class, AuthenticatorSpringConfiguration.class })
 @EnableAsync
-public class PromregatorApplication {
+public class PromregatorApplication implements ApplicationContextAware {
 	
 	@Value("${promregator.simulation.enabled:false}")
 	private boolean simulationMode;
@@ -60,8 +64,26 @@ public class PromregatorApplication {
 	
 	private static final Logger log = Logger.getLogger(PromregatorApplication.class);
 	
-	public static void main(String[] args) {
-		SpringApplication.run(PromregatorApplication.class, args);
+	private static boolean restartFlag = true;
+	private static Object restartLockObject = new Object();
+	
+	public static void main(String[] args) throws InterruptedException {
+		while (true) {
+			System.err.println("(Re-)Starting");
+			restartFlag = false;
+			SpringApplication.run(PromregatorApplication.class, args);
+			
+			System.err.println("Waiting on lock");
+			synchronized(restartLockObject) {
+				restartLockObject.wait();
+			}
+			System.err.println("Main thread woke up");
+			
+			if (!restartFlag) {
+				break;
+			}
+		}
+		System.err.println("Terminated");
 	}
 	
 	@PostConstruct
@@ -202,4 +224,22 @@ public class PromregatorApplication {
 	public UUID promregatorInstanceIdentifer() {
 		return UUID.randomUUID();
 	}
+	
+	private ApplicationContext applicationContext;
+	
+	@Scheduled(initialDelay=10000,fixedDelay=Long.MAX_VALUE)
+	public void shutdownTest() {
+		System.err.println("Triggering restart");
+		restartFlag = true;
+		synchronized(restartLockObject) {
+			restartLockObject.notify();
+		}
+		((AbstractApplicationContext) applicationContext).close();
+	}
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.applicationContext = applicationContext;
+	}
+	
 }
