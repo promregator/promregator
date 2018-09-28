@@ -2,6 +2,9 @@ package org.cloudfoundry.promregator.cfaccessor;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map.Entry;
 
 import javax.annotation.PostConstruct;
 
@@ -13,8 +16,11 @@ import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.promregator.cache.AutoRefreshingCacheMap;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
+import org.cloudfoundry.promregator.messagebus.MessageBusDestination;
+import org.cloudfoundry.promregator.springconfig.JMSSpringConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jms.annotation.JmsListener;
 
 import reactor.core.publisher.Mono;
 
@@ -198,5 +204,95 @@ public class CFAccessorCache implements CFAccessor {
 		log.info("Invalidating org cache");
 		this.orgCache.clear();
 	}
+	
+	private void deleteSingleOrgFromSpaceCache(String orgId) {
+		List<CacheKeySpace> toBeDeleted = new LinkedList<>();
+		for (Entry<CacheKeySpace, Mono<ListSpacesResponse>> entry : this.spaceCache.entrySet()) {
+			if (entry.getKey().getOrgId().equals(orgId)) {
+				toBeDeleted.add(entry.getKey());
+			}
+		}
+		for (CacheKeySpace key : toBeDeleted) {
+			this.spaceCache.remove(key);
+		}
+	}
+	
+	@JmsListener(destination=MessageBusDestination.CF_EVENT_APP_CHANGED, containerFactory=JMSSpringConfiguration.BEAN_NAME_JMS_LISTENER_CONTAINER_FACTORY)
+	public void invalidateCacheForChangeApp(String spaceId) {
+		log.info(String.format("SpaceSummary cache invalidated for space id '%s' due to CF event on application", spaceId));
+		this.spaceSummaryCache.remove(spaceId);
+	}
 
+	@JmsListener(destination=MessageBusDestination.CF_EVENT_APP_CREATED, containerFactory=JMSSpringConfiguration.BEAN_NAME_JMS_LISTENER_CONTAINER_FACTORY)
+	public void invalidateCacheForCreateApp(String spaceId) {
+		log.info(String.format("SpaceSummary cache invalidated for space id '%s' due to CF event on creation of an application", spaceId));
+		this.spaceSummaryCache.remove(spaceId);
+	}
+	
+	@JmsListener(destination=MessageBusDestination.CF_EVENT_APP_DELETED, containerFactory=JMSSpringConfiguration.BEAN_NAME_JMS_LISTENER_CONTAINER_FACTORY)
+	public void invalidateCacheForDeleteApp(String spaceId) {
+		log.info(String.format("SpaceSummary cache invalidated for space id '%s' due to CF event on deletion of an application", spaceId));
+		this.spaceSummaryCache.remove(spaceId);
+	}
+	
+	@JmsListener(destination=MessageBusDestination.CF_EVENT_ROUTE_TO_APP_CHANGED, containerFactory=JMSSpringConfiguration.BEAN_NAME_JMS_LISTENER_CONTAINER_FACTORY)
+	public void invalidateCacheForAppDueToRouteChange(String spaceId) {
+		log.info(String.format("SpaceSummary cache invalidated for space id '%s' due to CF event on route change", spaceId));
+		this.spaceSummaryCache.remove(spaceId);
+	}
+	
+	// Note that we do not have to react on a CF_EVENT_SPACE_CREATED event: the cache is not made inconsistent by this
+	
+	@JmsListener(destination=MessageBusDestination.CF_EVENT_SPACE_CHANGED, containerFactory=JMSSpringConfiguration.BEAN_NAME_JMS_LISTENER_CONTAINER_FACTORY)
+	public void invalidateCacheSpaceChanged(String orgId) {
+		log.info(String.format("Space cache invalidated for all spaces in org '%s' due to CF event on space changed", orgId));
+		
+		/*
+		 * Note: From the event we cannot know the old spaceName. Thus, we cannot derive a CacheKeySpace
+		 * for it - and thus we cannot find the exact space to invalidate in the cache. 
+		 * The best thing we can do is to invalidate all spaces for that single org only.
+		 */
+		
+		deleteSingleOrgFromSpaceCache(orgId);
+	}
+	
+	@JmsListener(destination=MessageBusDestination.CF_EVENT_SPACE_DELETED, containerFactory=JMSSpringConfiguration.BEAN_NAME_JMS_LISTENER_CONTAINER_FACTORY)
+	public void invalidateCacheSpaceDeleted(CacheKeySpace key) {
+		log.info(String.format("Space cache invalidated for space name '%s' in org '%s' due to CF event on space changed", key.getSpaceName(), key.getOrgId()));
+		this.spaceCache.remove(key);
+		
+		/* 
+		 * Note: it would be good also to clean up the spaceSummaryCache here. However, this is not necessary, as the automated
+		 * cache cleanup functionality will do this automatically (no-one will be able to access the spaceSummaries there anyway anymore).
+		 */
+		
+	}
+	
+	// Note that we do not have to react on a CF_EVENT_ORG_CREATED event: the cache is not made inconsistent by this
+	
+	@JmsListener(destination=MessageBusDestination.CF_EVENT_ORG_DELETED, containerFactory=JMSSpringConfiguration.BEAN_NAME_JMS_LISTENER_CONTAINER_FACTORY)
+	public void invalidateCacheOrgDeleted(String orgId) {
+		/* We do not have the orgId available here.
+		 * However, that event is considered to be so seldom for Promregator,
+		 * that we accept that we invalidate the entire org cache
+		 */
+		log.info(String.format("Org cache completely invalidated due to CF event on org '%s' was deleted", orgId));
+		this.invalidateCacheOrg();
+		
+		log.info(String.format("Space cache invalidated for all spaces in org '%s' due to CF event on org was deleted", orgId));
+		deleteSingleOrgFromSpaceCache(orgId);
+		
+	}
+	
+	@JmsListener(destination=MessageBusDestination.CF_EVENT_ORG_CHANGED, containerFactory=JMSSpringConfiguration.BEAN_NAME_JMS_LISTENER_CONTAINER_FACTORY)
+	public void invalidateCacheOrgChanged() {
+		log.info(String.format("Org cache completely invalidated due to CF event on org changed"));
+		
+		/*
+		 * Note: From the event we do not know the old orgName. 
+		 * Thus, we cannot find the exact org to invalidate in the cache. 
+		 * The best thing we can do is to invalidate all orgs.
+		 */
+		this.invalidateCacheOrg();
+	}
 }
