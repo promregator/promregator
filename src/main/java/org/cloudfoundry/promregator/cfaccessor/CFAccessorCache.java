@@ -1,11 +1,13 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
 import java.time.Duration;
+import java.time.Instant;
 
 import javax.annotation.PostConstruct;
 
 import org.apache.log4j.Logger;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
+import org.cloudfoundry.client.v2.events.ListEventsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
@@ -163,7 +165,20 @@ public class CFAccessorCache implements CFAccessor {
 		return this.parent.retrieveSpaceIdsInOrg(orgId);
 	}
 
-	
+	/**
+	 * @param sinceTimestamp
+	 * @return
+	 * @see org.cloudfoundry.promregator.cfaccessor.CFAccessor#retrieveEvents(java.lang.String)
+	 */
+	@Override
+	public Mono<ListEventsResponse> retrieveEvents(Instant sinceTimestamp) {
+		/*
+		 * special case: we don't cache the result here in an own cache,
+		 * as we always want to have "fresh data".
+		 */
+		return parent.retrieveEvents(sinceTimestamp);
+	}
+
 	@Override
 	public Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId) {
 		return this.spaceSummaryCache.get(spaceId);

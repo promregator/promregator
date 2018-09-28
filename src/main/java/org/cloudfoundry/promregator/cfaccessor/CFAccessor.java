@@ -1,6 +1,9 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
+import java.time.Instant;
+
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
+import org.cloudfoundry.client.v2.events.ListEventsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
@@ -20,4 +23,6 @@ public interface CFAccessor {
 	Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String orgId, String spaceId);
 
 	Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId);
+	
+	Mono<ListEventsResponse> retrieveEvents(Instant sinceTimestamp);
 }

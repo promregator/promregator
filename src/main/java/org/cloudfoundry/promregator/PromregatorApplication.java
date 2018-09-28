@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorCache;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorSimulator;
+import org.cloudfoundry.promregator.cfaccessor.CFEventHandler;
 import org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl;
 import org.cloudfoundry.promregator.config.ConfigurationException;
 import org.cloudfoundry.promregator.config.ConfigurationValidations;
@@ -201,5 +202,10 @@ public class PromregatorApplication {
 	@Bean
 	public UUID promregatorInstanceIdentifer() {
 		return UUID.randomUUID();
+	}
+	
+	@Bean
+	public CFEventHandler cfEventHandler() {
+		return new CFEventHandler();
 	}
 }

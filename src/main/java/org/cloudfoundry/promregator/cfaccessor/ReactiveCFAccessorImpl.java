@@ -3,6 +3,9 @@ package org.cloudfoundry.promregator.cfaccessor;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -14,6 +17,8 @@ import org.apache.http.conn.util.InetAddressUtils;
 import org.apache.log4j.Logger;
 import org.cloudfoundry.client.v2.applications.ListApplicationsRequest;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
+import org.cloudfoundry.client.v2.events.ListEventsRequest;
+import org.cloudfoundry.client.v2.events.ListEventsResponse;
 import org.cloudfoundry.client.v2.info.GetInfoRequest;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsRequest;
@@ -277,6 +282,14 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		return this.performGenericRetrieval("spaceSummary", "retrieveSpaceSummary", spaceId, 
 				request, r -> this.cloudFoundryClient.spaces().getSummary(r), this.requestTimeoutAppSummary);
 
+	}
+	
+	public Mono<ListEventsResponse> retrieveEvents(Instant sinceTimestamp) {
+		String timestampString = DateTimeFormatter.ISO_OFFSET_DATE_TIME.withZone(ZoneId.of("UTC")).format(sinceTimestamp);
+		ListEventsRequest request = ListEventsRequest.builder().timestamp(timestampString).build();
+		
+		return this.performGenericRetrieval("events", "retrieveEvents", "(empty)", 
+				request, r -> this.cloudFoundryClient.events().list(r), 2000); /* TODO own timeout config parameter */
 	}
 
 }

@@ -1,6 +1,7 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -10,6 +11,7 @@ import org.cloudfoundry.client.v2.Metadata;
 import org.cloudfoundry.client.v2.applications.ApplicationEntity;
 import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
+import org.cloudfoundry.client.v2.events.ListEventsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.organizations.OrganizationEntity;
 import org.cloudfoundry.client.v2.organizations.OrganizationResource;
@@ -142,5 +144,11 @@ public class CFAccessorMassMock implements CFAccessor {
 	@Override
 	public Mono<ListSpacesResponse> retrieveSpaceIdsInOrg(String orgId) {
 		return this.retrieveSpaceId(UNITTEST_ORG_UUID, "unittestspace");
+	}
+
+	@Override
+	public Mono<ListEventsResponse> retrieveEvents(Instant sinceTimestamp) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
