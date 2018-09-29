@@ -3,7 +3,9 @@ package org.cloudfoundry.promregator.discovery;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -13,6 +15,12 @@ import java.util.function.Predicate;
 import javax.validation.constraints.Null;
 
 import org.apache.log4j.Logger;
+import org.cloudfoundry.client.v2.organizations.GetOrganizationResponse;
+import org.cloudfoundry.client.v2.servicebindings.ServiceBindingResource;
+import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
+import org.cloudfoundry.client.v2.userprovidedserviceinstances.ListUserProvidedServiceInstancesResponse;
+import org.cloudfoundry.client.v2.userprovidedserviceinstances.UserProvidedServiceInstanceResource;
+import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.messagebus.MessageBusDestination;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
@@ -24,6 +32,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Component
 public class CFDiscoverer {
@@ -40,6 +51,9 @@ public class CFDiscoverer {
 
 	@Autowired
 	private JmsTemplate jmsTemplate;
+	
+	@Autowired
+	private CFAccessor cfAccessor;
 	
 
 	@Autowired
@@ -68,6 +82,8 @@ public class CFDiscoverer {
 			}
 		}
 		
+		instanceList = this.discoverUserProvidedServices(applicationIdFilter, instanceFilter);
+		
 		return instanceList;
 	}
 
@@ -91,6 +107,82 @@ public class CFDiscoverer {
 		return instanceList;
 	}
 
+	private List<Instance> discoverUserProvidedServices(@Null Predicate<? super String> applicationIdFilter,
+			@Null Predicate<? super Instance> instanceFilter) {
+		
+		Mono<ListUserProvidedServiceInstancesResponse> upsListMono = this.cfAccessor.retrieveAllUserProvidedService();
+		
+		Flux<UserProvidedServiceInstanceResource> promregatorUPSFlux = upsListMono.map(resp -> resp.getResources())
+		.flatMapMany(res -> Flux.fromIterable(res))
+		.filter(item -> {
+			Map<String, Object> creds = item.getEntity().getCredentials();
+			return creds.get("promregator-version") != null;
+		});
+		
+		HashMap<String, String> mapUPS2SpaceId = new HashMap<>();
+		HashMap<String, String> mapSpaceId2SpaceName = new HashMap<>();
+		HashMap<String, String> mapSpaceId2OrgId = new HashMap<>();
+		HashMap<String, String> mapOrgId2OrgName = new HashMap<>();
+		
+		Flux<GetOrganizationResponse> stream1 = promregatorUPSFlux.doOnNext(item -> {
+			String upsId = item.getMetadata().getId();
+			String spaceId = item.getEntity().getSpaceId();
+			mapUPS2SpaceId.put(upsId, spaceId);
+		}).map(item -> item.getEntity().getSpaceId())
+		.distinct()
+		.flatMap(spaceId -> this.cfAccessor.retrieveSpace(spaceId))
+		.doOnNext(space -> {
+			String spaceId = space.getMetadata().getId();
+			String spaceName = space.getEntity().getName();
+			mapSpaceId2SpaceName.put(spaceId, spaceName);
+			
+			String orgId = space.getEntity().getOrganizationId();
+			mapSpaceId2OrgId.put(spaceId, orgId);
+		}).map(space -> space.getEntity().getOrganizationId())
+		.distinct()
+		.flatMap(orgId -> this.cfAccessor.retrieveOrg(orgId))
+		.doOnNext(org -> {
+			String orgId = org.getMetadata().getId();
+			String orgName = org.getEntity().getName();
+			mapOrgId2OrgName.put(orgId, orgName);
+		});
+		
+		HashMap<String, List<String>> mapUPS2ApplicationIds = new HashMap<>();
+		
+		Flux<ServiceBindingResource> stream2 = promregatorUPSFlux.map(item -> item.getMetadata().getId())
+		.flatMap(upsId -> this.cfAccessor.retrieveUserProvidedServiceBindings(upsId))
+		.map(resp -> resp.getResources())
+		.flatMap(list -> Flux.fromIterable(list))
+		.doOnNext(binding -> {
+			String upsId = binding.getEntity().getServiceInstanceId();
+			String applicationId = binding.getEntity().getApplicationId();
+			
+			// Warning! There may be multiple ApplicationIds per UPSId 
+			// and there might also be multiple bindings between the application and the same UPS!
+			if (!mapUPS2ApplicationIds.containsKey(upsId)) {
+				mapUPS2ApplicationIds.put(upsId, new LinkedList<>());
+			}
+			
+			List<String> applicationIds = mapUPS2ApplicationIds.get(upsId);
+			applicationIds.add(applicationId);
+		});
+		
+		HashMap<String, SpaceApplicationSummary> mapApplicationId2spaceSummaryApplication = new HashMap<>();
+		
+		Flux<SpaceApplicationSummary> stream3 = promregatorUPSFlux.map(item -> item.getEntity().getSpaceId())
+		.flatMap(spaceId -> this.cfAccessor.retrieveSpaceSummary(spaceId))
+		.map(resp -> resp.getApplications())
+		.flatMap(list -> Flux.fromIterable(list))
+		.doOnNext(spaceSummaryApplication -> {
+			String applicationId = spaceSummaryApplication.getId();
+			mapApplicationId2spaceSummaryApplication.put(applicationId, spaceSummaryApplication);
+		});
+		
+		Mono.when(stream1, stream2, stream3).block();
+		
+		return null;
+	}
+	
 	private void registerInstance(Instance instance) {
 		Instant timeout = nextTimeout();
 		this.instanceExpiryMap.put(instance, timeout);

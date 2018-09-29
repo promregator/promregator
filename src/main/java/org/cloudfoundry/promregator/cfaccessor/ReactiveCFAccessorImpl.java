@@ -3,6 +3,7 @@ package org.cloudfoundry.promregator.cfaccessor;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -16,12 +17,21 @@ import org.cloudfoundry.client.v2.applications.ListApplicationsRequest;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.info.GetInfoRequest;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
+import org.cloudfoundry.client.v2.organizations.GetOrganizationRequest;
+import org.cloudfoundry.client.v2.organizations.GetOrganizationResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsRequest;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
+import org.cloudfoundry.client.v2.spaces.GetSpaceRequest;
+import org.cloudfoundry.client.v2.spaces.GetSpaceResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryRequest;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesRequest;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
+import org.cloudfoundry.client.v2.userprovidedserviceinstances.ListUserProvidedServiceInstanceServiceBindingsRequest;
+import org.cloudfoundry.client.v2.userprovidedserviceinstances.ListUserProvidedServiceInstanceServiceBindingsResponse;
+import org.cloudfoundry.client.v2.userprovidedserviceinstances.ListUserProvidedServiceInstancesRequest;
+import org.cloudfoundry.client.v2.userprovidedserviceinstances.ListUserProvidedServiceInstancesResponse;
+import org.cloudfoundry.operations.spaces.Spaces;
 import org.cloudfoundry.promregator.config.ConfigurationException;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.cloudfoundry.reactor.ConnectionContext;
@@ -279,4 +289,37 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 
 	}
 
+	@Override
+	public Mono<ListUserProvidedServiceInstancesResponse> retrieveAllUserProvidedService() {
+		ListUserProvidedServiceInstancesRequest request = ListUserProvidedServiceInstancesRequest.builder().build();
+		
+		Mono<ListUserProvidedServiceInstancesResponse> response = this.performGenericRetrieval("ups", "retrieveAllUserProvidedServices", "(empty)", request, 
+				r -> this.cloudFoundryClient.userProvidedServiceInstances().list(r), 7000); // TODO make it customizable
+		
+		return response;
+	}
+
+	@Override
+	public Mono<GetSpaceResponse> retrieveSpace(String spaceId) {
+		GetSpaceRequest request = GetSpaceRequest.builder().spaceId(spaceId).build();
+		return this.performGenericRetrieval("spaceSingle", "retrieveSpace", spaceId, request, 
+				r -> this.cloudFoundryClient.spaces().get(r), this.requestTimeoutSpace);
+	}
+
+	@Override
+	public Mono<GetOrganizationResponse> retrieveOrg(String orgId) {
+		GetOrganizationRequest request = GetOrganizationRequest.builder().organizationId(orgId).build();
+		return this.performGenericRetrieval("orgSingle", "retrieveOrg", orgId, request, 
+				r -> this.cloudFoundryClient.organizations().get(r), this.requestTimeoutOrg);
+	}
+
+	@Override
+	public Mono<ListUserProvidedServiceInstanceServiceBindingsResponse> retrieveUserProvidedServiceBindings(
+			String upsId) {
+		ListUserProvidedServiceInstanceServiceBindingsRequest request = ListUserProvidedServiceInstanceServiceBindingsRequest.builder()
+				.userProvidedServiceInstanceId(upsId).build();
+		
+		return this.performGenericRetrieval("upsBinding", "retrieveUserProvidedServiceBindings", upsId, request, 
+				r -> this.cloudFoundryClient.userProvidedServiceInstances().listServiceBindings(r), 2500); // TODO make it customizable
+	}
 }

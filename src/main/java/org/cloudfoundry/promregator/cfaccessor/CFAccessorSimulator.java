@@ -11,14 +11,18 @@ import org.cloudfoundry.client.v2.Metadata;
 import org.cloudfoundry.client.v2.applications.ApplicationEntity;
 import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
+import org.cloudfoundry.client.v2.organizations.GetOrganizationResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.organizations.OrganizationEntity;
 import org.cloudfoundry.client.v2.organizations.OrganizationResource;
+import org.cloudfoundry.client.v2.spaces.GetSpaceResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v2.spaces.SpaceEntity;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
+import org.cloudfoundry.client.v2.userprovidedserviceinstances.ListUserProvidedServiceInstanceServiceBindingsResponse;
+import org.cloudfoundry.client.v2.userprovidedserviceinstances.ListUserProvidedServiceInstancesResponse;
 
 import reactor.core.publisher.Mono;
 
@@ -151,6 +155,31 @@ public class CFAccessorSimulator implements CFAccessor {
 		}
 		
 		log.error("Invalid retrieveSpaceSummary request");
+		return null;
+	}
+
+	@Override
+	public Mono<ListUserProvidedServiceInstancesResponse> retrieveAllUserProvidedService() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Mono<GetSpaceResponse> retrieveSpace(String spaceId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Mono<GetOrganizationResponse> retrieveOrg(String orgId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Mono<ListUserProvidedServiceInstanceServiceBindingsResponse> retrieveUserProvidedServiceBindings(
+			String upsId) {
+		// TODO Auto-generated method stub
 		return null;
 	}
 

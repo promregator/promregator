@@ -6,9 +6,13 @@ import javax.annotation.PostConstruct;
 
 import org.apache.log4j.Logger;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
+import org.cloudfoundry.client.v2.organizations.GetOrganizationResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
+import org.cloudfoundry.client.v2.spaces.GetSpaceResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
+import org.cloudfoundry.client.v2.userprovidedserviceinstances.ListUserProvidedServiceInstanceServiceBindingsResponse;
+import org.cloudfoundry.client.v2.userprovidedserviceinstances.ListUserProvidedServiceInstancesResponse;
 import org.cloudfoundry.promregator.cache.AutoRefreshingCacheMap;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -182,6 +186,31 @@ public class CFAccessorCache implements CFAccessor {
 	public void invalidateCacheOrg() {
 		log.info("Invalidating org cache");
 		this.orgCache.clear();
+	}
+
+	@Override
+	public Mono<ListUserProvidedServiceInstancesResponse> retrieveAllUserProvidedService() {
+		// TODO: clarify caching
+		return this.parent.retrieveAllUserProvidedService();
+	}
+
+	@Override
+	public Mono<GetSpaceResponse> retrieveSpace(String spaceId) {
+		// TODO: clarify caching
+		return this.parent.retrieveSpace(spaceId);
+	}
+
+	@Override
+	public Mono<GetOrganizationResponse> retrieveOrg(String orgId) {
+		// TODO: clarify caching
+		return this.parent.retrieveOrg(orgId);
+	}
+
+	@Override
+	public Mono<ListUserProvidedServiceInstanceServiceBindingsResponse> retrieveUserProvidedServiceBindings(
+			String upsId) {
+		// TODO clarify caching
+		return this.parent.retrieveUserProvidedServiceBindings(upsId);
 	}
 
 }
