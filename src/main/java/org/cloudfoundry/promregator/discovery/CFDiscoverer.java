@@ -215,7 +215,7 @@ public class CFDiscoverer {
 				int numberOfInstances = spaceApplicationSummary.getInstances();
 				
 				for (int i = 0; i<numberOfInstances; i++) {
-					Instance inst = new UPSBasedInstance(i+"", accessUrl, orgName, spaceName, spaceApplicationSummary.getName());
+					Instance inst = new UPSBasedInstance(String.format("%s:%d", appId, i), accessUrl, orgName, spaceName, spaceApplicationSummary.getName());
 					instances.add(inst);
 				}
 			}
