@@ -7,13 +7,15 @@ public class UPSBasedInstance extends Instance {
 	private String orgName;
 	private String spaceName;
 	private String applicationName;
+	private AuthenticationEnricher ae;
 
 	public UPSBasedInstance(String instanceId, String accessUrl, String orgName, String spaceName,
-			String applicationName) {
+			String applicationName, AuthenticationEnricher ae) {
 		super(instanceId, accessUrl);
 		this.orgName = orgName;
 		this.spaceName = spaceName;
 		this.applicationName = applicationName;
+		this.ae = ae;
 	}
 
 	@Override
@@ -33,8 +35,7 @@ public class UPSBasedInstance extends Instance {
 
 	@Override
 	public AuthenticationEnricher getAuthenticationEnricher() {
-		// TODO Auto-generated method stub
-		return new NullEnricher();
+		return this.ae;
 	}
 
 }

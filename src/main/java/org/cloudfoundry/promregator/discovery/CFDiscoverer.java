@@ -21,7 +21,11 @@ import org.cloudfoundry.client.v2.servicebindings.ServiceBindingResource;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v2.userprovidedserviceinstances.ListUserProvidedServiceInstancesResponse;
 import org.cloudfoundry.client.v2.userprovidedserviceinstances.UserProvidedServiceInstanceResource;
+import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
+import org.cloudfoundry.promregator.auth.BasicAuthenticationEnricher;
+import org.cloudfoundry.promregator.auth.NullEnricher;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
+import org.cloudfoundry.promregator.config.BasicAuthenticationConfiguration;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.messagebus.MessageBusDestination;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
@@ -40,6 +44,8 @@ import reactor.core.publisher.Mono;
 @Component
 public class CFDiscoverer {
 	private static final Logger log = Logger.getLogger(CFDiscoverer.class);
+
+	private static final AuthenticationEnricher NULL_ENRICHER = new NullEnricher();
 	
 	@Autowired
 	private TargetResolver targetResolver;
@@ -113,6 +119,8 @@ public class CFDiscoverer {
 		
 		// TODO applicationIdFilter to be considered
 		// TODO instanceFilter to be considered
+		
+		// TODO: Handle errors here much more properly!
 		
 		Mono<ListUserProvidedServiceInstancesResponse> upsListMono = this.cfAccessor.retrieveAllUserProvidedService();
 		
@@ -206,6 +214,9 @@ public class CFDiscoverer {
 			String path = (String) creds.get("path");
 			String protocol = (String) creds.get("protocol");
 			
+			String username = (String) creds.get("username");
+			String password = (String) creds.get("password");
+			
 			for (String appId : ups2AppIdsEntry.getValue()) {
 				SpaceApplicationSummary spaceApplicationSummary = mapApplicationId2spaceSummaryApplication.get(appId);
 
@@ -215,7 +226,16 @@ public class CFDiscoverer {
 				int numberOfInstances = spaceApplicationSummary.getInstances();
 				
 				for (int i = 0; i<numberOfInstances; i++) {
-					Instance inst = new UPSBasedInstance(String.format("%s:%d", appId, i), accessUrl, orgName, spaceName, spaceApplicationSummary.getName());
+					AuthenticationEnricher ae = NULL_ENRICHER;
+					if (username != null && password != null) {
+						BasicAuthenticationConfiguration authenticatorConfig = new BasicAuthenticationConfiguration();
+						authenticatorConfig.setUsername(username);
+						authenticatorConfig.setPassword(password);
+						ae = new BasicAuthenticationEnricher(authenticatorConfig);
+					}
+					// TODO also handle OAuth2XSUAAEnricher
+					
+					Instance inst = new UPSBasedInstance(String.format("%s:%d", appId, i), accessUrl, orgName, spaceName, spaceApplicationSummary.getName(), ae);
 					instances.add(inst);
 				}
 			}
