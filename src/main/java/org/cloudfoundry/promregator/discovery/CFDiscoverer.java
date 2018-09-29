@@ -59,6 +59,20 @@ public class CFDiscoverer {
 	 */
 	@Null
 	public List<Instance> discover(@Null Predicate<? super String> applicationIdFilter, @Null Predicate<? super Instance> instanceFilter) {
+		List<Instance> instanceList = this.discoverConfigurationTargets(applicationIdFilter, instanceFilter);
+
+		if (instanceList != null) {
+			// ensure that the instances are registered / touched properly
+			for (Instance instance : instanceList) {
+				this.registerInstance(instance);
+			}
+		}
+		
+		return instanceList;
+	}
+
+	private List<Instance> discoverConfigurationTargets(Predicate<? super String> applicationIdFilter,
+			Predicate<? super Instance> instanceFilter) {
 		log.debug(String.format("We have %d targets configured", this.promregatorConfiguration.getTargets().size()));
 		
 		List<ResolvedTarget> resolvedTargets = this.targetResolver.resolveTargets(this.promregatorConfiguration.getTargets());
@@ -74,12 +88,6 @@ public class CFDiscoverer {
 			return null;
 		}
 		log.debug(String.format("Raw list contains %d instances", instanceList.size()));
-
-		// ensure that the instances are registered / touched properly
-		for (Instance instance : instanceList) {
-			this.registerInstance(instance);
-		}
-		
 		return instanceList;
 	}
 
