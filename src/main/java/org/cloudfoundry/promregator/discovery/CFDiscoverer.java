@@ -3,6 +3,7 @@ package org.cloudfoundry.promregator.discovery;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -25,6 +26,7 @@ import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.messagebus.MessageBusDestination;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
+import org.cloudfoundry.promregator.scanner.ScannerUtils;
 import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -114,6 +116,8 @@ public class CFDiscoverer {
 		
 		Mono<ListUserProvidedServiceInstancesResponse> upsListMono = this.cfAccessor.retrieveAllUserProvidedService();
 		
+		HashMap<String, Map<String, Object>> mapUPS2Credentials = new HashMap<>();
+		
 		Flux<UserProvidedServiceInstanceResource> promregatorUPSFlux = upsListMono.map(resp -> resp.getResources())
 		.flatMapMany(res -> Flux.fromIterable(res))
 		.filter(item -> {
@@ -121,11 +125,10 @@ public class CFDiscoverer {
 			return creds.get("promregator-version") != null;
 		}).doOnNext(item -> {
 			Map<String, Object> creds = item.getEntity().getCredentials();
-			String path = (String) creds.get("path");
-			String username = (String) creds.get("username");
-			String password = (String) creds.get("password");
+			mapUPS2Credentials.put(item.getMetadata().getId(), creds);
 		});
 		
+		/* Stream 1: Retrieve org/space information */
 		HashMap<String, String> mapUPS2SpaceId = new HashMap<>();
 		HashMap<String, String> mapSpaceId2SpaceName = new HashMap<>();
 		HashMap<String, String> mapSpaceId2OrgId = new HashMap<>();
@@ -154,6 +157,7 @@ public class CFDiscoverer {
 			mapOrgId2OrgName.put(orgId, orgName);
 		});
 		
+		/* Stream 2: Retrieve Application Ids via UPS bindings */
 		HashMap<String, List<String>> mapUPS2ApplicationIds = new HashMap<>();
 		
 		Flux<ServiceBindingResource> stream2 = promregatorUPSFlux.map(item -> item.getMetadata().getId())
@@ -174,6 +178,7 @@ public class CFDiscoverer {
 			applicationIds.add(applicationId);
 		});
 		
+		/* Stream 3: Retrieve SpaceApplicationSummaries based on applicationIds */
 		HashMap<String, SpaceApplicationSummary> mapApplicationId2spaceSummaryApplication = new HashMap<>();
 		
 		Flux<SpaceApplicationSummary> stream3 = promregatorUPSFlux.map(item -> item.getEntity().getSpaceId())
@@ -185,9 +190,38 @@ public class CFDiscoverer {
 			mapApplicationId2spaceSummaryApplication.put(applicationId, spaceSummaryApplication);
 		});
 		
+		/* wait for all streams to complete (which automatically fills all or HashMaps */
 		Mono.when(stream1, stream2, stream3).block();
 		
-		return null;
+		/* fiddle everything together */
+		List<Instance> instances = new LinkedList<>();
+		for (Entry<String, List<String>> ups2AppIdsEntry : mapUPS2ApplicationIds.entrySet()) {
+			String upsId = ups2AppIdsEntry.getKey();
+			String spaceId = mapUPS2SpaceId.get(upsId);
+			String spaceName = mapSpaceId2SpaceName.get(spaceId);
+			String orgId = mapSpaceId2OrgId.get(spaceId);
+			String orgName = mapOrgId2OrgName.get(orgId);
+			
+			Map<String, Object> creds = mapUPS2Credentials.get(upsId);
+			String path = (String) creds.get("path");
+			String protocol = (String) creds.get("protocol");
+			
+			for (String appId : ups2AppIdsEntry.getValue()) {
+				SpaceApplicationSummary spaceApplicationSummary = mapApplicationId2spaceSummaryApplication.get(appId);
+
+				String applicationUrl = String.format("%s://%s", protocol, spaceApplicationSummary.getUrls().get(0));
+				String accessUrl = ScannerUtils.determineAccessURL(applicationUrl, path);
+				
+				int numberOfInstances = spaceApplicationSummary.getInstances();
+				
+				for (int i = 0; i<numberOfInstances; i++) {
+					Instance inst = new UPSBasedInstance(i+"", accessUrl, orgName, spaceName, spaceApplicationSummary.getName(), path);
+					instances.add(inst);
+				}
+			}
+		}
+		
+		return instances;
 	}
 	
 	private void registerInstance(Instance instance) {

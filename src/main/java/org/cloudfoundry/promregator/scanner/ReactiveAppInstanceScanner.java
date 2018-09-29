@@ -126,7 +126,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			List<String> urls = sas.getUrls();
 			if (urls != null && !urls.isEmpty()) {
 				String url = String.format("%s://%s", v.target.getProtocol(), urls.get(0));
-				v.accessURL = this.determineAccessURL(url, v.target.getPath());
+				v.accessURL = ScannerUtils.determineAccessURL(url, v.target.getPath());
 			}
 			
 			v.numberOfInstances = sas.getInstances();
@@ -233,20 +233,6 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				log.error(String.format("retrieving summary for space id '%s' resulted in an exception", spaceIdString), e);
 				return Mono.just(INVALID_SUMMARY);
 			});
-	}
-	
-	private String determineAccessURL(final String applicationUrl, final String path) {
-		String applUrl = applicationUrl;
-		if (!applicationUrl.endsWith("/")) {
-			applUrl += '/';
-		}
-		
-		String internalPath = path;
-		while (internalPath.startsWith("/")) {
-			internalPath = internalPath.substring(1);
-		}
-		
-		return applUrl + internalPath;
 	}
 	
 	public void invalidateApplicationUrlCache() {
