@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.log4j.Logger;
 import org.cloudfoundry.client.v2.Metadata;
 import org.cloudfoundry.client.v2.applications.ApplicationEntity;
@@ -161,26 +162,26 @@ public class CFAccessorSimulator implements CFAccessor {
 	@Override
 	public Mono<ListUserProvidedServiceInstancesResponse> retrieveAllUserProvidedService() {
 		// TODO Auto-generated method stub
-		return null;
+		throw new NotImplementedException("Not yet implemented");
 	}
 
 	@Override
 	public Mono<GetSpaceResponse> retrieveSpace(String spaceId) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new NotImplementedException("Not yet implemented");
 	}
 
 	@Override
 	public Mono<GetOrganizationResponse> retrieveOrg(String orgId) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new NotImplementedException("Not yet implemented");
 	}
 
 	@Override
 	public Mono<ListUserProvidedServiceInstanceServiceBindingsResponse> retrieveUserProvidedServiceBindings(
 			String upsId) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new NotImplementedException("Not yet implemented");
 	}
 
 }
