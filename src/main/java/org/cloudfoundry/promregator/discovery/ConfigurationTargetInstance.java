@@ -41,11 +41,6 @@ public class ConfigurationTargetInstance extends Instance {
 	}
 	
 	@Override
-	public String getPath() {
-		return this.target.getPath();
-	}
-	
-	@Override
 	public AuthenticationEnricher getAuthenticationEnricher() {
 		return this.ac.getAuthenticationEnricherByTarget(this.target.getOriginalTarget());
 	}

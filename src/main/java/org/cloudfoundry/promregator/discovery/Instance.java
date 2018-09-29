@@ -20,7 +20,6 @@ public abstract class Instance {
 	public abstract String getOrgName();
 	public abstract String getSpaceName();
 	public abstract String getApplicationName();
-	public abstract String getPath();
 	
 	public abstract AuthenticationEnricher getAuthenticationEnricher();
 	

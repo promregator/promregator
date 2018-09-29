@@ -7,15 +7,13 @@ public class UPSBasedInstance extends Instance {
 	private String orgName;
 	private String spaceName;
 	private String applicationName;
-	private String path;
 
 	public UPSBasedInstance(String instanceId, String accessUrl, String orgName, String spaceName,
-			String applicationName, String path) {
+			String applicationName) {
 		super(instanceId, accessUrl);
 		this.orgName = orgName;
 		this.spaceName = spaceName;
 		this.applicationName = applicationName;
-		this.path = path;
 	}
 
 	@Override
@@ -31,11 +29,6 @@ public class UPSBasedInstance extends Instance {
 	@Override
 	public String getApplicationName() {
 		return this.applicationName;
-	}
-
-	@Override
-	public String getPath() {
-		return this.path;
 	}
 
 	@Override
