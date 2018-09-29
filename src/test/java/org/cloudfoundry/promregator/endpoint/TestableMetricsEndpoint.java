@@ -3,8 +3,8 @@ package org.cloudfoundry.promregator.endpoint;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.cloudfoundry.promregator.discovery.Instance;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcher;
-import org.cloudfoundry.promregator.scanner.Instance;
 import org.springframework.context.annotation.Scope;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

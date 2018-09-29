@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.discovery.CFDiscoverer;
-import org.cloudfoundry.promregator.scanner.Instance;
+import org.cloudfoundry.promregator.discovery.Instance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;

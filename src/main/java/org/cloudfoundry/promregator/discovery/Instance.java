@@ -1,4 +1,6 @@
-package org.cloudfoundry.promregator.scanner;
+package org.cloudfoundry.promregator.discovery;
+
+import org.cloudfoundry.promregator.scanner.ResolvedTarget;
 
 /**
  * An instance provides a mapping from a target (provided by configuration)

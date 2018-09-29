@@ -4,8 +4,8 @@ import java.time.Duration;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.cloudfoundry.promregator.discovery.Instance;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcher;
-import org.cloudfoundry.promregator.scanner.Instance;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

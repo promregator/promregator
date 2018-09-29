@@ -5,6 +5,8 @@ import java.util.function.Predicate;
 
 import javax.validation.constraints.Null;
 
+import org.cloudfoundry.promregator.discovery.Instance;
+
 public interface AppInstanceScanner {
 
 	/**

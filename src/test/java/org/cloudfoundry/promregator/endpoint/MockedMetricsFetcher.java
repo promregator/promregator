@@ -4,8 +4,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.cloudfoundry.promregator.discovery.Instance;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcher;
-import org.cloudfoundry.promregator.scanner.Instance;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Collector.Type;

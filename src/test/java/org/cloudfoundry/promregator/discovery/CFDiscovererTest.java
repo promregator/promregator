@@ -8,7 +8,6 @@ import java.util.List;
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorMock;
 import org.cloudfoundry.promregator.messagebus.MessageBusDestination;
-import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.springconfig.JMSSpringConfiguration;
 import org.junit.AfterClass;
 import org.junit.Assert;

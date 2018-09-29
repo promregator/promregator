@@ -4,8 +4,8 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.cloudfoundry.promregator.discovery.Instance;
 import org.cloudfoundry.promregator.rewrite.CFMetricFamilySamplesEnricher;
-import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;

@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorMassMock;
+import org.cloudfoundry.promregator.discovery.Instance;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;

@@ -2,7 +2,7 @@ package org.cloudfoundry.promregator.endpoint;
 
 import java.util.function.Predicate;
 
-import org.cloudfoundry.promregator.scanner.Instance;
+import org.cloudfoundry.promregator.discovery.Instance;
 import org.junit.Assert;
 import org.junit.Test;
 

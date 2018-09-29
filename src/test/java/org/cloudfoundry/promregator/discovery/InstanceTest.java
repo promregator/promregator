@@ -1,5 +1,7 @@
-package org.cloudfoundry.promregator.scanner;
+package org.cloudfoundry.promregator.discovery;
 
+import org.cloudfoundry.promregator.discovery.Instance;
+import org.cloudfoundry.promregator.scanner.ResolvedTarget;
 import org.junit.Assert;
 import org.junit.Test;
 
