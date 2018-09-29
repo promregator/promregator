@@ -81,6 +81,7 @@ public class CFDiscoverer {
 	@Null
 	public List<Instance> discover(@Null Predicate<? super String> applicationIdFilter, @Null Predicate<? super Instance> instanceFilter) {
 		List<Instance> instanceList = this.discoverConfigurationTargets(applicationIdFilter, instanceFilter);
+		instanceList.addAll(this.discoverUserProvidedServices(applicationIdFilter, instanceFilter));
 
 		if (instanceList != null) {
 			// ensure that the instances are registered / touched properly
@@ -88,8 +89,6 @@ public class CFDiscoverer {
 				this.registerInstance(instance);
 			}
 		}
-		
-		instanceList = this.discoverUserProvidedServices(applicationIdFilter, instanceFilter);
 		
 		return instanceList;
 	}
@@ -198,7 +197,7 @@ public class CFDiscoverer {
 			mapApplicationId2spaceSummaryApplication.put(applicationId, spaceSummaryApplication);
 		});
 		
-		/* wait for all streams to complete (which automatically fills all or HashMaps */
+		/* wait for all streams to complete (which automatically fills all our HashMaps */
 		Mono.when(stream1, stream2, stream3).block();
 		
 		/* fiddle everything together */
