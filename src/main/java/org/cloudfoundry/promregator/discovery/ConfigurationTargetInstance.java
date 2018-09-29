@@ -21,6 +21,26 @@ public class ConfigurationTargetInstance extends Instance {
 		this.target = target;
 	}
 	
+	@Override
+	public String getOrgName() {
+		return this.target.getOrgName();
+	}
+
+	@Override
+	public String getSpaceName() {
+		return this.target.getSpaceName();
+	}
+
+	@Override
+	public String getApplicationName() {
+		return this.target.getApplicationName();
+	}
+	
+	@Override
+	public String getPath() {
+		return this.target.getPath();
+	}
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */

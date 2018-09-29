@@ -17,6 +17,7 @@ import org.cloudfoundry.promregator.auth.AuthenticatorController;
 import org.cloudfoundry.promregator.auth.NullEnricher;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.discovery.CFDiscoverer;
+import org.cloudfoundry.promregator.discovery.ConfigurationTargetInstance;
 import org.cloudfoundry.promregator.discovery.Instance;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
@@ -62,8 +63,8 @@ public class MockedMetricsEndpointSpringApplication {
 				t.setApplicationName("unittestapp");
 				t.setPath("/path");
 				t.setProtocol("https");
-				result.add(new Instance(t, "faedbb0a-2273-4cb4-a659-bd31331f7daf:0", "http://localhost:1234"));
-				result.add(new Instance(t, "faedbb0a-2273-4cb4-a659-bd31331f7daf:1", "http://localhost:1234"));
+				result.add(new ConfigurationTargetInstance(t, "faedbb0a-2273-4cb4-a659-bd31331f7daf:0", "http://localhost:1234"));
+				result.add(new ConfigurationTargetInstance(t, "faedbb0a-2273-4cb4-a659-bd31331f7daf:1", "http://localhost:1234"));
 
 				t = new ResolvedTarget();
 				t.setOrgName("unittestorg");
@@ -71,7 +72,7 @@ public class MockedMetricsEndpointSpringApplication {
 				t.setApplicationName("unittestapp2");
 				t.setPath("/otherpath");
 				t.setProtocol("http");
-				result.add(new Instance(t, "1142a717-e27d-4028-89d8-b42a0c973300:0", "http://localhost:1235"));
+				result.add(new ConfigurationTargetInstance(t, "1142a717-e27d-4028-89d8-b42a0c973300:0", "http://localhost:1235"));
 
 				if (applicationIdFilter != null) {
 					for (Iterator<Instance> it = result.iterator(); it.hasNext();) {

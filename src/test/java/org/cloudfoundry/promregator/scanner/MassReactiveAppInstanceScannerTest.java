@@ -168,9 +168,9 @@ public class MassReactiveAppInstanceScannerTest {
 		Assert.assertEquals(numberOfApps*10, result.size());
 
 		for (Instance instance : result) {
-			String targetNumber = instance.getTarget().getApplicationName().substring(7);
+			String targetNumber = instance.getApplicationName().substring(7);
 			
-			Assert.assertEquals("/testpath"+targetNumber, instance.getTarget().getPath());
+			Assert.assertEquals("/testpath"+targetNumber, instance.getPath());
 			Assert.assertTrue(instance.getAccessUrl().endsWith(targetNumber));
 		}
 	}

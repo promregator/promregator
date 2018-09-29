@@ -55,9 +55,9 @@ public class DiscoveryEndpoint {
 		public DiscoveryLabel(String __meta_promregator_target_path, Instance instance) {
 			this(__meta_promregator_target_path);
 			
-			this.__meta_promregator_target_orgName = instance.getTarget().getOrgName();
-			this.__meta_promregator_target_spaceName = instance.getTarget().getSpaceName();
-			this.__meta_promregator_target_applicationName = instance.getTarget().getApplicationName();
+			this.__meta_promregator_target_orgName = instance.getOrgName();
+			this.__meta_promregator_target_spaceName = instance.getSpaceName();
+			this.__meta_promregator_target_applicationName = instance.getApplicationName();
 			this.__meta_promregator_target_applicationId = instance.getApplicationId();
 			this.__meta_promregator_target_instanceNumber = instance.getInstanceNumber();
 			this.__meta_promregator_target_instanceId = instance.getInstanceId();

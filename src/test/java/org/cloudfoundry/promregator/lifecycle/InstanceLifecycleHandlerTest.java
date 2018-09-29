@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
+import org.cloudfoundry.promregator.discovery.ConfigurationTargetInstance;
 import org.cloudfoundry.promregator.discovery.Instance;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcherMetrics;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
@@ -37,13 +38,13 @@ public class InstanceLifecycleHandlerTest {
 		rt.setPath("/path/test");
 		rt.setProtocol("https");
 		
-		Instance i = new Instance(rt, "55820b2c-2fa5-11e8-b467-0ed5f89f718b:3", "access.url.bogus");
+		Instance i = new ConfigurationTargetInstance(rt, "55820b2c-2fa5-11e8-b467-0ed5f89f718b:3", "access.url.bogus");
 		
 		/* generate some data first */
 		
-		String orgName = i.getTarget().getOrgName();
-		String spaceName = i.getTarget().getSpaceName();
-		String appName = i.getTarget().getApplicationName();
+		String orgName = i.getOrgName();
+		String spaceName = i.getSpaceName();
+		String appName = i.getApplicationName();
 		
 		AbstractMetricFamilySamplesEnricher mfse = new CFMetricFamilySamplesEnricher(orgName, spaceName, appName, i.getInstanceId());
 		List<String> labelValues = mfse.getEnrichedLabelValues(new LinkedList<>());

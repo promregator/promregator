@@ -235,10 +235,9 @@ public abstract class AbstractMetricsEndpoint {
 		for (Instance instance : instanceList) {
 			log.debug(String.format("Creating Metrics Fetcher for instance %s", instance.getInstanceId()));
 			
-			ResolvedTarget target = instance.getTarget();
-			String orgName = target.getOrgName();
-			String spaceName = target.getSpaceName();
-			String appName = target.getApplicationName();
+			String orgName = instance.getOrgName();
+			String spaceName = instance.getSpaceName();
+			String appName = instance.getApplicationName();
 			
 			String accessURL = instance.getAccessUrl();
 			

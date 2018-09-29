@@ -70,8 +70,7 @@ public class SingleTargetMetricsEndpoint extends AbstractMetricsEndpoint {
 				.labelNames(CFMetricFamilySamplesEnricher.getEnrichingLabelNames())
 				.register(requestRegistry);
 		
-		ResolvedTarget t = this.instance.getTarget();
-		CFMetricFamilySamplesEnricher enricher = new CFMetricFamilySamplesEnricher(t.getOrgName(), t.getSpaceName(), t.getApplicationName(), this.instance.getInstanceId());
+		CFMetricFamilySamplesEnricher enricher = new CFMetricFamilySamplesEnricher(this.instance.getOrgName(), this.instance.getSpaceName(), this.instance.getApplicationName(), this.instance.getInstanceId());
 		
 		List<String> labelValues = enricher.getEnrichedLabelValues(new ArrayList<String>(0));
 		scrape_duration.labels(labelValues.toArray(new String[0])).set(duration.toMillis() / 1000.0);

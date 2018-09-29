@@ -18,6 +18,7 @@ import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
+import org.cloudfoundry.promregator.discovery.ConfigurationTargetInstance;
 import org.cloudfoundry.promregator.discovery.Instance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -137,7 +138,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		Flux<Instance> instancesFlux = OSAVectorApplicationFlux.flatMapSequential(v -> {
 			List<Instance> instances = new ArrayList<>(v.numberOfInstances);
 			for (int i = 0; i<v.numberOfInstances; i++) {
-				Instance inst = new Instance(v.target, String.format("%s:%d", v.applicationId, i), v.accessURL);
+				Instance inst = new ConfigurationTargetInstance(v.target, String.format("%s:%d", v.applicationId, i), v.accessURL);
 				instances.add(inst);
 			}
 			

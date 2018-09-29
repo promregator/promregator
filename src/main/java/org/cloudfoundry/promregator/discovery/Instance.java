@@ -15,6 +15,11 @@ public abstract class Instance {
 		this.accessUrl = accessUrl;
 	}
 
+	public abstract String getOrgName();
+	public abstract String getSpaceName();
+	public abstract String getApplicationName();
+	public abstract String getPath();
+	
 	public String getInstanceId() {
 		return instanceId;
 	}

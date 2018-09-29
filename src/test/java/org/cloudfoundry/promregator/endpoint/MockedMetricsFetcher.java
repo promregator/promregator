@@ -22,7 +22,7 @@ public class MockedMetricsFetcher implements MetricsFetcher {
 	public HashMap<String, MetricFamilySamples> call() throws Exception {
 		HashMap<String, MetricFamilySamples> result = new HashMap<>();
 		
-		String metricName = "metric_"+this.instance.getTarget().getApplicationName();
+		String metricName = "metric_"+this.instance.getApplicationName();
 		
 		
 		LinkedList<String> labelNames = new LinkedList<String>();

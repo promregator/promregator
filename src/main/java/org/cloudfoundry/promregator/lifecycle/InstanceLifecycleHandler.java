@@ -26,9 +26,9 @@ public class InstanceLifecycleHandler {
 	private void deregisterMetricsSamples(Instance instance) {
 		log.info(String.format("De-registering metrics samples for instance %s", instance));
 		
-		String orgName = instance.getTarget().getOrgName();
-		String spaceName = instance.getTarget().getSpaceName();
-		String appName = instance.getTarget().getApplicationName();
+		String orgName = instance.getOrgName();
+		String spaceName = instance.getSpaceName();
+		String appName = instance.getApplicationName();
 		
 		AbstractMetricFamilySamplesEnricher mfse = new CFMetricFamilySamplesEnricher(orgName, spaceName, appName, instance.getInstanceId());
 		List<String> labelValues = mfse.getEnrichedLabelValues(new LinkedList<>());
