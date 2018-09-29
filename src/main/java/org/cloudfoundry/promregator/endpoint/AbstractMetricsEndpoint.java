@@ -256,7 +256,7 @@ public abstract class AbstractMetricsEndpoint {
 
 			MetricsFetcher mf = null;
 			
-			AuthenticationEnricher ae = this.authenticatorController.getAuthenticationEnricherByTarget(instance.getTarget().getOriginalTarget());
+			AuthenticationEnricher ae = instance.getAuthenticationEnricher();
 			
 			if (this.simulationMode) {
 				mf = new MetricsFetcherSimulator(accessURL, ae, mfse, mfm, upChild);

@@ -38,7 +38,7 @@ public class InstanceLifecycleHandlerTest {
 		rt.setPath("/path/test");
 		rt.setProtocol("https");
 		
-		Instance i = new ConfigurationTargetInstance(rt, "55820b2c-2fa5-11e8-b467-0ed5f89f718b:3", "access.url.bogus");
+		Instance i = new ConfigurationTargetInstance(rt, "55820b2c-2fa5-11e8-b467-0ed5f89f718b:3", "access.url.bogus", null);
 		
 		/* generate some data first */
 		

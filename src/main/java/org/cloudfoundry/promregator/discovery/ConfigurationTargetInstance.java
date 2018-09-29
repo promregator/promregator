@@ -1,13 +1,17 @@
 package org.cloudfoundry.promregator.discovery;
 
+import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
+import org.cloudfoundry.promregator.auth.AuthenticatorController;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
 
 public class ConfigurationTargetInstance extends Instance {
 	private ResolvedTarget target;
+	private AuthenticatorController ac;
 
-	public ConfigurationTargetInstance(ResolvedTarget target, String instanceId, String accessUrl) {
+	public ConfigurationTargetInstance(ResolvedTarget target, String instanceId, String accessUrl, AuthenticatorController ac) {
 		super(instanceId, accessUrl);
 		this.target = target;
+		this.ac = ac;
 	}
 
 	public ResolvedTarget getTarget() {
@@ -40,6 +44,12 @@ public class ConfigurationTargetInstance extends Instance {
 	public String getPath() {
 		return this.target.getPath();
 	}
+	
+	@Override
+	public AuthenticationEnricher getAuthenticationEnricher() {
+		return this.ac.getAuthenticationEnricherByTarget(this.target.getOriginalTarget());
+	}
+	
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
@@ -87,5 +97,5 @@ public class ConfigurationTargetInstance extends Instance {
 		builder.append("]");
 		return builder.toString();
 	}
-	
+
 }

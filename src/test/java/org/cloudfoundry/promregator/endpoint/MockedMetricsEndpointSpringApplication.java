@@ -63,8 +63,8 @@ public class MockedMetricsEndpointSpringApplication {
 				t.setApplicationName("unittestapp");
 				t.setPath("/path");
 				t.setProtocol("https");
-				result.add(new ConfigurationTargetInstance(t, "faedbb0a-2273-4cb4-a659-bd31331f7daf:0", "http://localhost:1234"));
-				result.add(new ConfigurationTargetInstance(t, "faedbb0a-2273-4cb4-a659-bd31331f7daf:1", "http://localhost:1234"));
+				result.add(new ConfigurationTargetInstance(t, "faedbb0a-2273-4cb4-a659-bd31331f7daf:0", "http://localhost:1234", null));
+				result.add(new ConfigurationTargetInstance(t, "faedbb0a-2273-4cb4-a659-bd31331f7daf:1", "http://localhost:1234", null));
 
 				t = new ResolvedTarget();
 				t.setOrgName("unittestorg");
@@ -72,7 +72,7 @@ public class MockedMetricsEndpointSpringApplication {
 				t.setApplicationName("unittestapp2");
 				t.setPath("/otherpath");
 				t.setProtocol("http");
-				result.add(new ConfigurationTargetInstance(t, "1142a717-e27d-4028-89d8-b42a0c973300:0", "http://localhost:1235"));
+				result.add(new ConfigurationTargetInstance(t, "1142a717-e27d-4028-89d8-b42a0c973300:0", "http://localhost:1235", null));
 
 				if (applicationIdFilter != null) {
 					for (Iterator<Instance> it = result.iterator(); it.hasNext();) {

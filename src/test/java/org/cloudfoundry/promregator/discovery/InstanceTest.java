@@ -17,7 +17,7 @@ public class InstanceTest {
 		rt.setPath("/test/path");
 		rt.setProtocol("https");
 		
-		Instance subject = new ConfigurationTargetInstance(rt, "1", "https://accessUrl.bogus");
+		Instance subject = new ConfigurationTargetInstance(rt, "1", "https://accessUrl.bogus", null);
 		
 		String result = subject.toString();
 		

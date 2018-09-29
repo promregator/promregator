@@ -1,5 +1,7 @@
 package org.cloudfoundry.promregator.discovery;
 
+import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
+
 /**
  * An instance provides a mapping from a target (provided by configuration)
  * to an exact descriptor consisting of the Access URL and the instance identifier, 
@@ -19,6 +21,8 @@ public abstract class Instance {
 	public abstract String getSpaceName();
 	public abstract String getApplicationName();
 	public abstract String getPath();
+	
+	public abstract AuthenticationEnricher getAuthenticationEnricher();
 	
 	public String getInstanceId() {
 		return instanceId;

@@ -17,6 +17,7 @@ import org.cloudfoundry.client.v2.organizations.OrganizationResource;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
+import org.cloudfoundry.promregator.auth.AuthenticatorController;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.discovery.ConfigurationTargetInstance;
 import org.cloudfoundry.promregator.discovery.Instance;
@@ -38,6 +39,9 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	@Value("${cf.cache.timeout.application:300}")
 	private int timeoutCacheApplicationLevel;
 
+	@Autowired
+	private AuthenticatorController authenticatorController;
+	
 	/*
 	 * see also https://github.com/promregator/promregator/issues/76
 	 * This is the locale, which we use to convert both "what we get from CF" and "the stuff, which we get 
@@ -138,7 +142,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		Flux<Instance> instancesFlux = OSAVectorApplicationFlux.flatMapSequential(v -> {
 			List<Instance> instances = new ArrayList<>(v.numberOfInstances);
 			for (int i = 0; i<v.numberOfInstances; i++) {
-				Instance inst = new ConfigurationTargetInstance(v.target, String.format("%s:%d", v.applicationId, i), v.accessURL);
+				Instance inst = new ConfigurationTargetInstance(v.target, String.format("%s:%d", v.applicationId, i), v.accessURL, this.authenticatorController);
 				instances.add(inst);
 			}
 			
