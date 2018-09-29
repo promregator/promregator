@@ -109,6 +109,9 @@ public class CFDiscoverer {
 	private List<Instance> discoverUserProvidedServices(@Null Predicate<? super String> applicationIdFilter,
 			@Null Predicate<? super Instance> instanceFilter) {
 		
+		// TODO applicationIdFilter to be considered
+		// TODO instanceFilter to be considered
+		
 		Mono<ListUserProvidedServiceInstancesResponse> upsListMono = this.cfAccessor.retrieveAllUserProvidedService();
 		
 		Flux<UserProvidedServiceInstanceResource> promregatorUPSFlux = upsListMono.map(resp -> resp.getResources())
@@ -116,6 +119,11 @@ public class CFDiscoverer {
 		.filter(item -> {
 			Map<String, Object> creds = item.getEntity().getCredentials();
 			return creds.get("promregator-version") != null;
+		}).doOnNext(item -> {
+			Map<String, Object> creds = item.getEntity().getCredentials();
+			String path = (String) creds.get("path");
+			String username = (String) creds.get("username");
+			String password = (String) creds.get("password");
 		});
 		
 		HashMap<String, String> mapUPS2SpaceId = new HashMap<>();
