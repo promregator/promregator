@@ -1,30 +1,18 @@
 package org.cloudfoundry.promregator.discovery;
 
-import org.cloudfoundry.promregator.scanner.ResolvedTarget;
-
 /**
  * An instance provides a mapping from a target (provided by configuration)
  * to an exact descriptor consisting of the Access URL and the instance identifier, 
  * which can be used for scraping.
  */
-public class Instance {
-	private ResolvedTarget target;
-	private String instanceId;
-	private String accessUrl;
+public abstract class Instance {
+	protected String instanceId;
+	protected String accessUrl;
 	
-	public Instance() {
+	public Instance(String instanceId, String accessUrl) {
 		super();
-	}
-
-	public Instance(ResolvedTarget target, String instanceId, String accessUrl) {
-		super();
-		this.target = target;
 		this.instanceId = instanceId;
 		this.accessUrl = accessUrl;
-	}
-
-	public ResolvedTarget getTarget() {
-		return target;
 	}
 
 	public String getInstanceId() {
@@ -43,14 +31,6 @@ public class Instance {
 	public String getApplicationId() {
 		String[] parts = this.instanceId.split(":");
 		return parts[0];
-	}
-
-	
-	/**
-	 * @param target the target to set
-	 */
-	public void setTarget(ResolvedTarget target) {
-		this.target = target;
 	}
 
 	/**
@@ -76,7 +56,6 @@ public class Instance {
 		int result = 1;
 		result = prime * result + ((accessUrl == null) ? 0 : accessUrl.hashCode());
 		result = prime * result + ((instanceId == null) ? 0 : instanceId.hashCode());
-		result = prime * result + ((target == null) ? 0 : target.hashCode());
 		return result;
 	}
 
@@ -85,54 +64,25 @@ public class Instance {
 	 */
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (this == obj)
 			return true;
-		}
-		if (obj == null) {
+		if (obj == null)
 			return false;
-		}
-		if (getClass() != obj.getClass()) {
+		if (getClass() != obj.getClass())
 			return false;
-		}
 		Instance other = (Instance) obj;
 		if (accessUrl == null) {
-			if (other.accessUrl != null) {
+			if (other.accessUrl != null)
 				return false;
-			}
-		} else if (!accessUrl.equals(other.accessUrl)) {
+		} else if (!accessUrl.equals(other.accessUrl))
 			return false;
-		}
 		if (instanceId == null) {
-			if (other.instanceId != null) {
+			if (other.instanceId != null)
 				return false;
-			}
-		} else if (!instanceId.equals(other.instanceId)) {
+		} else if (!instanceId.equals(other.instanceId))
 			return false;
-		}
-		if (target == null) {
-			if (other.target != null) {
-				return false;
-			}
-		} else if (!target.equals(other.target)) {
-			return false;
-		}
 		return true;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("Instance [target=");
-		builder.append(target);
-		builder.append(", instanceId=");
-		builder.append(instanceId);
-		builder.append(", accessUrl=");
-		builder.append(accessUrl);
-		builder.append("]");
-		return builder.toString();
-	}
-	
+
 }
