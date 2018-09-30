@@ -5,6 +5,7 @@ import java.time.Duration;
 import javax.annotation.PostConstruct;
 
 import org.apache.log4j.Logger;
+import org.cloudfoundry.client.v2.applications.GetApplicationResponse;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.organizations.GetOrganizationResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
@@ -211,6 +212,18 @@ public class CFAccessorCache implements CFAccessor {
 			String upsId) {
 		// TODO clarify caching
 		return this.parent.retrieveUserProvidedServiceBindings(upsId);
+	}
+
+	@Override
+	public Mono<ListUserProvidedServiceInstanceServiceBindingsResponse> retrieveAllUserProvidedServiceBindings() {
+		// TODO clarify caching
+		return this.parent.retrieveAllUserProvidedServiceBindings();
+	}
+
+	@Override
+	public Mono<GetApplicationResponse> retrieveApplication(String applicationId) {
+		// TODO clarify caching
+		return this.parent.retrieveApplication(applicationId);
 	}
 
 }

@@ -3,6 +3,7 @@ package org.cloudfoundry.promregator.discovery;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -15,9 +16,11 @@ import java.util.function.Predicate;
 import javax.validation.constraints.Null;
 
 import org.apache.log4j.Logger;
+import org.cloudfoundry.client.v2.applications.GetApplicationResponse;
 import org.cloudfoundry.client.v2.organizations.GetOrganizationResponse;
 import org.cloudfoundry.client.v2.servicebindings.ServiceBindingResource;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
+import org.cloudfoundry.client.v2.userprovidedserviceinstances.ListUserProvidedServiceInstanceServiceBindingsResponse;
 import org.cloudfoundry.client.v2.userprovidedserviceinstances.ListUserProvidedServiceInstancesResponse;
 import org.cloudfoundry.client.v2.userprovidedserviceinstances.UserProvidedServiceInstanceResource;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
@@ -81,7 +84,7 @@ public class CFDiscoverer {
 	public List<Instance> discover(@Null Predicate<? super String> applicationIdFilter, @Null Predicate<? super Instance> instanceFilter) {
 		List<Instance> instanceList = this.discoverConfigurationTargets(applicationIdFilter, instanceFilter);
 		
-		if (applicationIdFilter != null && instanceFilter != null) {
+		if (applicationIdFilter == null && instanceFilter == null) {
 			instanceList.addAll(this.discoverUserProvidedServices());
 		} else {
 			instanceList.addAll(this.discoverUserProvidedServicesWithFilters(applicationIdFilter, instanceFilter));
@@ -133,7 +136,7 @@ public class CFDiscoverer {
 		}).doOnNext(item -> {
 			Map<String, Object> creds = item.getEntity().getCredentials();
 			mapUPS2Credentials.put(item.getMetadata().getId(), creds);
-		});
+		}).cache();
 		
 		/* Stream 1: Retrieve org/space information */
 		HashMap<String, String> mapUPS2SpaceId = new HashMap<>();
@@ -246,6 +249,145 @@ public class CFDiscoverer {
 	private List<Instance> discoverUserProvidedServicesWithFilters(@Null Predicate<? super String> applicationIdFilter,
 			@Null Predicate<? super Instance> instanceFilter) {
 		
+		// TODO: Handle errors here much more properly!
+		
+		HashMap<String, List<String>> mapApplicationId2UPSBindings = new HashMap<>();
+		HashMap<String, Map<String, Object>> mapUPSBinding2Credentials = new HashMap<>();
+		
+		Flux<ServiceBindingResource> selectedUPSBindings = this.cfAccessor.retrieveAllUserProvidedServiceBindings()
+		.map(resp -> resp.getResources())
+		.flatMapMany(list -> Flux.fromIterable(list))
+		.filter(item -> {
+			Map<String, Object> creds = item.getEntity().getCredentials();
+			return creds.get("promregator-version") != null;
+		});
+		
+		if (applicationIdFilter != null) {
+			selectedUPSBindings = selectedUPSBindings.filter(binding -> applicationIdFilter.test(binding.getEntity().getApplicationId()));
+		}
+		
+		selectedUPSBindings = selectedUPSBindings.doOnNext(binding -> {
+			String bindingId = binding.getMetadata().getId();
+			String applicationId = binding.getEntity().getApplicationId();
+			
+			if (!mapApplicationId2UPSBindings.containsKey(applicationId)) {
+				mapApplicationId2UPSBindings.put(applicationId, new LinkedList<>());
+			}
+			List<String> upsbindings = mapApplicationId2UPSBindings.get(applicationId);
+			upsbindings.add(bindingId);
+			
+			Map<String, Object> creds = binding.getEntity().getCredentials();
+			mapUPSBinding2Credentials.put(bindingId, creds);
+		});
+		
+		HashMap<String, String> mapApplicationId2SpaceId = new HashMap<>();
+		
+		Flux<GetApplicationResponse> appFlux = selectedUPSBindings.map(binding -> binding.getEntity().getApplicationId())
+		.distinct()
+		.flatMap(appId -> this.cfAccessor.retrieveApplication(appId))
+		.doOnNext(app -> {
+			String appId = app.getMetadata().getId();
+			String spaceId = app.getEntity().getSpaceId();
+			mapApplicationId2SpaceId.put(appId, spaceId);
+		}).cache();
+		
+		Flux<String> spaceIdFlux = appFlux.map(app -> app.getEntity().getSpaceId())
+		.distinct()
+		.cache();
+		
+		/* Start fetching the spaceSummaries early
+		 */
+		HashMap<String, SpaceApplicationSummary> mapApplicationId2spaceSummaryApplication = new HashMap<>();
+		
+		Flux<SpaceApplicationSummary> stream3 = spaceIdFlux.flatMap(spaceId -> this.cfAccessor.retrieveSpaceSummary(spaceId))
+		.map(resp -> resp.getApplications())
+		.flatMap(list -> Flux.fromIterable(list))
+		.doOnNext(spaceSummaryApplication -> {
+			String applicationId = spaceSummaryApplication.getId();
+			mapApplicationId2spaceSummaryApplication.put(applicationId, spaceSummaryApplication);
+		});
+		
+		/* spaceName and orgid/Name required */
+		HashMap<String, String> mapSpaceId2SpaceName = new HashMap<>();
+		HashMap<String, String> mapSpaceId2OrgId = new HashMap<>();
+		HashMap<String, String> mapOrgId2OrgName = new HashMap<>();
+		
+		Flux<GetOrganizationResponse> stream1 = spaceIdFlux.flatMap(spaceId -> this.cfAccessor.retrieveSpace(spaceId))
+		.doOnNext(space -> {
+			String spaceId = space.getMetadata().getId();
+			String spaceName = space.getEntity().getName();
+			mapSpaceId2SpaceName.put(spaceId, spaceName);
+			
+			String orgId = space.getEntity().getOrganizationId();
+			mapSpaceId2OrgId.put(spaceId, orgId);
+		}).map(space -> space.getEntity().getOrganizationId())
+		.distinct()
+		.flatMap(orgId -> this.cfAccessor.retrieveOrg(orgId))
+		.doOnNext(org -> {
+			String orgId = org.getMetadata().getId();
+			String orgName = org.getEntity().getName();
+			mapOrgId2OrgName.put(orgId, orgName);
+		});
+		
+		/* wait for all streams to complete (which automatically fills all our HashMaps */
+		Mono.when(stream1, stream3).block();
+
+		/* fiddle everything together */
+
+		// mind that appFlux is cached. So this does not cost much
+		Iterable<String> appIds = appFlux.map(app -> app.getMetadata().getId()).toIterable();
+
+		List<Instance> instances = new LinkedList<>();
+		for (String appId : appIds) {
+			String spaceId = mapApplicationId2SpaceId.get(appId);
+			String spaceName = mapSpaceId2SpaceName.get(spaceId);
+			String orgId = mapSpaceId2OrgId.get(spaceId);
+			String orgName = mapOrgId2OrgName.get(orgId);
+
+			SpaceApplicationSummary spaceApplicationSummary = mapApplicationId2spaceSummaryApplication.get(appId);
+			Integer numberOfInstances = spaceApplicationSummary.getInstances();
+
+			List<String> bindingsIds = mapApplicationId2UPSBindings.get(appId);
+			for (String bindingId : bindingsIds) {
+				Map<String, Object> creds = mapUPSBinding2Credentials.get(bindingId);
+				String path = (String) creds.get("path");
+				String protocol = (String) creds.get("protocol");
+				
+				String username = (String) creds.get("username");
+				String password = (String) creds.get("password");
+
+				String applicationUrl = String.format("%s://%s", protocol, spaceApplicationSummary.getUrls().get(0));
+				String accessUrl = ScannerUtils.determineAccessURL(applicationUrl, path);
+				
+				for (int i = 0;i<numberOfInstances; i++) {
+					AuthenticationEnricher ae = NULL_ENRICHER;
+					if (username != null && password != null) {
+						BasicAuthenticationConfiguration authenticatorConfig = new BasicAuthenticationConfiguration();
+						authenticatorConfig.setUsername(username);
+						authenticatorConfig.setPassword(password);
+						ae = new BasicAuthenticationEnricher(authenticatorConfig);
+					}
+					// TODO also handle OAuth2XSUAAEnricher
+
+					String instanceId = String.format("%s:%d", appId, i);
+					Instance inst = new UPSBasedInstance(instanceId, accessUrl, orgName, spaceName, spaceApplicationSummary.getName(), ae);
+					instances.add(inst);
+				}
+			}
+		}
+		
+		List<Instance> filteredInstances = new LinkedList<>();
+		if (instanceFilter != null) {
+			for (Instance inst : instances) {
+				if (instanceFilter.test(inst)) {
+					filteredInstances.add(inst);
+				}
+			}
+		} else {
+			filteredInstances = instances;
+		}
+		
+		return filteredInstances;
 	}
 
 	

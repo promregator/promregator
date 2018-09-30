@@ -3,7 +3,6 @@ package org.cloudfoundry.promregator.cfaccessor;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Duration;
-import java.util.List;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -13,6 +12,8 @@ import javax.annotation.PostConstruct;
 
 import org.apache.http.conn.util.InetAddressUtils;
 import org.apache.log4j.Logger;
+import org.cloudfoundry.client.v2.applications.GetApplicationRequest;
+import org.cloudfoundry.client.v2.applications.GetApplicationResponse;
 import org.cloudfoundry.client.v2.applications.ListApplicationsRequest;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.info.GetInfoRequest;
@@ -31,7 +32,6 @@ import org.cloudfoundry.client.v2.userprovidedserviceinstances.ListUserProvidedS
 import org.cloudfoundry.client.v2.userprovidedserviceinstances.ListUserProvidedServiceInstanceServiceBindingsResponse;
 import org.cloudfoundry.client.v2.userprovidedserviceinstances.ListUserProvidedServiceInstancesRequest;
 import org.cloudfoundry.client.v2.userprovidedserviceinstances.ListUserProvidedServiceInstancesResponse;
-import org.cloudfoundry.operations.spaces.Spaces;
 import org.cloudfoundry.promregator.config.ConfigurationException;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.cloudfoundry.reactor.ConnectionContext;
@@ -319,7 +319,26 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		ListUserProvidedServiceInstanceServiceBindingsRequest request = ListUserProvidedServiceInstanceServiceBindingsRequest.builder()
 				.userProvidedServiceInstanceId(upsId).build();
 		
-		return this.performGenericRetrieval("upsBinding", "retrieveUserProvidedServiceBindings", upsId, request, 
+		return this.performGenericRetrieval("upsBindingSingle", "retrieveUserProvidedServiceBindings", upsId, request, 
 				r -> this.cloudFoundryClient.userProvidedServiceInstances().listServiceBindings(r), 2500); // TODO make it customizable
 	}
+
+	@Override
+	public Mono<ListUserProvidedServiceInstanceServiceBindingsResponse> retrieveAllUserProvidedServiceBindings() {
+		ListUserProvidedServiceInstanceServiceBindingsRequest request = ListUserProvidedServiceInstanceServiceBindingsRequest.builder()
+				.build();
+		
+		return this.performGenericRetrieval("upsBinding", "retrieveAllUserProvidedServiceBindings", "(empty)", request, 
+				r -> this.cloudFoundryClient.userProvidedServiceInstances().listServiceBindings(r), 2500); // TODO make it customizable
+	}
+
+	@Override
+	public Mono<GetApplicationResponse> retrieveApplication(String applicationId) {
+		GetApplicationRequest request = GetApplicationRequest.builder().applicationId(applicationId).build();
+		
+		return this.performGenericRetrieval("appSingle", "retrieveApplication", applicationId, request, 
+				r -> this.cloudFoundryClient.applicationsV2().get(r), this.requestTimeoutApplication);
+	}
+	
+	
 }

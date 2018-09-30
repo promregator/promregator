@@ -1,7 +1,6 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
-import java.util.List;
-
+import org.cloudfoundry.client.v2.applications.GetApplicationResponse;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.organizations.GetOrganizationResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
@@ -34,4 +33,8 @@ public interface CFAccessor {
 	Mono<GetOrganizationResponse> retrieveOrg(String orgId);
 	
 	Mono<ListUserProvidedServiceInstanceServiceBindingsResponse> retrieveUserProvidedServiceBindings(String upsId);
+	
+	Mono<ListUserProvidedServiceInstanceServiceBindingsResponse> retrieveAllUserProvidedServiceBindings();
+	
+	Mono<GetApplicationResponse> retrieveApplication(String applicationId);
 }
