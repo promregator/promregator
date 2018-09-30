@@ -1,7 +1,6 @@
 package org.cloudfoundry.promregator.discovery;
 
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
-import org.cloudfoundry.promregator.auth.NullEnricher;
 
 public class UPSBasedInstance extends Instance {
 	private String orgName;

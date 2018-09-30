@@ -3,7 +3,6 @@ package org.cloudfoundry.promregator.discovery;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -81,7 +80,12 @@ public class CFDiscoverer {
 	@Null
 	public List<Instance> discover(@Null Predicate<? super String> applicationIdFilter, @Null Predicate<? super Instance> instanceFilter) {
 		List<Instance> instanceList = this.discoverConfigurationTargets(applicationIdFilter, instanceFilter);
-		instanceList.addAll(this.discoverUserProvidedServices(applicationIdFilter, instanceFilter));
+		
+		if (applicationIdFilter != null && instanceFilter != null) {
+			instanceList.addAll(this.discoverUserProvidedServices());
+		} else {
+			instanceList.addAll(this.discoverUserProvidedServicesWithFilters(applicationIdFilter, instanceFilter));
+		}
 
 		if (instanceList != null) {
 			// ensure that the instances are registered / touched properly
@@ -113,11 +117,7 @@ public class CFDiscoverer {
 		return instanceList;
 	}
 
-	private List<Instance> discoverUserProvidedServices(@Null Predicate<? super String> applicationIdFilter,
-			@Null Predicate<? super Instance> instanceFilter) {
-		
-		// TODO applicationIdFilter to be considered
-		// TODO instanceFilter to be considered
+	private List<Instance> discoverUserProvidedServices() {
 		
 		// TODO: Handle errors here much more properly!
 		
@@ -242,6 +242,12 @@ public class CFDiscoverer {
 		
 		return instances;
 	}
+	
+	private List<Instance> discoverUserProvidedServicesWithFilters(@Null Predicate<? super String> applicationIdFilter,
+			@Null Predicate<? super Instance> instanceFilter) {
+		
+	}
+
 	
 	private void registerInstance(Instance instance) {
 		Instant timeout = nextTimeout();
