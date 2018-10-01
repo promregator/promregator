@@ -324,15 +324,6 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	}
 
 	@Override
-	public Mono<ListUserProvidedServiceInstanceServiceBindingsResponse> retrieveAllUserProvidedServiceBindings() {
-		ListUserProvidedServiceInstanceServiceBindingsRequest request = ListUserProvidedServiceInstanceServiceBindingsRequest.builder()
-				.build();
-		
-		return this.performGenericRetrieval("upsBinding", "retrieveAllUserProvidedServiceBindings", "(empty)", request, 
-				r -> this.cloudFoundryClient.userProvidedServiceInstances().listServiceBindings(r), 2500); // TODO make it customizable
-	}
-
-	@Override
 	public Mono<GetApplicationResponse> retrieveApplication(String applicationId) {
 		GetApplicationRequest request = GetApplicationRequest.builder().applicationId(applicationId).build();
 		

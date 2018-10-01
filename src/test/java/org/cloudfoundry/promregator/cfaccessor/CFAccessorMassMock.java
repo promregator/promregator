@@ -10,6 +10,7 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.cloudfoundry.client.v2.Metadata;
 import org.cloudfoundry.client.v2.applications.ApplicationEntity;
 import org.cloudfoundry.client.v2.applications.ApplicationResource;
+import org.cloudfoundry.client.v2.applications.GetApplicationResponse;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.organizations.GetOrganizationResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
@@ -170,6 +171,12 @@ public class CFAccessorMassMock implements CFAccessor {
 	@Override
 	public Mono<ListUserProvidedServiceInstanceServiceBindingsResponse> retrieveUserProvidedServiceBindings(
 			String upsId) {
+		// TODO Auto-generated method stub
+		throw new NotImplementedException("Not yet implemented");
+	}
+
+	@Override
+	public Mono<GetApplicationResponse> retrieveApplication(String applicationId) {
 		// TODO Auto-generated method stub
 		throw new NotImplementedException("Not yet implemented");
 	}

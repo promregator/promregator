@@ -215,12 +215,6 @@ public class CFAccessorCache implements CFAccessor {
 	}
 
 	@Override
-	public Mono<ListUserProvidedServiceInstanceServiceBindingsResponse> retrieveAllUserProvidedServiceBindings() {
-		// TODO clarify caching
-		return this.parent.retrieveAllUserProvidedServiceBindings();
-	}
-
-	@Override
 	public Mono<GetApplicationResponse> retrieveApplication(String applicationId) {
 		// TODO clarify caching
 		return this.parent.retrieveApplication(applicationId);

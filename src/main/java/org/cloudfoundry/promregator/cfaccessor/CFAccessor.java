@@ -34,7 +34,5 @@ public interface CFAccessor {
 	
 	Mono<ListUserProvidedServiceInstanceServiceBindingsResponse> retrieveUserProvidedServiceBindings(String upsId);
 	
-	Mono<ListUserProvidedServiceInstanceServiceBindingsResponse> retrieveAllUserProvidedServiceBindings();
-	
 	Mono<GetApplicationResponse> retrieveApplication(String applicationId);
 }
