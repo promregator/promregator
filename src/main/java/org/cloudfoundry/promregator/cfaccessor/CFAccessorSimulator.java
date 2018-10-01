@@ -166,8 +166,10 @@ public class CFAccessorSimulator implements CFAccessor {
 				final String[] urls = { UPS_APP_HOST_PREFIX+i+"."+SHARED_DOMAIN }; 
 				SpaceApplicationSummary sas = SpaceApplicationSummary.builder()
 						.id(UPS_APP_UUID_PREFIX+i)
+						.name("upstestapp"+i)
 						.addAllUrls(Arrays.asList(urls))
 						.instances(this.amountInstances)
+						.state("STARTED")
 						.build();
 				list.add(sas);
 			}
