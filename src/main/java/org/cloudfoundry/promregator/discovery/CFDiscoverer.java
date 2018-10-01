@@ -255,6 +255,7 @@ public class CFDiscoverer {
 		HashMap<String, Map<String, Object>> mapUPSBinding2Credentials = new HashMap<>();
 		
 		Flux<ServiceBindingResource> selectedUPSBindings = this.cfAccessor.retrieveAllUserProvidedServiceBindings()
+				/* does not work that way: raises an exception, as mandatory UPS SI Id is missing */
 		.map(resp -> resp.getResources())
 		.flatMapMany(list -> Flux.fromIterable(list))
 		.filter(item -> {
