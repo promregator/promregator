@@ -124,30 +124,67 @@ public class CFDiscoverer {
 		Mono<ListUserProvidedServiceInstancesResponse> upsListMono = this.cfAccessor.retrieveAllUserProvidedService();
 		
 		HashMap<String, Map<String, Object>> mapUPS2Credentials = new HashMap<>();
+		HashMap<String, String> mapUPS2SpaceId = new HashMap<>();
 		
 		Flux<UserProvidedServiceInstanceResource> promregatorUPSFlux = upsListMono.map(resp -> resp.getResources())
-		.flatMapMany(res -> Flux.fromIterable(res))
-		.filter(item -> {
+		.flatMapMany(res -> {
+			return Flux.fromIterable(res);
+		}).filter(item -> {
 			Map<String, Object> creds = item.getEntity().getCredentials();
 			return creds.get("promregator-version") != null;
 		}).doOnNext(item -> {
+			String upsId = item.getMetadata().getId();
+
 			Map<String, Object> creds = item.getEntity().getCredentials();
-			mapUPS2Credentials.put(item.getMetadata().getId(), creds);
-		}).cache();
+			mapUPS2Credentials.put(upsId, creds);
+			
+			String spaceId = item.getEntity().getSpaceId();
+			mapUPS2SpaceId.put(upsId, spaceId);
+		});
 		
+		/* Stream 2: Retrieve Application Ids via UPS bindings */
+		HashMap<String, List<String>> mapUPS2ApplicationIds = new HashMap<>();
+		
+		Flux<ServiceBindingResource> stream2 = promregatorUPSFlux.map(item -> item.getMetadata().getId())
+		.flatMap(upsId -> this.cfAccessor.retrieveUserProvidedServiceBindings(upsId))
+		.map(resp -> resp.getResources())
+		.flatMap(list -> Flux.fromIterable(list));
+		
+		if (applicationIdFilter != null) {
+			stream2 = stream2.filter(binding -> applicationIdFilter.test(binding.getEntity().getApplicationId()));
+		}
+		
+		stream2 = stream2.doOnNext(binding -> {
+			String upsId = binding.getEntity().getServiceInstanceId();
+			String applicationId = binding.getEntity().getApplicationId();
+			
+			// Warning! There may be multiple ApplicationIds per UPSId 
+			// and there might also be multiple bindings between the application and the same UPS!
+			if (!mapUPS2ApplicationIds.containsKey(upsId)) {
+				mapUPS2ApplicationIds.put(upsId, new LinkedList<>());
+			}
+			
+			List<String> applicationIds = mapUPS2ApplicationIds.get(upsId);
+			applicationIds.add(applicationId);
+		});
+
+		/* Note, that due to the (optional) applicationIdFilter, we also only want to process those further, 
+		 * which we require. Stream2 comes to rescue!
+		 */
+		
+		Flux<String> appFileredSpaceIdFlux = stream2.map(binding -> {
+			String upsId = binding.getEntity().getServiceInstanceId();
+			/* Note that mapUPS2SpaceId was already filled with the doOnNext() above! */
+			return mapUPS2SpaceId.get(upsId);
+		}).distinct()
+		.cache();
+
 		/* Stream 1: Retrieve org/space information */
-		HashMap<String, String> mapUPS2SpaceId = new HashMap<>();
 		HashMap<String, String> mapSpaceId2SpaceName = new HashMap<>();
 		HashMap<String, String> mapSpaceId2OrgId = new HashMap<>();
 		HashMap<String, String> mapOrgId2OrgName = new HashMap<>();
 		
-		Flux<GetOrganizationResponse> stream1 = promregatorUPSFlux.doOnNext(item -> {
-			String upsId = item.getMetadata().getId();
-			String spaceId = item.getEntity().getSpaceId();
-			mapUPS2SpaceId.put(upsId, spaceId);
-		}).map(item -> item.getEntity().getSpaceId())
-		.distinct()
-		.flatMap(spaceId -> this.cfAccessor.retrieveSpace(spaceId))
+		Flux<GetOrganizationResponse> stream1 = appFileredSpaceIdFlux.flatMap(spaceId -> this.cfAccessor.retrieveSpace(spaceId))
 		.doOnNext(space -> {
 			String spaceId = space.getMetadata().getId();
 			String spaceName = space.getEntity().getName();
@@ -164,36 +201,10 @@ public class CFDiscoverer {
 			mapOrgId2OrgName.put(orgId, orgName);
 		});
 		
-		/* Stream 2: Retrieve Application Ids via UPS bindings */
-		HashMap<String, List<String>> mapUPS2ApplicationIds = new HashMap<>();
-		
-		Flux<ServiceBindingResource> stream2 = promregatorUPSFlux.map(item -> item.getMetadata().getId())
-		.flatMap(upsId -> this.cfAccessor.retrieveUserProvidedServiceBindings(upsId))
-		.map(resp -> resp.getResources())
-		.flatMap(list -> Flux.fromIterable(list));
-		
-		if (applicationIdFilter != null) {
-			stream2 = stream2.filter(binding -> applicationIdFilter.test(binding.getEntity().getApplicationId()));
-		}
-		stream2 = stream2.doOnNext(binding -> {
-			String upsId = binding.getEntity().getServiceInstanceId();
-			String applicationId = binding.getEntity().getApplicationId();
-			
-			// Warning! There may be multiple ApplicationIds per UPSId 
-			// and there might also be multiple bindings between the application and the same UPS!
-			if (!mapUPS2ApplicationIds.containsKey(upsId)) {
-				mapUPS2ApplicationIds.put(upsId, new LinkedList<>());
-			}
-			
-			List<String> applicationIds = mapUPS2ApplicationIds.get(upsId);
-			applicationIds.add(applicationId);
-		});
-		
 		/* Stream 3: Retrieve SpaceApplicationSummaries based on applicationIds */
 		HashMap<String, SpaceApplicationSummary> mapApplicationId2spaceSummaryApplication = new HashMap<>();
 		
-		Flux<SpaceApplicationSummary> stream3 = promregatorUPSFlux.map(item -> item.getEntity().getSpaceId())
-		.flatMap(spaceId -> this.cfAccessor.retrieveSpaceSummary(spaceId))
+		Flux<SpaceApplicationSummary> stream3 = appFileredSpaceIdFlux.flatMap(spaceId -> this.cfAccessor.retrieveSpaceSummary(spaceId))
 		.map(resp -> resp.getApplications())
 		.flatMap(list -> Flux.fromIterable(list))
 		.doOnNext(spaceSummaryApplication -> {
@@ -202,7 +213,7 @@ public class CFDiscoverer {
 		});
 		
 		/* wait for all streams to complete (which automatically fills all our HashMaps */
-		Mono.when(stream1, stream2, stream3).block();
+		Mono.when(stream1, stream3).block();
 		
 		/* fiddle everything together */
 		List<Instance> instances = new LinkedList<>();
