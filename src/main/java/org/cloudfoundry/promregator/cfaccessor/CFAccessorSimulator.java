@@ -99,7 +99,7 @@ public class CFAccessorSimulator implements CFAccessor {
 			for (int i = 1;i<=100;i++) {
 				ApplicationResource ar = null;
 				ar = ApplicationResource.builder().entity(
-						ApplicationEntity.builder().name("testapp"+i).build()
+						ApplicationEntity.builder().name("testapp"+i).state("STARTED").build()
 					).metadata(
 							Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(APP_UUID_PREFIX+i).build()
 					).build();
@@ -139,8 +139,10 @@ public class CFAccessorSimulator implements CFAccessor {
 				final String[] urls = { APP_HOST_PREFIX+i+"."+SHARED_DOMAIN }; 
 				SpaceApplicationSummary sas = SpaceApplicationSummary.builder()
 						.id(APP_UUID_PREFIX+i)
+						.name("testapp"+i)
 						.addAllUrls(Arrays.asList(urls))
 						.instances(this.amountInstances)
+						.state("STARTED")
 						.build();
 				list.add(sas);
 			}
