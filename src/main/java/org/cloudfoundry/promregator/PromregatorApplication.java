@@ -82,8 +82,9 @@ public class PromregatorApplication {
 		
 		if (this.simulationMode) {
 			mainAccessor = new CFAccessorSimulator(this.simulationInstances);
+		} else {
+			mainAccessor = new ReactiveCFAccessorImpl();
 		}
-		mainAccessor = new ReactiveCFAccessorImpl();
 		
 		return mainAccessor;
 	}
