@@ -6,7 +6,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.log4j.Logger;
 import org.cloudfoundry.client.v2.Metadata;
 import org.cloudfoundry.client.v2.applications.ApplicationEntity;
@@ -17,6 +16,8 @@ import org.cloudfoundry.client.v2.organizations.GetOrganizationResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.organizations.OrganizationEntity;
 import org.cloudfoundry.client.v2.organizations.OrganizationResource;
+import org.cloudfoundry.client.v2.servicebindings.ServiceBindingEntity;
+import org.cloudfoundry.client.v2.servicebindings.ServiceBindingResource;
 import org.cloudfoundry.client.v2.spaces.GetSpaceResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
@@ -25,6 +26,8 @@ import org.cloudfoundry.client.v2.spaces.SpaceEntity;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
 import org.cloudfoundry.client.v2.userprovidedserviceinstances.ListUserProvidedServiceInstanceServiceBindingsResponse;
 import org.cloudfoundry.client.v2.userprovidedserviceinstances.ListUserProvidedServiceInstancesResponse;
+import org.cloudfoundry.client.v2.userprovidedserviceinstances.UserProvidedServiceInstanceEntity;
+import org.cloudfoundry.client.v2.userprovidedserviceinstances.UserProvidedServiceInstanceResource;
 
 import reactor.core.publisher.Mono;
 
@@ -34,6 +37,12 @@ public class CFAccessorSimulator implements CFAccessor {
 	public final static String APP_UUID_PREFIX = "55820b2c-2fa5-11e8-b467-";
 	public final static String APP_HOST_PREFIX = "hostapp";
 	public final static String SHARED_DOMAIN = "shared.domain.example.org";
+	
+	public final static String UPS_APP_UUID_PREFIX = "05820b2c-2fa5-11e8-b467-";
+	
+	public final static String UPS_GLOBAL_UPS_UUID = "ce364c9d-fea0-4ea9-89d6-530bc1fa939c";
+	public final static String UPS_APPOWN_UPS_UUID_PREFIX = "b13a936b-a41c-48cd-bcc0-";
+	public final static String UPS_APP_HOST_PREFIX = "upshostapp";
 	
 	private static final Logger log = Logger.getLogger(CFAccessorSimulator.class);
 	
@@ -151,6 +160,16 @@ public class CFAccessorSimulator implements CFAccessor {
 				list.add(sas);
 			}
 			
+			for (int i = 1;i<=100;i++) {
+				final String[] urls = { UPS_APP_HOST_PREFIX+i+"."+SHARED_DOMAIN }; 
+				SpaceApplicationSummary sas = SpaceApplicationSummary.builder()
+						.id(UPS_APP_UUID_PREFIX+i)
+						.addAllUrls(Arrays.asList(urls))
+						.instances(this.amountInstances)
+						.build();
+				list.add(sas);
+			}
+			
 			GetSpaceSummaryResponse resp = GetSpaceSummaryResponse.builder().addAllApplications(list).build();
 			
 			return Mono.just(resp).delayElement(this.getSleepRandomDuration());
@@ -162,33 +181,114 @@ public class CFAccessorSimulator implements CFAccessor {
 
 	@Override
 	public Mono<ListUserProvidedServiceInstancesResponse> retrieveAllUserProvidedService() {
-		// TODO Auto-generated method stub
-		throw new NotImplementedException("Not yet implemented");
+		List<UserProvidedServiceInstanceResource> res = new LinkedList<>();
+		
+		/* adding global UPS */
+		Metadata metadata = Metadata.builder().id(UPS_GLOBAL_UPS_UUID).createdAt(CREATED_AT_TIMESTAMP).build();
+		UserProvidedServiceInstanceEntity global_entity = UserProvidedServiceInstanceEntity.builder()
+				.credential("prometheus-version", 1)
+				.credential("path", "/global_metrics")
+				.credential("username", "user")
+				.credential("password", "password")
+				.name("global_prometheus_ups")
+				.spaceId(SPACE_UUID)
+				.build();
+		res.add(UserProvidedServiceInstanceResource.builder().metadata(metadata).entity(global_entity).build());
+		
+		for (int i = 1;i<=100;i++) {
+			metadata = Metadata.builder().id(UPS_APPOWN_UPS_UUID_PREFIX+i).createdAt(CREATED_AT_TIMESTAMP).build();
+			UserProvidedServiceInstanceEntity appown_entity = UserProvidedServiceInstanceEntity.builder()
+					.credential("prometheus-version", 1)
+					.credential("path", "/appown_metrics")
+					.credential("username", "user")
+					.credential("password", "password")
+					.name("prometheus_ups_for_app_"+i)
+					.spaceId(SPACE_UUID)
+					.build();
+			res.add(UserProvidedServiceInstanceResource.builder().metadata(metadata).entity(appown_entity).build());
+		}
+		
+		ListUserProvidedServiceInstancesResponse resp = ListUserProvidedServiceInstancesResponse.builder().addAllResources(res).build();
+		return Mono.just(resp).delayElement(this.getSleepRandomDuration());
 	}
 
 	@Override
 	public Mono<GetSpaceResponse> retrieveSpace(String spaceId) {
-		// TODO Auto-generated method stub
-		throw new NotImplementedException("Not yet implemented");
+		if (spaceId.equals(SPACE_UUID)) {
+			Metadata metadata = Metadata.builder().id(spaceId).createdAt(CREATED_AT_TIMESTAMP).build();
+			SpaceEntity entity = SpaceEntity.builder().name("simspace").organizationId(ORG_UUID).build();
+			GetSpaceResponse resp = GetSpaceResponse.builder().metadata(metadata).entity(entity).build();
+			return Mono.just(resp).delayElement(this.getSleepRandomDuration());
+		}
+		
+		log.error("Invalid retrieveSpace request");
+		return null;
 	}
 
 	@Override
 	public Mono<GetOrganizationResponse> retrieveOrg(String orgId) {
-		// TODO Auto-generated method stub
-		throw new NotImplementedException("Not yet implemented");
+		if (orgId.equals(orgId)) {
+			Metadata metadata = Metadata.builder().id(orgId).createdAt(CREATED_AT_TIMESTAMP).build();
+			
+			OrganizationEntity entity = OrganizationEntity.builder().name("simorg").build();
+			GetOrganizationResponse resp = GetOrganizationResponse.builder().metadata(metadata).entity(entity ).build();
+			return Mono.just(resp).delayElement(this.getSleepRandomDuration());
+		}
+		
+		log.error("Invalid retrieveOrg request");
+		return null;
 	}
 
 	@Override
 	public Mono<ListUserProvidedServiceInstanceServiceBindingsResponse> retrieveUserProvidedServiceBindings(
 			String upsId) {
-		// TODO Auto-generated method stub
-		throw new NotImplementedException("Not yet implemented");
+		if (upsId.equals(UPS_GLOBAL_UPS_UUID)) {
+			List<ServiceBindingResource> bindings = new LinkedList<>();
+			for (int i = 1;i<=100;i++) {
+				ServiceBindingEntity entity = ServiceBindingEntity.builder().serviceInstanceId(upsId).applicationId(UPS_APP_UUID_PREFIX+i)
+						.credential("prometheus-version", 1)
+						.credential("path", "/global_metrics")
+						.credential("username", "user")
+						.credential("password", "password")
+						.build();
+				bindings.add(ServiceBindingResource.builder().entity(entity).build());
+			}
+			ListUserProvidedServiceInstanceServiceBindingsResponse resp = ListUserProvidedServiceInstanceServiceBindingsResponse.builder().addAllResources(bindings).build();
+			return Mono.just(resp).delayElement(this.getSleepRandomDuration());
+		}
+		
+		if (upsId.startsWith(UPS_APPOWN_UPS_UUID_PREFIX)) {
+			int appIndex = Integer.parseInt(upsId.substring(UPS_APPOWN_UPS_UUID_PREFIX.length()));
+			List<ServiceBindingResource> bindings = new LinkedList<>();
+			ServiceBindingEntity entity = ServiceBindingEntity.builder().serviceInstanceId(upsId).applicationId(UPS_APP_UUID_PREFIX+appIndex)
+					.credential("prometheus-version", 1)
+					.credential("path", "/appown_metrics")
+					.credential("username", "user")
+					.credential("password", "password")
+					.build();
+			bindings.add(ServiceBindingResource.builder().entity(entity).build());
+			ListUserProvidedServiceInstanceServiceBindingsResponse resp = ListUserProvidedServiceInstanceServiceBindingsResponse.builder().addAllResources(bindings).build();
+			return Mono.just(resp).delayElement(this.getSleepRandomDuration());
+		}
+		
+		log.error("Invalid retrieveUserProvidedServiceBindings request");
+		return null;
 	}
 
 	@Override
 	public Mono<GetApplicationResponse> retrieveApplication(String applicationId) {
-		// TODO Auto-generated method stub
-		throw new NotImplementedException("Not yet implemented");
+		// TODO no longer necessary?
+
+		if (applicationId.startsWith(UPS_APP_UUID_PREFIX)) {
+			int appIndex = Integer.parseInt(applicationId.substring(UPS_APP_UUID_PREFIX.length()));
+			Metadata metadata = Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(applicationId).build();
+			ApplicationEntity entity = ApplicationEntity.builder().instances(this.amountInstances).name("simupsapp"+appIndex).build();
+			GetApplicationResponse resp = GetApplicationResponse.builder().metadata(metadata).entity(entity).build();
+			return Mono.just(resp).delayElement(this.getSleepRandomDuration());
+		}
+		
+		log.error("Invalid retrieveApplication request");
+		return null;
 	}
 
 }

@@ -325,6 +325,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 
 	@Override
 	public Mono<GetApplicationResponse> retrieveApplication(String applicationId) {
+		// TODO no longer necessary?
 		GetApplicationRequest request = GetApplicationRequest.builder().applicationId(applicationId).build();
 		
 		return this.performGenericRetrieval("appSingle", "retrieveApplication", applicationId, request, 
