@@ -79,10 +79,20 @@ public class CFDiscoverer {
 	 */
 	@Null
 	public List<Instance> discover(@Null Predicate<? super String> applicationIdFilter, @Null Predicate<? super Instance> instanceFilter) {
-		List<Instance> instanceList = this.discoverConfigurationTargets(applicationIdFilter, instanceFilter);
 		
-		instanceList.addAll(this.discoverUserProvidedServices(applicationIdFilter, instanceFilter));
+		Flux<Instance> configurationTargetDiscoveryFlux = Mono.just(1)
+		.map(dummy -> this.discoverConfigurationTargets(applicationIdFilter, instanceFilter))
+		.flatMapMany(list -> Flux.fromIterable(list))
+		.log(CFDiscoverer.class.getCanonicalName()+".configurationTargetDiscovery");
+		
+		Flux<Instance> upsDiscoveryFlux = Mono.just(1)
+		.map(dummy -> this.discoverUserProvidedServices(applicationIdFilter, instanceFilter))
+		.flatMapMany(list -> Flux.fromIterable(list))
+		.log(CFDiscoverer.class.getCanonicalName()+".upsBasedDiscovery");
 
+		List<Instance> instanceList = Flux.merge(configurationTargetDiscoveryFlux, upsDiscoveryFlux)
+		.collectList().block();
+		
 		if (instanceList != null) {
 			// ensure that the instances are registered / touched properly
 			for (Instance instance : instanceList) {
