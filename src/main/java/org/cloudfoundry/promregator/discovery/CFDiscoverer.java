@@ -83,12 +83,18 @@ public class CFDiscoverer {
 		Flux<Instance> configurationTargetDiscoveryFlux = Mono.just(1)
 		.map(dummy -> this.discoverConfigurationTargets(applicationIdFilter, instanceFilter))
 		.flatMapMany(list -> Flux.fromIterable(list))
-		.log(CFDiscoverer.class.getCanonicalName()+".configurationTargetDiscovery");
+		.log(CFDiscoverer.class.getCanonicalName()+".configurationTargetDiscovery")
+		.doOnError(e -> {
+			log.error("Error while performing configuration-target-based discovery", e);
+		}).onErrorResume(__ -> Flux.empty());
 		
 		Flux<Instance> upsDiscoveryFlux = Mono.just(1)
 		.map(dummy -> this.discoverUserProvidedServices(applicationIdFilter, instanceFilter))
 		.flatMapMany(list -> Flux.fromIterable(list))
-		.log(CFDiscoverer.class.getCanonicalName()+".upsBasedDiscovery");
+		.log(CFDiscoverer.class.getCanonicalName()+".upsBasedDiscovery")
+		.doOnError(e -> {
+			log.error("Error while performing UPS-based discovery", e);
+		}).onErrorResume(__ -> Flux.empty());
 
 		List<Instance> instanceList = Flux.merge(configurationTargetDiscoveryFlux, upsDiscoveryFlux)
 		.collectList().block();
