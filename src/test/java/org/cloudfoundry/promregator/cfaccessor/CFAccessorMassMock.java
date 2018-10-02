@@ -174,10 +174,4 @@ public class CFAccessorMassMock implements CFAccessor {
 		// TODO Auto-generated method stub
 		throw new NotImplementedException("Not yet implemented");
 	}
-
-	@Override
-	public Mono<GetApplicationResponse> retrieveApplication(String applicationId) {
-		// TODO Auto-generated method stub
-		throw new NotImplementedException("Not yet implemented");
-	}
 }

@@ -33,6 +33,4 @@ public interface CFAccessor {
 	Mono<GetOrganizationResponse> retrieveOrg(String orgId);
 	
 	Mono<ListUserProvidedServiceInstanceServiceBindingsResponse> retrieveUserProvidedServiceBindings(String upsId);
-	
-	Mono<GetApplicationResponse> retrieveApplication(String applicationId);
 }

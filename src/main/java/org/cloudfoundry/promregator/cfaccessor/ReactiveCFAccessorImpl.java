@@ -323,14 +323,4 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 				r -> this.cloudFoundryClient.userProvidedServiceInstances().listServiceBindings(r), 2500); // TODO make it customizable
 	}
 
-	@Override
-	public Mono<GetApplicationResponse> retrieveApplication(String applicationId) {
-		// TODO no longer necessary?
-		GetApplicationRequest request = GetApplicationRequest.builder().applicationId(applicationId).build();
-		
-		return this.performGenericRetrieval("appSingle", "retrieveApplication", applicationId, request, 
-				r -> this.cloudFoundryClient.applicationsV2().get(r), this.requestTimeoutApplication);
-	}
-	
-	
 }

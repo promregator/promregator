@@ -260,10 +260,4 @@ public class CFAccessorCache implements CFAccessor {
 		return this.parent.retrieveUserProvidedServiceBindings(upsId);
 	}
 
-	@Override
-	public Mono<GetApplicationResponse> retrieveApplication(String applicationId) {
-		// TODO clarify caching
-		return this.parent.retrieveApplication(applicationId);
-	}
-
 }

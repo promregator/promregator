@@ -279,20 +279,4 @@ public class CFAccessorSimulator implements CFAccessor {
 		return null;
 	}
 
-	@Override
-	public Mono<GetApplicationResponse> retrieveApplication(String applicationId) {
-		// TODO no longer necessary?
-
-		if (applicationId.startsWith(UPS_APP_UUID_PREFIX)) {
-			int appIndex = Integer.parseInt(applicationId.substring(UPS_APP_UUID_PREFIX.length()));
-			Metadata metadata = Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(applicationId).build();
-			ApplicationEntity entity = ApplicationEntity.builder().instances(this.amountInstances).name("simupsapp"+appIndex).build();
-			GetApplicationResponse resp = GetApplicationResponse.builder().metadata(metadata).entity(entity).build();
-			return Mono.just(resp).delayElement(this.getSleepRandomDuration());
-		}
-		
-		log.error("Invalid retrieveApplication request");
-		return null;
-	}
-
 }
