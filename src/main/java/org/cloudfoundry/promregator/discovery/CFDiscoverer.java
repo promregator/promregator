@@ -39,6 +39,7 @@ import org.springframework.stereotype.Component;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 @Component
 public class CFDiscoverer {
@@ -80,16 +81,28 @@ public class CFDiscoverer {
 	@Null
 	public List<Instance> discover(@Null Predicate<? super String> applicationIdFilter, @Null Predicate<? super Instance> instanceFilter) {
 		
-		Flux<Instance> configurationTargetDiscoveryFlux = Mono.just(1)
-		.map(dummy -> this.discoverConfigurationTargets(applicationIdFilter, instanceFilter))
+		Flux<Instance> configurationTargetDiscoveryFlux = Mono.fromCallable( () -> this.discoverConfigurationTargets(applicationIdFilter, instanceFilter))
+		.subscribeOn(Schedulers.elastic())
+		.elapsed()
+		.map(tuple -> {
+			Long time = tuple.getT1();
+			log.debug(String.format("Configuration-Target-based discovery returned after %dms", time));
+			return tuple.getT2();
+		})
 		.flatMapMany(list -> Flux.fromIterable(list))
 		.log(CFDiscoverer.class.getCanonicalName()+".configurationTargetDiscovery")
 		.doOnError(e -> {
 			log.error("Error while performing configuration-target-based discovery", e);
 		}).onErrorResume(__ -> Flux.empty());
 		
-		Flux<Instance> upsDiscoveryFlux = Mono.just(1)
-		.map(dummy -> this.discoverUserProvidedServices(applicationIdFilter, instanceFilter))
+		Flux<Instance> upsDiscoveryFlux = Mono.fromCallable( () -> this.discoverUserProvidedServices(applicationIdFilter, instanceFilter))
+		.subscribeOn(Schedulers.elastic())
+		.elapsed()
+		.map(tuple -> {
+			Long time = tuple.getT1();
+			log.debug(String.format("Configuration-Target-based discovery returned after %dms", time));
+			return tuple.getT2();
+		})
 		.flatMapMany(list -> Flux.fromIterable(list))
 		.log(CFDiscoverer.class.getCanonicalName()+".upsBasedDiscovery")
 		.doOnError(e -> {
