@@ -100,7 +100,7 @@ public class CFDiscoverer {
 		.elapsed()
 		.map(tuple -> {
 			Long time = tuple.getT1();
-			log.debug(String.format("Configuration-Target-based discovery returned after %dms", time));
+			log.debug(String.format("UPS-based discovery returned after %dms", time));
 			return tuple.getT2();
 		})
 		.flatMapMany(list -> Flux.fromIterable(list))
