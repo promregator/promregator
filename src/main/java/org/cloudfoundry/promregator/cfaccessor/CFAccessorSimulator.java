@@ -190,7 +190,7 @@ public class CFAccessorSimulator implements CFAccessor {
 		/* adding global UPS */
 		Metadata metadata = Metadata.builder().id(UPS_GLOBAL_UPS_UUID).createdAt(CREATED_AT_TIMESTAMP).build();
 		UserProvidedServiceInstanceEntity global_entity = UserProvidedServiceInstanceEntity.builder()
-				.credential("prometheus-version", 1)
+				.credential("promregator-version", 1)
 				.credential("path", "/global_metrics")
 				.credential("username", "user")
 				.credential("password", "password")
@@ -202,7 +202,7 @@ public class CFAccessorSimulator implements CFAccessor {
 		for (int i = 1;i<=100;i++) {
 			metadata = Metadata.builder().id(UPS_APPOWN_UPS_UUID_PREFIX+i).createdAt(CREATED_AT_TIMESTAMP).build();
 			UserProvidedServiceInstanceEntity appown_entity = UserProvidedServiceInstanceEntity.builder()
-					.credential("prometheus-version", 1)
+					.credential("promregator-version", 1)
 					.credential("path", "/appown_metrics")
 					.credential("username", "user")
 					.credential("password", "password")
@@ -250,7 +250,7 @@ public class CFAccessorSimulator implements CFAccessor {
 			List<ServiceBindingResource> bindings = new LinkedList<>();
 			for (int i = 1;i<=100;i++) {
 				ServiceBindingEntity entity = ServiceBindingEntity.builder().serviceInstanceId(upsId).applicationId(UPS_APP_UUID_PREFIX+i)
-						.credential("prometheus-version", 1)
+						.credential("promregator-version", 1)
 						.credential("path", "/global_metrics")
 						.credential("username", "user")
 						.credential("password", "password")
@@ -265,7 +265,7 @@ public class CFAccessorSimulator implements CFAccessor {
 			int appIndex = Integer.parseInt(upsId.substring(UPS_APPOWN_UPS_UUID_PREFIX.length()));
 			List<ServiceBindingResource> bindings = new LinkedList<>();
 			ServiceBindingEntity entity = ServiceBindingEntity.builder().serviceInstanceId(upsId).applicationId(UPS_APP_UUID_PREFIX+appIndex)
-					.credential("prometheus-version", 1)
+					.credential("promregator-version", 1)
 					.credential("path", "/appown_metrics")
 					.credential("username", "user")
 					.credential("password", "password")
