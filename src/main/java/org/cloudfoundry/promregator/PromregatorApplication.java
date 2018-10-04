@@ -17,6 +17,7 @@ import org.cloudfoundry.promregator.config.ConfigurationException;
 import org.cloudfoundry.promregator.config.ConfigurationValidations;
 import org.cloudfoundry.promregator.discovery.CFMultiDiscoverer;
 import org.cloudfoundry.promregator.discovery.ConfigurationTargetCFDiscoverer;
+import org.cloudfoundry.promregator.discovery.UPSBasedCFDiscoverer;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.cloudfoundry.promregator.lifecycle.InstanceLifecycleHandler;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
@@ -123,6 +124,11 @@ public class PromregatorApplication {
 	@Bean
 	public ConfigurationTargetCFDiscoverer configurationTargetCFDiscoverer() {
 		return new ConfigurationTargetCFDiscoverer();
+	}
+	
+	@Bean
+	public UPSBasedCFDiscoverer upsBasedCFDiscoverer() {
+		return new UPSBasedCFDiscoverer();
 	}
 	
 	@Bean
