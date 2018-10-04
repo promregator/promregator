@@ -29,6 +29,7 @@ public class AuthenticatorController {
 		AuthenticatorConfiguration authConfig = promregatorConfiguration.getAuthenticator();
 		if (authConfig == null) {
 			this.globalAuthenticationEnricher = new NullEnricher();
+			return;
 		}
 		
 		this.globalAuthenticationEnricher =	AuthenticationEnricherFactory.create(authConfig);

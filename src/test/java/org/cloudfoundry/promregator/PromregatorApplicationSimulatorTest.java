@@ -15,6 +15,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigurationExcludeFilter;
 import org.springframework.boot.context.TypeExcludeFilter;
+import org.springframework.boot.test.context.ConfigFileApplicationContextInitializer;
 import org.springframework.boot.test.context.SpringBootTestContextBootstrapper;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
@@ -22,6 +23,7 @@ import org.springframework.context.annotation.FilterType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.BootstrapWith;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -32,7 +34,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 		@Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {  TestableMetricsEndpoint.class })
 		// NB: TestableMetricsEndpoint would break here everything
 })
-@TestPropertySource(locations="default.properties")
+@TestPropertySource(locations="simulator.yaml")
+@ContextConfiguration(initializers = ConfigFileApplicationContextInitializer.class)
 @DirtiesContext(classMode=ClassMode.AFTER_CLASS)
 public class PromregatorApplicationSimulatorTest {
 
