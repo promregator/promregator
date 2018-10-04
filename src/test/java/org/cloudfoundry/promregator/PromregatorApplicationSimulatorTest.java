@@ -5,7 +5,7 @@ import java.util.List;
 import javax.validation.constraints.Null;
 
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorSimulator;
-import org.cloudfoundry.promregator.discovery.CFDiscoverer;
+import org.cloudfoundry.promregator.discovery.CFMultiDiscoverer;
 import org.cloudfoundry.promregator.endpoint.TestableMetricsEndpoint;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.junit.AfterClass;
@@ -41,7 +41,7 @@ public class PromregatorApplicationSimulatorTest {
 	}
 	
 	@Autowired
-	private CFDiscoverer cfDiscoverer;
+	private CFMultiDiscoverer cfDiscoverer;
 	
 	@Test
 	public void testDiscoveryWorks() {

@@ -21,7 +21,7 @@ import javax.validation.constraints.Null;
 import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.auth.AuthenticatorController;
-import org.cloudfoundry.promregator.discovery.CFDiscoverer;
+import org.cloudfoundry.promregator.discovery.CFMultiDiscoverer;
 import org.cloudfoundry.promregator.fetcher.CFMetricsFetcher;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcher;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcherMetrics;
@@ -63,7 +63,7 @@ public abstract class AbstractMetricsEndpoint {
 	private CollectorRegistry collectorRegistry;
 	
 	@Autowired
-	private CFDiscoverer cfDiscoverer;
+	private CFMultiDiscoverer cfDiscoverer;
 
 	@Autowired
 	private AuthenticatorController authenticatorController;

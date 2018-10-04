@@ -23,7 +23,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = CFDiscovererTestSpringApplication.class)
 @TestPropertySource(locations="default.properties")
-public class CFDiscovererTest {
+public class CFMultiDiscovererTest {
 	
 	@AfterClass
 	public static void cleanUp() {
@@ -31,7 +31,7 @@ public class CFDiscovererTest {
 	}
 	
 	@Autowired
-	private CFDiscoverer cfDiscoverer;
+	private CFMultiDiscoverer cfDiscoverer;
 	
 	@Autowired
 	private Clock clock;

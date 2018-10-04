@@ -6,7 +6,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
-import org.cloudfoundry.promregator.discovery.CFDiscoverer;
+import org.cloudfoundry.promregator.discovery.CFMultiDiscoverer;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,7 +27,7 @@ public class DiscoveryEndpoint {
 	private static final Logger log = Logger.getLogger(DiscoveryEndpoint.class);
 	
 	@Autowired
-	private CFDiscoverer cfDiscoverer;
+	private CFMultiDiscoverer cfDiscoverer;
 
 	@Value("${promregator.discovery.hostname:#{null}}")
 	private String myHostname;

@@ -54,8 +54,8 @@ public class CFDiscovererTestSpringApplication {
 	}
 	
 	@Bean
-	public CFDiscoverer cfDiscoverer() {
-		return new CFDiscoverer();
+	public CFMultiDiscoverer cfDiscoverer() {
+		return new CFMultiDiscoverer();
 	}
 	
 }
