@@ -21,7 +21,7 @@ import javax.validation.constraints.Null;
 import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.auth.AuthenticatorController;
-import org.cloudfoundry.promregator.discovery.CFDiscoverer;
+import org.cloudfoundry.promregator.discovery.CFMultiDiscoverer;
 import org.cloudfoundry.promregator.discovery.Instance;
 import org.cloudfoundry.promregator.fetcher.CFMetricsFetcher;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcher;
@@ -31,7 +31,6 @@ import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.CFMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.GenericMetricFamilySamplesPrefixRewriter;
 import org.cloudfoundry.promregator.rewrite.MergableMetricFamilySamples;
-import org.cloudfoundry.promregator.scanner.ResolvedTarget;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -63,7 +62,7 @@ public abstract class AbstractMetricsEndpoint {
 	private CollectorRegistry collectorRegistry;
 	
 	@Autowired
-	private CFDiscoverer cfDiscoverer;
+	private CFMultiDiscoverer cfDiscoverer;
 
 	@Autowired
 	private AuthenticatorController authenticatorController;
