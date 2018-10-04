@@ -16,6 +16,7 @@ import org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl;
 import org.cloudfoundry.promregator.config.ConfigurationException;
 import org.cloudfoundry.promregator.config.ConfigurationValidations;
 import org.cloudfoundry.promregator.discovery.CFMultiDiscoverer;
+import org.cloudfoundry.promregator.discovery.ConfigurationTargetCFDiscoverer;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.cloudfoundry.promregator.lifecycle.InstanceLifecycleHandler;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
@@ -117,6 +118,11 @@ public class PromregatorApplication {
 	@Bean
 	public AppInstanceScanner appInstanceScanner() {
 		return new ReactiveAppInstanceScanner();
+	}
+	
+	@Bean
+	public ConfigurationTargetCFDiscoverer configurationTargetCFDiscoverer() {
+		return new ConfigurationTargetCFDiscoverer();
 	}
 	
 	@Bean

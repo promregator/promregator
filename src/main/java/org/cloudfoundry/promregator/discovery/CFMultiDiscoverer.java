@@ -25,12 +25,8 @@ import org.cloudfoundry.promregator.auth.BasicAuthenticationEnricher;
 import org.cloudfoundry.promregator.auth.NullEnricher;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.config.BasicAuthenticationConfiguration;
-import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.messagebus.MessageBusDestination;
-import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
-import org.cloudfoundry.promregator.scanner.ResolvedTarget;
 import org.cloudfoundry.promregator.scanner.ScannerUtils;
-import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.core.JmsTemplate;
@@ -48,13 +44,7 @@ public class CFMultiDiscoverer implements CFDiscoverer {
 	private static final AuthenticationEnricher NULL_ENRICHER = new NullEnricher();
 	
 	@Autowired
-	private TargetResolver targetResolver;
-	
-	@Autowired
-	private AppInstanceScanner appInstanceScanner;
-	
-	@Autowired
-	private PromregatorConfiguration promregatorConfiguration;
+	private ConfigurationTargetCFDiscoverer configurationTargetCFDiscoverer;
 
 	@Autowired
 	private JmsTemplate jmsTemplate;
@@ -73,7 +63,7 @@ public class CFMultiDiscoverer implements CFDiscoverer {
 	@Null
 	public List<Instance> discover(@Null Predicate<? super String> applicationIdFilter, @Null Predicate<? super Instance> instanceFilter) {
 		
-		Flux<Instance> configurationTargetDiscoveryFlux = Mono.fromCallable( () -> this.discoverConfigurationTargets(applicationIdFilter, instanceFilter))
+		Flux<Instance> configurationTargetDiscoveryFlux = Mono.fromCallable( () -> this.configurationTargetCFDiscoverer.discover(applicationIdFilter, instanceFilter))
 		.subscribeOn(Schedulers.elastic())
 		.elapsed()
 		.map(tuple -> {
@@ -111,26 +101,6 @@ public class CFMultiDiscoverer implements CFDiscoverer {
 			}
 		}
 		
-		return instanceList;
-	}
-
-	private List<Instance> discoverConfigurationTargets(Predicate<? super String> applicationIdFilter,
-			Predicate<? super Instance> instanceFilter) {
-		log.debug(String.format("We have %d targets configured", this.promregatorConfiguration.getTargets().size()));
-		
-		List<ResolvedTarget> resolvedTargets = this.targetResolver.resolveTargets(this.promregatorConfiguration.getTargets());
-		if (resolvedTargets == null) {
-			log.warn("Target resolved was unable to resolve configured targets");
-			return null;
-		}
-		log.debug(String.format("Raw list contains %d resolved targets", resolvedTargets.size()));
-		
-		List<Instance> instanceList = this.appInstanceScanner.determineInstancesFromTargets(resolvedTargets, applicationIdFilter, instanceFilter);
-		if (instanceList == null) {
-			log.warn("Instance Scanner unable to determine instances from provided targets");
-			return null;
-		}
-		log.debug(String.format("Raw list contains %d instances", instanceList.size()));
 		return instanceList;
 	}
 
