@@ -138,4 +138,5 @@ public class CFMultiDiscoverer implements CFDiscoverer {
 	
 	public void setClock(Clock newClock) {
 		this.clock = newClock;
-	}}
+	}
+}
