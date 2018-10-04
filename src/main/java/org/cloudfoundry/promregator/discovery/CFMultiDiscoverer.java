@@ -26,7 +26,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
-public class CFMultiDiscoverer {
+public class CFMultiDiscoverer implements CFDiscoverer {
 	private static final Logger log = Logger.getLogger(CFMultiDiscoverer.class);
 	
 	@Autowired
