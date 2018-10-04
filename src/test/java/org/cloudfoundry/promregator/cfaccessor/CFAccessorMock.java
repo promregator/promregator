@@ -191,7 +191,7 @@ public class CFAccessorMock implements CFAccessor {
 		return this.retrieveSpaceId(UNITTEST_ORG_UUID, "unittestspace");
 	}
 	@Override
-	public Mono<ListUserProvidedServiceInstancesResponse> retrieveAllUserProvidedService() {
+	public Mono<ListUserProvidedServiceInstancesResponse> retrieveAllUserProvidedServicesPromregatorRelevant() {
 		// TODO Auto-generated method stub
 		throw new NotImplementedException("Not yet implemented");
 	}

@@ -147,7 +147,7 @@ public class CFDiscoverer {
 		
 		// TODO: Handle errors here much more properly!
 		
-		Mono<ListUserProvidedServiceInstancesResponse> upsListMono = this.cfAccessor.retrieveAllUserProvidedService();
+		Mono<ListUserProvidedServiceInstancesResponse> upsListMono = this.cfAccessor.retrieveAllUserProvidedServicesPromregatorRelevant();
 		
 		HashMap<String, Map<String, Object>> mapUPS2Credentials = new HashMap<>();
 		HashMap<String, String> mapUPS2SpaceId = new HashMap<>();
@@ -155,9 +155,6 @@ public class CFDiscoverer {
 		Flux<UserProvidedServiceInstanceResource> promregatorUPSFlux = upsListMono.map(resp -> resp.getResources())
 		.flatMapMany(res -> {
 			return Flux.fromIterable(res);
-		}).filter(item -> {
-			Map<String, Object> creds = item.getEntity().getCredentials();
-			return creds.get("promregator-version") != null;
 		}).doOnNext(item -> {
 			String upsId = item.getMetadata().getId();
 

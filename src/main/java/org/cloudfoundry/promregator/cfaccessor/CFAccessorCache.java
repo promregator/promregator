@@ -219,9 +219,9 @@ public class CFAccessorCache implements CFAccessor {
 	}
 
 	@Override
-	public Mono<ListUserProvidedServiceInstancesResponse> retrieveAllUserProvidedService() {
+	public Mono<ListUserProvidedServiceInstancesResponse> retrieveAllUserProvidedServicesPromregatorRelevant() {
 		// TODO: clarify caching
-		return this.parent.retrieveAllUserProvidedService();
+		return this.parent.retrieveAllUserProvidedServicesPromregatorRelevant();
 	}
 
 	@Override

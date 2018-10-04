@@ -3,6 +3,8 @@ package org.cloudfoundry.promregator.cfaccessor;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Duration;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -30,6 +32,7 @@ import org.cloudfoundry.client.v2.userprovidedserviceinstances.ListUserProvidedS
 import org.cloudfoundry.client.v2.userprovidedserviceinstances.ListUserProvidedServiceInstanceServiceBindingsResponse;
 import org.cloudfoundry.client.v2.userprovidedserviceinstances.ListUserProvidedServiceInstancesRequest;
 import org.cloudfoundry.client.v2.userprovidedserviceinstances.ListUserProvidedServiceInstancesResponse;
+import org.cloudfoundry.client.v2.userprovidedserviceinstances.UserProvidedServiceInstanceResource;
 import org.cloudfoundry.promregator.config.ConfigurationException;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.cloudfoundry.reactor.ConnectionContext;
@@ -288,11 +291,35 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	}
 
 	@Override
-	public Mono<ListUserProvidedServiceInstancesResponse> retrieveAllUserProvidedService() {
+	public Mono<ListUserProvidedServiceInstancesResponse> retrieveAllUserProvidedServicesPromregatorRelevant() {
 		ListUserProvidedServiceInstancesRequest request = ListUserProvidedServiceInstancesRequest.builder().build();
 		
 		Mono<ListUserProvidedServiceInstancesResponse> response = this.performGenericRetrieval("ups", "retrieveAllUserProvidedServices", "(empty)", request, 
-				r -> this.cloudFoundryClient.userProvidedServiceInstances().list(r), 7000); // TODO make it customizable
+				r -> {
+					Mono<ListUserProvidedServiceInstancesResponse> data = this.cloudFoundryClient.userProvidedServiceInstances().list(r);
+					
+					/*
+					 * see also https://github.com/promregator/promregator/issues/61#issuecomment-427072919
+					 * Bottom line: Due to security reasons, we should filter out "non-Promregator-relevant UPSes"
+					 * as early as possible - and we should not cache those credentials, which we do not need, too.
+					 */
+					Mono<ListUserProvidedServiceInstancesResponse> filteredData = data.map(resp -> {
+						
+						List<UserProvidedServiceInstanceResource> filteredItems = new LinkedList<>();
+						List<UserProvidedServiceInstanceResource> allItems = resp.getResources();
+						for (UserProvidedServiceInstanceResource resource : allItems) {
+							if (resource.getEntity().getCredentials().get("promregator-version") != null) {
+								filteredItems.add(resource);
+							}
+						}
+						
+						return ListUserProvidedServiceInstancesResponse.builder()
+								.addAllResources(filteredItems).build();
+					});
+					
+					return filteredData;
+					
+				}, 7000); // TODO make it customizable
 		
 		return response;
 	}

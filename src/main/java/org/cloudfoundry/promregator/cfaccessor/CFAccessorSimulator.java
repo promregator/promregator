@@ -183,7 +183,7 @@ public class CFAccessorSimulator implements CFAccessor {
 	}
 
 	@Override
-	public Mono<ListUserProvidedServiceInstancesResponse> retrieveAllUserProvidedService() {
+	public Mono<ListUserProvidedServiceInstancesResponse> retrieveAllUserProvidedServicesPromregatorRelevant() {
 		List<UserProvidedServiceInstanceResource> res = new LinkedList<>();
 		
 		/* adding global UPS */

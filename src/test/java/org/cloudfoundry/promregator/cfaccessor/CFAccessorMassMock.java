@@ -151,7 +151,7 @@ public class CFAccessorMassMock implements CFAccessor {
 	}
 	
 	@Override
-	public Mono<ListUserProvidedServiceInstancesResponse> retrieveAllUserProvidedService() {
+	public Mono<ListUserProvidedServiceInstancesResponse> retrieveAllUserProvidedServicesPromregatorRelevant() {
 		// TODO Auto-generated method stub
 		throw new NotImplementedException("Not yet implemented");
 	}

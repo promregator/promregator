@@ -25,7 +25,7 @@ public interface CFAccessor {
 
 	Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId);
 	
-	Mono<ListUserProvidedServiceInstancesResponse> retrieveAllUserProvidedService();
+	Mono<ListUserProvidedServiceInstancesResponse> retrieveAllUserProvidedServicesPromregatorRelevant();
 	
 	Mono<GetSpaceResponse> retrieveSpace(String spaceId);
 	
