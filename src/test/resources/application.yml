@@ -1,3 +1,13 @@
+
+spring.profiles: springBootLoadPopertiesForTesting
+
+dummy:
+  value: true
+
+---
+
+spring.profiles: simulation
+
 cf:
   api_host: dummy.api.host.bogus
   username: dummyusername
@@ -330,5 +340,6 @@ promregator:
     - orgName: simorg
       spaceName: simspace
       applicationName: testapp100
+
 
 
