@@ -10,12 +10,10 @@ import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.config.Target;
 import org.cloudfoundry.promregator.config.TargetAuthenticatorConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 /**
  * This class controls the target-dependent set of AuthenticationEnrichers
  */
-@Component
 public class AuthenticatorController {
 	private final Map<String, AuthenticationEnricher> mapping = new HashMap<String, AuthenticationEnricher>();
 

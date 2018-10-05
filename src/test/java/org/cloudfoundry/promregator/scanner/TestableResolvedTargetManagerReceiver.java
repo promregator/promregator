@@ -3,9 +3,7 @@ package org.cloudfoundry.promregator.scanner;
 import org.cloudfoundry.promregator.messagebus.MessageBusDestination;
 import org.cloudfoundry.promregator.springconfig.JMSSpringConfiguration;
 import org.springframework.jms.annotation.JmsListener;
-import org.springframework.stereotype.Component;
 
-@Component
 public class TestableResolvedTargetManagerReceiver {
 	private Instance lastInstance;
 	

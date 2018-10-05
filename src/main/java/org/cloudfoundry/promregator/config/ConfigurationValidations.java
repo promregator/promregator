@@ -6,9 +6,7 @@ import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.config.validations.ConfigurationValidation;
 import org.cloudfoundry.promregator.config.validations.TargetsHaveConsistentAuthenticatorId;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
-@Component
 public class ConfigurationValidations {
 	private static final Logger log = Logger.getLogger(ConfigurationValidations.class);
 

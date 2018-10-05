@@ -38,7 +38,6 @@ import org.springframework.stereotype.Component;
 import reactor.core.Exceptions;
 import reactor.core.publisher.Mono;
 
-@Component
 public class ReactiveCFAccessorImpl implements CFAccessor {
 	private static final Logger log = Logger.getLogger(ReactiveCFAccessorImpl.class);
 	
