@@ -45,17 +45,20 @@ public class CFAccessorSimulatorTest {
 		boolean[] tests = new boolean[10+1];
 		
 		for(SpaceApplicationSummary item : list) {
-			String appNumber = item.getId().substring(CFAccessorSimulator.APP_UUID_PREFIX.length());
-			int appNumberInteger = Integer.parseInt(appNumber);
 			
-			Assert.assertEquals(2, item.getInstances().intValue());
-			Assert.assertTrue(item.getUrls().contains(CFAccessorSimulator.APP_HOST_PREFIX+appNumber+"."+CFAccessorSimulator.SHARED_DOMAIN));
-			
-			if (appNumberInteger >= 11) {
-				continue;
+			if (item.getId().startsWith(CFAccessorSimulator.APP_UUID_PREFIX)) {
+				String appNumber = item.getId().substring(CFAccessorSimulator.APP_UUID_PREFIX.length());
+				int appNumberInteger = Integer.parseInt(appNumber);
+				
+				Assert.assertEquals(2, item.getInstances().intValue());
+				Assert.assertTrue(item.getUrls().contains(CFAccessorSimulator.APP_HOST_PREFIX+appNumber+"."+CFAccessorSimulator.SHARED_DOMAIN));
+				
+				if (appNumberInteger >= 11) {
+					continue;
+				}
+				
+				tests[appNumberInteger] = true;
 			}
-			
-			tests[appNumberInteger] = true;
 		}
 		
 		for (int i = 1;i<=10;i++) {
