@@ -92,5 +92,8 @@ public abstract class Instance {
 		return true;
 	}
 
+	public InstanceKey toInstanceKey() {
+		return new InstanceKey(this.getOrgName(), this.getSpaceName(), this.getApplicationName(), this.getInstanceId());
+	}
 
 }

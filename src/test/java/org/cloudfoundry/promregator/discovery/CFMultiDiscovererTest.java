@@ -35,11 +35,11 @@ public class CFMultiDiscovererTest {
 	@Autowired
 	private Clock clock;
 	
-	private List<Instance> removerTriggerForInstances = new LinkedList<>();
+	private List<InstanceKey> removerTriggerForInstances = new LinkedList<>();
 	
 	@JmsListener(destination=MessageBusDestination.DISCOVERER_INSTANCE_REMOVED, containerFactory=JMSSpringConfiguration.BEAN_NAME_JMS_LISTENER_CONTAINER_FACTORY)
-	public void receiver(Instance instance) {
-		this.removerTriggerForInstances.add(instance);
+	public void receiver(InstanceKey instanceKey) {
+		this.removerTriggerForInstances.add(instanceKey);
 	}
 	
 	@Test

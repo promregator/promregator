@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -126,10 +125,12 @@ public class CFMultiDiscoverer implements CFDiscoverer {
 				continue;
 			}
 			
-			log.info(String.format("Instance %s has timed out; cleaning up", entry.getKey()));
+			Instance instance = entry.getKey();
+			
+			log.info(String.format("Instance %s has timed out; cleaning up", instance));
 			
 			// broadcast event to JMS topic, that the instance is to be deleted
-			this.jmsTemplate.convertAndSend(MessageBusDestination.DISCOVERER_INSTANCE_REMOVED, entry.getKey());
+			this.jmsTemplate.convertAndSend(MessageBusDestination.DISCOVERER_INSTANCE_REMOVED, instance.toInstanceKey());
 			
 			it.remove();
 		}

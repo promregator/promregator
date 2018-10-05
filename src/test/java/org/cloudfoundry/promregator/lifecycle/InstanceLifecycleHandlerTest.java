@@ -56,7 +56,7 @@ public class InstanceLifecycleHandlerTest {
 		mfm.getRequestSize().observe(2000);
 		
 		// trigger cleanup now
-		subject.receiver(i);
+		subject.receiver(i.toInstanceKey());
 		
 		Enumeration<MetricFamilySamples> mfs = CollectorRegistry.defaultRegistry.metricFamilySamples();
 		
