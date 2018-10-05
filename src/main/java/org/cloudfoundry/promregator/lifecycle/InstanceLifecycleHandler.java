@@ -11,9 +11,7 @@ import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.CFMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.springconfig.JMSSpringConfiguration;
 import org.springframework.jms.annotation.JmsListener;
-import org.springframework.stereotype.Component;
 
-@Component
 public class InstanceLifecycleHandler {
 	private static final Logger log = Logger.getLogger(InstanceLifecycleHandler.class);
 	

@@ -3,14 +3,12 @@ package org.cloudfoundry.promregator.internalmetrics;
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
 import io.prometheus.client.Counter;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.Histogram;
 import io.prometheus.client.Histogram.Timer;
 
-@Component
 public class InternalMetrics {
 	@Value("${promregator.metrics.internal:false}")
 	private boolean enabled;

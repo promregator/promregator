@@ -1,0 +1,345 @@
+
+spring.profiles: springBootLoadPopertiesForTesting
+
+dummy:
+  value: true
+
+---
+
+spring.profiles: simulation
+
+cf:
+  api_host: dummy.api.host.bogus
+  username: dummyusername
+  password: dummypassword
+
+promregator:
+  simulation:
+    enabled: true
+    instances: 2
+    
+  internal:
+    preCheckAPIVersion: false
+
+  metrics:
+    internal: true
+  
+  authenticator:
+    type: none
+    
+  endpoint:
+    threads: 10
+#    auth: BASIC
+    
+  authentication:
+    basic:
+      username: promregator
+      password: promregator
+  
+  discovery:
+    hostname: 192.168.178.51
+  
+  targets:
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp1
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp2
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp3
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp4
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp5
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp6
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp7
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp8
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp9
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp10
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp11
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp12
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp13
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp14
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp15
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp16
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp17
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp18
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp19
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp20
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp21
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp22
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp23
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp24
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp25
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp26
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp27
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp28
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp29
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp30
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp31
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp32
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp33
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp34
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp35
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp36
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp37
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp38
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp39
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp40
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp41
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp42
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp43
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp44
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp45
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp46
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp47
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp48
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp49
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp50
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp51
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp52
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp53
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp54
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp55
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp56
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp57
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp58
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp59
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp60
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp61
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp62
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp63
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp64
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp65
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp66
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp67
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp68
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp69
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp70
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp71
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp72
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp73
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp74
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp75
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp76
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp77
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp78
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp79
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp80
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp81
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp82
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp83
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp84
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp85
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp86
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp87
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp88
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp89
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp90
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp91
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp92
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp93
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp94
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp95
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp96
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp97
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp98
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp99
+    - orgName: simorg
+      spaceName: simspace
+      applicationName: testapp100
+
+
+

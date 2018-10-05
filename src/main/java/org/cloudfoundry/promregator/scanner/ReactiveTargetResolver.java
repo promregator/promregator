@@ -15,12 +15,10 @@ import org.cloudfoundry.client.v2.spaces.SpaceResource;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.config.Target;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-@Component
 public class ReactiveTargetResolver implements TargetResolver {
 	private static final Logger log = Logger.getLogger(ReactiveTargetResolver.class);
 	

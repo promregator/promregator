@@ -24,7 +24,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-@Component
 public class CFMultiDiscoverer implements CFDiscoverer {
 	private static final Logger log = Logger.getLogger(CFMultiDiscoverer.class);
 
