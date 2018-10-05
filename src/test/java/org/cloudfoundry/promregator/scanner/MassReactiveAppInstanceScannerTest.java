@@ -174,7 +174,7 @@ public class MassReactiveAppInstanceScannerTest {
 		for (Instance instance : result) {
 			String targetNumber = instance.getApplicationName().substring(7);
 			
-			Assert.assertEquals("/testapp"+targetNumber, instance.getApplicationName());
+			Assert.assertEquals("testapp"+targetNumber, instance.getApplicationName());
 			Assert.assertTrue(instance.getAccessUrl().endsWith(targetNumber));
 		}
 	}
