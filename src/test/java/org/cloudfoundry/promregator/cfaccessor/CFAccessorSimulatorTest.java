@@ -38,7 +38,7 @@ public class CFAccessorSimulatorTest {
 		
 		Assert.assertNotNull(result);
 		Assert.assertNotNull(result.getApplications());
-		Assert.assertEquals(100, result.getApplications().size());
+		Assert.assertEquals(200, result.getApplications().size());
 		
 		List<SpaceApplicationSummary> list = result.getApplications();
 		

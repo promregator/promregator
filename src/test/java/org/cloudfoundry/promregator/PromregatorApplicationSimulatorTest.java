@@ -40,7 +40,7 @@ public class PromregatorApplicationSimulatorTest {
 	public void testDiscoveryWorks() {
 		@Null
 		List<Instance> actual = this.cfDiscoverer.discover(null, null);
-		Assert.assertEquals(200, actual.size());
+		Assert.assertEquals(600, actual.size());
 	}
 	
 	@Test
