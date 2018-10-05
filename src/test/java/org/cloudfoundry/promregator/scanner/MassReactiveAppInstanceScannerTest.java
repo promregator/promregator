@@ -7,19 +7,23 @@ import java.util.List;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorMassMock;
+import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.discovery.Instance;
+import org.cloudfoundry.promregator.springconfig.AuthenticatorSpringConfiguration;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = MockedMassReactiveAppInstanceScannerSpringApplication.class)
 @TestPropertySource(locations="default.properties")
+@Import({AuthenticatorSpringConfiguration.class, PromregatorConfiguration.class})
 public class MassReactiveAppInstanceScannerTest {
 
 	@Autowired

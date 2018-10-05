@@ -17,8 +17,10 @@ import org.cloudfoundry.promregator.auth.AuthenticatorController;
 import org.cloudfoundry.promregator.auth.NullEnricher;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.discovery.CFMultiDiscoverer;
+import org.cloudfoundry.promregator.discovery.ConfigurationTargetCFDiscoverer;
 import org.cloudfoundry.promregator.discovery.ConfigurationTargetInstance;
 import org.cloudfoundry.promregator.discovery.Instance;
+import org.cloudfoundry.promregator.discovery.UPSBasedCFDiscoverer;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
 import org.cloudfoundry.promregator.scanner.TargetResolver;
@@ -109,6 +111,16 @@ public class MockedMetricsEndpointSpringApplication {
 	@Bean
 	public CFMultiDiscoverer cfDiscoverer() {
 		return new CFMultiDiscoverer();
+	}
+	
+	@Bean
+	public ConfigurationTargetCFDiscoverer configurationTargetCFDiscoverer() {
+		return new ConfigurationTargetCFDiscoverer();
+	}
+	
+	@Bean
+	public UPSBasedCFDiscoverer upsBasedCFDiscoverer() {
+		return new UPSBasedCFDiscoverer();
 	}
 	
 	@Bean

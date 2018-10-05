@@ -12,13 +12,14 @@ import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.ReactiveAppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.cloudfoundry.promregator.scanner.TrivialTargetResolver;
+import org.cloudfoundry.promregator.springconfig.AuthenticatorSpringConfiguration;
 import org.cloudfoundry.promregator.springconfig.JMSSpringConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 
 @SpringBootApplication
-@Import({JMSSpringConfiguration.class})
+@Import({JMSSpringConfiguration.class, AuthenticatorSpringConfiguration.class})
 public class CFDiscovererTestSpringApplication {
 	
 	@Bean
@@ -56,6 +57,16 @@ public class CFDiscovererTestSpringApplication {
 	@Bean
 	public CFMultiDiscoverer cfDiscoverer() {
 		return new CFMultiDiscoverer();
+	}
+	
+	@Bean
+	public ConfigurationTargetCFDiscoverer configurationTargetCFDiscoverer() {
+		return new ConfigurationTargetCFDiscoverer();
+	}
+	
+	@Bean
+	public UPSBasedCFDiscoverer upsBasedCFDiscoverer() {
+		return new UPSBasedCFDiscoverer();
 	}
 	
 }
