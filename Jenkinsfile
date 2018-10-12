@@ -64,6 +64,20 @@ timestamps {
 						
 						docker build --pull --compress -t ${imageName} .
 						
+						echo "Before squashing:"
+						docker history ${imageName}
+						
+						# Install docker-squash
+						wget https://github.com/jwilder/docker-squash/releases/download/v0.2.0/docker-squash-linux-amd64-v0.2.0.tar.gz
+						tar xzvf docker-squash-linux-amd64-v0.2.0.tar.gz
+						rm -f docker-squash-linux-amd64-v0.2.0.tar.gz
+						chmod +x docker-squash
+						
+						# see also http://jasonwilder.com/blog/2014/08/19/squashing-docker-images/
+						echo "Squashing..."
+						docker save ${imageName} | ./docker-squash -t ${imageName} -verbose | docker load
+						
+						echo "After squashing:"
 						docker history ${imageName}
 					"""
 					
