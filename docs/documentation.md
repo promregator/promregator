@@ -1,4 +1,4 @@
-# Documentation of Prometheus
+# Documentation of Promregator
 
 ## Quickstart Guide
 
