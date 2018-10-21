@@ -136,7 +136,7 @@ public class CFMetricsFetcher implements MetricsFetcher {
 			// we got a proper response
 			available = true;
 			
-			emfs = this.mfse.determineEnumerationOfMetricFamilySamples(emfs);
+			// emfs = this.mfse.determineEnumerationOfMetricFamilySamples(emfs);
 			
 			return emfs;
 		} catch (ClientProtocolException e) {
