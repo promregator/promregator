@@ -1,6 +1,6 @@
 # Enrichment performed by Promregator
 
-Promregator automatically enriches the metrics provided by the targets with additional labels.
+Promregator may enrich metrics provided by the targets with additional labels automatically. By default, this option is enabled.
 Moreover, it also provides additional metrics to support you.
 
 In general, there are three cases where additional metrics/labels may appear:
@@ -11,7 +11,7 @@ In general, there are three cases where additional metrics/labels may appear:
 
 
 ## Additional Labels for Provided Metrics by the Targets
-The following labels are automatically added to metrics, which are received from targets:
+If configuration option `promregator.scraping.labelEnrichment` is enabled (which is the default), the following labels are automatically added to metrics, which are received from targets:
 
 * The name of the Cloud Foundry organization in which the application is running (`org_name`)
 * The name of the Cloud Foundry space in which the application is running (`space_name`)
