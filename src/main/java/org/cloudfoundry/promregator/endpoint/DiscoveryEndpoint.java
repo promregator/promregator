@@ -90,6 +90,10 @@ public class DiscoveryEndpoint {
 		public String get__meta_promregator_target_instanceId() {
 			return __meta_promregator_target_instanceId;
 		}
+		
+		public String get__metrics_path__() {
+			return this.__meta_promregator_target_path;
+		}
 	}
 	
 	public static class DiscoveryResponse {
