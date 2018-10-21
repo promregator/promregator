@@ -38,6 +38,7 @@ import org.springframework.beans.factory.annotation.Value;
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Gauge;
+import io.prometheus.client.Gauge.Builder;
 import io.prometheus.client.Gauge.Child;
 
 /**
@@ -87,6 +88,9 @@ public abstract class AbstractMetricsEndpoint {
 	@Value("${promregator.metrics.requestLatency:false}")
 	private boolean recordRequestLatency;
 	
+	@Value("${promregator.scraping.labelEnrichment:true}")
+	private boolean labelEnrichment;
+	
 	@Autowired
 	private UUID promregatorInstanceIdentifier;
 	
@@ -105,9 +109,13 @@ public abstract class AbstractMetricsEndpoint {
 	public void setupOwnRequestScopedMetrics() {
 		this.requestRegistry = new CollectorRegistry();
 		
-		this.up = Gauge.build("promregator_up", "Indicator, whether the target of promregator is available")
-				.labelNames(CFMetricFamilySamplesEnricher.getEnrichingLabelNames())
-				.register(this.requestRegistry);
+		Builder builder = Gauge.build("promregator_up", "Indicator, whether the target of promregator is available");
+		
+		if (this.isLabelEnrichmentEnabled()) {
+			builder = builder.labelNames(CFMetricFamilySamplesEnricher.getEnrichingLabelNames());
+		}
+		
+		this.up = builder.register(this.requestRegistry);
 	}
 	
 	@PostConstruct
@@ -169,6 +177,29 @@ public abstract class AbstractMetricsEndpoint {
 	 * <code>false</code> otherwise.
 	 */
 	protected abstract boolean isIncludeGlobalMetrics();
+	
+	/**
+	 * specifies whether it is permitted that the enrichment of labels may be suppressed ("true") or not ("false"). 
+	 * 
+	 * If (and only if) this method returns <code>true</code> AND promregator.scraping.labelEnrichment is set to false, 
+	 * then label enrichment is suppressed.
+	 * @return <code>true</code>, if label enrichment may be suppressed. <code>false</code> if suppression of 
+	 * label enrichment could create semantic issues (and thus is not permitted).
+	 */
+	protected abstract boolean isLabelEnrichmentSuppressable();
+	
+	/**
+	 * @return <code>true</code> if label enrichment shall take place, <code>false</code> if label enrichment
+	 * is allowed to be suppressed AND is requested to be suppressed.
+	 */
+	private boolean isLabelEnrichmentEnabled() {
+		if (!this.isLabelEnrichmentSuppressable()) {
+			return true;
+		}
+		
+		// we may have label enrichment suppressed
+		return this.labelEnrichment;
+	}
 
 	private MergableMetricFamilySamples waitForMetricsFetchers(LinkedList<Future<HashMap<String, MetricFamilySamples>>> futures) {
 		long starttime = System.currentTimeMillis();
@@ -253,19 +284,26 @@ public abstract class AbstractMetricsEndpoint {
 			
 			MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, this.recordRequestLatency);
 			
-			Child upChild = this.up.labels(ownTelemetryLabelValues);
+			final boolean labelEnrichmentEnabled = this.isLabelEnrichmentEnabled();
+			
+			UpMetric upMetric = null;
+			if (labelEnrichmentEnabled) {
+				upMetric = new UpMetric(this.up.labels(ownTelemetryLabelValues));
+			} else {
+				upMetric = new UpMetric(this.up);
+			}
 
 			MetricsFetcher mf = null;
 			
 			AuthenticationEnricher ae = this.authenticatorController.getAuthenticationEnricherByTarget(instance.getTarget().getOriginalTarget());
 			
 			if (this.simulationMode) {
-				mf = new MetricsFetcherSimulator(accessURL, ae, mfse, mfm, upChild);
+				mf = new MetricsFetcherSimulator(accessURL, ae, mfse, mfm, upMetric);
 			} else {
 				if (this.proxyHost != null && this.proxyPort != 0) {
-					mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), ae, mfse, this.proxyHost, this.proxyPort, mfm, upChild, this.promregatorInstanceIdentifier);
+					mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), ae, labelEnrichmentEnabled ? mfse : null, this.proxyHost, this.proxyPort, mfm, upMetric, this.promregatorInstanceIdentifier);
 				} else {
-					mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), ae, mfse, mfm, upChild, this.promregatorInstanceIdentifier);
+					mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), ae, labelEnrichmentEnabled ? mfse : null, mfm, upMetric, this.promregatorInstanceIdentifier);
 				}
 			}
 			callablesList.add(mf);

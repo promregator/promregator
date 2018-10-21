@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.UUID;
 
+import javax.annotation.Nullable;
+
 import org.apache.http.HttpHost;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
@@ -15,9 +17,9 @@ import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.endpoint.EndpointConstants;
+import org.cloudfoundry.promregator.endpoint.UpMetric;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 
-import io.prometheus.client.Gauge;
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Histogram.Timer;
 
@@ -41,7 +43,7 @@ public class CFMetricsFetcher implements MetricsFetcher {
 	private final RequestConfig config;
 	private AuthenticationEnricher ae;
 	
-	private Gauge.Child up;
+	private UpMetric up;
 	
 	private AbstractMetricFamilySamplesEnricher mfse;
 
@@ -51,8 +53,8 @@ public class CFMetricsFetcher implements MetricsFetcher {
 
 	private UUID promregatorUUID;
 
-	public CFMetricsFetcher(String endpointUrl, String instanceId, AuthenticationEnricher ae, AbstractMetricFamilySamplesEnricher mfse, 
-			String proxyHost, int proxyPort, MetricsFetcherMetrics mfm, Gauge.Child up, UUID promregatorUUID) {
+	public CFMetricsFetcher(String endpointUrl, String instanceId, AuthenticationEnricher ae, @Nullable AbstractMetricFamilySamplesEnricher mfse, 
+			String proxyHost, int proxyPort, MetricsFetcherMetrics mfm, UpMetric up, UUID promregatorUUID) {
 		this.endpointUrl = endpointUrl;
 		this.instanceId = instanceId;
 		this.ae = ae;
@@ -79,8 +81,8 @@ public class CFMetricsFetcher implements MetricsFetcher {
 	 * @param ae (optional) an AuthenticationEnricher, which enriches the HTTP GET request for fetching the Prometheus metrics with additional authentication information.
 	 * May be <code>null</code> in which case no enriching takes place.
 	 */
-	public CFMetricsFetcher(String endpointUrl, String instanceId, AuthenticationEnricher ae, AbstractMetricFamilySamplesEnricher mfse, 
-			MetricsFetcherMetrics mfm, Gauge.Child up, UUID promregatorUUID) {
+	public CFMetricsFetcher(String endpointUrl, String instanceId, AuthenticationEnricher ae, @Nullable AbstractMetricFamilySamplesEnricher mfse, 
+			MetricsFetcherMetrics mfm, UpMetric up, UUID promregatorUUID) {
 		this(endpointUrl, instanceId, ae, mfse, null, 0, mfm, up, promregatorUUID);
 	}
 
@@ -136,7 +138,11 @@ public class CFMetricsFetcher implements MetricsFetcher {
 			// we got a proper response
 			available = true;
 			
-			// emfs = this.mfse.determineEnumerationOfMetricFamilySamples(emfs);
+			if (this.mfse != null) {
+				// enrichment only takes place, if the enricher is available
+				emfs = this.mfse.determineEnumerationOfMetricFamilySamples(emfs);
+			}
+			
 			
 			return emfs;
 		} catch (ClientProtocolException e) {
@@ -157,12 +163,12 @@ public class CFMetricsFetcher implements MetricsFetcher {
 			
 			if (this.up != null) {
 				if (available) {
-					this.up.set(1.0);
+					this.up.setUp();
 				} else {
 					if (this.mfm.getFailedRequests() != null)
 						this.mfm.getFailedRequests().inc();
 					
-					this.up.set(0.0);
+					this.up.setDown();
 				}
 			}
 		}

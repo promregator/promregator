@@ -48,6 +48,17 @@ public class MetricsEndpoint extends AbstractMetricsEndpoint {
 		return true;
 	}
 
+	@Override
+	protected boolean isLabelEnrichmentSuppressable() {
+		/*
+		 * We may have metrics of multiple different Cloud Foundry instances in our response. 
+		 * If label enrichment would be suppressed, this could mix up all the data.
+		 * That is why we must prevent that label enrichment is suppressed (hence, answering "false").
+		 */
+		return false;
+	}
+	
+
 	/* (non-Javadoc)
 	 * @see org.cloudfoundry.promregator.endpoint.AbstractMetricsEndpoint#createMetricsFetchers(java.util.List)
 	 */
@@ -67,5 +78,5 @@ public class MetricsEndpoint extends AbstractMetricsEndpoint {
 		
 		scrape_duration.set(duration.toMillis() / 1000.0);
 	}
-	
+
 }

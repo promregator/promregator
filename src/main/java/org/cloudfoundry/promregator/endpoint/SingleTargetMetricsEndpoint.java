@@ -65,6 +65,15 @@ public class SingleTargetMetricsEndpoint extends AbstractMetricsEndpoint {
 	}
 
 	@Override
+	protected boolean isLabelEnrichmentSuppressable() {
+		/*
+		 * we only have metrics of a single Cloud Foundry application instance in our
+		 * response. Thus, it is permitted that label enrichment may be suppressed (hence answering "true" here).
+		 */
+		return true;
+	}
+	
+	@Override
 	protected void handleScrapeDuration(CollectorRegistry requestRegistry, Duration duration) {
 		Gauge scrape_duration = Gauge.build("promregator_scrape_duration_seconds", "Duration in seconds indicating how long scraping of all metrics took")
 				.labelNames(CFMetricFamilySamplesEnricher.getEnrichingLabelNames())
@@ -76,4 +85,6 @@ public class SingleTargetMetricsEndpoint extends AbstractMetricsEndpoint {
 		List<String> labelValues = enricher.getEnrichedLabelValues(new ArrayList<String>(0));
 		scrape_duration.labels(labelValues.toArray(new String[0])).set(duration.toMillis() / 1000.0);
 	}
+
+	
 }
