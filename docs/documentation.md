@@ -153,7 +153,7 @@ If you want to have the same labels provided as Promregator does during label en
        regex: (.+)
 ```
 
-Note to 
+Users of Promregator version 0.4.x and earlier should be aware of the page ["Rewriting Rule For __metrics_path__ No Longer Required for Promregator 0.5.0 and Later"](https://github.com/promregator/promregator/wiki/Rewriting-Rule-For-__metrics_path__-No-Longer-Required-for-Promregator-0.5.0-and-Later)
 
 Additionally, Promregator provides the following meta labels via the discovery service:
 
