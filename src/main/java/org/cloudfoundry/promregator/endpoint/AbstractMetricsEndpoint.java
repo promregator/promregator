@@ -286,26 +286,30 @@ public abstract class AbstractMetricsEndpoint {
 			
 			final boolean labelEnrichmentEnabled = this.isLabelEnrichmentEnabled();
 			
-			UpMetric upMetric = null;
+			/*
+			 * Warning! the gauge "up" is a very special beast!
+			 * As it is always transferred along the other metrics (it's not a promregator-own metric!), it must always
+			 * follow the same labels as the other metrics which are scraped
+			 */
+			Gauge.Child upChild = null;
 			AbstractMetricFamilySamplesEnricher mfse = null;
 			if (labelEnrichmentEnabled) {
 				mfse = new CFAllLabelsMetricFamilySamplesEnricher(orgName, spaceName, appName, instance.getInstanceId());
-				upMetric = new UpMetric(this.up.labels(ownTelemetryLabelValues));
 			} else {
 				mfse = new CFInstanceOnlyMetricFamilySamplesEnricher(instance.getInstanceId());
-				upMetric = new UpMetric(this.up);
 			}
+			upChild = this.up.labels(mfse.getEnrichedLabelValues(new LinkedList<>()).toArray(new String[0]));
 			
 			AuthenticationEnricher ae = this.authenticatorController.getAuthenticationEnricherByTarget(instance.getTarget().getOriginalTarget());
 			
 			MetricsFetcher mf = null;
 			if (this.simulationMode) {
-				mf = new MetricsFetcherSimulator(accessURL, ae, mfse, mfm, upMetric);
+				mf = new MetricsFetcherSimulator(accessURL, ae, mfse, mfm, upChild);
 			} else {
 				if (this.proxyHost != null && this.proxyPort != 0) {
-					mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), ae, mfse, this.proxyHost, this.proxyPort, mfm, upMetric, this.promregatorInstanceIdentifier);
+					mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), ae, mfse, this.proxyHost, this.proxyPort, mfm, upChild, this.promregatorInstanceIdentifier);
 				} else {
-					mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), ae, mfse, mfm, upMetric, this.promregatorInstanceIdentifier);
+					mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), ae, mfse, mfm, upChild, this.promregatorInstanceIdentifier);
 				}
 			}
 			callablesList.add(mf);

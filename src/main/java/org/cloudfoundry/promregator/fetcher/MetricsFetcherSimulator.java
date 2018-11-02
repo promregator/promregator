@@ -9,10 +9,10 @@ import java.util.Random;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
-import org.cloudfoundry.promregator.endpoint.UpMetric;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
+import io.prometheus.client.Gauge;
 import io.prometheus.client.Histogram.Timer;
 
 public class MetricsFetcherSimulator implements MetricsFetcher {
@@ -22,7 +22,7 @@ public class MetricsFetcherSimulator implements MetricsFetcher {
 	private AuthenticationEnricher ae;
 	private AbstractMetricFamilySamplesEnricher mfse;
 	private MetricsFetcherMetrics mfm;
-	private UpMetric up;
+	private Gauge.Child up;
 	
 	private Random randomLatency = new Random();
 	
@@ -60,7 +60,7 @@ public class MetricsFetcherSimulator implements MetricsFetcher {
 	}
 	
 	public MetricsFetcherSimulator(String accessURL, AuthenticationEnricher ae,
-			AbstractMetricFamilySamplesEnricher mfse, MetricsFetcherMetrics mfm, UpMetric up) {
+			AbstractMetricFamilySamplesEnricher mfse, MetricsFetcherMetrics mfm, Gauge.Child up) {
 				this.accessURL = accessURL;
 				this.ae = ae;
 				this.mfse = mfse;
@@ -94,7 +94,7 @@ public class MetricsFetcherSimulator implements MetricsFetcher {
 		log.info(String.format("Simulating scraping at %s with latency of %d ms", this.accessURL, latency));
 		Thread.sleep(latency);
 		
-		this.up.setUp();
+		this.up.set(1.0);
 		
 		if (timer != null) {
 			timer.observeDuration();
