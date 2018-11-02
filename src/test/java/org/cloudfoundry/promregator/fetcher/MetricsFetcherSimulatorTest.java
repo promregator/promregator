@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.auth.NullEnricher;
+import org.cloudfoundry.promregator.endpoint.UpMetric;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.CFMetricFamilySamplesEnricher;
 import org.junit.AfterClass;
@@ -23,11 +24,12 @@ public class MetricsFetcherSimulatorTest {
 	@Test
 	public void testCall() throws Exception {
 		Gauge up = Gauge.build("up_test", "help test").create();
+		UpMetric upm = new UpMetric(up);
 		
 		AbstractMetricFamilySamplesEnricher mfse = new CFMetricFamilySamplesEnricher("testOrgName", "testSpaceName", "testapp", "testinstance1");
 		MetricsFetcherSimulator subject = new MetricsFetcherSimulator("accessUrl", 
 				new NullEnricher(), mfse , 
-				Mockito.mock(MetricsFetcherMetrics.class), up.labels());
+				Mockito.mock(MetricsFetcherMetrics.class), upm);
 		
 		HashMap<String, MetricFamilySamples> result = subject.call();
 		
