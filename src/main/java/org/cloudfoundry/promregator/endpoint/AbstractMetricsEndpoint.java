@@ -300,9 +300,9 @@ public abstract class AbstractMetricsEndpoint {
 				mf = new MetricsFetcherSimulator(accessURL, ae, mfse, mfm, upMetric);
 			} else {
 				if (this.proxyHost != null && this.proxyPort != 0) {
-					mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), ae, labelEnrichmentEnabled ? mfse : null, this.proxyHost, this.proxyPort, mfm, upMetric, this.promregatorInstanceIdentifier);
+					mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), ae, mfse, this.proxyHost, this.proxyPort, mfm, upMetric, this.promregatorInstanceIdentifier);
 				} else {
-					mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), ae, labelEnrichmentEnabled ? mfse : null, mfm, upMetric, this.promregatorInstanceIdentifier);
+					mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), ae, mfse, mfm, upMetric, this.promregatorInstanceIdentifier);
 				}
 			}
 			callablesList.add(mf);
