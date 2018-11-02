@@ -3,14 +3,20 @@ package org.cloudfoundry.promregator.rewrite;
 import java.util.LinkedList;
 import java.util.List;
 
-public class CFMetricFamilySamplesEnricher extends AbstractMetricFamilySamplesEnricher {
+public class CFAllLabelsMetricFamilySamplesEnricher extends AbstractMetricFamilySamplesEnricher {
 	public static final String LABELNAME_ORGNAME = "org_name";
 	public static final String LABELNAME_SPACENAME = "space_name";
 	public static final String LABELNAME_APPNAME = "app_name";
 	public static final String LABELNAME_INSTANCEID = "cf_instance_id";
-	public static final String LABELNAME_INSTANCE = "cf_instance_number";
 	
-	private static String[] labelNames = new String[] { LABELNAME_ORGNAME, LABELNAME_SPACENAME, LABELNAME_APPNAME, LABELNAME_INSTANCEID, LABELNAME_INSTANCE };
+	public static final String LABELNAME_INSTANCE = "instance"; // see also https://github.com/prometheus/docs/pull/1190#issuecomment-431713406
+	
+	/* still required for backward-compatibility
+	 * Note that LABELNAME_INSTANCE is the better approach
+	 */
+	public static final String LABELNAME_INSTANCE_NUMBER = "cf_instance_number";
+	
+	private static String[] labelNames = new String[] { LABELNAME_INSTANCE, LABELNAME_ORGNAME, LABELNAME_SPACENAME, LABELNAME_APPNAME, LABELNAME_INSTANCEID, LABELNAME_INSTANCE_NUMBER };
 	
 	public static String[] getEnrichingLabelNames() {
 		return labelNames.clone();
@@ -21,7 +27,7 @@ public class CFMetricFamilySamplesEnricher extends AbstractMetricFamilySamplesEn
 	private String appName;
 	private String instanceId;
 
-	public CFMetricFamilySamplesEnricher(String orgName, String spaceName, String appName, String instanceId) {
+	public CFAllLabelsMetricFamilySamplesEnricher(String orgName, String spaceName, String appName, String instanceId) {
 		this.instanceId = instanceId;
 		this.spaceName = spaceName;
 		this.appName = appName;
@@ -43,10 +49,11 @@ public class CFMetricFamilySamplesEnricher extends AbstractMetricFamilySamplesEn
 	public List<String> getEnrichedLabelValues(List<String> original) {
 		LinkedList<String> clone = new LinkedList<String>(original);
 		
+		clone.add(this.instanceId); // for LABELNAME_INSTANCE
 		clone.add(this.orgName);
 		clone.add(this.spaceName);
 		clone.add(this.appName);
-		clone.add(this.instanceId);
+		clone.add(this.instanceId); // for LABELNAME_INSTANCE_NUMBER
 		clone.add(getInstanceFromInstanceId(this.instanceId));
 		
 		return clone;

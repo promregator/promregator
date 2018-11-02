@@ -13,7 +13,7 @@ import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.endpoint.EndpointConstants;
 import org.cloudfoundry.promregator.mockServer.MetricsEndpointMockServer;
-import org.cloudfoundry.promregator.rewrite.CFMetricFamilySamplesEnricher;
+import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -51,7 +51,7 @@ public class MetricsFetcherTest {
 		JUnitTestUtils.cleanUpAll();
 	}
 	
-	private static class NullMetricFamilySamplesEnricher extends CFMetricFamilySamplesEnricher {
+	private static class NullMetricFamilySamplesEnricher extends CFAllLabelsMetricFamilySamplesEnricher {
 
 		public NullMetricFamilySamplesEnricher(String orgName, String spaceName, String appName, String instance) {
 			super(orgName, spaceName, appName, instance);

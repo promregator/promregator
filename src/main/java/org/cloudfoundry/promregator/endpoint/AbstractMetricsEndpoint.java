@@ -27,7 +27,8 @@ import org.cloudfoundry.promregator.fetcher.MetricsFetcher;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcherMetrics;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcherSimulator;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
-import org.cloudfoundry.promregator.rewrite.CFMetricFamilySamplesEnricher;
+import org.cloudfoundry.promregator.rewrite.CFInstanceOnlyMetricFamilySamplesEnricher;
+import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.GenericMetricFamilySamplesPrefixRewriter;
 import org.cloudfoundry.promregator.rewrite.MergableMetricFamilySamples;
 import org.cloudfoundry.promregator.scanner.Instance;
@@ -39,7 +40,6 @@ import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.Gauge.Builder;
-import io.prometheus.client.Gauge.Child;
 
 /**
  * An abstract class allowing to easily build a spring-framework HTTP REST-server endpoint, 
@@ -112,7 +112,7 @@ public abstract class AbstractMetricsEndpoint {
 		Builder builder = Gauge.build("promregator_up", "Indicator, whether the target of promregator is available");
 		
 		if (this.isLabelEnrichmentEnabled()) {
-			builder = builder.labelNames(CFMetricFamilySamplesEnricher.getEnrichingLabelNames());
+			builder = builder.labelNames(CFAllLabelsMetricFamilySamplesEnricher.getEnrichingLabelNames());
 		}
 		
 		this.up = builder.register(this.requestRegistry);
@@ -278,25 +278,24 @@ public abstract class AbstractMetricsEndpoint {
 				continue;
 			}
 			
-			AbstractMetricFamilySamplesEnricher mfse = new CFMetricFamilySamplesEnricher(orgName, spaceName, appName, instance.getInstanceId());
-			List<String> labelValues = mfse.getEnrichedLabelValues(new LinkedList<>());
-			String[] ownTelemetryLabelValues = labelValues.toArray(new String[0]);
-			
+			String[] ownTelemetryLabelValues = this.determineOwnTelemetryLabelValues(orgName, spaceName, appName, instance.getInstanceId());
 			MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, this.recordRequestLatency);
 			
 			final boolean labelEnrichmentEnabled = this.isLabelEnrichmentEnabled();
 			
 			UpMetric upMetric = null;
+			AbstractMetricFamilySamplesEnricher mfse = null;
 			if (labelEnrichmentEnabled) {
+				mfse = new CFAllLabelsMetricFamilySamplesEnricher(orgName, spaceName, appName, instance.getInstanceId());
 				upMetric = new UpMetric(this.up.labels(ownTelemetryLabelValues));
 			} else {
+				mfse = new CFInstanceOnlyMetricFamilySamplesEnricher(instance.getInstanceId());
 				upMetric = new UpMetric(this.up);
 			}
-
-			MetricsFetcher mf = null;
 			
 			AuthenticationEnricher ae = this.authenticatorController.getAuthenticationEnricherByTarget(instance.getTarget().getOriginalTarget());
 			
+			MetricsFetcher mf = null;
 			if (this.simulationMode) {
 				mf = new MetricsFetcherSimulator(accessURL, ae, mfse, mfm, upMetric);
 			} else {
@@ -310,6 +309,13 @@ public abstract class AbstractMetricsEndpoint {
 		}
 		
 		return callablesList;
+	}
+	
+	private String[] determineOwnTelemetryLabelValues(String orgName, String spaceName, String appName, String instanceId) {
+		AbstractMetricFamilySamplesEnricher mfse = new CFAllLabelsMetricFamilySamplesEnricher(orgName, spaceName, appName, instanceId);
+		List<String> labelValues = mfse.getEnrichedLabelValues(new LinkedList<>());
+		
+		return labelValues.toArray(new String[0]);
 	}
 	
 	/**

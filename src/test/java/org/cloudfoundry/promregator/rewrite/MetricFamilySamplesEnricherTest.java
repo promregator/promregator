@@ -22,7 +22,7 @@ public class MetricFamilySamplesEnricherTest {
 
 	@Test
 	public void testSimple() {
-		AbstractMetricFamilySamplesEnricher subject = new CFMetricFamilySamplesEnricher("testOrgName", "testSpaceName", "testComponent", "testInstance:42");
+		AbstractMetricFamilySamplesEnricher subject = new CFAllLabelsMetricFamilySamplesEnricher("testOrgName", "testSpaceName", "testComponent", "testInstance:42");
 
 		List<Sample> samples = new LinkedList<>();
 		Sample s = new Sample("dummyname", Arrays.asList(new String[] { "labelName" }), Arrays.asList(new String[] {"labelValue"}), 1.0);
