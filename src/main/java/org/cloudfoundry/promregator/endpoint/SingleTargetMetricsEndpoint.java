@@ -81,7 +81,7 @@ public class SingleTargetMetricsEndpoint extends AbstractMetricsEndpoint {
 				.register(requestRegistry);
 		
 		ResolvedTarget t = this.instance.getTarget();
-		CFAllLabelsMetricFamilySamplesEnricher enricher = new CFAllLabelsMetricFamilySamplesEnricher(t.getOrgName(), t.getSpaceName(), t.getApplicationName(), this.instance.getInstanceId());
+		CFOwnMetricsMetricFamilySamplesEnricher enricher = new CFOwnMetricsMetricFamilySamplesEnricher(t.getOrgName(), t.getSpaceName(), t.getApplicationName(), this.instance.getInstanceId());
 		
 		List<String> labelValues = enricher.getEnrichedLabelValues(new ArrayList<String>(0));
 		scrape_duration.labels(labelValues.toArray(new String[0])).set(duration.toMillis() / 1000.0);
