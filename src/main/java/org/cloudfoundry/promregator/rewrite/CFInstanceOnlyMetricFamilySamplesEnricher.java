@@ -3,6 +3,12 @@ package org.cloudfoundry.promregator.rewrite;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * A MetricFamilySamplesEnricher which enriches the labels of metrics only by
+ * - instance
+ * Usually, this enricher is being used for enriching metrics which have been scraped (and full enrichment is disabled
+ * in configuration).
+ */
 public class CFInstanceOnlyMetricFamilySamplesEnricher extends AbstractMetricFamilySamplesEnricher {
 	public static final String LABELNAME_INSTANCE = "instance"; // see also https://github.com/prometheus/docs/pull/1190#issuecomment-431713406
 	

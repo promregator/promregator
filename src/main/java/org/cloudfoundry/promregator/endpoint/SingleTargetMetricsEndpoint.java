@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
+import org.cloudfoundry.promregator.rewrite.CFOwnMetricsMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
 import org.springframework.context.annotation.Scope;
@@ -76,7 +77,7 @@ public class SingleTargetMetricsEndpoint extends AbstractMetricsEndpoint {
 	@Override
 	protected void handleScrapeDuration(CollectorRegistry requestRegistry, Duration duration) {
 		Gauge scrape_duration = Gauge.build("promregator_scrape_duration_seconds", "Duration in seconds indicating how long scraping of all metrics took")
-				.labelNames(CFAllLabelsMetricFamilySamplesEnricher.getEnrichingLabelNames())
+				.labelNames(CFOwnMetricsMetricFamilySamplesEnricher.getEnrichingLabelNames())
 				.register(requestRegistry);
 		
 		ResolvedTarget t = this.instance.getTarget();

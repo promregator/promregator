@@ -49,21 +49,23 @@ public class MetricFamilySamplesEnricherTest {
 		String[] labelNames = labelNamesList.toArray(new String[0]);
 		
 		Assert.assertEquals("labelName", labelNames[0]);
-		Assert.assertEquals("org_name", labelNames[1]);
-		Assert.assertEquals("space_name", labelNames[2]);
-		Assert.assertEquals("app_name", labelNames[3]);
-		Assert.assertEquals("cf_instance_id", labelNames[4]);
-		Assert.assertEquals("cf_instance_number", labelNames[5]);
+		Assert.assertEquals("instance", labelNames[1]);
+		Assert.assertEquals("org_name", labelNames[2]);
+		Assert.assertEquals("space_name", labelNames[3]);
+		Assert.assertEquals("app_name", labelNames[4]);
+		Assert.assertEquals("cf_instance_id", labelNames[5]);
+		Assert.assertEquals("cf_instance_number", labelNames[6]);
 		
 		List<String> labelValuesList = testSample.labelValues;
 		String[] labelValues = labelValuesList.toArray(new String[0]);
 
 		Assert.assertEquals("labelValue", labelValues[0]);
-		Assert.assertEquals("testOrgName", labelValues[1]);
-		Assert.assertEquals("testSpaceName", labelValues[2]);
-		Assert.assertEquals("testComponent", labelValues[3]);
-		Assert.assertEquals("testInstance:42", labelValues[4]);
-		Assert.assertEquals("42", labelValues[5]);
+		Assert.assertEquals("testInstance:42", labelValues[1]);
+		Assert.assertEquals("testOrgName", labelValues[2]);
+		Assert.assertEquals("testSpaceName", labelValues[3]);
+		Assert.assertEquals("testComponent", labelValues[4]);
+		Assert.assertEquals("testInstance:42", labelValues[5]);
+		Assert.assertEquals("42", labelValues[6]);
 	}
 
 }

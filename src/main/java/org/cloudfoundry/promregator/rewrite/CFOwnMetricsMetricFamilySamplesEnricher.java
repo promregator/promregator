@@ -11,25 +11,20 @@ import java.util.List;
  * - app_name
  * - cf_instance_id
  * 
- * and
- * - instance
- * Usually, this enricher is being used for enriching metrics which have been scraped (and full enrichment is enabled
- * in configuration).
+ * but *NOT* by instance.
+ * Usually, this enricher is being used for enriching Promregator-internal metrics.
+ * 
+ * Metrics scraped and passed on from a target MUST NOT use this enricher! Use CFAllLabelsMetricFamilySamplesEnricher instead.
  */
-public class CFAllLabelsMetricFamilySamplesEnricher extends AbstractMetricFamilySamplesEnricher {
+public class CFOwnMetricsMetricFamilySamplesEnricher extends AbstractMetricFamilySamplesEnricher {
 	public static final String LABELNAME_ORGNAME = "org_name";
 	public static final String LABELNAME_SPACENAME = "space_name";
 	public static final String LABELNAME_APPNAME = "app_name";
 	public static final String LABELNAME_INSTANCEID = "cf_instance_id";
 	
-	public static final String LABELNAME_INSTANCE = "instance"; // see also https://github.com/prometheus/docs/pull/1190#issuecomment-431713406
-	
-	/* still required for backward-compatibility
-	 * Note that LABELNAME_INSTANCE is the better approach
-	 */
 	public static final String LABELNAME_INSTANCE_NUMBER = "cf_instance_number";
 	
-	private static String[] labelNames = new String[] { LABELNAME_INSTANCE, LABELNAME_ORGNAME, LABELNAME_SPACENAME, LABELNAME_APPNAME, LABELNAME_INSTANCEID, LABELNAME_INSTANCE_NUMBER };
+	private static String[] labelNames = new String[] { LABELNAME_ORGNAME, LABELNAME_SPACENAME, LABELNAME_APPNAME, LABELNAME_INSTANCEID, LABELNAME_INSTANCE_NUMBER };
 	
 	public static String[] getEnrichingLabelNames() {
 		return labelNames.clone();
@@ -40,7 +35,7 @@ public class CFAllLabelsMetricFamilySamplesEnricher extends AbstractMetricFamily
 	private String appName;
 	private String instanceId;
 
-	public CFAllLabelsMetricFamilySamplesEnricher(String orgName, String spaceName, String appName, String instanceId) {
+	public CFOwnMetricsMetricFamilySamplesEnricher(String orgName, String spaceName, String appName, String instanceId) {
 		this.instanceId = instanceId;
 		this.spaceName = spaceName;
 		this.appName = appName;
@@ -62,7 +57,6 @@ public class CFAllLabelsMetricFamilySamplesEnricher extends AbstractMetricFamily
 	public List<String> getEnrichedLabelValues(List<String> original) {
 		LinkedList<String> clone = new LinkedList<String>(original);
 		
-		clone.add(this.instanceId); // for LABELNAME_INSTANCE
 		clone.add(this.orgName);
 		clone.add(this.spaceName);
 		clone.add(this.appName);
