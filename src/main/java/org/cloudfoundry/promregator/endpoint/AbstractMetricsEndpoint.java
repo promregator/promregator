@@ -195,7 +195,7 @@ public abstract class AbstractMetricsEndpoint {
 	 * @return <code>true</code> if label enrichment shall take place, <code>false</code> if label enrichment
 	 * is allowed to be suppressed AND is requested to be suppressed.
 	 */
-	private boolean isLabelEnrichmentEnabled() {
+	protected boolean isLabelEnrichmentEnabled() {
 		if (!this.isLabelEnrichmentSuppressable()) {
 			return true;
 		}

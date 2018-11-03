@@ -4,6 +4,8 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
+import org.cloudfoundry.promregator.rewrite.CFInstanceOnlyMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.CFOwnMetricsMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
@@ -75,12 +77,28 @@ public class SingleTargetMetricsEndpoint extends AbstractMetricsEndpoint {
 	
 	@Override
 	protected void handleScrapeDuration(CollectorRegistry requestRegistry, Duration duration) {
-		Gauge scrape_duration = Gauge.build("promregator_scrape_duration_seconds", "Duration in seconds indicating how long scraping of all metrics took")
-				.labelNames(CFOwnMetricsMetricFamilySamplesEnricher.getEnrichingLabelNames())
-				.register(requestRegistry);
+		/*
+		 * Note: The scrape_duration_seconds metric is being passed on to Prometheus with
+		 * the normal scraping request.
+		 * If the configuration option promregator.scraping.labelEnrichment is disabled, then 
+		 * the metric must also comply to this approach. Otherwise there might arise issues
+		 * with rewriting in Prometheus.
+		 */
 		
-		ResolvedTarget t = this.instance.getTarget();
-		CFOwnMetricsMetricFamilySamplesEnricher enricher = new CFOwnMetricsMetricFamilySamplesEnricher(t.getOrgName(), t.getSpaceName(), t.getApplicationName(), this.instance.getInstanceId());
+		AbstractMetricFamilySamplesEnricher enricher = null;
+		String[] ownTelemetryLabels = null;
+		if (this.isLabelEnrichmentEnabled()) {
+			ResolvedTarget t = this.instance.getTarget();
+			ownTelemetryLabels = CFOwnMetricsMetricFamilySamplesEnricher.getEnrichingLabelNames();
+			enricher = new CFOwnMetricsMetricFamilySamplesEnricher(t.getOrgName(), t.getSpaceName(), t.getApplicationName(), this.instance.getInstanceId());
+		} else {
+			ownTelemetryLabels = CFInstanceOnlyMetricFamilySamplesEnricher.getEnrichingLabelNames();
+			enricher = new CFInstanceOnlyMetricFamilySamplesEnricher(this.instance.getInstanceId());
+		}
+		
+		Gauge scrape_duration = Gauge.build("promregator_scrape_duration_seconds", "Duration in seconds indicating how long scraping of all metrics took")
+				.labelNames(ownTelemetryLabels)
+				.register(requestRegistry);
 		
 		List<String> labelValues = enricher.getEnrichedLabelValues(new ArrayList<String>(0));
 		scrape_duration.labels(labelValues.toArray(new String[0])).set(duration.toMillis() / 1000.0);
