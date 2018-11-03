@@ -71,8 +71,8 @@ public class SingleTargetMetricsEndpointTest {
 		Assert.assertEquals(1, mfs.samples.size());
 		
 		Sample sample = mfs.samples.get(0);
-		Assert.assertEquals("[org_name, space_name, app_name, cf_instance_id, cf_instance_number]", sample.labelNames.toString()); 
-		Assert.assertEquals("[unittestorg, unittestspace, unittestapp, faedbb0a-2273-4cb4-a659-bd31331f7daf:0, 0]", sample.labelValues.toString()); 
+		Assert.assertEquals("[instance, org_name, space_name, app_name, cf_instance_id, cf_instance_number]", sample.labelNames.toString()); 
+		Assert.assertEquals("[faedbb0a-2273-4cb4-a659-bd31331f7daf:0, unittestorg, unittestspace, unittestapp, faedbb0a-2273-4cb4-a659-bd31331f7daf:0, 0]", sample.labelValues.toString()); 
 	}
 	
 	@Test
