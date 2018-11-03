@@ -3,14 +3,26 @@ package org.cloudfoundry.promregator.rewrite;
 import java.util.LinkedList;
 import java.util.List;
 
-public class CFMetricFamilySamplesEnricher extends AbstractMetricFamilySamplesEnricher {
+/**
+ * A MetricFamilySamplesEnricher which enriches the labels of metrics by 
+ * - org_name
+ * - space_name
+ * - app_name
+ * - cf_instance_id
+ * 
+ */
+public class CFAllLabelsMetricFamilySamplesEnricher extends AbstractMetricFamilySamplesEnricher {
 	public static final String LABELNAME_ORGNAME = "org_name";
 	public static final String LABELNAME_SPACENAME = "space_name";
 	public static final String LABELNAME_APPNAME = "app_name";
 	public static final String LABELNAME_INSTANCEID = "cf_instance_id";
-	public static final String LABELNAME_INSTANCE = "cf_instance_number";
 	
-	private static String[] labelNames = new String[] { LABELNAME_ORGNAME, LABELNAME_SPACENAME, LABELNAME_APPNAME, LABELNAME_INSTANCEID, LABELNAME_INSTANCE };
+	/* still required for backward-compatibility
+	 * Note that LABELNAME_INSTANCE is the better approach
+	 */
+	public static final String LABELNAME_INSTANCE_NUMBER = "cf_instance_number";
+	
+	private static String[] labelNames = new String[] { LABELNAME_ORGNAME, LABELNAME_SPACENAME, LABELNAME_APPNAME, LABELNAME_INSTANCEID, LABELNAME_INSTANCE_NUMBER };
 	
 	public static String[] getEnrichingLabelNames() {
 		return labelNames.clone();
@@ -21,7 +33,7 @@ public class CFMetricFamilySamplesEnricher extends AbstractMetricFamilySamplesEn
 	private String appName;
 	private String instanceId;
 
-	public CFMetricFamilySamplesEnricher(String orgName, String spaceName, String appName, String instanceId) {
+	public CFAllLabelsMetricFamilySamplesEnricher(String orgName, String spaceName, String appName, String instanceId) {
 		this.instanceId = instanceId;
 		this.spaceName = spaceName;
 		this.appName = appName;

@@ -8,7 +8,7 @@ import org.cloudfoundry.promregator.discovery.InstanceKey;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcherMetrics;
 import org.cloudfoundry.promregator.messagebus.MessageBusDestination;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
-import org.cloudfoundry.promregator.rewrite.CFMetricFamilySamplesEnricher;
+import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.springconfig.JMSSpringConfiguration;
 import org.springframework.jms.annotation.JmsListener;
 
@@ -28,7 +28,7 @@ public class InstanceLifecycleHandler {
 		String spaceName = instanceKey.getSpaceName();
 		String appName = instanceKey.getAppName();
 		
-		AbstractMetricFamilySamplesEnricher mfse = new CFMetricFamilySamplesEnricher(orgName, spaceName, appName, instanceKey.getInstanceId());
+		AbstractMetricFamilySamplesEnricher mfse = new CFAllLabelsMetricFamilySamplesEnricher(orgName, spaceName, appName, instanceKey.getInstanceId());
 		List<String> labelValues = mfse.getEnrichedLabelValues(new LinkedList<>());
 		String[] ownTelemetryLabelValues = labelValues.toArray(new String[0]);
 		

@@ -48,6 +48,17 @@ public class MetricsEndpoint extends AbstractMetricsEndpoint {
 		return true;
 	}
 
+	@Override
+	protected boolean isLabelEnrichmentSuppressable() {
+		/*
+		 * We may have metrics of multiple different Cloud Foundry instances in our response. 
+		 * If label enrichment would be suppressed, this could mix up all the data.
+		 * That is why we must prevent that label enrichment is suppressed (hence, answering "false").
+		 */
+		return false;
+	}
+	
+
 	/* (non-Javadoc)
 	 * @see org.cloudfoundry.promregator.endpoint.AbstractMetricsEndpoint#createMetricsFetchers(java.util.List)
 	 */
@@ -62,10 +73,20 @@ public class MetricsEndpoint extends AbstractMetricsEndpoint {
 
 	@Override
 	protected void handleScrapeDuration(CollectorRegistry requestRegistry, Duration duration) {
+		/* Note:
+		 * The metric in this method intends to describe how much time has passed 
+		 * for the *entire* scraping process. It's not the intention of this metric
+		 * to drill-down to each scraping request.
+		 * That is why it does not have additional labels, i.e. it does not have labels
+		 * which are depending on the target.
+		 * 
+		 * See also the description of "promregator_scrape_duration_seconds" in
+		 * https://github.com/promregator/promregator/blob/4b2ca289b624328e7e0b3838112e31a908a55c58/docs/enrichment.md
+		 */
 		Gauge scrape_duration = Gauge.build("promregator_scrape_duration_seconds", "Duration in seconds indicating how long scraping of all metrics took")
 				.register(requestRegistry);
 		
 		scrape_duration.set(duration.toMillis() / 1000.0);
 	}
-	
+
 }

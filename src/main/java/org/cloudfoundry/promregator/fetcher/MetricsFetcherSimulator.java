@@ -94,7 +94,7 @@ public class MetricsFetcherSimulator implements MetricsFetcher {
 		log.info(String.format("Simulating scraping at %s with latency of %d ms", this.accessURL, latency));
 		Thread.sleep(latency);
 		
-		this.up.set(1);
+		this.up.set(1.0);
 		
 		if (timer != null) {
 			timer.observeDuration();

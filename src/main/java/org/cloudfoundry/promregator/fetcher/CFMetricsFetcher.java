@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.UUID;
 
+import javax.annotation.Nullable;
+
 import org.apache.http.HttpHost;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
@@ -17,8 +19,8 @@ import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.endpoint.EndpointConstants;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 
-import io.prometheus.client.Gauge;
 import io.prometheus.client.Collector.MetricFamilySamples;
+import io.prometheus.client.Gauge;
 import io.prometheus.client.Histogram.Timer;
 
 /**
@@ -51,7 +53,7 @@ public class CFMetricsFetcher implements MetricsFetcher {
 
 	private UUID promregatorUUID;
 
-	public CFMetricsFetcher(String endpointUrl, String instanceId, AuthenticationEnricher ae, AbstractMetricFamilySamplesEnricher mfse, 
+	public CFMetricsFetcher(String endpointUrl, String instanceId, AuthenticationEnricher ae, @Nullable AbstractMetricFamilySamplesEnricher mfse, 
 			String proxyHost, int proxyPort, MetricsFetcherMetrics mfm, Gauge.Child up, UUID promregatorUUID) {
 		this.endpointUrl = endpointUrl;
 		this.instanceId = instanceId;
@@ -79,7 +81,7 @@ public class CFMetricsFetcher implements MetricsFetcher {
 	 * @param ae (optional) an AuthenticationEnricher, which enriches the HTTP GET request for fetching the Prometheus metrics with additional authentication information.
 	 * May be <code>null</code> in which case no enriching takes place.
 	 */
-	public CFMetricsFetcher(String endpointUrl, String instanceId, AuthenticationEnricher ae, AbstractMetricFamilySamplesEnricher mfse, 
+	public CFMetricsFetcher(String endpointUrl, String instanceId, AuthenticationEnricher ae, @Nullable AbstractMetricFamilySamplesEnricher mfse, 
 			MetricsFetcherMetrics mfm, Gauge.Child up, UUID promregatorUUID) {
 		this(endpointUrl, instanceId, ae, mfse, null, 0, mfm, up, promregatorUUID);
 	}

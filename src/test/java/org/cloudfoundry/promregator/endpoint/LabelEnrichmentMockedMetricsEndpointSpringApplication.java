@@ -17,11 +17,8 @@ import org.cloudfoundry.promregator.auth.AuthenticatorController;
 import org.cloudfoundry.promregator.auth.NullEnricher;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.discovery.CFMultiDiscoverer;
-import org.cloudfoundry.promregator.discovery.ConfigurationTargetCFDiscoverer;
-import org.cloudfoundry.promregator.discovery.ConfigurationTargetInstance;
-import org.cloudfoundry.promregator.discovery.Instance;
-import org.cloudfoundry.promregator.discovery.UPSBasedCFDiscoverer;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
+import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
 import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.cloudfoundry.promregator.scanner.TrivialTargetResolver;
@@ -42,16 +39,20 @@ import io.prometheus.client.CollectorRegistry;
 @EnableAutoConfiguration
 @ComponentScan(excludeFilters = { @Filter(type = FilterType.CUSTOM, classes = { TypeExcludeFilter.class }),
 		@Filter(type = FilterType.CUSTOM, classes = { AutoConfigurationExcludeFilter.class }),
-		@Filter(type = FilterType.ASSIGNABLE_TYPE, value=MetricsEndpoint.class),
-		// NB: Handling is taken over by TestableMetricsEndpoint! That one is
-		// NOT excluded
-		@Filter(type = FilterType.ASSIGNABLE_TYPE, value=SingleTargetMetricsEndpoint.class),
-		// NB: Handling is taken over by TestableSingleTargetMetricsEndpoint! That one is
-		// NOT excluded
+		@Filter(type = FilterType.ASSIGNABLE_TYPE, value = TestableMetricsEndpoint.class ),
+		/* NB: We want to have a the real MetricsEndpoint and not the TestableMetricsEndpoint here! 
+		 * That's why TestableMetricsEndpoint is excluded, but MetricsEndpoint is not (which is the opposite of a
+		 * very similar test)!
+		 */
+		@Filter(type = FilterType.ASSIGNABLE_TYPE, value = TestableSingleTargetMetricsEndpoint.class ),
+		/* NB: We want to have a the real SingleTargetMetricsEndpoint and not the TestableSingleTargetMetricsEndpoint here! 
+		 * That's why TestableSingleTargetMetricsEndpoint is excluded, but SingleTargetMetricsEndpoint is not (which is the opposite of a
+		 * very similar test)!
+		 */
 		@Filter(type = FilterType.ASSIGNABLE_TYPE, value=InvalidateCacheEndpoint.class)
 })
 @Import({ PromregatorConfiguration.class })
-public class MockedMetricsEndpointSpringApplication {
+public class LabelEnrichmentMockedMetricsEndpointSpringApplication {
 	public final static UUID currentPromregatorInstanceIdentifier = UUID.randomUUID();
 	
 	@Bean
@@ -66,18 +67,9 @@ public class MockedMetricsEndpointSpringApplication {
 				t.setOrgName("unittestorg");
 				t.setSpaceName("unittestspace");
 				t.setApplicationName("unittestapp");
-				t.setPath("/path");
-				t.setProtocol("https");
-				result.add(new ConfigurationTargetInstance(t, "faedbb0a-2273-4cb4-a659-bd31331f7daf:0", "http://localhost:1234", null));
-				result.add(new ConfigurationTargetInstance(t, "faedbb0a-2273-4cb4-a659-bd31331f7daf:1", "http://localhost:1234", null));
-
-				t = new ResolvedTarget();
-				t.setOrgName("unittestorg");
-				t.setSpaceName("unittestspace");
-				t.setApplicationName("unittestapp2");
-				t.setPath("/otherpath");
+				t.setPath("/metrics");
 				t.setProtocol("http");
-				result.add(new ConfigurationTargetInstance(t, "1142a717-e27d-4028-89d8-b42a0c973300:0", "http://localhost:1235", null));
+				result.add(new Instance(t, "faedbb0a-2273-4cb4-a659-bd31331f7daf:0", "http://localhost:9002/metrics")); // Must be the same port as in MetricsEndpointMockServer
 
 				if (applicationIdFilter != null) {
 					for (Iterator<Instance> it = result.iterator(); it.hasNext();) {
@@ -114,16 +106,6 @@ public class MockedMetricsEndpointSpringApplication {
 	@Bean
 	public CFMultiDiscoverer cfDiscoverer() {
 		return new CFMultiDiscoverer();
-	}
-	
-	@Bean
-	public ConfigurationTargetCFDiscoverer configurationTargetCFDiscoverer() {
-		return new ConfigurationTargetCFDiscoverer();
-	}
-	
-	@Bean
-	public UPSBasedCFDiscoverer upsBasedCFDiscoverer() {
-		return new UPSBasedCFDiscoverer();
 	}
 	
 	@Bean

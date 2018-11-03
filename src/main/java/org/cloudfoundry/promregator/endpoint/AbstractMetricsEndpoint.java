@@ -28,16 +28,17 @@ import org.cloudfoundry.promregator.fetcher.MetricsFetcher;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcherMetrics;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcherSimulator;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
-import org.cloudfoundry.promregator.rewrite.CFMetricFamilySamplesEnricher;
+import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.GenericMetricFamilySamplesPrefixRewriter;
 import org.cloudfoundry.promregator.rewrite.MergableMetricFamilySamples;
+import org.cloudfoundry.promregator.rewrite.NullMetricFamilySamplesEnricher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Gauge;
-import io.prometheus.client.Gauge.Child;
+import io.prometheus.client.Gauge.Builder;
 
 /**
  * An abstract class allowing to easily build a spring-framework HTTP REST-server endpoint, 
@@ -86,6 +87,9 @@ public abstract class AbstractMetricsEndpoint {
 	@Value("${promregator.metrics.requestLatency:false}")
 	private boolean recordRequestLatency;
 	
+	@Value("${promregator.scraping.labelEnrichment:true}")
+	private boolean labelEnrichment;
+	
 	@Autowired
 	private UUID promregatorInstanceIdentifier;
 	
@@ -104,9 +108,15 @@ public abstract class AbstractMetricsEndpoint {
 	public void setupOwnRequestScopedMetrics() {
 		this.requestRegistry = new CollectorRegistry();
 		
-		this.up = Gauge.build("promregator_up", "Indicator, whether the target of promregator is available")
-				.labelNames(CFMetricFamilySamplesEnricher.getEnrichingLabelNames())
-				.register(this.requestRegistry);
+		Builder builder = Gauge.build("promregator_up", "Indicator, whether the target of promregator is available");
+		
+		if (this.isLabelEnrichmentEnabled()) {
+			builder = builder.labelNames(CFAllLabelsMetricFamilySamplesEnricher.getEnrichingLabelNames());
+		} else {
+			builder = builder.labelNames(NullMetricFamilySamplesEnricher.getEnrichingLabelNames());
+		}
+		
+		this.up = builder.register(this.requestRegistry);
 	}
 	
 	@PostConstruct
@@ -168,6 +178,29 @@ public abstract class AbstractMetricsEndpoint {
 	 * <code>false</code> otherwise.
 	 */
 	protected abstract boolean isIncludeGlobalMetrics();
+	
+	/**
+	 * specifies whether it is permitted that the enrichment of labels may be suppressed ("true") or not ("false"). 
+	 * 
+	 * If (and only if) this method returns <code>true</code> AND promregator.scraping.labelEnrichment is set to false, 
+	 * then label enrichment is suppressed.
+	 * @return <code>true</code>, if label enrichment may be suppressed. <code>false</code> if suppression of 
+	 * label enrichment could create semantic issues (and thus is not permitted).
+	 */
+	protected abstract boolean isLabelEnrichmentSuppressable();
+	
+	/**
+	 * @return <code>true</code> if label enrichment shall take place, <code>false</code> if label enrichment
+	 * is allowed to be suppressed AND is requested to be suppressed.
+	 */
+	protected boolean isLabelEnrichmentEnabled() {
+		if (!this.isLabelEnrichmentSuppressable()) {
+			return true;
+		}
+		
+		// we may have label enrichment suppressed
+		return this.labelEnrichment;
+	}
 
 	private MergableMetricFamilySamples waitForMetricsFetchers(LinkedList<Future<HashMap<String, MetricFamilySamples>>> futures) {
 		long starttime = System.currentTimeMillis();
@@ -245,18 +278,28 @@ public abstract class AbstractMetricsEndpoint {
 				continue;
 			}
 			
-			AbstractMetricFamilySamplesEnricher mfse = new CFMetricFamilySamplesEnricher(orgName, spaceName, appName, instance.getInstanceId());
-			List<String> labelValues = mfse.getEnrichedLabelValues(new LinkedList<>());
-			String[] ownTelemetryLabelValues = labelValues.toArray(new String[0]);
-			
+			String[] ownTelemetryLabelValues = this.determineOwnTelemetryLabelValues(orgName, spaceName, appName, instance.getInstanceId());
 			MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, this.recordRequestLatency);
 			
-			Child upChild = this.up.labels(ownTelemetryLabelValues);
-
-			MetricsFetcher mf = null;
+			final boolean labelEnrichmentEnabled = this.isLabelEnrichmentEnabled();
+			
+			/*
+			 * Warning! the gauge "up" is a very special beast!
+			 * As it is always transferred along the other metrics (it's not a promregator-own metric!), it must always
+			 * follow the same labels as the other metrics which are scraped
+			 */
+			Gauge.Child upChild = null;
+			AbstractMetricFamilySamplesEnricher mfse = null;
+			if (labelEnrichmentEnabled) {
+				mfse = new CFAllLabelsMetricFamilySamplesEnricher(orgName, spaceName, appName, instance.getInstanceId());
+			} else {
+				mfse = new NullMetricFamilySamplesEnricher();
+			}
+			upChild = this.up.labels(mfse.getEnrichedLabelValues(new LinkedList<>()).toArray(new String[0]));
 			
 			AuthenticationEnricher ae = instance.getAuthenticationEnricher();
 			
+			MetricsFetcher mf = null;
 			if (this.simulationMode) {
 				mf = new MetricsFetcherSimulator(accessURL, ae, mfse, mfm, upChild);
 			} else {
@@ -270,6 +313,13 @@ public abstract class AbstractMetricsEndpoint {
 		}
 		
 		return callablesList;
+	}
+	
+	private String[] determineOwnTelemetryLabelValues(String orgName, String spaceName, String appName, String instanceId) {
+		AbstractMetricFamilySamplesEnricher mfse = new CFAllLabelsMetricFamilySamplesEnricher(orgName, spaceName, appName, instanceId);
+		List<String> labelValues = mfse.getEnrichedLabelValues(new LinkedList<>());
+		
+		return labelValues.toArray(new String[0]);
 	}
 	
 	/**

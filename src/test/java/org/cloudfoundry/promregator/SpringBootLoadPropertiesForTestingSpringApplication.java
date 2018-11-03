@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 @Configuration
-@Profile("springBootLoadPopertiesForTesting")
+@Profile("springBootLoadPropertiesForTesting")
 public class SpringBootLoadPropertiesForTestingSpringApplication {
 	@Value("${dummy.value:false}")
 	private boolean dummyValue;

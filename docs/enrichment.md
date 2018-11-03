@@ -1,6 +1,6 @@
 # Enrichment performed by Promregator
 
-Promregator automatically enriches the metrics provided by the targets with additional labels.
+Promregator may enrich metrics provided by the targets with additional labels automatically. By default, this option is enabled.
 Moreover, it also provides additional metrics to support you.
 
 In general, there are three cases where additional metrics/labels may appear:
@@ -11,7 +11,7 @@ In general, there are three cases where additional metrics/labels may appear:
 
 
 ## Additional Labels for Provided Metrics by the Targets
-The following labels are automatically added to metrics, which are received from targets:
+If configuration option `promregator.scraping.labelEnrichment` is enabled (which is the default), the following labels are automatically added to metrics, which are received from targets:
 
 * The name of the Cloud Foundry organization in which the application is running (`org_name`)
 * The name of the Cloud Foundry space in which the application is running (`space_name`)
@@ -38,6 +38,9 @@ metric_without_label{org_name="cforg",space_name="cfspace",app_name="cfapp",cf_i
 metric_with_label{mylabel="myvalue",org_name="cforg",space_name="cfspace",app_name="cfapp",cf_instance_id="707d58b2-00ce-435a-845c-79eff28afe8c:0",cf_instance_number="0"} 2.0
 ```
 By this, you may aggregate the metrics data in your Prometheus server according to your needs, allowing any drilldown you wish, even to the lowest level of a single instance.
+
+
+Setting the configuration option `promregator.scraping.labelEnrichment` to `false` permits you to prevent Promregator creating those labels for you. Instead you may use the Prometheus' feature "label rewriting" to add your own set of custom labels. For details on which meta labels are available for this, refer to [the section "Label Rewriting" in the main documentation page](./documentation.md).
 
 
 ## Additional Metrics Measuring the Communication to the Targets

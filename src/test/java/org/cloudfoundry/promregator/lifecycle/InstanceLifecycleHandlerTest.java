@@ -9,7 +9,7 @@ import org.cloudfoundry.promregator.discovery.ConfigurationTargetInstance;
 import org.cloudfoundry.promregator.discovery.Instance;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcherMetrics;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
-import org.cloudfoundry.promregator.rewrite.CFMetricFamilySamplesEnricher;
+import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -46,7 +46,7 @@ public class InstanceLifecycleHandlerTest {
 		String spaceName = i.getSpaceName();
 		String appName = i.getApplicationName();
 		
-		AbstractMetricFamilySamplesEnricher mfse = new CFMetricFamilySamplesEnricher(orgName, spaceName, appName, i.getInstanceId());
+		AbstractMetricFamilySamplesEnricher mfse = new CFAllLabelsMetricFamilySamplesEnricher(orgName, spaceName, appName, i.getInstanceId());
 		List<String> labelValues = mfse.getEnrichedLabelValues(new LinkedList<>());
 		String[] ownTelemetryLabelValues = labelValues.toArray(new String[0]);
 		

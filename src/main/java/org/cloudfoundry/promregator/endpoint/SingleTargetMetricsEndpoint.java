@@ -5,8 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.cloudfoundry.promregator.discovery.Instance;
-import org.cloudfoundry.promregator.rewrite.CFMetricFamilySamplesEnricher;
-import org.cloudfoundry.promregator.scanner.ResolvedTarget;
+import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
+import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
+import org.cloudfoundry.promregator.rewrite.NullMetricFamilySamplesEnricher;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -65,14 +66,42 @@ public class SingleTargetMetricsEndpoint extends AbstractMetricsEndpoint {
 	}
 
 	@Override
+	protected boolean isLabelEnrichmentSuppressable() {
+		/*
+		 * we only have metrics of a single Cloud Foundry application instance in our
+		 * response. Thus, it is permitted that label enrichment may be suppressed (hence answering "true" here).
+		 */
+		return true;
+	}
+	
+	@Override
 	protected void handleScrapeDuration(CollectorRegistry requestRegistry, Duration duration) {
-		Gauge scrape_duration = Gauge.build("promregator_scrape_duration_seconds", "Duration in seconds indicating how long scraping of all metrics took")
-				.labelNames(CFMetricFamilySamplesEnricher.getEnrichingLabelNames())
-				.register(requestRegistry);
+		/*
+		 * Note: The scrape_duration_seconds metric is being passed on to Prometheus with
+		 * the normal scraping request.
+		 * If the configuration option promregator.scraping.labelEnrichment is disabled, then 
+		 * the metric must also comply to this approach. Otherwise there might arise issues
+		 * with rewriting in Prometheus.
+		 */
 		
-		CFMetricFamilySamplesEnricher enricher = new CFMetricFamilySamplesEnricher(this.instance.getOrgName(), this.instance.getSpaceName(), this.instance.getApplicationName(), this.instance.getInstanceId());
+		AbstractMetricFamilySamplesEnricher enricher = null;
+		String[] ownTelemetryLabels = null;
+		if (this.isLabelEnrichmentEnabled()) {
+			ownTelemetryLabels = CFAllLabelsMetricFamilySamplesEnricher.getEnrichingLabelNames();
+			enricher = new CFAllLabelsMetricFamilySamplesEnricher(this.instance.getOrgName(), this.instance.getSpaceName(), 
+					this.instance.getApplicationName(), this.instance.getInstanceId());
+		} else {
+			ownTelemetryLabels = NullMetricFamilySamplesEnricher.getEnrichingLabelNames();
+			enricher = new NullMetricFamilySamplesEnricher();
+		}
+		
+		Gauge scrape_duration = Gauge.build("promregator_scrape_duration_seconds", "Duration in seconds indicating how long scraping of all metrics took")
+				.labelNames(ownTelemetryLabels)
+				.register(requestRegistry);
 		
 		List<String> labelValues = enricher.getEnrichedLabelValues(new ArrayList<String>(0));
 		scrape_duration.labels(labelValues.toArray(new String[0])).set(duration.toMillis() / 1000.0);
 	}
+
+	
 }
