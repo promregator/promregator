@@ -13,7 +13,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest(classes = { SpringBootLoadPropertiesForTestingSpringApplication.class })
 @RunWith(SpringRunner.class)
 @ContextConfiguration(initializers = { ConfigFileApplicationContextInitializer.class })
-@ActiveProfiles(profiles= {"springBootLoadPopertiesForTesting"})
+@ActiveProfiles(profiles= {"springBootLoadPropertiesForTesting"})
 public class SpringBootLoadPropertiesForTesting {
 
 	@Autowired
