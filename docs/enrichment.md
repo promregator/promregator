@@ -53,8 +53,6 @@ the caller via Prometheus metrics. For this, the following metrics are exposed:
   Note that this metric is disabled by default due to high data volume. You may enable it with [configuration option](./config.md) `promregator.metrics.requestLatency`.
 * `promregator_request_size`: a [Prometheus histogram](https://prometheus.io/docs/practices/histograms/), which returns the size of the scraping document, which was sent from the target to Promregator.
 * `promregator_up`: a [Prometheus Gauge](https://prometheus.io/docs/concepts/metric_types/) which indicates whether an instance was reachable or not (similar to the [gauge provided for Prometheus' own monitoring](https://prometheus.io/docs/concepts/jobs_instances/)).
-  * In Single Endpoint Scraping, this metric is independent from the targets and thus does not carry the labels `org_name`, `space_name`, `app_name`, `cf_instance_number` and `cf_instance_id` (as stated below).
-  * In Single Target Scraping, this metric is dependent from the target chosen and thus provides the labels `org_name`, `space_name`, `app_name`, `cf_instance_number` and `cf_instance_id` (as stated below).
 * `promregator_request_failure`: a [Prometheus Gauge](https://prometheus.io/docs/concepts/metric_types/) which indicates the number of requests sent to the target, which have failed.
 * `promregator_scrape_duration_seconds`: a [Prometheus Gauge](https://prometheus.io/docs/concepts/metric_types/) which indicates how long scraping of the current request target took. 
   * In Single Endpoint Scraping, this metric is independent from the targets and thus does not carry the labels `org_name`, `space_name`, `app_name`, `cf_instance_number` and `cf_instance_id` (as stated below).
