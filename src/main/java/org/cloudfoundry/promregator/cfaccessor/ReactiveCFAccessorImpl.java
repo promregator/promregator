@@ -306,7 +306,8 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 						List<UserProvidedServiceInstanceResource> filteredItems = new LinkedList<>();
 						List<UserProvidedServiceInstanceResource> allItems = resp.getResources();
 						for (UserProvidedServiceInstanceResource resource : allItems) {
-							if (resource.getEntity().getCredentials().get("promregator-version") != null) {
+							if (resource != null && resource.getEntity() != null && resource.getEntity().getCredentials() != null &&
+								resource.getEntity().getCredentials().get("promregator-version") != null) {
 								filteredItems.add(resource);
 							}
 						}
