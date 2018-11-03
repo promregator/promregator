@@ -121,39 +121,32 @@ Moreover, it may be worth mentioning that querying the `/discovery` endpoint sig
 
 By default, Promegator still performs [label enrichment](./enrichment.md) if used with Single Target Scraping mode. Single Target Scraping mode permits that label enrichment may be done by Prometheus. This allows to comply to Prometheus' recommended approach of handling labels which is using [rewriting rules](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config). 
 
-To enable label rewriting to be preformed by Prometheus, set the [configuration option](./config.md) `promregator.scraping.labelEnrichment` to "false". In your configuration of Prometheus you then may then specify `relabel_configs` which you may adjust to your own needs 
+To enable label rewriting to be performed by Prometheus, set the [configuration option](./config.md) `promregator.scraping.labelEnrichment` to `false`. In your configuration of Prometheus you then may specify `relabel_configs` which you may adjust to your own needs 
 
 If you want to have the same labels provided as Promregator does during label enrichment, you may use the following configuration snippet:
 
 ```yaml
     relabel_configs:
      - source_labels: [__meta_promregator_target_instanceId]
-       action: replace
+       target_label: instance
+      
+     - source_labels: [__meta_promregator_target_instanceId]
        target_label: cf_instance_id
-       regex: (.+)
        
      - source_labels: [__meta_promregator_target_orgName]
-       action: replace
        target_label: org_name
-       regex: (.+)
        
      - source_labels: [__meta_promregator_target_spaceName]
-       action: replace
        target_label: space_name
-       regex: (.+)
        
      - source_labels: [__meta_promregator_target_applicationName]
-       action: replace
        target_label: app_name
-       regex: (.+)
        
      - source_labels: [__meta_promregator_target_instanceNumber]
-       action: replace
        target_label: cf_instance_number
-       regex: (.+)
 ```
 
-Users of Promregator version 0.4.x and earlier should be aware of the page ["Rewriting Rule For __metrics_path__ No Longer Required for Promregator 0.5.0 and Later"](https://github.com/promregator/promregator/wiki/Rewriting-Rule-For-__metrics_path__-No-Longer-Required-for-Promregator-0.5.0-and-Later)
+Users of Promregator version 0.4.x and earlier should be aware of the page ["Rewriting Rule For __metrics_path__ No Longer Required for Promregator 0.5.0 and Later"](https://github.com/promregator/promregator/wiki/Rewriting-Rule-For-__metrics_path__-No-Longer-Required-for-Promregator-0.5.0-and-Later).
 
 Additionally, Promregator provides the following meta labels via the discovery service:
 
@@ -179,29 +172,22 @@ Summarizing the suggestions for the Prometheus' configuration, it is recommended
 
     relabel_configs:
      - source_labels: [__meta_promregator_target_instanceId]
-       action: replace
+       target_label: instance
+       
+     - source_labels: [__meta_promregator_target_instanceId]
        target_label: cf_instance_id
-       regex: (.+)
        
      - source_labels: [__meta_promregator_target_orgName]
-       action: replace
        target_label: org_name
-       regex: (.+)
        
      - source_labels: [__meta_promregator_target_spaceName]
-       action: replace
        target_label: space_name
-       regex: (.+)
        
      - source_labels: [__meta_promregator_target_applicationName]
-       action: replace
        target_label: app_name
-       regex: (.+)
        
      - source_labels: [__meta_promregator_target_instanceNumber]
-       action: replace
        target_label: cf_instance_number
-       regex: (.+)
 ```
 
 ### Common to both Scraping Modes
