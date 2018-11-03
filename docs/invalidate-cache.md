@@ -19,6 +19,8 @@ Caches are automatically refreshed after a certain refresh timeout. Each cache h
 
 Caches also have an expiry timeout. Entries in the cache, which have not been *used* for the duration of the expiry timeout, will be deleted.  Each cache has a corresponding (default) expiry timeout. Expiry timeouts can be configured. See the sections `cf.cache.expiry.*` in our [configuration page](./config.md).
 
+A detailed explanation on the caching concept can also be found in [a comment by eaglerainbow at issue #67](https://github.com/promregator/promregator/issues/67#issuecomment-424098535) (called the "new caching approach" there).
+
 
 ## Cache Invalidation via HTTP REST Endpoint
 
