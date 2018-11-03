@@ -14,9 +14,9 @@ Since version 0.2.0, Promregator supports two modes on how it allows to integrat
 
 * **Single Endpoint Scraping Mode**: This is the default mode. Promregator provides only one single endpoint (`/metrics`), which handles both the discovery of CF App instances on the Cloud Foundry platform, the scraping of the metrics from these instances and the merging of the metric samples which have been scraped. Prometheus only needs to scrape one single (static) target and thus only needs to send a single request for retrieving all metrics of all CF App instances at once. However, this comes at a cost of flexibility on labeling / relabeling in Prometheus and does not scale well, if you have a larger number of Cloud Foundry apps to scrape. Yet, it is quite easy to configure.
 
-* **Single Target Scraping Mode**: Service discovery (determining which CF App instances are subject to scraping) is separated in an own endpoint (`/discovery`). It provides a JSON-formatted downloadable file, which can be used with the `file_sd_configs` service discovery method of Prometheus. The file includes an own target for each CF app instance to be scraped, for which Promregator serves as proxy. Therefore, Prometheus will send multiple scraping requests to Promregator (at the endpoint starting with path `/singleTargetMetrics`), which redirects them to the corresponding CF app instances. This approach allows to also scale to hundreds of apps to be scraped, as control over the point of time for scraping is handled properly by Prometheus. However, it is more complex to configure and to maintain.
+* **Single Target Scraping Mode**: Service discovery (determining which CF App instances are subject to scraping) is separated in an own endpoint (`/discovery`). It provides a JSON-formatted downloadable file, which can be used with the `file_sd_configs` service discovery method of Prometheus. The file includes an own target for each CF app instance to be scraped, for which Promregator serves as proxy. Therefore, Prometheus will send multiple scraping requests to Promregator (at the endpoint starting with path `/singleTargetMetrics`), which redirects them to the corresponding CF app instances. This approach allows to also scale to hundreds of apps to be scraped, as control over the point of time for scraping is handled properly by Prometheus. Moreover, it gives you additional flexibility on rewriting. However, all this also makes the mode more complex to configure and to maintain.
 
-In general, consumers are free to choose between these two modes. For a start, however, we recommend to set up the Single Endpoint Scraping mode, and only switch to the Single Target Scraping mode, if the number of CF apps increase and scalability becomes an issue. For a detailed discussion on that refer to our [Single Target Scraping mode page](singleTargetScraping.md).
+In general, consumers are free to choose between these two modes. For a start, we recommend to set up the Single Endpoint Scraping mode, and switch to the Single Target Scraping mode, if the number of CF apps increase and scalability becomes an issue. For a detailed discussion on that refer to our [Single Target Scraping mode page](singleTargetScraping.md).
 
 Note that Promregator is capable of running in both modes at the same point in time. That is to say: You may switch the mode on the fly - even without restarting Promregator. The major difference only is, what you need to do in Prometheus' configuration to make it talk to Promregator.
 
@@ -70,7 +70,7 @@ The current knowledge about memory configuration for Promregator can be found at
 
 As there are two modes of how Prometheus may talk to Promregator (Single Endpoint Scraping Mode and Single Target Scraping Mode, see also above), the suggested configuration of Prometheus depends on the mode you want to use.
 
-### Configuration using Single Endpoint Scraping Mode (easy to configure; recommended for starters)
+### Configuration using Single Endpoint Scraping Mode (easy to configure; recommended for starting)
 
 From the perspective of Prometheus, Promregator behaves like any other (single) target. Thus, you may use a static scraping configuration to connect Prometheus to Promregator. You may set up a scraping job for example like this:
 
@@ -119,11 +119,28 @@ Moreover, it may be worth mentioning that querying the `/discovery` endpoint sig
 
 #### Label Rewriting
 
-By default, Promegator still performs [label enrichment](./enrichment.md) if used with Single Target Scraping mode. Single Target Scraping mode permits that label enrichment may be done by Prometheus. This allows to comply to Prometheus' recommended approach of handling labels which is using [rewriting rules](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config). 
+By default, Promegator (still) performs [label enrichment](./enrichment.md) if used with Single Target Scraping mode. Single Target Scraping mode permits that label enrichment may be done by Prometheus. This allows to comply to Prometheus' recommended approach of handling labels which is using [rewriting rules](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config). 
 
-To enable label rewriting to be performed by Prometheus, set the [configuration option](./config.md) `promregator.scraping.labelEnrichment` to `false`. In your configuration of Prometheus you then may specify `relabel_configs` which you may adjust to your own needs 
+As Prometheus does not permit targets to set the value of label `instance` (which is used to indicate a single endpoint from where you scraped your metrics), you should use Prometheus' feature of rewrite labels to update that label. The recommended configurationeven if label enrichment is enabled in Single Target Scraping mode is:
 
-If you want to have the same labels provided as Promregator does during label enrichment, you may use the following configuration snippet:
+```yaml
+    relabel_configs:
+     - source_labels: [__meta_promregator_target_instanceId]
+       target_label: instance
+```
+
+To enable full label rewriting to be performed by Prometheus only, set the [configuration option](./config.md) `promregator.scraping.labelEnrichment` to `false`. In your configuration of Prometheus you then may specify `relabel_configs` which you may adjust to your own needs. For that Promregator's discovery service provides the following meta labels:
+
+| Label name | Meaning | Example(s) |
+|------------|---------|------------|
+| `__meta_promregator_target_orgName` | the name of the Cloud Foundry organization in which the CF app instance is located | `yourOrgName` |
+| `__meta_promregator_target_spaceName` | the name of the Cloud Foundry space in which the CF app instance is located | `yourSpaceName` |
+| `__meta_promregator_target_applicationName` | the name of the Cloud Foundry application of the CF app instance which is being scraped | `appName` |
+| `__meta_promregator_target_applicationId` | the GUID of the Cloud Foundry application of the CF app instance which is being scraped| `5d49f9b0-8ac7-46b3-8945-1f500be8b96a` |
+| `__meta_promregator_target_instanceNumber` | the instance number of the CF app instance which is being scraped| `0` or `2` |
+| `__meta_promregator_target_instanceId` | the instance identifier of the CF app instance which is being scraped| `5d49f9b0-8ac7-46b3-8945-1f500be8b96a:0` |
+
+If you want to have the same labels provided as Promregator does during classical label enrichment (e.g. adding `org_name`, `app_name` and so forth), you may use the following configuration snippet:
 
 ```yaml
     relabel_configs:
@@ -147,17 +164,6 @@ If you want to have the same labels provided as Promregator does during label en
 ```
 
 Users of Promregator version 0.4.x and earlier should be aware of the page ["Rewriting Rule For __metrics_path__ No Longer Required for Promregator 0.5.0 and Later"](https://github.com/promregator/promregator/wiki/Rewriting-Rule-For-__metrics_path__-No-Longer-Required-for-Promregator-0.5.0-and-Later).
-
-Additionally, Promregator provides the following meta labels via the discovery service:
-
-| Label name | Meaning | Example(s) |
-|------------|---------|------------|
-| `__meta_promregator_target_orgName` | the name of the Cloud Foundry organization in which the CF app instance is located | `yourOrgName` |
-| `__meta_promregator_target_spaceName` | the name of the Cloud Foundry space in which the CF app instance is located | `yourSpaceName` |
-| `__meta_promregator_target_applicationName` | the name of the Cloud Foundry application of the CF app instance which is being scraped | `appName` |
-| `__meta_promregator_target_applicationId` | the GUID of the Cloud Foundry application of the CF app instance which is being scraped| `5d49f9b0-8ac7-46b3-8945-1f500be8b96a` |
-| `__meta_promregator_target_instanceNumber` | the instance number of the CF app instance which is being scraped| `0` or `2` |
-| `__meta_promregator_target_instanceId` | the instance identifier of the CF app instance which is being scraped| `5d49f9b0-8ac7-46b3-8945-1f500be8b96a:0` |
 
 
 #### Summary
@@ -189,6 +195,8 @@ Summarizing the suggestions for the Prometheus' configuration, it is recommended
      - source_labels: [__meta_promregator_target_instanceNumber]
        target_label: cf_instance_number
 ```
+
+If you follow the approach above, make sure that in your Promregator's configuration the configuration option `promregator.scraping.labelEnrichment` is set to `false`.
 
 ### Common to both Scraping Modes
 
