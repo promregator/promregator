@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
+import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.CFInstanceOnlyMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.CFOwnMetricsMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.scanner.Instance;
@@ -89,8 +90,8 @@ public class SingleTargetMetricsEndpoint extends AbstractMetricsEndpoint {
 		String[] ownTelemetryLabels = null;
 		if (this.isLabelEnrichmentEnabled()) {
 			ResolvedTarget t = this.instance.getTarget();
-			ownTelemetryLabels = CFOwnMetricsMetricFamilySamplesEnricher.getEnrichingLabelNames();
-			enricher = new CFOwnMetricsMetricFamilySamplesEnricher(t.getOrgName(), t.getSpaceName(), t.getApplicationName(), this.instance.getInstanceId());
+			ownTelemetryLabels = CFAllLabelsMetricFamilySamplesEnricher.getEnrichingLabelNames();
+			enricher = new CFAllLabelsMetricFamilySamplesEnricher(t.getOrgName(), t.getSpaceName(), t.getApplicationName(), this.instance.getInstanceId());
 		} else {
 			ownTelemetryLabels = CFInstanceOnlyMetricFamilySamplesEnricher.getEnrichingLabelNames();
 			enricher = new CFInstanceOnlyMetricFamilySamplesEnricher(this.instance.getInstanceId());

@@ -52,7 +52,7 @@ import io.prometheus.client.CollectorRegistry;
 		@Filter(type = FilterType.ASSIGNABLE_TYPE, value=InvalidateCacheEndpoint.class)
 })
 @Import({ PromregatorConfiguration.class })
-public class DisabledEnrichmentMockedMetricsEndpointSpringApplication {
+public class LabelEnrichmentMockedMetricsEndpointSpringApplication {
 	public final static UUID currentPromregatorInstanceIdentifier = UUID.randomUUID();
 	
 	@Bean

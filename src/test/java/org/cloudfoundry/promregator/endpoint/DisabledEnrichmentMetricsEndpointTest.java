@@ -27,7 +27,7 @@ import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Collector.MetricFamilySamples.Sample;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = DisabledEnrichmentMockedMetricsEndpointSpringApplication.class)
+@SpringBootTest(classes = LabelEnrichmentMockedMetricsEndpointSpringApplication.class)
 @TestPropertySource(locations="disabledLabelEnrichment.properties")
 @DirtiesContext(classMode=ClassMode.AFTER_CLASS)
 @ActiveProfiles(profiles= {"MetricsEndpointTest"})
