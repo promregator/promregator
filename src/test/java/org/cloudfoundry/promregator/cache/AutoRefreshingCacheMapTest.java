@@ -94,6 +94,8 @@ public class AutoRefreshingCacheMapTest {
 	private static class MassOperationTestThread extends Thread {
 		private AutoRefreshingCacheMap<String, String> subject;
 		private int threadNumber;
+		
+		private boolean terminatedProperly = false;
 
 		public MassOperationTestThread(AutoRefreshingCacheMap<String, String> subject, int threadNumber) {
 			this.subject = subject;
@@ -109,26 +111,24 @@ public class AutoRefreshingCacheMapTest {
 				final String deleteKey = "Delete-"+this.threadNumber;
 				subject.put(deleteKey, "entry-to-be-deleted");
 				
-				final String ownKey = "Thread-"+this.threadNumber;
-				
-				subject.put(ownKey, "testValue");
-				Thread.sleep(10);
-				String value = subject.get(ownKey);
-				Assert.assertEquals("testValue", value);
-				subject.remove(ownKey);
-				
 				for (int i = 0;i<20;i++) {
-					value = subject.get("global");
+					String value = subject.get("global");
 					Assert.assertEquals("labolg", value);
 					
 					Thread.sleep(50);
 				}
 				
-				value = subject.get(deleteKey);
+				String value = subject.get(deleteKey);
 				Assert.assertNotEquals("entry-to-be-deleted", value);
 			} catch (InterruptedException e) {
 				Assert.fail("Thread was interrupted");
 			}
+			
+			this.terminatedProperly = true;
+		}
+
+		public boolean isTerminatedProperly() {
+			return terminatedProperly;
 		}
 		
 	}
@@ -156,6 +156,7 @@ public class AutoRefreshingCacheMapTest {
 		
 		for (int i = 0;i<threads.length;i++) {
 			Assert.assertFalse(threads[i].isAlive());
+			Assert.assertTrue(threads[i].isTerminatedProperly()); // if this check fails, check on the console log!
 		}
 	}
 
