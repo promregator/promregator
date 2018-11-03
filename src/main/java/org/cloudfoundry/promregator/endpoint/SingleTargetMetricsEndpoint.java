@@ -6,7 +6,7 @@ import java.util.List;
 
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
-import org.cloudfoundry.promregator.rewrite.CFInstanceOnlyMetricFamilySamplesEnricher;
+import org.cloudfoundry.promregator.rewrite.NullMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.CFOwnMetricsMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
@@ -93,8 +93,8 @@ public class SingleTargetMetricsEndpoint extends AbstractMetricsEndpoint {
 			ownTelemetryLabels = CFAllLabelsMetricFamilySamplesEnricher.getEnrichingLabelNames();
 			enricher = new CFAllLabelsMetricFamilySamplesEnricher(t.getOrgName(), t.getSpaceName(), t.getApplicationName(), this.instance.getInstanceId());
 		} else {
-			ownTelemetryLabels = CFInstanceOnlyMetricFamilySamplesEnricher.getEnrichingLabelNames();
-			enricher = new CFInstanceOnlyMetricFamilySamplesEnricher(this.instance.getInstanceId());
+			ownTelemetryLabels = NullMetricFamilySamplesEnricher.getEnrichingLabelNames();
+			enricher = new NullMetricFamilySamplesEnricher();
 		}
 		
 		Gauge scrape_duration = Gauge.build("promregator_scrape_duration_seconds", "Duration in seconds indicating how long scraping of all metrics took")

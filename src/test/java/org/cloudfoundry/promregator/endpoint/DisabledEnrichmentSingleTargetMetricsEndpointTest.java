@@ -7,7 +7,6 @@ import org.cloudfoundry.promregator.fetcher.TextFormat004Parser;
 import org.cloudfoundry.promregator.mockServer.DefaultMetricsEndpointHttpHandler;
 import org.cloudfoundry.promregator.mockServer.MetricsEndpointMockServer;
 import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
-import org.cloudfoundry.promregator.rewrite.CFInstanceOnlyMetricFamilySamplesEnricher;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -69,24 +68,23 @@ public class DisabledEnrichmentSingleTargetMetricsEndpointTest {
 		Sample dummySample = dummyMFS.samples.get(0);
 		Assert.assertNotNull(dummySample);
 		
-		Assert.assertEquals(2, dummySample.labelNames.size());
-		Assert.assertEquals(2, dummySample.labelValues.size());
+		Assert.assertEquals(1, dummySample.labelNames.size());
+		Assert.assertEquals(1, dummySample.labelValues.size());
 		
 		int indexOfLabel = dummySample.labelNames.indexOf("label");
 		Assert.assertNotEquals(-1, indexOfLabel);
 		Assert.assertEquals("xyz", dummySample.labelValues.get(indexOfLabel));
 
-		int indexOfInstance = dummySample.labelNames.indexOf(CFInstanceOnlyMetricFamilySamplesEnricher.LABELNAME_INSTANCE);
-		Assert.assertNotEquals(-1, indexOfInstance);
-		Assert.assertEquals("faedbb0a-2273-4cb4-a659-bd31331f7daf:0", dummySample.labelValues.get(indexOfInstance));
+		int indexOfInstance = dummySample.labelNames.indexOf(CFAllLabelsMetricFamilySamplesEnricher.LABELNAME_INSTANCE);
+		Assert.assertEquals(-1, indexOfInstance);
 		
 		MetricFamilySamples upMFS = mapMFS.get("promregator_up");
 		Assert.assertNotNull(upMFS);
 		Assert.assertEquals(1, upMFS.samples.size());
 		
 		Sample upSample = upMFS.samples.get(0);
-		Assert.assertEquals(1, upSample.labelNames.size());
-		Assert.assertEquals(1, upSample.labelValues.size());
+		Assert.assertEquals(0, upSample.labelNames.size());
+		Assert.assertEquals(0, upSample.labelValues.size());
 		
 		MetricFamilySamples scrapeDurationMFS = mapMFS.get("promregator_scrape_duration_seconds");
 		Assert.assertNotNull(scrapeDurationMFS);
@@ -96,11 +94,8 @@ public class DisabledEnrichmentSingleTargetMetricsEndpointTest {
 		
 		// NB: as the duration is part of the usual scraping response, it also must comply to the rules
 		// if labelEnrichment is disabled.
-		Assert.assertEquals(-1, scrapeDurationSample.labelNames.indexOf(CFAllLabelsMetricFamilySamplesEnricher.LABELNAME_ORGNAME));
-		
-		indexOfInstance = scrapeDurationSample.labelNames.indexOf("instance");
-		Assert.assertNotEquals(-1, indexOfInstance);
-		Assert.assertEquals("faedbb0a-2273-4cb4-a659-bd31331f7daf:0", scrapeDurationSample.labelValues.get(indexOfInstance));
+		Assert.assertEquals(0, scrapeDurationSample.labelNames.size());
+		Assert.assertEquals(0, scrapeDurationSample.labelValues.size());
 	}
 	
 }
