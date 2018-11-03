@@ -28,10 +28,9 @@ import org.cloudfoundry.promregator.fetcher.MetricsFetcherMetrics;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcherSimulator;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
-import org.cloudfoundry.promregator.rewrite.NullMetricFamilySamplesEnricher;
-import org.cloudfoundry.promregator.rewrite.CFOwnMetricsMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.GenericMetricFamilySamplesPrefixRewriter;
 import org.cloudfoundry.promregator.rewrite.MergableMetricFamilySamples;
+import org.cloudfoundry.promregator.rewrite.NullMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -319,7 +318,7 @@ public abstract class AbstractMetricsEndpoint {
 	}
 	
 	private String[] determineOwnTelemetryLabelValues(String orgName, String spaceName, String appName, String instanceId) {
-		AbstractMetricFamilySamplesEnricher mfse = new CFOwnMetricsMetricFamilySamplesEnricher(orgName, spaceName, appName, instanceId);
+		AbstractMetricFamilySamplesEnricher mfse = new CFAllLabelsMetricFamilySamplesEnricher(orgName, spaceName, appName, instanceId);
 		List<String> labelValues = mfse.getEnrichedLabelValues(new LinkedList<>());
 		
 		return labelValues.toArray(new String[0]);

@@ -6,7 +6,6 @@ import java.util.HashMap;
 import org.cloudfoundry.promregator.fetcher.TextFormat004Parser;
 import org.cloudfoundry.promregator.mockServer.DefaultMetricsEndpointHttpHandler;
 import org.cloudfoundry.promregator.mockServer.MetricsEndpointMockServer;
-import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -75,8 +74,13 @@ public class DisabledEnrichmentSingleTargetMetricsEndpointTest {
 		Assert.assertNotEquals(-1, indexOfLabel);
 		Assert.assertEquals("xyz", dummySample.labelValues.get(indexOfLabel));
 
-		int indexOfInstance = dummySample.labelNames.indexOf(CFAllLabelsMetricFamilySamplesEnricher.LABELNAME_INSTANCE);
+		int indexOfInstance = dummySample.labelNames.indexOf("instance");
 		Assert.assertEquals(-1, indexOfInstance);
+		/* Note:
+		 * Prometheus does not permit to set the instance as label via scraping.
+		 * The label value may only be changed by rewriting.
+		 * See also https://www.robustperception.io/controlling-the-instance-label
+		 */
 		
 		MetricFamilySamples upMFS = mapMFS.get("promregator_up");
 		Assert.assertNotNull(upMFS);

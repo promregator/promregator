@@ -85,8 +85,8 @@ public class DisabledEnrichmentMetricsEndpointTest {
 		Sample dummySample = dummyMFS.samples.get(0);
 		Assert.assertNotNull(dummySample);
 		
-		Assert.assertEquals(7, dummySample.labelNames.size());
-		Assert.assertEquals(7, dummySample.labelValues.size());
+		Assert.assertEquals(6, dummySample.labelNames.size());
+		Assert.assertEquals(6, dummySample.labelValues.size());
 		
 		int indexOfLabel = dummySample.labelNames.indexOf("label");
 		Assert.assertNotEquals(-1, indexOfLabel);
@@ -97,8 +97,8 @@ public class DisabledEnrichmentMetricsEndpointTest {
 		Assert.assertEquals(1, upMFS.samples.size());
 		
 		Sample upSample = upMFS.samples.get(0);
-		Assert.assertEquals(6, upSample.labelNames.size());
-		Assert.assertEquals(6, upSample.labelValues.size());
+		Assert.assertEquals(5, upSample.labelNames.size());
+		Assert.assertEquals(5, upSample.labelValues.size());
 	}
 
 }

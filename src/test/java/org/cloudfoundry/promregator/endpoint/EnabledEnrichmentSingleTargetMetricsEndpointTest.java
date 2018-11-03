@@ -68,16 +68,20 @@ public class EnabledEnrichmentSingleTargetMetricsEndpointTest {
 		Sample dummySample = dummyMFS.samples.get(0);
 		Assert.assertNotNull(dummySample);
 		
-		Assert.assertEquals(7, dummySample.labelNames.size());
-		Assert.assertEquals(7, dummySample.labelValues.size());
+		Assert.assertEquals(6, dummySample.labelNames.size());
+		Assert.assertEquals(6, dummySample.labelValues.size());
 		
 		int indexOfLabel = dummySample.labelNames.indexOf("label");
 		Assert.assertNotEquals(-1, indexOfLabel);
 		Assert.assertEquals("xyz", dummySample.labelValues.get(indexOfLabel));
 
-		int indexOfInstance = dummySample.labelNames.indexOf(CFAllLabelsMetricFamilySamplesEnricher.LABELNAME_INSTANCE);
-		Assert.assertNotEquals(-1, indexOfInstance);
-		Assert.assertEquals("faedbb0a-2273-4cb4-a659-bd31331f7daf:0", dummySample.labelValues.get(indexOfInstance));
+		int indexOfInstance = dummySample.labelNames.indexOf("instance");
+		Assert.assertEquals(-1, indexOfInstance);
+		/* Note:
+		 * Prometheus does not permit to set the instance as label via scraping.
+		 * The label value may only be changed by rewriting.
+		 * See also https://www.robustperception.io/controlling-the-instance-label
+		 */
 
 		int indexOfOrgName = dummySample.labelNames.indexOf(CFAllLabelsMetricFamilySamplesEnricher.LABELNAME_ORGNAME);
 		Assert.assertNotEquals(-1, indexOfOrgName);
@@ -89,8 +93,8 @@ public class EnabledEnrichmentSingleTargetMetricsEndpointTest {
 		Assert.assertEquals(1, upMFS.samples.size());
 		
 		Sample upSample = upMFS.samples.get(0);
-		Assert.assertEquals(6, upSample.labelNames.size());
-		Assert.assertEquals(6, upSample.labelValues.size());
+		Assert.assertEquals(5, upSample.labelNames.size());
+		Assert.assertEquals(5, upSample.labelValues.size());
 		
 		MetricFamilySamples scrapeDurationMFS = mapMFS.get("promregator_scrape_duration_seconds");
 		Assert.assertNotNull(scrapeDurationMFS);
@@ -100,10 +104,15 @@ public class EnabledEnrichmentSingleTargetMetricsEndpointTest {
 		
 		// NB: as the duration is part of the usual scraping response, it also must comply to the rules
 		// if labelEnrichment is enabled.
-		indexOfInstance = scrapeDurationSample.labelNames.indexOf(CFAllLabelsMetricFamilySamplesEnricher.LABELNAME_INSTANCE);
-		Assert.assertNotEquals(-1, indexOfInstance);
-		Assert.assertEquals("faedbb0a-2273-4cb4-a659-bd31331f7daf:0", scrapeDurationSample.labelValues.get(indexOfInstance));
 
+		indexOfInstance = dummySample.labelNames.indexOf("instance");
+		Assert.assertEquals(-1, indexOfInstance);
+		/* Note:
+		 * Prometheus does not permit to set the instance as label via scraping.
+		 * The label value may only be changed by rewriting.
+		 * See also https://www.robustperception.io/controlling-the-instance-label
+		 */
+		
 		indexOfOrgName = scrapeDurationSample.labelNames.indexOf(CFAllLabelsMetricFamilySamplesEnricher.LABELNAME_ORGNAME);
 		Assert.assertNotEquals(-1, indexOfOrgName);
 		Assert.assertEquals("unittestorg", scrapeDurationSample.labelValues.get(indexOfOrgName));

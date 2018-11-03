@@ -1,6 +1,6 @@
 package org.cloudfoundry.promregator.fetcher;
 
-import org.cloudfoundry.promregator.rewrite.CFOwnMetricsMetricFamilySamplesEnricher;
+import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
 
 import io.prometheus.client.Counter;
 import io.prometheus.client.Histogram;
@@ -13,16 +13,16 @@ public class MetricsFetcherMetrics {
 	/* references to metrics which we create and expose by our own */
 	
 	private static Histogram requestLatency = Histogram.build("promregator_request_latency", "The latency, which the targets of the promregator produce")
-			.labelNames(CFOwnMetricsMetricFamilySamplesEnricher.getEnrichingLabelNames())
+			.labelNames(CFAllLabelsMetricFamilySamplesEnricher.getEnrichingLabelNames())
 			.register();
 	private boolean requestLatencyEnabled;
 	
 	private static Counter failedRequests = Counter.build("promregator_request_failure", "Requests, which responded, but the HTTP code indicated an error or the connection dropped/timed out")
-			.labelNames(CFOwnMetricsMetricFamilySamplesEnricher.getEnrichingLabelNames())
+			.labelNames(CFAllLabelsMetricFamilySamplesEnricher.getEnrichingLabelNames())
 			.register();
 	
 	private static Histogram requestSize = Histogram.build("promregator_request_size", "The size in bytes of the document, which the scraped targets sent to promregator")
-			.labelNames(CFOwnMetricsMetricFamilySamplesEnricher.getEnrichingLabelNames())
+			.labelNames(CFAllLabelsMetricFamilySamplesEnricher.getEnrichingLabelNames())
 			.exponentialBuckets(100, 1.5, 16)
 			.register();
 
