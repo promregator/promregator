@@ -80,7 +80,7 @@ public class UPSBasedCFDiscoverer implements CFDiscoverer {
 			applicationIds.add(applicationId);
 		});
 
-		/* Note, that due to the (optional) applicationIdFilter, we also only want to process those further, 
+		/* Note, that due to the (optional) applicationIdFilter, we also *only* want to process those further, 
 		 * which we require. Stream2 comes to rescue!
 		 */
 		
@@ -126,6 +126,7 @@ public class UPSBasedCFDiscoverer implements CFDiscoverer {
 		
 		/* wait for all streams to complete (which automatically fills all our HashMaps */
 		Mono.when(stream1, stream3).block();
+		// Note that we don't need to wait for stream2, as stream1 and stream3 have them as prerequisite
 		
 		/* fiddle everything together */
 		List<Instance> instances = new LinkedList<>();
