@@ -78,7 +78,7 @@ For this purpose, we will use multiple Docker images, as this greatly relieves y
    ```bash
    $ docker run -d --name promregator -m 600m --env CF_PASSWORD=<yourCFPassword> \
      -v `pwd`/promregator.yaml:/etc/promregator/promregator.yml \
-     -p 127.0.0.1:56710:8080 promregator/promregator:0.1.0
+     -p 127.0.0.1:56710:8080 promregator/promregator:0.2.1
    ```
    
    Again note, that you have to replace `<yourCFPassword>`, with the password which you had used for logging on to the Cloud Foundry platform (the password needs to fit to `<yourCFUsername>`).
