@@ -73,7 +73,7 @@ For this purpose, we will use multiple Docker images, as this greatly relieves y
 
 2. Retrieve the Docker image of promregator by calling
    ```bash
-   $ docker pull promregator/promregator:0.1.0
+   $ docker pull promregator/promregator:0.4.1
    ```
 
 3. Start a container using the following command:
