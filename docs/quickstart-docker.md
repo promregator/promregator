@@ -36,7 +36,7 @@ For this purpose, we will use multiple Docker images, as this greatly relieves y
    
    Also note that, if you don't have a browser at hand, you simply may also just use `curl` or `wget` for that.
 
-6. Check the certificate used while having opened `https://<URLToYourApp>/metrics` in your browser: The certificate must be valid and signed by one of the official Root CAs that OpenJDK supports. 
+6. Check the certificate used when having `https://<URLToYourApp>/metrics` open in your browser: The certificate must be valid and signed by one of the official Root CAs that OpenJDK supports. 
 
    If that is not the case, try if you can reach your application with `http://<URLToYourApp>/metrics` (mind the different protocol). If that works, you still will be able to continue with this quickstart guide, but you will have to react to that later on.
 
