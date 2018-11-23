@@ -24,7 +24,7 @@ For this purpose, we will use multiple Docker images, as this greatly relieves y
    $ cf apps
    ```
 
-5. Test that your application is reachable by opening the url `https://<URLToYourApp>/metrics` in your browser. You should see a text file, which starts with something like this:
+5. Test that your application is reachable by opening the URL `https://<URLToYourApp>/metrics` in your browser. You should see a text file, which starts with something like this:
    ```
    # HELP jvm_buffer_pool_used_bytes Used bytes of a given JVM buffer pool.
    # TYPE jvm_buffer_pool_used_bytes gauge
@@ -36,8 +36,11 @@ For this purpose, we will use multiple Docker images, as this greatly relieves y
    
    Also note that, if you don't have a browser at hand, you simply may also just use `curl` or `wget` for that.
 
+6. Check the certificate used while having opened `https://<URLToYourApp>/metrics` in your browser: The certificate must be valid and signed by one of the official Root CAs that OpenJDK supports. 
 
-6. Note down the values from
+   If that is not the case, try if you can reach your application with `http://<URLToYourApp>/metrics` (mind the different protocol). If that works, you still will be able to continue with this quickstart guide, but you will have to react to that later on.
+
+7. Note down the values from
    ```bash
    $ cf target
    ```
@@ -70,13 +73,25 @@ For this purpose, we will use multiple Docker images, as this greatly relieves y
    * `<yourCFUsername>` is the username, which you used for logging on to the platform before.
 
    Keep in mind that you are writing a [YAML](http://yaml.org/spec/) file, which requires that you use spaces for indentation - not tabs!
+   
+2. In case that your application is not reachable by HTTPS, but only by HTTP, add the option `protocol: http` to your target. That part of the YAML file then would look like this:
 
-2. Retrieve the Docker image of promregator by calling
+```yaml
+     ...
+     targets:
+       - orgName: <hereGoesYourOrg>
+         spaceName: <hereGoesYourSpace>
+         applicationName: testapp
+         protocol: http
+     ...
+```
+
+3. Retrieve the Docker image of promregator by calling
    ```bash
    $ docker pull promregator/promregator:0.4.1
    ```
 
-3. Start a container using the following command:
+4. Start a container using the following command:
    ```bash
    $ docker run -d --name promregator -m 600m --env CF_PASSWORD=<yourCFPassword> \
      -v `pwd`/promregator.yaml:/etc/promregator/promregator.yml \
@@ -85,7 +100,7 @@ For this purpose, we will use multiple Docker images, as this greatly relieves y
    
    Again note, that you have to replace `<yourCFPassword>`, with the password which you had used for logging on to the Cloud Foundry platform (the password needs to fit to `<yourCFUsername>`).
 
-4. Verify that your setup is okay by opening the url `http://localhost:56710` in your browser (`curl` or `wget` is okay again, too). Again, you should see a similar text file as before.
+5. Verify that your setup is okay by opening the url `http://localhost:56710` in your browser (`curl` or `wget` is okay again, too). Again, you should see a similar text file as before.
 
 ### Hint
 If you made a mistake with setting up the container, you might get a broken container, which may cause troubles on getting rid of again.
