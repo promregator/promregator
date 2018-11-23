@@ -76,7 +76,7 @@ For this purpose, we will use multiple Docker images, as this greatly relieves y
    
 2. In case that your application is not reachable by HTTPS, but only by HTTP, add the option `protocol: http` to your target. That part of the YAML file then would look like this:
 
-```yaml
+   ```yaml
      ...
      targets:
        - orgName: <hereGoesYourOrg>
@@ -84,7 +84,7 @@ For this purpose, we will use multiple Docker images, as this greatly relieves y
          applicationName: testapp
          protocol: http
      ...
-```
+   ```
 
 3. Retrieve the Docker image of promregator by calling
    ```bash
