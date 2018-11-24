@@ -32,14 +32,17 @@ timestamps {
 			}
 			
 			stage("Build") {
-				sh """#!/bin/bash -xe
-				export CF_PASSWORD=dummypassword
-				mvn -U -B clean verify
-				"""
+				try {
+					sh """#!/bin/bash -xe
+						export CF_PASSWORD=dummypassword
+						mvn -U -B clean verify
+					"""
+				} finally {
+					junit 'target/surefire-reports/*.xml'
+				}
 			}
 			
 			stage("Post-processing quality data") {
-				junit 'target/surefire-reports/*.xml'
 				
 				step([
 					$class: 'JacocoPublisher'
