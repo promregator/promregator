@@ -321,7 +321,7 @@ The default value is 600 seconds (i.e. 10 minutes).
 Configures the way how the metrics endpoints `/metrics` and `/singleTargetMetrics` behave.
 
 #### Option "promregator.endpoint.maxProcessingTime" (optional, *deprecated*)
-This option is deprecated since version 0.5.0. Please use `promregator.scraping.maxProcessTime` instead.
+This option is deprecated since version 0.5.0. Please use `promregator.scraping.maxProcessingTime` instead.
 
 #### Option "promregator.endpoint.threads" (optional, *deprecated*)
 This option is deprecated since version 0.5.0. Please use `promregator.scraping.threads` instead.
