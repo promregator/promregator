@@ -248,12 +248,15 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 			
 			List<K> deleteList = new LinkedList<K>();
 			List<K> refreshList = new LinkedList<K>();
-			for (Entry<K, EntryProperties> entry : this.map.entryPropertiesMap.entrySet()) {
-				EntryProperties ep = entry.getValue();
-				if (ep.getLastUsed() == null || ep.getLastUsed().isBefore(expiryEntry)) {
-					deleteList.add(entry.getKey());
-				} else if (ep.getLastLoaded().isBefore(refreshEntryInstant)) {
-					refreshList.add(entry.getKey());
+			
+			synchronized (this.map.entryPropertiesMap) {
+				for (Entry<K, EntryProperties> entry : this.map.entryPropertiesMap.entrySet()) {
+					EntryProperties ep = entry.getValue();
+					if (ep.getLastUsed() == null || ep.getLastUsed().isBefore(expiryEntry)) {
+						deleteList.add(entry.getKey());
+					} else if (ep.getLastLoaded().isBefore(refreshEntryInstant)) {
+						refreshList.add(entry.getKey());
+					}
 				}
 			}
 
