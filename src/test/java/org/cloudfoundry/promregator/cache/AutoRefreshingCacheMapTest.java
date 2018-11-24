@@ -111,15 +111,18 @@ public class AutoRefreshingCacheMapTest {
 				final String deleteKey = "Delete-"+this.threadNumber;
 				subject.put(deleteKey, "entry-to-be-deleted");
 				
-				for (int i = 0;i<20;i++) {
-					String value = subject.get("global");
-					Assert.assertEquals("labolg", value);
-					
-					Thread.sleep(50);
-				}
+				String value = subject.get("global");
+				Assert.assertEquals("labolg", value);
+
+				Thread.sleep(1000);
 				
-				String value = subject.get(deleteKey);
+				// check that a cleanup has taken place
+				value = subject.get(deleteKey);
 				Assert.assertNotEquals("entry-to-be-deleted", value);
+				
+				// verify that "global" wasn't touched
+				value = subject.get("global");
+				Assert.assertEquals("labolg", value);
 			} catch (InterruptedException e) {
 				Assert.fail("Thread was interrupted");
 			}
