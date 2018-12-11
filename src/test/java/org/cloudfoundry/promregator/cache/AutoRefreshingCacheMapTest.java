@@ -114,7 +114,7 @@ public class AutoRefreshingCacheMapTest {
 				String value = subject.get("global");
 				Assert.assertEquals("labolg", value);
 
-				Thread.sleep(1000);
+				Thread.sleep(1500);
 				
 				// check that a cleanup has taken place
 				value = subject.get(deleteKey);
