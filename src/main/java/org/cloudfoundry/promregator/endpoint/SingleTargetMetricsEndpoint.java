@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.NullMetricFamilySamplesEnricher;
@@ -28,6 +29,8 @@ import io.prometheus.client.exporter.common.TextFormat;
 @RequestMapping(EndpointConstants.ENDPOINT_PATH_SINGLE_TARGET_SCRAPING+"/{applicationId}/{instanceNumber}")
 public class SingleTargetMetricsEndpoint extends AbstractMetricsEndpoint {
 	
+	private static final Logger log = Logger.getLogger(SingleTargetMetricsEndpoint.class);
+
 	private Instance instance;
 	
 	@RequestMapping(method = RequestMethod.GET, produces=TextFormat.CONTENT_TYPE_004)
@@ -88,6 +91,11 @@ public class SingleTargetMetricsEndpoint extends AbstractMetricsEndpoint {
 		AbstractMetricFamilySamplesEnricher enricher = null;
 		String[] ownTelemetryLabels = null;
 		if (this.isLabelEnrichmentEnabled()) {
+			if (this.instance == null) {
+				log.warn("Internal inconsistency: Single Target Metrics Endpoint triggered, even though instance could not be detected; skipping scrape_duration");
+				return;
+			}
+			
 			ResolvedTarget t = this.instance.getTarget();
 			ownTelemetryLabels = CFAllLabelsMetricFamilySamplesEnricher.getEnrichingLabelNames();
 			enricher = new CFAllLabelsMetricFamilySamplesEnricher(t.getOrgName(), t.getSpaceName(), t.getApplicationName(), this.instance.getInstanceId());
