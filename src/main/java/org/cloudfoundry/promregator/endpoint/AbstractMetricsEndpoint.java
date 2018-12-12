@@ -136,7 +136,7 @@ public abstract class AbstractMetricsEndpoint {
 		
 		List<Instance> instanceList = this.cfDiscoverer.discover(applicationIdFilter, instanceFilter);
 		
-		if (instanceList == null) {
+		if (instanceList == null || instanceList.isEmpty()) {
 			throw new ScrapingException("Unable to determine any instance to scrape");
 		}
 		
