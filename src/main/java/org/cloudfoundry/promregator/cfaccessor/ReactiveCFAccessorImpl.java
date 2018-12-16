@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
+import javax.net.ssl.SSLException;
 
 import org.apache.http.conn.util.InetAddressUtils;
 import org.apache.log4j.Logger;
@@ -186,7 +187,9 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 				.doOnError(throwable -> {
 					Throwable unwrappedThrowable = Exceptions.unwrap(throwable);
 					if (unwrappedThrowable instanceof TimeoutException) {
-						log.error(String.format("Async retrieval of %s with key %s caused a timeout after %d even though we tried three times", logName, key, timeoutInMS));
+						log.error(String.format("Async retrieval of %s with key %s caused a timeout after %dms even though we tried three times", logName, key, timeoutInMS));
+					} else if (unwrappedThrowable instanceof SSLException) {
+						
 					} else {
 						log.error(String.format("Async retrieval of %s with key %s raised a reactor error", logName, key), unwrappedThrowable);
 					}
