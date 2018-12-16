@@ -60,6 +60,9 @@ public class PromregatorApplication {
 	@Value("${promregator.reactor.debug:false}")
 	private boolean reactorDebugEnabled;
 	
+	@Value("${promregator.workaround.dnscache.timeout:-1}")
+	private int javaDnsCacheWorkaroundTimeout;
+	
 	private static final Logger log = Logger.getLogger(PromregatorApplication.class);
 	
 	public static void main(String[] args) {
@@ -204,5 +207,15 @@ public class PromregatorApplication {
 	@Bean
 	public UUID promregatorInstanceIdentifer() {
 		return UUID.randomUUID();
+	}
+	
+	@PostConstruct
+	public void javaDnsCacheWorkaroundTimeout() {
+		if (this.javaDnsCacheWorkaroundTimeout != -1) {
+			// see also https://docs.aws.amazon.com/de_de/sdk-for-java/v1/developer-guide/java-dg-jvm-ttl.html
+			// and https://github.com/promregator/promregator/issues/84
+			log.info(String.format("Enabling JVM DNS Cache Workaround with TTL value %d", this.javaDnsCacheWorkaroundTimeout));
+			java.security.Security.setProperty("networkaddress.cache.ttl", this.javaDnsCacheWorkaroundTimeout+"");
+		}
 	}
 }
