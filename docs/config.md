@@ -499,6 +499,17 @@ For the purpose of debugging issues with asynchronous handling of operations esp
 Be default, this option is set to `false`.
 
 
+### Option "promregator.workaround.dnscache.timeout" (optional)
+
+As described in [issue #84](https://github.com/promregator/promregator/issues/84), there may be a situation where the IP address of your Cloud Foundry Cloud Controller changes over time, but the DNS cache of the Java Virtual machine does not refresh its records properly. 
+
+The default value of this option is "-1", which means that Promregator will leave the configuration option of the Java Virtual Machine untouched. 
+
+If you encounter issues that your scraping will suddenly stop at a certain point in time, combined with reports that the metadata (e.g. organizations, spaces cannot be resolved due to timeouts), you may want to set this value to some positive integer. The meaning is the "time-to-live value" of the DNS cache in seconds. 
+
+There are sources which recommend to set this value to 60.
+
+
 ## Further Options
 
 Besides the options mentioned above, there are multiple further standard Spring properties, which might be useful when using Promregator. 
