@@ -509,6 +509,8 @@ If you encounter issues that your scraping will suddenly stop at a certain point
 
 There are sources which recommend to set this value to 60.
 
+Keep in mind that this setting may expose you the threat of a DNS spoofing attack. 
+
 
 ## Further Options
 
