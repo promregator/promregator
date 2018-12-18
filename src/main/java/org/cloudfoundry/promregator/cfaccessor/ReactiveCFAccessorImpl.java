@@ -307,22 +307,22 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		
 		PaginatedRequestGeneratorFunction<ListApplicationsRequest> requestGenerator = (orderDirection, resultsPerPage, pageNumber) -> {
 			ListApplicationsRequest request = ListApplicationsRequest.builder()
-					.organizationId(orgId)
-					.spaceId(spaceId)
-					.orderDirection(orderDirection)
-					.resultsPerPage(resultsPerPage)
-					.page(pageNumber)
-					.build();
+				.organizationId(orgId)
+				.spaceId(spaceId)
+				.orderDirection(orderDirection)
+				.resultsPerPage(resultsPerPage)
+				.page(pageNumber)
+				.build();
 			
 			return request;
 		};
 		
 		PaginatedResponseGeneratorFunction<ApplicationResource, ListApplicationsResponse> responseGenerator = (list, numberOfPages) -> {
 			return ListApplicationsResponse.builder()
-					.addAllResources(list)
-					.totalPages(numberOfPages)
-					.totalResults(list.size())
-					.build();
+				.addAllResources(list)
+				.totalPages(numberOfPages)
+				.totalResults(list.size())
+				.build();
 		};
 		
 		return this.performGenericPagedRetrieval("allApps", "retrieveAllApplicationIdsInSpace", key, requestGenerator, 
