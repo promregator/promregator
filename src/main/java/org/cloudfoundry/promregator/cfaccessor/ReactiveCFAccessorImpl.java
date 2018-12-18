@@ -234,9 +234,10 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 			.flatMapMany( pagesCount -> Flux.range(2, pagesCount))
 			.map(pageNumber -> requestGenerator.apply(OrderDirection.ASCENDING, RESULTS_PER_PAGE, pageNumber));
 		
-		Mono<List<P>> subsequentPagesList = requestFlux.parallel().runOn(Schedulers.parallel()).flatMap( req -> {
-			return this.performGenericRetrieval(retrievalTypeName, logName, key, req, requestFunction, timeoutInMS);
-		}).sequential().collectList();
+		Mono<List<P>> subsequentPagesList = requestFlux
+				.flatMap( req -> {
+					return this.performGenericRetrieval(retrievalTypeName, logName, key, req, requestFunction, timeoutInMS);
+				}).collectList();
 		/* 
 		 * TODO Improved error handling approach: Does it make sense to provide a half-complete result, 
 		 * in case only *one* of the page requests fail, or shall we keep crashing the entire request to the CFAccessor,
