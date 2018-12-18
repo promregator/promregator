@@ -3,6 +3,9 @@ package org.cloudfoundry.promregator.cfaccessor;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -13,6 +16,7 @@ import javax.net.ssl.SSLException;
 
 import org.apache.http.conn.util.InetAddressUtils;
 import org.apache.log4j.Logger;
+import org.cloudfoundry.client.v2.OrderDirection;
 import org.cloudfoundry.client.v2.applications.ListApplicationsRequest;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.info.GetInfoRequest;
@@ -23,6 +27,7 @@ import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryRequest;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesRequest;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
+import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.promregator.config.ConfigurationException;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.cloudfoundry.reactor.ConnectionContext;
@@ -36,7 +41,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import reactor.core.Exceptions;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 public class ReactiveCFAccessorImpl implements CFAccessor {
 	private static final Logger log = Logger.getLogger(ReactiveCFAccessorImpl.class);
@@ -265,10 +272,48 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		ListApplicationsRequest request = ListApplicationsRequest.builder()
 				.organizationId(orgId)
 				.spaceId(spaceId)
+				.orderDirection(OrderDirection.ASCENDING)
+				.resultsPerPage(100)
 				.build();
 		
-		return this.performGenericRetrieval("allApps", "retrieveAllApplicationIdsInSpace", key, 
+		Mono<ListApplicationsResponse> firstPage = this.performGenericRetrieval("allApps", "retrieveAllApplicationIdsInSpace", key, 
 				request, r -> this.cloudFoundryClient.applicationsV2().list(r), this.requestTimeoutAppInSpace);
+		
+		Flux<ListApplicationsRequest> requestFlux = firstPage.map(page -> page.getTotalPages() - 1)
+			.flatMapMany( pagesCount -> Flux.range(2, pagesCount))
+			.map(pageNumber -> {
+				return ListApplicationsRequest.builder().from(request)
+					.resultsPerPage(100)
+					.orderDirection(OrderDirection.ASCENDING)
+					.page(pageNumber)
+					.build();
+			});
+		
+		Mono<List<ListApplicationsResponse>> subsequentPagesList = requestFlux.parallel().runOn(Schedulers.parallel()).flatMap( req -> {
+			return this.performGenericRetrieval("allApps", "retrieveAllApplicationIdsInSpace", key,
+				req, r -> this.cloudFoundryClient.applicationsV2().list(r), this.requestTimeoutAppInSpace);
+		}).sequential().collectList();
+		
+		Mono<ListApplicationsResponse> allPagesResult = Mono.zip(firstPage, subsequentPagesList)
+			.map(tuple -> {
+				ListApplicationsResponse first = tuple.getT1();
+				List<ListApplicationsResponse> subsequent = tuple.getT2();
+				
+				List<ApplicationResource> ret = new LinkedList<ApplicationResource>();
+				
+				ret.addAll(first.getResources());
+				for (ListApplicationsResponse listResponse : subsequent) {
+					ret.addAll(listResponse.getResources());
+				}
+				
+				return ListApplicationsResponse.builder()
+					.addAllResources(ret)
+					.totalPages(subsequent.size() + 1)
+					.totalResults(ret.size())
+					.build();
+			});
+		
+		return allPagesResult;
 	}
 	
 	@Override
