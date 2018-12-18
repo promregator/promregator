@@ -47,6 +47,9 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 public class ReactiveCFAccessorImpl implements CFAccessor {
+	private static final int MAX_SUPPORTED_RESULTS_PER_PAGE = 100;
+	private static final int RESULTS_PER_PAGE = MAX_SUPPORTED_RESULTS_PER_PAGE;
+
 	private static final Logger log = Logger.getLogger(ReactiveCFAccessorImpl.class);
 	
 	@Value("${cf.api_host}")
@@ -264,11 +267,11 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 
 	private <S, P extends PaginatedResponse<?>, R extends PaginatedRequest> Mono<P> performGenericPagedRetrieval(String retrievalTypeName, String logName, String key, PaginatedRequestGeneratorFunction<R> requestGenerator, Function<R, Mono<P>> requestFunction, int timeoutInMS, PaginatedResponseGeneratorFunction<S, P> responseGenerator) {
 		Mono<P> firstPage = this.performGenericRetrieval(retrievalTypeName, logName, key, 
-			requestGenerator.apply(OrderDirection.ASCENDING, 100, 1), requestFunction, timeoutInMS);
+			requestGenerator.apply(OrderDirection.ASCENDING, RESULTS_PER_PAGE, 1), requestFunction, timeoutInMS);
 		
 		Flux<R> requestFlux = firstPage.map(page -> page.getTotalPages() - 1)
 			.flatMapMany( pagesCount -> Flux.range(2, pagesCount))
-			.map(pageNumber -> requestGenerator.apply(OrderDirection.ASCENDING, 100, pageNumber));
+			.map(pageNumber -> requestGenerator.apply(OrderDirection.ASCENDING, RESULTS_PER_PAGE, pageNumber));
 		
 		Mono<List<P>> subsequentPagesList = requestFlux.parallel().runOn(Schedulers.parallel()).flatMap( req -> {
 			return this.performGenericRetrieval(retrievalTypeName, logName, key, req, requestFunction, timeoutInMS);
