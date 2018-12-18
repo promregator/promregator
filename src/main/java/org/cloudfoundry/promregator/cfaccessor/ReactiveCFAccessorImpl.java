@@ -171,13 +171,13 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	}
 
 	/**
-	 * performs standard retrieval from the CF Cloud Controller
+	 * performs standard (raw) retrieval from the CF Cloud Controller of a single page
 	 * @param retrievalTypeName the name of type of the request which is being made; used for identification in internalMetrics
 	 * @param logName the name of the logger category, which shall be used for logging this Reactor operation
 	 * @param key the key for which the request is being made (e.g. orgId, orgId|spaceName, ...)
-	 * @param cacheMap the PassiveExpiringMap, which shall be used for caching the request; may be <code>null</code> to indicate that no caching shall take place
 	 * @param requestData an object which is being used as input parameter for the request
 	 * @param requestFunction a function which calls the CF API operation, which is being made, <code>requestData</code> is used as input parameter for this function.
+	 * @param timeoutInMS the timeout value in milliseconds for a single data request to the CF Cloud Controller
 	 * @return a Mono on the response provided by the CF Cloud Controller
 	 */
 	private <P, R> Mono<P> performGenericRetrieval(String retrievalTypeName, String logName, String key, R requestData, Function<R, Mono<P>> requestFunction, int timeoutInMS) {
@@ -213,6 +213,52 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 			
 			return result;
 		}
+	}
+	
+	/**
+	 * performs a retrieval from the CF Cloud Controller fetching all pages available.
+	 * @param retrievalTypeName the name of type of the request which is being made; used for identification in internalMetrics
+	 * @param logName the name of the logger category, which shall be used for logging this Reactor operation
+	 * @param key the key for which the request is being made (e.g. orgId, orgId|spaceName, ...)
+	 * @param requestGenerator a request generator function, which permits creating request objects instance for a given set of page parameters (e.g. for which page, using which page size, ...)
+	 * @param requestFunction a function which calls the CF API operation, which is being made.
+	 * @param timeoutInMS the timeout value in milliseconds for a single data request to the CF Cloud Controller
+	 * @param responseGenerator a response generator function, which permits creating a response object, which contains the collected resources of all pages retrieved.
+	 * @return a Mono on the response provided by the CF Cloud Controller
+	 */
+	private <S, P extends PaginatedResponse<?>, R extends PaginatedRequest> Mono<P> performGenericPagedRetrieval(String retrievalTypeName, String logName, String key, PaginatedRequestGeneratorFunction<R> requestGenerator, Function<R, Mono<P>> requestFunction, int timeoutInMS, PaginatedResponseGeneratorFunction<S, P> responseGenerator) {
+		Mono<P> firstPage = this.performGenericRetrieval(retrievalTypeName, logName, key, 
+			requestGenerator.apply(OrderDirection.ASCENDING, RESULTS_PER_PAGE, 1), requestFunction, timeoutInMS);
+		
+		Flux<R> requestFlux = firstPage.map(page -> page.getTotalPages() - 1)
+			.flatMapMany( pagesCount -> Flux.range(2, pagesCount))
+			.map(pageNumber -> requestGenerator.apply(OrderDirection.ASCENDING, RESULTS_PER_PAGE, pageNumber));
+		
+		Mono<List<P>> subsequentPagesList = requestFlux.parallel().runOn(Schedulers.parallel()).flatMap( req -> {
+			return this.performGenericRetrieval(retrievalTypeName, logName, key, req, requestFunction, timeoutInMS);
+		}).sequential().collectList();
+		/* 
+		 * TODO Improved error handling approach: Does it make sense to provide a half-complete result, 
+		 * in case only *one* of the page requests fail, or shall we keep crashing the entire request to the CFAccessor,
+		 * if only one of the pages failed?
+		 */
+		
+		Mono<P> allPagesResult = Mono.zip(firstPage, subsequentPagesList)
+			.map(tuple -> {
+				P first = tuple.getT1();
+				List<P> subsequent = tuple.getT2();
+				
+				List<S> ret = new LinkedList<>();
+				
+				ret.addAll((List<? extends S>) first.getResources());
+				for (P listResponse : subsequent) {
+					ret.addAll((List<? extends S>) listResponse.getResources());
+				}
+				
+				return responseGenerator.apply(ret, subsequent.size() + 1);
+			});
+		
+		return allPagesResult;
 	}
 	
 	/* (non-Javadoc)
@@ -265,36 +311,6 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		}, this.requestTimeoutSpace);
 	}
 
-	private <S, P extends PaginatedResponse<?>, R extends PaginatedRequest> Mono<P> performGenericPagedRetrieval(String retrievalTypeName, String logName, String key, PaginatedRequestGeneratorFunction<R> requestGenerator, Function<R, Mono<P>> requestFunction, int timeoutInMS, PaginatedResponseGeneratorFunction<S, P> responseGenerator) {
-		Mono<P> firstPage = this.performGenericRetrieval(retrievalTypeName, logName, key, 
-			requestGenerator.apply(OrderDirection.ASCENDING, RESULTS_PER_PAGE, 1), requestFunction, timeoutInMS);
-		
-		Flux<R> requestFlux = firstPage.map(page -> page.getTotalPages() - 1)
-			.flatMapMany( pagesCount -> Flux.range(2, pagesCount))
-			.map(pageNumber -> requestGenerator.apply(OrderDirection.ASCENDING, RESULTS_PER_PAGE, pageNumber));
-		
-		Mono<List<P>> subsequentPagesList = requestFlux.parallel().runOn(Schedulers.parallel()).flatMap( req -> {
-			return this.performGenericRetrieval(retrievalTypeName, logName, key, req, requestFunction, timeoutInMS);
-		}).sequential().collectList();
-		
-		Mono<P> allPagesResult = Mono.zip(firstPage, subsequentPagesList)
-			.map(tuple -> {
-				P first = tuple.getT1();
-				List<P> subsequent = tuple.getT2();
-				
-				List<S> ret = new LinkedList<>();
-				
-				ret.addAll((List<? extends S>) first.getResources());
-				for (P listResponse : subsequent) {
-					ret.addAll((List<? extends S>) listResponse.getResources());
-				}
-				
-				return responseGenerator.apply(ret, subsequent.size() + 1);
-			});
-		
-		return allPagesResult;
-	}
-	
 	/* (non-Javadoc)
 	 * @see org.cloudfoundry.promregator.cfaccessor.CFAccessor#retrieveAllApplicationIdsInSpace(java.lang.String, java.lang.String)
 	 */
