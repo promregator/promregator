@@ -3,7 +3,7 @@ package org.cloudfoundry.promregator.cfaccessor;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Duration;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
@@ -17,6 +17,9 @@ import javax.net.ssl.SSLException;
 import org.apache.http.conn.util.InetAddressUtils;
 import org.apache.log4j.Logger;
 import org.cloudfoundry.client.v2.OrderDirection;
+import org.cloudfoundry.client.v2.PaginatedRequest;
+import org.cloudfoundry.client.v2.PaginatedResponse;
+import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.client.v2.applications.ListApplicationsRequest;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.info.GetInfoRequest;
@@ -27,7 +30,6 @@ import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryRequest;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesRequest;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
-import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.promregator.config.ConfigurationException;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.cloudfoundry.reactor.ConnectionContext;
@@ -167,7 +169,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	}
 
 	/**
-	 * performs standard, cached retrieval from the CF Cloud Controller
+	 * performs standard retrieval from the CF Cloud Controller
 	 * @param retrievalTypeName the name of type of the request which is being made; used for identification in internalMetrics
 	 * @param logName the name of the logger category, which shall be used for logging this Reactor operation
 	 * @param key the key for which the request is being made (e.g. orgId, orgId|spaceName, ...)
@@ -263,57 +265,65 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		}, this.requestTimeoutSpace);
 	}
 
+	private <S, P extends PaginatedResponse<?>, R extends PaginatedRequest> Mono<P> performGenericPagedRetrieval(String retrievalTypeName, String logName, String key, PaginatedRequestGeneratorFunction<R> requestGenerator, Function<R, Mono<P>> requestFunction, int timeoutInMS, PaginatedResponseGeneratorFunction<S, P> responseGenerator) {
+		Mono<P> firstPage = this.performGenericRetrieval(retrievalTypeName, logName, key, 
+			requestGenerator.apply(OrderDirection.ASCENDING, 100, 1), requestFunction, timeoutInMS);
+		
+		Flux<R> requestFlux = firstPage.map(page -> page.getTotalPages() - 1)
+			.flatMapMany( pagesCount -> Flux.range(2, pagesCount))
+			.map(pageNumber -> requestGenerator.apply(OrderDirection.ASCENDING, 100, pageNumber));
+		
+		Mono<List<P>> subsequentPagesList = requestFlux.parallel().runOn(Schedulers.parallel()).flatMap( req -> {
+			return this.performGenericRetrieval(retrievalTypeName, logName, key, req, requestFunction, timeoutInMS);
+		}).sequential().collectList();
+		
+		Mono<P> allPagesResult = Mono.zip(firstPage, subsequentPagesList)
+			.map(tuple -> {
+				P first = tuple.getT1();
+				List<P> subsequent = tuple.getT2();
+				
+				List<S> ret = new LinkedList<>();
+				
+				ret.addAll((List<? extends S>) first.getResources());
+				for (P listResponse : subsequent) {
+					ret.addAll((List<? extends S>) listResponse.getResources());
+				}
+				
+				return responseGenerator.apply(ret, subsequent.size() + 1);
+			});
+		
+		return allPagesResult;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.cloudfoundry.promregator.cfaccessor.CFAccessor#retrieveAllApplicationIdsInSpace(java.lang.String, java.lang.String)
 	 */
 	@Override
 	public Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String orgId, String spaceId) {
 		String key = String.format("%s|%s", orgId, spaceId);
-		ListApplicationsRequest request = ListApplicationsRequest.builder()
-				.organizationId(orgId)
-				.spaceId(spaceId)
-				.orderDirection(OrderDirection.ASCENDING)
-				.resultsPerPage(100)
-				.build();
 		
-		Mono<ListApplicationsResponse> firstPage = this.performGenericRetrieval("allApps", "retrieveAllApplicationIdsInSpace", key, 
-				request, r -> this.cloudFoundryClient.applicationsV2().list(r), this.requestTimeoutAppInSpace);
-		
-		Flux<ListApplicationsRequest> requestFlux = firstPage.map(page -> page.getTotalPages() - 1)
-			.flatMapMany( pagesCount -> Flux.range(2, pagesCount))
-			.map(pageNumber -> {
-				return ListApplicationsRequest.builder().from(request)
-					.resultsPerPage(100)
-					.orderDirection(OrderDirection.ASCENDING)
+		PaginatedRequestGeneratorFunction<ListApplicationsRequest> requestGenerator = (orderDirection, resultsPerPage, pageNumber) -> {
+			ListApplicationsRequest request = ListApplicationsRequest.builder()
+					.organizationId(orgId)
+					.spaceId(spaceId)
+					.orderDirection(orderDirection)
+					.resultsPerPage(resultsPerPage)
 					.page(pageNumber)
 					.build();
-			});
+			
+			return request;
+		};
 		
-		Mono<List<ListApplicationsResponse>> subsequentPagesList = requestFlux.parallel().runOn(Schedulers.parallel()).flatMap( req -> {
-			return this.performGenericRetrieval("allApps", "retrieveAllApplicationIdsInSpace", key,
-				req, r -> this.cloudFoundryClient.applicationsV2().list(r), this.requestTimeoutAppInSpace);
-		}).sequential().collectList();
-		
-		Mono<ListApplicationsResponse> allPagesResult = Mono.zip(firstPage, subsequentPagesList)
-			.map(tuple -> {
-				ListApplicationsResponse first = tuple.getT1();
-				List<ListApplicationsResponse> subsequent = tuple.getT2();
-				
-				List<ApplicationResource> ret = new LinkedList<ApplicationResource>();
-				
-				ret.addAll(first.getResources());
-				for (ListApplicationsResponse listResponse : subsequent) {
-					ret.addAll(listResponse.getResources());
-				}
-				
-				return ListApplicationsResponse.builder()
-					.addAllResources(ret)
-					.totalPages(subsequent.size() + 1)
-					.totalResults(ret.size())
+		PaginatedResponseGeneratorFunction<ApplicationResource, ListApplicationsResponse> responseGenerator = (list, numberOfPages) -> {
+			return ListApplicationsResponse.builder()
+					.addAllResources(list)
+					.totalPages(numberOfPages)
+					.totalResults(list.size())
 					.build();
-			});
+		};
 		
-		return allPagesResult;
+		return this.performGenericPagedRetrieval("allApps", "retrieveAllApplicationIdsInSpace", key, requestGenerator, 
+				r -> this.cloudFoundryClient.applicationsV2().list(r),  this.requestTimeoutAppInSpace, responseGenerator);
 	}
 	
 	@Override
