@@ -3,7 +3,6 @@ package org.cloudfoundry.promregator.cfaccessor;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Duration;
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
@@ -45,7 +44,6 @@ import org.springframework.beans.factory.annotation.Value;
 import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 public class ReactiveCFAccessorImpl implements CFAccessor {
 	private static final int MAX_SUPPORTED_RESULTS_PER_PAGE = 100;
@@ -252,9 +250,12 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 					return this.performGenericRetrieval(pageRetrievalType, logName, key, req, requestFunction, timeoutInMS);
 				}).collectList();
 		/* 
-		 * TODO Improved error handling approach: Does it make sense to provide a half-complete result, 
-		 * in case only *one* of the page requests fail, or shall we keep crashing the entire request to the CFAccessor,
-		 * if only one of the pages failed?
+		 * Word on error handling:
+		 * We can't judge here what will be the consequence, if the first page could be retrieved properly, 
+		 * but retrieving some some later page fails. The implication would depend on the consumer (whether incomplete
+		 * data was ok or not). So the safe answer here is to raise an error for the entire request.
+		 * That, however, is already in place with the error handling in performGenericRetrieval: the stream is 
+		 * already in state "error" and thus will not emit any item.
 		 */
 		
 		Mono<P> allPagesResult = Mono.zip(firstPage, subsequentPagesList, Mono.just(reactiveTimer))
