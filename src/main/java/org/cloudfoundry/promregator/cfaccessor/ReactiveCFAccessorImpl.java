@@ -198,8 +198,6 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 					Throwable unwrappedThrowable = Exceptions.unwrap(throwable);
 					if (unwrappedThrowable instanceof TimeoutException) {
 						log.error(String.format("Async retrieval of %s with key %s caused a timeout after %dms even though we tried three times", logName, key, timeoutInMS));
-					} else if (unwrappedThrowable instanceof SSLException) {
-						
 					} else {
 						log.error(String.format("Async retrieval of %s with key %s raised a reactor error", logName, key), unwrappedThrowable);
 					}
