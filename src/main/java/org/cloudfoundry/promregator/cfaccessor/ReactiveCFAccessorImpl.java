@@ -230,8 +230,18 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	 * @return a Mono on the response provided by the CF Cloud Controller
 	 */
 	private <S, P extends PaginatedResponse<?>, R extends PaginatedRequest> Mono<P> performGenericPagedRetrieval(String retrievalTypeName, String logName, String key, PaginatedRequestGeneratorFunction<R> requestGenerator, Function<R, Mono<P>> requestFunction, int timeoutInMS, PaginatedResponseGeneratorFunction<S, P> responseGenerator) {
-		Mono<P> firstPage = this.performGenericRetrieval(retrievalTypeName, logName, key, 
-			requestGenerator.apply(OrderDirection.ASCENDING, RESULTS_PER_PAGE, 1), requestFunction, timeoutInMS);
+		
+		final String pageRetrievalType = retrievalTypeName+"_singlePage";
+		
+		ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, retrievalTypeName);
+		
+		Mono<P> firstPage = Mono.just(reactiveTimer)
+				.doOnNext(timer -> {
+					timer.start();
+				}).flatMap( dummy -> {
+					return this.performGenericRetrieval(pageRetrievalType, logName, key, 
+						requestGenerator.apply(OrderDirection.ASCENDING, RESULTS_PER_PAGE, 1), requestFunction, timeoutInMS);
+				});
 		
 		Flux<R> requestFlux = firstPage.map(page -> page.getTotalPages() - 1)
 			.flatMapMany( pagesCount -> Flux.range(2, pagesCount))
@@ -239,7 +249,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		
 		Mono<List<P>> subsequentPagesList = requestFlux
 				.flatMap( req -> {
-					return this.performGenericRetrieval(retrievalTypeName, logName, key, req, requestFunction, timeoutInMS);
+					return this.performGenericRetrieval(pageRetrievalType, logName, key, req, requestFunction, timeoutInMS);
 				}).collectList();
 		/* 
 		 * TODO Improved error handling approach: Does it make sense to provide a half-complete result, 
@@ -247,7 +257,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		 * if only one of the pages failed?
 		 */
 		
-		Mono<P> allPagesResult = Mono.zip(firstPage, subsequentPagesList)
+		Mono<P> allPagesResult = Mono.zip(firstPage, subsequentPagesList, Mono.just(reactiveTimer))
 			.map(tuple -> {
 				P first = tuple.getT1();
 				List<P> subsequent = tuple.getT2();
@@ -259,7 +269,11 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 					ret.addAll((List<? extends S>) listResponse.getResources());
 				}
 				
-				return responseGenerator.apply(ret, subsequent.size() + 1);
+				P retObject = responseGenerator.apply(ret, subsequent.size() + 1);
+				
+				tuple.getT3().stop();
+				
+				return retObject;
 			});
 		
 		return allPagesResult;
