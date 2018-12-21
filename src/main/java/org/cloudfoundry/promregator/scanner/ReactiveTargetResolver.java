@@ -2,6 +2,7 @@ package org.cloudfoundry.promregator.scanner;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -245,7 +246,15 @@ public class ReactiveTargetResolver implements TargetResolver {
 					.filter(appResource -> {
 						return appNameToSearchFor.equals(appResource.getEntity().getName().toLowerCase(Locale.ENGLISH));
 					})
-					.elementAt(0)
+					.single()
+					.doOnError(e -> {
+						if (e instanceof NoSuchElementException) {
+							log.warn(String.format("Application id could not be found for org '%s', space '%s' and application '%s'. Check your configuration; skipping it for now", it.resolvedOrgName, it.resolvedSpaceName, it.configTarget.getApplicationName()));
+						}
+					})
+					.onErrorResume(e -> {
+						return Mono.empty();
+					})
 					.filter( res -> {
 						return this.isApplicationInScrapableState(res.getEntity().getState());
 					})
