@@ -114,9 +114,14 @@ EOT
 					dockerImageIdentifier = executeShell """
 						docker inspect --format='{{index .RepoDigests 0}}' ${imageName}
 					"""
+					
+					def dockerImageIdentifierCanonical = executeShell """
+						docker inspect --format='{{.Id}}' ${imageName}
+					"""
 					sh """
 					cat >>promregator-${currentVersion}.hashsums <<EOT
-Docker Image: ${dockerImageIdentifier}
+Docker Image Repo Digest: ${dockerImageIdentifier}
+Docker Image Id: ${dockerImageIdentifierCanonical}
 EOT
 					"""
 				}
