@@ -15,10 +15,12 @@ import org.cloudfoundry.client.v2.info.GetInfoRequest;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsRequest;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
+import org.cloudfoundry.client.v2.organizations.OrganizationResource;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryRequest;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesRequest;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
+import org.cloudfoundry.client.v2.spaces.SpaceResource;
 import org.cloudfoundry.promregator.config.ConfigurationException;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.cloudfoundry.reactor.ConnectionContext;
@@ -166,6 +168,8 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	 */
 	@Override
 	public Mono<ListOrganizationsResponse> retrieveOrgId(String orgName) {
+		// Note: even though we use the List request here, the number of values returned is either zero or one
+		// ==> No need for a paged request. 
 		ListOrganizationsRequest orgsRequest = ListOrganizationsRequest.builder().name(orgName).build();
 		
 		return this.paginatedRequestFetcher.performGenericRetrieval("org", "retrieveOrgId", orgName, orgsRequest, or -> {
@@ -178,11 +182,26 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	 */
 	@Override
 	public Mono<ListOrganizationsResponse> retrieveAllOrgIds() {
-		ListOrganizationsRequest orgsRequest = ListOrganizationsRequest.builder().build();
+		PaginatedRequestGeneratorFunction<ListOrganizationsRequest> requestGenerator = (orderDirection, resultsPerPage, pageNumber) -> {
+			ListOrganizationsRequest orgsRequest = ListOrganizationsRequest.builder()
+				.orderDirection(orderDirection)
+				.resultsPerPage(resultsPerPage)
+				.page(pageNumber)
+				.build();
+			
+			return orgsRequest;
+		};
 		
-		return this.paginatedRequestFetcher.performGenericRetrieval("allOrgs", "retrieveAllOrgIds", "(empty)", orgsRequest, or -> {
-			return this.cloudFoundryClient.organizations().list(or);
-		}, this.requestTimeoutOrg);
+		PaginatedResponseGeneratorFunction<OrganizationResource, ListOrganizationsResponse> responseGenerator = (list, numberOfPages) -> {
+			return ListOrganizationsResponse.builder()
+				.addAllResources(list)
+				.totalPages(numberOfPages)
+				.totalResults(list.size())
+				.build();
+		};
+		
+		return this.paginatedRequestFetcher.performGenericPagedRetrieval("allOrgs", "retrieveAllOrgIds", "(empty)", requestGenerator, 
+				r -> this.cloudFoundryClient.organizations().list(r),  this.requestTimeoutOrg, responseGenerator);
 	}
 
 	/* (non-Javadoc)
@@ -190,6 +209,9 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	 */
 	@Override
 	public Mono<ListSpacesResponse> retrieveSpaceId(String orgId, String spaceName) {
+		// Note: even though we use the List request here, the number of values returned is either zero or one
+		// ==> No need for a paged request. 
+		
 		String key = String.format("%s|%s", orgId, spaceName);
 		
 		ListSpacesRequest spacesRequest = ListSpacesRequest.builder().organizationId(orgId).name(spaceName).build();
@@ -204,11 +226,27 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	 */
 	@Override
 	public Mono<ListSpacesResponse> retrieveSpaceIdsInOrg(String orgId) {
-		ListSpacesRequest spacesRequest = ListSpacesRequest.builder().organizationId(orgId).build();
+		PaginatedRequestGeneratorFunction<ListSpacesRequest> requestGenerator = (orderDirection, resultsPerPage, pageNumber) -> {
+			ListSpacesRequest spacesRequest = ListSpacesRequest.builder()
+				.organizationId(orgId)
+				.orderDirection(orderDirection)
+				.resultsPerPage(resultsPerPage)
+				.page(pageNumber)
+				.build();
+			
+			return spacesRequest;
+		};
 		
-		return this.paginatedRequestFetcher.performGenericRetrieval("space", "retrieveAllSpaceIdsInOrg", orgId, spacesRequest, sr -> {
-			return this.cloudFoundryClient.spaces().list(sr);
-		}, this.requestTimeoutSpace);
+		PaginatedResponseGeneratorFunction<SpaceResource, ListSpacesResponse> responseGenerator = (list, numberOfPages) -> {
+			return ListSpacesResponse.builder()
+				.addAllResources(list)
+				.totalPages(numberOfPages)
+				.totalResults(list.size())
+				.build();
+		};
+		
+		return this.paginatedRequestFetcher.performGenericPagedRetrieval("space", "retrieveAllSpaceIdsInOrg", orgId, requestGenerator, 
+				r -> this.cloudFoundryClient.spaces().list(r),  this.requestTimeoutSpace, responseGenerator);
 	}
 
 	/* (non-Javadoc)
@@ -244,6 +282,8 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	
 	@Override
 	public Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId) {
+		// Note that GetSpaceSummaryRequest is not paginated
+		
 		GetSpaceSummaryRequest request = GetSpaceSummaryRequest.builder().spaceId(spaceId).build();
 		
 		return this.paginatedRequestFetcher.performGenericRetrieval("spaceSummary", "retrieveSpaceSummary", spaceId, 
