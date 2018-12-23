@@ -2,6 +2,9 @@ package org.cloudfoundry.promregator.cfaccessor;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
@@ -32,6 +35,7 @@ import org.cloudfoundry.reactor.client.ReactorCloudFoundryClient;
 import org.cloudfoundry.reactor.tokenprovider.PasswordGrantTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 
 import reactor.core.publisher.Mono;
 
@@ -50,6 +54,9 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	
 	@Value("${cf.skipSslValidation:false}")
 	private boolean skipSSLValidation;
+	
+	@Value("${cf.watchdog:false}")
+	private boolean watchdogEnabled;
 	
 	@Value("${cf.proxyHost:#{null}}") 
 	private String proxyHost;
@@ -142,7 +149,6 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	}
 	
 	@PostConstruct
-	@SuppressWarnings("PMD.UnusedPrivateMethod") // method is really required
 	private void constructCloudFoundryClient() throws ConfigurationException {
 		ProxyConfiguration proxyConfiguration = this.proxyConfiguration();
 		DefaultConnectionContext connectionContext = this.connectionContext(proxyConfiguration);
@@ -158,6 +164,24 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		}
 	}
 
+	@Scheduled(fixedRate=2*60*1000, initialDelay=60*1000)
+	private void connectionWatchdog() {
+		// see also https://github.com/promregator/promregator/issues/83
+		final GetInfoRequest getInfoRequest = GetInfoRequest.builder().build();
+		this.cloudFoundryClient.info().get(getInfoRequest)
+			.timeout(Duration.ofMillis(2500))
+			.doOnError(e -> {
+				log.warn("Woof woof! It appears that the connection to the Cloud Controller is gone. Trying to restart Cloud Foundry Client", e);
+				try {
+					// Note that there is method at this.cloudFoundryClient, which would permit closing the old client
+					this.constructCloudFoundryClient();
+				} catch (ConfigurationException ce) {
+					log.warn("Unable to reconstruct connection to CF CC", ce);
+				}
+			})
+			.block(Duration.ofMillis(3000));
+	}
+	
 	@PostConstruct
 	private void setupPaginatedRequestFetcher() {
 		this.paginatedRequestFetcher = new ReactiveCFPaginatedRequestFetcher(this.internalMetrics);
