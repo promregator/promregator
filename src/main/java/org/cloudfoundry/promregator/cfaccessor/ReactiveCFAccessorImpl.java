@@ -37,6 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import reactor.core.Exceptions;
 import reactor.core.publisher.Mono;
 
 public class ReactiveCFAccessorImpl implements CFAccessor {
@@ -164,11 +165,14 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		}
 	}
 
-	@Scheduled(fixedRate=2*60*1000, initialDelay=60*1000)
+	
+	private static final GetInfoRequest DUMMY_GET_INFO_REQUEST = GetInfoRequest.builder().build();
+	
+	@Scheduled(fixedRate=1*60*1000, initialDelay=60*1000)
 	private void connectionWatchdog() {
 		// see also https://github.com/promregator/promregator/issues/83
-		final GetInfoRequest getInfoRequest = GetInfoRequest.builder().build();
-		this.cloudFoundryClient.info().get(getInfoRequest)
+		
+		this.cloudFoundryClient.info().get(DUMMY_GET_INFO_REQUEST)
 			.timeout(Duration.ofMillis(2500))
 			.doOnError(e -> {
 				log.warn("Woof woof! It appears that the connection to the Cloud Controller is gone. Trying to restart Cloud Foundry Client", e);
@@ -179,7 +183,9 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 					log.warn("Unable to reconstruct connection to CF CC", ce);
 				}
 			})
-			.block(Duration.ofMillis(3000));
+			// Note: To prevent the Spring scheduler to complain, we have to properly catch an error which occurs
+			.onErrorReturn(GetInfoResponse.builder().build())
+			.subscribe();
 	}
 	
 	@PostConstruct
