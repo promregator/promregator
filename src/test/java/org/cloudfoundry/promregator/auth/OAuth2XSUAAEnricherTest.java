@@ -12,7 +12,6 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -53,28 +52,14 @@ public class OAuth2XSUAAEnricherTest {
 		authenticatorConfig.setClient_secret("client_secret");
 		authenticatorConfig.setTokenServiceURL("http://localhost:9001/oauth/token");
 		
-		OAuth2XSUAAEnricher subject = new OAuth2XSUAAEnricher(authenticatorConfig);
+		OAuth2XSUAAEnricher subject = new OAuth2XSUAAEnricher(authenticatorConfig, null, 0);
 		
-		HttpGet mockGet = Mockito.mock(HttpGet.class);
-		Mockito.when(mockGet.getURI()).thenAnswer(new Answer<URI>() {
+		CheckingHTTPRequestFacade facade = new CheckingHTTPRequestFacade();
+		
+		subject.enrichWithAuthentication(facade);
+		
+		Assert.assertTrue(facade.isChecked());
 
-			@Override
-			public URI answer(InvocationOnMock invocation) throws Throwable {
-				return new URI("http://localhost/target");
-			}
-			
-		});
-		
-		subject.enrichWithAuthentication(mockGet);
-		
-		ArgumentCaptor<String> keyCaptor = ArgumentCaptor.forClass(String.class);
-		ArgumentCaptor<String> valueCaptor = ArgumentCaptor.forClass(String.class);
-		Mockito.verify(mockGet).setHeader(keyCaptor.capture(), valueCaptor.capture());
-		String value = valueCaptor.getValue();
-		Assert.assertEquals("Bearer someAccessToken", value);
-		
-		String key = keyCaptor.getValue();
-		Assert.assertEquals("Authorization", key);
 	}
 
 	@Test
@@ -86,7 +71,7 @@ public class OAuth2XSUAAEnricherTest {
 		authenticatorConfig.setClient_secret("client_secret");
 		authenticatorConfig.setTokenServiceURL("http://localhost:9001/oauth/token");
 		
-		OAuth2XSUAAEnricher subject = new OAuth2XSUAAEnricher(authenticatorConfig);
+		OAuth2XSUAAEnricher subject = new OAuth2XSUAAEnricher(authenticatorConfig, null, 0);
 		
 		HttpGet mockGet = Mockito.mock(HttpGet.class);
 		Mockito.when(mockGet.getURI()).thenAnswer(new Answer<URI>() {
@@ -98,13 +83,38 @@ public class OAuth2XSUAAEnricherTest {
 			
 		});
 		
+		CheckingHTTPRequestFacade facade = new CheckingHTTPRequestFacade();
+		
 		// first call will trigger OAuth request
-		subject.enrichWithAuthentication(mockGet);
+		subject.enrichWithAuthentication(facade);
+		
+		Assert.assertTrue(facade.isChecked());
+
+		facade = null;
+		facade = new CheckingHTTPRequestFacade();
 		
 		// second one should not
-		subject.enrichWithAuthentication(mockGet);
+		subject.enrichWithAuthentication(facade);
+		
+		Assert.assertTrue(facade.isChecked());
 		
 		Assert.assertEquals(1, this.ams.getOauthTokenHandler().getCounterCalled());
 	}
 	
+	private class CheckingHTTPRequestFacade implements HTTPRequestFacade {
+		private boolean checked = false;
+		
+		@Override
+		public void addHeader(String name, String value) {
+			Assert.assertEquals("Authorization", name);
+			Assert.assertEquals("Bearer someAccessToken", value);
+			checked = true;
+		}
+
+		public boolean isChecked() {
+			return checked;
+		}
+		
+	}
+
 }

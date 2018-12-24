@@ -10,6 +10,7 @@ import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.config.Target;
 import org.cloudfoundry.promregator.config.TargetAuthenticatorConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  * This class controls the target-dependent set of AuthenticationEnrichers
@@ -20,6 +21,12 @@ public class AuthenticatorController {
 	@Autowired
 	private PromregatorConfiguration promregatorConfiguration;
 
+	@Value("${cf.proxyHost:#{null}}") // TODO QUALMS: Using the CF proxy here, might not be the correct thing to do
+	private String proxyHost; 
+	
+	@Value("${cf.proxyPort:0}") // TODO QUALMS: Using the CF proxy here, might not be the correct thing to do
+	private int proxyPort;
+	
 	private AuthenticationEnricher globalAuthenticationEnricher;
 
 	@PostConstruct
@@ -30,14 +37,14 @@ public class AuthenticatorController {
 			return;
 		}
 		
-		this.globalAuthenticationEnricher =	AuthenticationEnricherFactory.create(authConfig);
+		this.globalAuthenticationEnricher =	AuthenticationEnricherFactory.create(authConfig, proxyHost, proxyPort);
 	}
 	
 	@PostConstruct
 	private void loadMapFromConfiguration() {
 		for (TargetAuthenticatorConfiguration tac : this.promregatorConfiguration.getTargetAuthenticators()) {
 			String id = tac.getId();
-			AuthenticationEnricher ae = AuthenticationEnricherFactory.create(tac);
+			AuthenticationEnricher ae = AuthenticationEnricherFactory.create(tac, proxyHost, proxyPort);
 
 			if (ae != null) {
 				this.mapping.put(id, ae);

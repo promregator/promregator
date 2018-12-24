@@ -2,32 +2,24 @@ package org.cloudfoundry.promregator.fetcher;
 
 import java.nio.charset.Charset;
 import java.time.Duration;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
 
-import org.apache.http.HttpHost;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.log4j.Logger;
+import org.cloudfoundry.promregator.NettyConnectionManager;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
+import org.cloudfoundry.promregator.auth.HTTPRequestFacade;
 import org.cloudfoundry.promregator.endpoint.EndpointConstants;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 
-import io.netty.buffer.ByteBuf;
 import io.prometheus.client.Collector.MetricFamilySamples;
-import io.prometheus.client.Histogram.Timer;
 import io.prometheus.client.Gauge;
-import reactor.core.Exceptions;
-import reactor.core.publisher.Flux;
+import io.prometheus.client.Histogram.Timer;
 import reactor.core.publisher.Mono;
 import reactor.ipc.netty.http.client.HttpClient;
-import reactor.ipc.netty.options.ClientProxyOptions;
-import reactor.ipc.netty.options.ClientProxyOptions.Builder;
+import reactor.ipc.netty.http.client.HttpClientRequest;
 
 public class NettyMetricsFetcher implements SynchronousMetricsFetcher {
 
@@ -43,7 +35,6 @@ public class NettyMetricsFetcher implements SynchronousMetricsFetcher {
 
 	private MetricsFetcherMetrics mfm;
 
-	private static final Map<String, HttpClient> httpClientMap = Collections.synchronizedMap(new HashMap<>());
 	private HttpClient nettyClient;
 
 	private UUID promregatorUUID;
@@ -60,36 +51,9 @@ public class NettyMetricsFetcher implements SynchronousMetricsFetcher {
 		this.up = up;
 		this.promregatorUUID = promregatorUUID;
 
-		this.nettyClient = this.determineNettyClient(proxyHost, proxyPort);
+		this.nettyClient = NettyConnectionManager.determineNettyClient(proxyHost, proxyPort);
 	}
 
-	private HttpClient determineNettyClient(String proxyHost, int proxyPort) {
-		String proxyKey = (proxyHost == null && proxyPort == 0) ? null : String.format("%s:%d", proxyHost, proxyPort);
-		
-		synchronized(httpClientMap) {
-			HttpClient nettyClient = httpClientMap.get(proxyKey);
-			
-			if (nettyClient == null) {
-				nettyClient = HttpClient.builder().options(options -> {
-					if (proxyHost != null && proxyPort != 0) {
-						options.proxy(typeSpec -> {
-							Builder builder = typeSpec
-								.type(ClientProxyOptions.Proxy.HTTP)
-								.host(proxyHost)
-								.port(proxyPort);
-							
-							return builder;
-						});
-					}
-				}).build();
-				
-				httpClientMap.put(proxyKey, nettyClient);
-			}
-			return nettyClient;
-		}
-	
-	}
-	
 	@Override
 	public HashMap<String, MetricFamilySamples> call() throws Exception {
 		log.debug(String.format("Reading metrics from %s for instance %s", this.endpointUrl, this.instanceId));
@@ -107,7 +71,9 @@ public class NettyMetricsFetcher implements SynchronousMetricsFetcher {
 				// provided for recursive scraping / loopback detection
 				request.header(EndpointConstants.HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER, this.promregatorUUID.toString());
 				
-				// TODO AEs must be considered here!
+				if (this.ae != null) {
+					this.ae.enrichWithAuthentication(new NettyRequestFacade(request));
+				}
 				
 				return request;
 			}).flatMap(resp -> {
@@ -168,4 +134,18 @@ public class NettyMetricsFetcher implements SynchronousMetricsFetcher {
 		return emfs;
 	}
 
+	private class NettyRequestFacade implements HTTPRequestFacade {
+		private HttpClientRequest request;
+
+		public NettyRequestFacade(HttpClientRequest request) {
+			super();
+			this.request = request;
+		}
+
+		@Override
+		public void addHeader(String name, String value) {
+			this.request.addHeader(name, value);
+		}
+	}
+	
 }

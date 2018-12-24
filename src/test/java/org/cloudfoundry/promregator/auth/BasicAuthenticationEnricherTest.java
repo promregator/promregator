@@ -1,13 +1,10 @@
 package org.cloudfoundry.promregator.auth;
 
-import org.apache.http.client.methods.HttpGet;
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.config.BasicAuthenticationConfiguration;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 
 public class BasicAuthenticationEnricherTest {
 
@@ -24,20 +21,28 @@ public class BasicAuthenticationEnricherTest {
 		
 		BasicAuthenticationEnricher subject = new BasicAuthenticationEnricher(config);
 		
-		HttpGet mockGet = Mockito.mock(HttpGet.class);
+		CheckingHTTPRequestFacade facade = new CheckingHTTPRequestFacade();
 		
-		subject.enrichWithAuthentication(mockGet);
+		subject.enrichWithAuthentication(facade);
 		
-		ArgumentCaptor<String> keyCaptor = ArgumentCaptor.forClass(String.class);
-		ArgumentCaptor<String> valueCaptor = ArgumentCaptor.forClass(String.class);
-		Mockito.verify(mockGet).setHeader(keyCaptor.capture(), valueCaptor.capture());
-		String value = valueCaptor.getValue();
-		Assert.assertEquals("Basic ZHVtbXl1c2VyOnVuaXR0ZXN0cGFzc3dvcmQ=", value);
-		
-		String key = keyCaptor.getValue();
-		Assert.assertEquals("Authorization", key);
-
+		Assert.assertTrue(facade.isChecked());
 	}
 
+	private class CheckingHTTPRequestFacade implements HTTPRequestFacade {
+		private boolean checked = false;
+		
+		@Override
+		public void addHeader(String name, String value) {
+			Assert.assertEquals("Authorization", name);
+			Assert.assertEquals("Basic ZHVtbXl1c2VyOnVuaXR0ZXN0cGFzc3dvcmQ=", value);
+			checked = true;
+		}
+
+		public boolean isChecked() {
+			return checked;
+		}
+		
+	}
+	
 }
 

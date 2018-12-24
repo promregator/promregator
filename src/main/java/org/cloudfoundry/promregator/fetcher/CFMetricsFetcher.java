@@ -16,6 +16,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
+import org.cloudfoundry.promregator.auth.HTTPRequestFacade;
 import org.cloudfoundry.promregator.endpoint.EndpointConstants;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 
@@ -101,7 +102,7 @@ public class CFMetricsFetcher implements SynchronousMetricsFetcher {
 		httpget.setHeader(EndpointConstants.HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER, this.promregatorUUID.toString());
 		
 		if (this.ae != null) {
-			this.ae.enrichWithAuthentication(httpget);
+			this.ae.enrichWithAuthentication(new ApacheHTTPClientFacade(httpget));
 		}
 
 		CloseableHttpResponse response = null;
@@ -166,5 +167,20 @@ public class CFMetricsFetcher implements SynchronousMetricsFetcher {
 				}
 			}
 		}
+	}
+	
+	private class ApacheHTTPClientFacade implements HTTPRequestFacade {
+		private HttpGet httpget;
+		
+		public ApacheHTTPClientFacade(HttpGet httpget) {
+			super();
+			this.httpget = httpget;
+		}
+
+		@Override
+		public void addHeader(String name, String value) {
+			this.httpget.addHeader(name, value);
+		}
+		
 	}
 }

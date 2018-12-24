@@ -3,7 +3,6 @@ package org.cloudfoundry.promregator.auth;
 import java.io.UnsupportedEncodingException;
 import java.util.Base64;
 
-import org.apache.http.client.methods.HttpGet;
 import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.config.BasicAuthenticationConfiguration;
 
@@ -33,10 +32,10 @@ public class BasicAuthenticationEnricher implements AuthenticationEnricher {
 	}
 	
 	@Override
-	public void enrichWithAuthentication(HttpGet httpget) {
+	public void enrichWithAuthentication(HTTPRequestFacade facade) {
 		String b64usernamepassword = this.getBase64EncodedUsernamePassword();
 		
-		httpget.setHeader("Authorization", String.format("Basic %s", b64usernamepassword));
+		facade.addHeader("Authorization", String.format("Basic %s", b64usernamepassword));
 	}
 
 }

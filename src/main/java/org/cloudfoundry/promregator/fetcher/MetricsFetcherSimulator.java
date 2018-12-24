@@ -6,9 +6,9 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Random;
 
-import org.apache.http.client.methods.HttpGet;
 import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
+import org.cloudfoundry.promregator.auth.HTTPRequestFacade;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
@@ -76,10 +76,8 @@ public class MetricsFetcherSimulator implements SynchronousMetricsFetcher {
 			timer = this.mfm.getLatencyRequest().startTimer();
 		}
 		
-		HttpGet httpget = new HttpGet(this.accessURL);
-		
 		if (this.ae != null) {
-			this.ae.enrichWithAuthentication(httpget);
+			this.ae.enrichWithAuthentication(new NullHTTPRequestFacade());
 		}
 		
 		String result = SIM_TEXT004;
@@ -103,4 +101,12 @@ public class MetricsFetcherSimulator implements SynchronousMetricsFetcher {
 		return emfs;
 	}
 
+	private class NullHTTPRequestFacade implements HTTPRequestFacade {
+
+		@Override
+		public void addHeader(String name, String value) {
+			// left blank intentionally
+		}
+	}
+	
 }

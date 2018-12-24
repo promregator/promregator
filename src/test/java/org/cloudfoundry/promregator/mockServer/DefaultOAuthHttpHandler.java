@@ -46,7 +46,7 @@ public class DefaultOAuthHttpHandler implements HttpHandler {
 		Assert.assertEquals("Basic Y2xpZW50X2lkOmNsaWVudF9zZWNyZXQ=", authValue);
 
 		String contentTypeValue = he.getRequestHeaders().getFirst("Content-Type");
-		Assert.assertEquals("application/json", contentTypeValue);
+		Assert.assertEquals("application/x-www-form-urlencoded", contentTypeValue);
 		
 		// send response
 		he.sendResponseHeaders(200, this.response.length());
