@@ -22,7 +22,7 @@ import org.junit.Test;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
 
-public class MetricsFetcherTest {
+public class SynchronousMetricsFetcherTest {
 
 	private static final String DUMMY_METRICS_LIST = "# HELP dummy This is a dummy metric\n"+
 			"# TYPE dummy counter\n"+
@@ -31,7 +31,7 @@ public class MetricsFetcherTest {
 	
 	private Enumeration<MetricFamilySamples> expectedResult;
 	
-	public MetricsFetcherTest() {
+	public SynchronousMetricsFetcherTest() {
 		this.expectedResult = Collections.enumeration(new TextFormat004Parser(DUMMY_METRICS_LIST).parse().values());
 	}
 	

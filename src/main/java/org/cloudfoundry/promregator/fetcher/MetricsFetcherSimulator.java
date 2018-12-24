@@ -15,7 +15,7 @@ import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.Histogram.Timer;
 
-public class MetricsFetcherSimulator implements MetricsFetcher {
+public class MetricsFetcherSimulator implements SynchronousMetricsFetcher {
 	private static final Logger log = Logger.getLogger(MetricsFetcherSimulator.class);
 	
 	private String accessURL;

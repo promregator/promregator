@@ -23,9 +23,10 @@ import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.auth.AuthenticatorController;
 import org.cloudfoundry.promregator.discovery.CFMultiDiscoverer;
 import org.cloudfoundry.promregator.fetcher.CFMetricsFetcher;
-import org.cloudfoundry.promregator.fetcher.MetricsFetcher;
+import org.cloudfoundry.promregator.fetcher.SynchronousMetricsFetcher;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcherMetrics;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcherSimulator;
+import org.cloudfoundry.promregator.fetcher.NettyMetricsFetcher;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.GenericMetricFamilySamplesPrefixRewriter;
@@ -140,7 +141,7 @@ public abstract class AbstractMetricsEndpoint {
 			throw new ScrapingException("Unable to determine any instance to scrape");
 		}
 		
-		List<MetricsFetcher> callablesPrep = this.createMetricsFetchers(instanceList);
+		List<SynchronousMetricsFetcher> callablesPrep = this.createMetricsFetchers(instanceList);
 		
 		LinkedList<Future<HashMap<String, MetricFamilySamples>>> futures = this.startMetricsFetchers(callablesPrep);
 		log.debug(String.format("Fetching metrics from %d distinct endpoints", futures.size()));
@@ -251,10 +252,10 @@ public abstract class AbstractMetricsEndpoint {
 		return this.maxProcessingTime; // must have been the value 4000
 	}
 
-	private LinkedList<Future<HashMap<String, MetricFamilySamples>>> startMetricsFetchers(List<MetricsFetcher> callablesPrep) {
+	private LinkedList<Future<HashMap<String, MetricFamilySamples>>> startMetricsFetchers(List<SynchronousMetricsFetcher> callablesPrep) {
 		LinkedList<Future<HashMap<String,MetricFamilySamples>>> futures = new LinkedList<>();
 		
-		for (MetricsFetcher mf : callablesPrep) {
+		for (SynchronousMetricsFetcher mf : callablesPrep) {
 			Future<HashMap<String, MetricFamilySamples>> future = this.metricsFetcherPool.submit(mf);
 			
 			futures.add(future);
@@ -262,9 +263,9 @@ public abstract class AbstractMetricsEndpoint {
 		return futures;
 	}
 
-	protected List<MetricsFetcher> createMetricsFetchers(List<Instance> instanceList) {
+	protected List<SynchronousMetricsFetcher> createMetricsFetchers(List<Instance> instanceList) {
 		
-		List<MetricsFetcher> callablesList = new LinkedList<>();
+		List<SynchronousMetricsFetcher> callablesList = new LinkedList<>();
 		for (Instance instance : instanceList) {
 			log.debug(String.format("Creating Metrics Fetcher for instance %s", instance.getInstanceId()));
 			
@@ -301,14 +302,14 @@ public abstract class AbstractMetricsEndpoint {
 			
 			AuthenticationEnricher ae = this.authenticatorController.getAuthenticationEnricherByTarget(instance.getTarget().getOriginalTarget());
 			
-			MetricsFetcher mf = null;
+			SynchronousMetricsFetcher mf = null;
 			if (this.simulationMode) {
 				mf = new MetricsFetcherSimulator(accessURL, ae, mfse, mfm, upChild);
 			} else {
 				if (this.proxyHost != null && this.proxyPort != 0) {
-					mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), ae, mfse, this.proxyHost, this.proxyPort, mfm, upChild, this.promregatorInstanceIdentifier);
+					mf = new NettyMetricsFetcher(accessURL, instance.getInstanceId(), ae, mfse, this.proxyHost, this.proxyPort, mfm, upChild, this.promregatorInstanceIdentifier);
 				} else {
-					mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), ae, mfse, mfm, upChild, this.promregatorInstanceIdentifier);
+					mf = new NettyMetricsFetcher(accessURL, instance.getInstanceId(), ae, mfse, null, 0, mfm, upChild, this.promregatorInstanceIdentifier);
 				}
 			}
 			callablesList.add(mf);

@@ -24,18 +24,16 @@ import io.prometheus.client.Gauge;
 import io.prometheus.client.Histogram.Timer;
 
 /**
- * A MetricsFetcher is a class which retrieves Prometheus metrics at an endpoint URL, which is run
+ * A SynchronousMetricsFetcher is a class which retrieves Prometheus metrics at an endpoint URL, which is run
  * by a CF instance. For the sake of retrieving the metrics reliably, it addresses the call to a single CF instance 
  * only using CF Direct HTTP Endpoint Routing.
  * 
- * It implements the MetricsFetcher interface to allow running it in a ThreadPool(Executor). The result of the 
+ * It implements the SynchronousMetricsFetcher interface to allow running it in a ThreadPool(Executor). The result of the 
  * Callable is the Prometheus metrics data upon success. In case retrieving the data failed, <code>null</code> is returned.
  *
  */
-public class CFMetricsFetcher implements MetricsFetcher {
+public class CFMetricsFetcher implements SynchronousMetricsFetcher {
 	
-	private static final String HTTP_HEADER_CF_APP_INSTANCE = "X-CF-APP-INSTANCE";
-
 	private static final Logger log = Logger.getLogger(CFMetricsFetcher.class);
 	
 	private String endpointUrl;
@@ -97,7 +95,7 @@ public class CFMetricsFetcher implements MetricsFetcher {
 		}
 
 		// see also https://docs.cloudfoundry.org/concepts/http-routing.html
-		httpget.setHeader(HTTP_HEADER_CF_APP_INSTANCE, this.instanceId);
+		httpget.setHeader(MetricsFetcherConstants.HTTP_HEADER_CF_APP_INSTANCE, this.instanceId);
 		
 		// provided for recursive scraping / loopback detection
 		httpget.setHeader(EndpointConstants.HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER, this.promregatorUUID.toString());

@@ -4,14 +4,14 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.cloudfoundry.promregator.fetcher.MetricsFetcher;
+import org.cloudfoundry.promregator.fetcher.SynchronousMetricsFetcher;
 import org.cloudfoundry.promregator.scanner.Instance;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Collector.Type;
 import io.prometheus.client.Collector.MetricFamilySamples.Sample;
 
-public class MockedMetricsFetcher implements MetricsFetcher {
+public class MockedMetricsFetcher implements SynchronousMetricsFetcher {
 	private Instance instance;
 	
 	public MockedMetricsFetcher(Instance instance) {
