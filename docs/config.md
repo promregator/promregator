@@ -585,6 +585,14 @@ java -Dserver.address=1.2.3.4 -jar promregator-0.0.1-SNAPSHOT.jar
 
 which would make Promregator listen on the IP address 1.2.3.4 instead on all interface addresses of the underlying operating system.
 
+### Changing the number of HTTP worker Threads
+Promregator has reduced the number of worker threads (defaulted by spring to 200) to 16. Experience has shown that in usual operating environments no more parallel threads than this are required. 
+
+In case that you have a large number of targets which are scraped in Single Target Scraping mode, the number of worker threads might not be sufficient for you. The expected symptom then is that Prometheus is complaining about experiencing latency when scraping targets.
+
+You may define the number of worker threads (and thus overwriting Promregator's default) by defining the spring configuration variable `server.tomcat.max-threads`.
+
+
 ### Changing Logging Levels
 Promregator provides extensive logging facilities. The generation of logs on framework, however, are disabled by default, as during normal operation, the generation of these logs could bei either compromising security or might have a severely negative impact to performance.
 
