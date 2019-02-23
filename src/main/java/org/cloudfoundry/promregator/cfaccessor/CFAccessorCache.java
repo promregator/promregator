@@ -66,7 +66,7 @@ public class CFAccessorCache implements CFAccessor {
 	}
 
 	private Mono<ListOrganizationsResponse> orgCacheLoader(String orgName) {
-		Mono<ListOrganizationsResponse> mono = this.parent.retrieveOrgId(orgName);
+		Mono<ListOrganizationsResponse> mono = this.parent.retrieveOrgId(orgName).cache();
 		
 		/*
 		 * Note that the mono does not have any subscriber, yet! 
@@ -79,7 +79,7 @@ public class CFAccessorCache implements CFAccessor {
 	}
 	
 	private Mono<ListSpacesResponse> spaceCacheLoader(CacheKeySpace cacheKey) {
-		Mono<ListSpacesResponse> mono = this.parent.retrieveSpaceId(cacheKey.getOrgId(), cacheKey.getSpaceName());
+		Mono<ListSpacesResponse> mono = this.parent.retrieveSpaceId(cacheKey.getOrgId(), cacheKey.getSpaceName()).cache();
 		
 		/*
 		 * Note that the mono does not have any subscriber, yet! 
@@ -92,7 +92,7 @@ public class CFAccessorCache implements CFAccessor {
 	}
 	
 	private Mono<GetSpaceSummaryResponse> spaceSummaryCacheLoader(String spaceId) {
-		Mono<GetSpaceSummaryResponse> mono = this.parent.retrieveSpaceSummary(spaceId);
+		Mono<GetSpaceSummaryResponse> mono = this.parent.retrieveSpaceSummary(spaceId).cache();
 		
 		/*
 		 * Note that the mono does not have any subscriber, yet! 
@@ -108,13 +108,6 @@ public class CFAccessorCache implements CFAccessor {
 	public Mono<ListOrganizationsResponse> retrieveOrgId(String orgName) {
 		Mono<ListOrganizationsResponse> mono = this.orgCache.get(orgName);
 
-		/*
-		 * Note that the mono does not have any subscriber, yet! 
-		 * The cache which we are using is working "on-stock", i.e. we need to ensure
-		 * that the underlying calls to the CF API really is triggered.
-		 * Fortunately, we can do this very easily:
-		 */
-		mono.subscribe();
 		return mono;
 	}
 
@@ -124,13 +117,6 @@ public class CFAccessorCache implements CFAccessor {
 		
 		Mono<ListSpacesResponse> mono = this.spaceCache.get(key);
 		
-		/*
-		 * Note that the mono does not have any subscriber, yet! 
-		 * The cache which we are using is working "on-stock", i.e. we need to ensure
-		 * that the underlying calls to the CF API really is triggered.
-		 * Fortunately, we can do this very easily:
-		 */
-		mono.subscribe();
 		return mono;
 	}
 
