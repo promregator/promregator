@@ -70,8 +70,7 @@ public class CFAccessorCacheTest {
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllApplicationIdsInSpace("dummy1", "dummy2");
 		
 		subject.retrieveAllApplicationIdsInSpace("dummy1", "dummy2");
-		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveAllApplicationIdsInSpace("dummy1", "dummy2");
-		// NB: there is no caching happening for this case!
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllApplicationIdsInSpace("dummy1", "dummy2");
 	}
 
 	@Test
