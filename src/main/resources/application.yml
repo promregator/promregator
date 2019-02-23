@@ -28,3 +28,10 @@ logging:
 #        netty:
 #          http: DEBUG
 #          channel: DEBUG
+
+# Enable this one, if you want to have network request logging on cloudfoundry-client level
+#    cloudfoundry-client:
+#      request: DEBUG
+#      response: DEBUG
+# For also logging CF token retrieval, you may also add (Warning! This will expose internal and sensitive information in the logs!)
+#      token: DEBUG
