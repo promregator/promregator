@@ -188,7 +188,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 			.subscribe(response -> {
 				if (response == ERRONEOUS_GET_INFO_RESPONSE) {
 					try {
-						// Note that there is method at this.cloudFoundryClient, which would permit closing the old client
+						// Note that there is no method at this.cloudFoundryClient, which would permit closing the old client
 						this.resetCloudFoundryClient();
 					} catch (ConfigurationException ce) {
 						log.warn("Unable to reconstruct connection to CF CC", ce);
