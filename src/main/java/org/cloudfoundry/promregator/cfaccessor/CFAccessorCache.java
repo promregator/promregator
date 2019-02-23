@@ -21,6 +21,7 @@ public class CFAccessorCache implements CFAccessor {
 
 	private AutoRefreshingCacheMap<String, Mono<ListOrganizationsResponse>> orgCache;
 	private AutoRefreshingCacheMap<CacheKeySpace, Mono<ListSpacesResponse>> spaceCache;
+	private AutoRefreshingCacheMap<CacheKeyAppsInSpace, Mono<ListApplicationsResponse>> appsInSpaceCache;
 	private AutoRefreshingCacheMap<String, Mono<GetSpaceSummaryResponse>> spaceSummaryCache;
 	
 	@Value("${cf.cache.timeout.org:3600}")
@@ -62,6 +63,7 @@ public class CFAccessorCache implements CFAccessor {
 		 */
 		this.orgCache = new AutoRefreshingCacheMap<>("org", this.internalMetrics, Duration.ofSeconds(this.expiryCacheOrgLevelInSeconds), Duration.ofSeconds(this.refreshCacheOrgLevelInSeconds), this::orgCacheLoader);
 		this.spaceCache = new AutoRefreshingCacheMap<>("space", this.internalMetrics, Duration.ofSeconds(this.expiryCacheSpaceLevelInSeconds), Duration.ofSeconds(refreshCacheSpaceLevelInSeconds), this::spaceCacheLoader);
+		this.appsInSpaceCache = new AutoRefreshingCacheMap<>("appsInSpace", this.internalMetrics, Duration.ofSeconds(this.expiryCacheApplicationLevelInSeconds), Duration.ofSeconds(refreshCacheApplicationLevelInSeconds), this::appsInSpaceCacheLoader);
 		this.spaceSummaryCache = new AutoRefreshingCacheMap<>("spaceSummary", this.internalMetrics, Duration.ofSeconds(this.expiryCacheApplicationLevelInSeconds), Duration.ofSeconds(refreshCacheApplicationLevelInSeconds), this::spaceSummaryCacheLoader);
 	}
 
@@ -80,6 +82,19 @@ public class CFAccessorCache implements CFAccessor {
 	
 	private Mono<ListSpacesResponse> spaceCacheLoader(CacheKeySpace cacheKey) {
 		Mono<ListSpacesResponse> mono = this.parent.retrieveSpaceId(cacheKey.getOrgId(), cacheKey.getSpaceName()).cache();
+		
+		/*
+		 * Note that the mono does not have any subscriber, yet! 
+		 * The cache which we are using is working "on-stock", i.e. we need to ensure
+		 * that the underlying calls to the CF API really is triggered.
+		 * Fortunately, we can do this very easily:
+		 */
+		mono.subscribe();
+		return mono;
+	}
+	
+	private Mono<ListApplicationsResponse> appsInSpaceCacheLoader(CacheKeyAppsInSpace cacheKey) {
+		Mono<ListApplicationsResponse> mono = this.parent.retrieveAllApplicationIdsInSpace(cacheKey.getOrgId(), cacheKey.getSpaceId()).cache();
 		
 		/*
 		 * Note that the mono does not have any subscriber, yet! 
@@ -122,13 +137,9 @@ public class CFAccessorCache implements CFAccessor {
 
 	@Override
 	public Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String orgId, String spaceId) {
-		/*
-		 * special case: we don't cache the result here in an own cache,
-		 * as we always want to have "fresh data".
-		 */
-		Mono<ListApplicationsResponse> result = this.parent.retrieveAllApplicationIdsInSpace(orgId, spaceId);
+		final CacheKeyAppsInSpace key = new CacheKeyAppsInSpace(orgId, spaceId);
 		
-		return result;
+		return this.appsInSpaceCache.get(key);
 	}
 
 	@Override
