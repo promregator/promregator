@@ -20,6 +20,8 @@ public class InternalMetrics {
 	private Counter autoRefreshingCacheMapRefreshSuccess;
 	private Counter autoRefreshingCacheMapRefreshFailure;
 	private Gauge autoRefreshingCacheMapLastScan;
+	
+	private Counter connectionWatchdogReconnects;
 
 	@PostConstruct
 	@SuppressWarnings("PMD.UnusedPrivateMethod")
@@ -43,6 +45,9 @@ public class InternalMetrics {
 		
 		this.autoRefreshingCacheMapLastScan = Gauge.build("promregator_autorefreshingcachemap_scantimestamp", "The timestamp of the last execution of the RefreshThread execution of an AutoRefreshingCacheMap")
 				.labelNames("cache_map_name").register();
+		
+		this.connectionWatchdogReconnects = Counter.build("promregator_connection_watchdog_reconnect", "The number of reconnection attempts made by the Connection Watchdog")
+				.register();
 	}
 
 	
@@ -86,5 +91,9 @@ public class InternalMetrics {
 			return;
 		
 		this.autoRefreshingCacheMapLastScan.labels(cacheMapName).setToCurrentTime();
+	}
+	
+	public void countConnectionWatchdogReconnect() {
+		this.connectionWatchdogReconnects.inc();
 	}
 }

@@ -183,6 +183,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 				 * However, we can't do so in a doOnError() method. That is why we have to signal an error
 				 * via a special return value and do so in a consumer.
 				 */
+				this.internalMetrics.countConnectionWatchdogReconnect();
 			})
 			.onErrorReturn(ERRONEOUS_GET_INFO_RESPONSE)
 			.subscribe(response -> {
