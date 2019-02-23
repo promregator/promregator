@@ -148,11 +148,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	
 	@PostConstruct
 	private void constructCloudFoundryClient() throws ConfigurationException {
-		ProxyConfiguration proxyConfiguration = this.proxyConfiguration();
-		DefaultConnectionContext connectionContext = this.connectionContext(proxyConfiguration);
-		PasswordGrantTokenProvider tokenProvider = this.tokenProvider();
-		
-		this.cloudFoundryClient = this.cloudFoundryClient(connectionContext, tokenProvider);
+		this.resetCloudFoundryClient();
 		
 		if (this.performPrecheckOfAPIVersion) {
 			GetInfoRequest request = GetInfoRequest.builder().build();
@@ -162,8 +158,17 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		}
 	}
 
+	private void resetCloudFoundryClient() throws ConfigurationException {
+		ProxyConfiguration proxyConfiguration = this.proxyConfiguration();
+		DefaultConnectionContext connectionContext = this.connectionContext(proxyConfiguration);
+		PasswordGrantTokenProvider tokenProvider = this.tokenProvider();
+		
+		this.cloudFoundryClient = this.cloudFoundryClient(connectionContext, tokenProvider);
+	}
+
 	
 	private static final GetInfoRequest DUMMY_GET_INFO_REQUEST = GetInfoRequest.builder().build();
+	private static final GetInfoResponse ERRONEOUS_GET_INFO_RESPONSE = GetInfoResponse.builder().apiVersion("FAILED").build();
 	
 	@Scheduled(fixedRate=1*60*1000, initialDelay=60*1000)
 	private void connectionWatchdog() {
@@ -173,16 +178,23 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 			.timeout(Duration.ofMillis(2500))
 			.doOnError(e -> {
 				log.warn("Woof woof! It appears that the connection to the Cloud Controller is gone. Trying to restart Cloud Foundry Client", e);
-				try {
-					// Note that there is method at this.cloudFoundryClient, which would permit closing the old client
-					this.constructCloudFoundryClient();
-				} catch (ConfigurationException ce) {
-					log.warn("Unable to reconstruct connection to CF CC", ce);
-				}
+				/* 
+				 * We might want to call further reactor commands with "block()" included.
+				 * However, we can't do so in a doOnError() method. That is why we have to signal an error
+				 * via a special return value and do so in a consumer.
+				 */
 			})
-			// Note: To prevent the Spring scheduler to complain, we have to properly catch an error which occurs
-			.onErrorReturn(GetInfoResponse.builder().build())
-			.subscribe();
+			.onErrorReturn(ERRONEOUS_GET_INFO_RESPONSE)
+			.subscribe(response -> {
+				if (response == ERRONEOUS_GET_INFO_RESPONSE) {
+					try {
+						// Note that there is method at this.cloudFoundryClient, which would permit closing the old client
+						this.resetCloudFoundryClient();
+					} catch (ConfigurationException ce) {
+						log.warn("Unable to reconstruct connection to CF CC", ce);
+					}
+				}
+			});
 	}
 	
 	@PostConstruct
