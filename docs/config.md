@@ -79,12 +79,42 @@ Enabling this option (and thus *disabling* the validation) may make you vulnerab
 ### Option "cf.watchdog" (optional)
 This option became available starting with version 0.5.5.
 
-Allows to enable a periodic check of the connection to the Cloud Foundry Controller if set to `true`. If the check fails, a warning message is logged by the logger `org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl` (the exact name of the logger is subject to possible future change) and an attempt to re-establishing the connection is made. 
+Allows to enable a periodic check of the connection to the Cloud Foundry Cloud Controller if set to `true`. If the check fails, a warning message is logged by the logger `org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl` (the exact name of the logger is subject to possible future change) and an attempt to re-establishing the connection is made. 
 
 The default of this option is `false`.
 
 Refer to [issue #83](https://github.com/promregator/promregator/issues/83) to see a scenario where this might be helpful.
 
+### Option "cf.connectionPool.size" (optional)
+This option became available starting with version 0.6.0.
+
+When communicating with the Cloud Foundry Cloud Controller, a fixed-sized connection pool (operated by reactor-netty) gets used. It defines the maximal number of connections which may be open at the same point in time. By default, netty-reactor sets this value based on the following formula:
+
+```
+Number of concurrent connections = max(cores available, 8) * 2
+```
+
+Due to peak load situations on cache refreshing, it may happen that this value is not sufficient. The symptom the usually is that latency of the Cloud Controller is higher than expected. A typical situation where this may happen is, if you have more than 4-8 spaces configured.
+
+If not specified otherwise, the default of netty-reactor is taken. If specified, the integer number indicating the requested connection pool size is expected.
+
+### Option "cf.threadPool.size" (optional)
+This option became available starting with version 0.6.0.
+
+When communicating with the Cloud Foundry Cloud Controller, a fixed-sized connection pool (operated by reactor-netty) gets used. Connection handling takes place using an I/O thread pool, which is operated by reactor-netty. 
+
+ By default, netty-reactor sets this value based on the following formula:
+
+```
+Number of threads in the pool = max(cores available, 4)
+```
+
+Due to peak load situations on cache refreshing, it may happen that this value is not sufficient. The symptom the usually is that latency of the Cloud Controller is higher than expected.
+
+If not specified otherwise, the default of netty-reactor is taken. If specified, the integer number indicating the desired size of the thread pool is expected.
+
+*WARNING!*
+Do not exaggerate this value by going beyond the number of cores available! Otherwise your system may become unresponsive. In many cases the number of threads in the I/O pool is not the limiting factor. More often the connection pool is responsible for that (see also `cf.connectionPool.size`).
 
 ### Option "cf.cache.timeout.org" (optional)
 For performance reasons the metadata of the Cloud Foundry environment (organization, space, applications, routes) is cached locally in Promregator.

@@ -3,6 +3,7 @@ package org.cloudfoundry.promregator.cfaccessor;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Duration;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
@@ -76,6 +77,12 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	
 	@Value("${cf.request.timeout.appSummary:4000}")
 	private int requestTimeoutAppSummary;
+	
+	@Value("${cf.connectionPool.size:#{null}}")
+	private Integer connectionPoolSize;
+	
+	@Value("${cf.threadPool.size:#{null}}")
+	private Integer threadPoolSize;
 
 	@Value("${promregator.internal.preCheckAPIVersion:true}")
 	private boolean performPrecheckOfAPIVersion;
@@ -95,11 +102,22 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 			throw new ConfigurationException("cf.api_host configuration parameter must not contain an http(s)://-like prefix; specify the hostname only instead");
 		}
 
-		Builder connctx = DefaultConnectionContext.builder().apiHost(apiHost).skipSslValidation(skipSSLValidation);
+		Builder connctx = DefaultConnectionContext.builder()
+				.apiHost(apiHost)
+				.skipSslValidation(skipSSLValidation);
 		
 		if (proxyConfiguration != null) {
 			connctx = connctx.proxyConfiguration(proxyConfiguration);
 		}
+		
+		if (this.connectionPoolSize != null) {
+			connctx = connctx.connectionPoolSize(this.connectionPoolSize);
+		}
+		
+		if (this.threadPoolSize != null) {
+			connctx = connctx.threadPoolSize(this.threadPoolSize);
+		}
+		
 		return connctx.build();
 	}
 
