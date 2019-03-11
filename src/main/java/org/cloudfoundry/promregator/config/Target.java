@@ -1,5 +1,8 @@
 package org.cloudfoundry.promregator.config;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Target implements Cloneable {
 	private String orgName;
 	
@@ -19,6 +22,8 @@ public class Target implements Cloneable {
 	
 	private String authenticatorId;
 	
+	private List<String> preferredRouteRegex;
+	
 	public Target() {
 		super();
 	}
@@ -37,6 +42,12 @@ public class Target implements Cloneable {
 		this.path = source.path;
 		this.protocol = source.protocol;
 		this.authenticatorId = source.authenticatorId;
+		
+		if (source.preferredRouteRegex == null) {
+			this.preferredRouteRegex = new ArrayList<>(0);
+		} else {
+			this.preferredRouteRegex = new ArrayList<>(source.preferredRouteRegex);
+		}
 	}
 	
 	public String getOrgName() {
@@ -122,13 +133,52 @@ public class Target implements Cloneable {
 		this.authenticatorId = authenticatorId;
 	}
 
+	/**
+	 * @return the preferredRouteRegex
+	 */
+	public List<String> getPreferredRouteRegex() {
+		if (this.preferredRouteRegex == null) {
+			return null;
+		}
+		
+		return new ArrayList<>(preferredRouteRegex);
+	}
+
+	/**
+	 * @param preferredRouteRegex the preferredRouteRegex to set
+	 */
+	public void setPreferredRouteRegex(List<String> preferredRouteRegex) {
+		this.preferredRouteRegex = preferredRouteRegex;
+	}
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
-		return "Target [orgName=" + orgName + ", spaceName=" + spaceName + ", applicationName=" + applicationName
-				+ ", applicationRegex=" + applicationRegex + ", path=" + path + ", protocol=" + protocol + "]";
+		StringBuilder builder = new StringBuilder();
+		builder.append("Target [orgName=");
+		builder.append(orgName);
+		builder.append(", orgRegex=");
+		builder.append(orgRegex);
+		builder.append(", spaceName=");
+		builder.append(spaceName);
+		builder.append(", spaceRegex=");
+		builder.append(spaceRegex);
+		builder.append(", applicationName=");
+		builder.append(applicationName);
+		builder.append(", applicationRegex=");
+		builder.append(applicationRegex);
+		builder.append(", path=");
+		builder.append(path);
+		builder.append(", protocol=");
+		builder.append(protocol);
+		builder.append(", authenticatorId=");
+		builder.append(authenticatorId);
+		builder.append(", preferredRouteRegex=");
+		builder.append(preferredRouteRegex);
+		builder.append("]");
+		return builder.toString();
 	}
 
 }
