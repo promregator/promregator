@@ -154,7 +154,8 @@ public class CFAccessorMock implements CFAccessor {
 					.build();
 			list.add(sas);
 			
-			final String[] urls2 = { UNITTEST_APP2_HOST + "." + UNITTEST_SHARED_DOMAIN + "/additionalPath" }; 
+			final String[] urls2 = { UNITTEST_APP2_HOST + "." + UNITTEST_SHARED_DOMAIN + "/additionalPath",
+					UNITTEST_APP2_HOST + ".additionalSubdomain." + UNITTEST_SHARED_DOMAIN + "/additionalPath" }; 
 			sas =  SpaceApplicationSummary.builder()
 					.id(UNITTEST_APP2_UUID)
 					.name("testapp2")

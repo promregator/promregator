@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorMassMock;
+import org.cloudfoundry.promregator.config.Target;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
@@ -37,6 +38,7 @@ public class MassReactiveAppInstanceScannerTest {
 		
 		final int numberOfApps = 100;
 		
+		final Target emptyTarget = new Target();
 		for (int i = 0;i<numberOfApps;i++) {
 			t = new ResolvedTarget();
 			t.setOrgName("unittestorg");
@@ -44,6 +46,7 @@ public class MassReactiveAppInstanceScannerTest {
 			t.setApplicationName("testapp"+i);
 			t.setPath("/testpath");
 			t.setProtocol("http");
+			t.setOriginalTarget(emptyTarget);
 			targets.add(t);
 		}
 		
@@ -68,6 +71,7 @@ public class MassReactiveAppInstanceScannerTest {
 		
 		final int numberOfApps = 100;
 		
+		final Target emptyTarget = new Target();
 		for (int i = 0;i<numberOfApps;i++) {
 			t = new ResolvedTarget();
 			t.setOrgName("unittestorg");
@@ -75,6 +79,7 @@ public class MassReactiveAppInstanceScannerTest {
 			t.setApplicationName("testapp"+i);
 			t.setPath("/testpath");
 			t.setProtocol("http");
+			t.setOriginalTarget(emptyTarget);
 			targets.add(t);
 		}
 		
@@ -106,6 +111,7 @@ public class MassReactiveAppInstanceScannerTest {
 		
 		final int numberOfApps = 100;
 		
+		final Target emptyTarget = new Target();
 		for (int i = 0;i<numberOfApps;i++) {
 			t = new ResolvedTarget();
 			t.setOrgName("unittestorg");
@@ -113,6 +119,7 @@ public class MassReactiveAppInstanceScannerTest {
 			t.setApplicationName("testapp"+i);
 			t.setPath("/testpath");
 			t.setProtocol("http");
+			t.setOriginalTarget(emptyTarget);
 			targets.add(t);
 		}
 		
@@ -152,6 +159,7 @@ public class MassReactiveAppInstanceScannerTest {
 
 		ResolvedTarget t = null;
 		
+		final Target emptyTarget = new Target();
 		for (int i = 0;i<numberOfApps;i++) {
 			t = new ResolvedTarget();
 			t.setOrgName("unittestorg");
@@ -159,6 +167,7 @@ public class MassReactiveAppInstanceScannerTest {
 			t.setApplicationName("testapp"+i);
 			t.setPath("/testpath"+i);
 			t.setProtocol("http");
+			t.setOriginalTarget(emptyTarget);
 			targets.add(t);
 		}
 		

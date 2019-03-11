@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorMock;
+import org.cloudfoundry.promregator.config.Target;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
@@ -37,6 +38,8 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp");
 		t.setPath("/testpath1");
 		t.setProtocol("http");
+		final Target emptyTarget = new Target();
+		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
 		t = new ResolvedTarget();
@@ -45,6 +48,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp2");
 		t.setPath("/testpath2");
 		t.setProtocol("https");
+		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
 		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, null, null);
@@ -82,6 +86,8 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp");
 		t.setPath("/testpath1");
 		t.setProtocol("http");
+		final Target emptyTarget = new Target();
+		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
 		t = new ResolvedTarget();
@@ -90,6 +96,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp2");
 		t.setPath("/testpath2");
 		t.setProtocol("https");
+		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
 		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, null, instance -> {
@@ -127,6 +134,8 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp");
 		t.setPath("/testpath1");
 		t.setProtocol("http");
+		final Target emptyTarget = new Target();
+		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
 		t = new ResolvedTarget();
@@ -135,6 +144,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testApp2");
 		t.setPath("/testpath2");
 		t.setProtocol("https");
+		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
 		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, null, null);
@@ -172,6 +182,8 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp");
 		t.setPath("/testpath1");
 		t.setProtocol("http");
+		final Target emptyTarget = new Target();
+		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
 		t = new ResolvedTarget();
@@ -180,6 +192,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("shouldneverbeused");
 		t.setPath("/shouldneverbeused");
 		t.setProtocol("https");
+		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
 		t = new ResolvedTarget();
@@ -188,6 +201,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp2");
 		t.setPath("/testpath2");
 		t.setProtocol("https");
+		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
 		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, null, null);
@@ -225,6 +239,8 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp");
 		t.setPath("/testpath1");
 		t.setProtocol("http");
+		final Target emptyTarget = new Target();
+		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
 		t = new ResolvedTarget();
@@ -232,6 +248,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setSpaceName("doesnotexist");
 		t.setApplicationName("shouldneverbeused");
 		t.setPath("/shouldneverbeused");
+		t.setOriginalTarget(emptyTarget);
 		t.setProtocol("https");
 		targets.add(t);
 		
@@ -241,6 +258,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp2");
 		t.setPath("/testpath2");
 		t.setProtocol("https");
+		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
 		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, null, null);
@@ -279,6 +297,8 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp");
 		t.setPath("/testpath1");
 		t.setProtocol("http");
+		final Target emptyTarget = new Target();
+		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
 		t = new ResolvedTarget();
@@ -287,6 +307,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("doesnotexist");
 		t.setPath("/shouldneverbeused");
 		t.setProtocol("https");
+		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
 		t = new ResolvedTarget();
@@ -295,6 +316,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp2");
 		t.setPath("/testpath2");
 		t.setProtocol("https");
+		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
 		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, null, null);
@@ -332,6 +354,8 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp");
 		t.setPath("/testpath1");
 		t.setProtocol("http");
+		final Target emptyTarget = new Target();
+		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
 		t = new ResolvedTarget();
@@ -340,6 +364,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp");
 		t.setPath("/shouldneverbeused");
 		t.setProtocol("https");
+		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
 		t = new ResolvedTarget();
@@ -348,6 +373,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp2");
 		t.setPath("/testpath2");
 		t.setProtocol("https");
+		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
 		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, null, null);
@@ -385,6 +411,8 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp");
 		t.setPath("/testpath1");
 		t.setProtocol("http");
+		final Target emptyTarget = new Target();
+		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
 		t = new ResolvedTarget();
@@ -393,6 +421,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("shouldneverbeused");
 		t.setPath("/shouldneverbeused");
 		t.setProtocol("https");
+		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
 		t = new ResolvedTarget();
@@ -401,6 +430,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp2");
 		t.setPath("/testpath2");
 		t.setProtocol("https");
+		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
 		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, null, null);
@@ -438,6 +468,8 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp");
 		t.setPath("/testpath1");
 		t.setProtocol("http");
+		final Target emptyTarget = new Target();
+		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
 		t = new ResolvedTarget();
@@ -446,6 +478,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("shouldneverbeused");
 		t.setPath("/shouldneverbeused");
 		t.setProtocol("https");
+		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
 		t = new ResolvedTarget();
@@ -454,6 +487,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp2");
 		t.setPath("/testpath2");
 		t.setProtocol("https");
+		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
 		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, null, null);
@@ -491,6 +525,8 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp");
 		t.setPath("/testpath1");
 		t.setProtocol("http");
+		final Target emptyTarget = new Target();
+		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
 		t = new ResolvedTarget();
@@ -499,6 +535,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("exception");
 		t.setPath("/shouldneverbeused");
 		t.setProtocol("https");
+		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
 		t = new ResolvedTarget();
@@ -507,6 +544,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp2");
 		t.setPath("/testpath2");
 		t.setProtocol("https");
+		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
 		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, null, null);
@@ -544,6 +582,8 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp");
 		t.setPath("/testpath1");
 		t.setProtocol("http");
+		final Target emptyTarget = new Target();
+		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
 		t = new ResolvedTarget();
@@ -552,6 +592,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp");
 		t.setPath("/shouldneverbeused");
 		t.setProtocol("https");
+		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
 		t = new ResolvedTarget();
@@ -560,6 +601,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp2");
 		t.setPath("/testpath2");
 		t.setProtocol("https");
+		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
 		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, null, null);

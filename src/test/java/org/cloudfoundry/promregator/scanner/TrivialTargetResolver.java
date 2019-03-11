@@ -12,6 +12,7 @@ public class TrivialTargetResolver implements TargetResolver {
 		// As of now this is trivial, as we do not have any resolution available
 		
 		List<ResolvedTarget> result = new LinkedList<>();
+		final Target emptyTarget = new Target();
 		for (Target configTarget : configTargets) {
 			ResolvedTarget rt = new ResolvedTarget();
 			
@@ -20,6 +21,7 @@ public class TrivialTargetResolver implements TargetResolver {
 			rt.setApplicationName(configTarget.getApplicationName());
 			rt.setPath(configTarget.getPath());
 			rt.setProtocol(configTarget.getProtocol());
+			rt.setOriginalTarget(emptyTarget);
 			
 			result.add(rt);
 		}
