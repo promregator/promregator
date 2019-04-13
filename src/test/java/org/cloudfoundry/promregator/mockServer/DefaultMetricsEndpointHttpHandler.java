@@ -17,6 +17,8 @@ public class DefaultMetricsEndpointHttpHandler implements HttpHandler {
 	
 	private String response = "";
 	
+	private int delayInMillis = 0;
+	
 	@Override
 	public void handle(HttpExchange he) throws IOException {
 		Map<String, Object> parameters = new HashMap<String, Object>();
@@ -25,6 +27,14 @@ public class DefaultMetricsEndpointHttpHandler implements HttpHandler {
 		this.headers = he.getRequestHeaders();
 		
 		Assert.assertEquals("/metrics", requestedUri.getPath());
+		
+		if (this.delayInMillis > 0) {
+			try {
+				Thread.sleep(this.delayInMillis);
+			} catch (InterruptedException e) {
+				Assert.fail("Unexpected interruption of mocking environment");
+			}
+		}
 		
 		// send response
 		he.sendResponseHeaders(200, this.response.length());
@@ -50,4 +60,17 @@ public class DefaultMetricsEndpointHttpHandler implements HttpHandler {
 		this.response = response;
 	}
 
+	/**
+	 * @return the delayInMillis
+	 */
+	public int getDelayInMillis() {
+		return delayInMillis;
+	}
+
+	/**
+	 * @param delayInMillis the delayInMillis to set
+	 */
+	public void setDelayInMillis(int delayInMillis) {
+		this.delayInMillis = delayInMillis;
+	}
 }
