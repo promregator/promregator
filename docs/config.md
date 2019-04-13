@@ -350,9 +350,29 @@ Configures the way how the scraping is performed.
 Specifies the maximal time which may be used to query (all) targets. The value is expected to be specified in milliseconds. 
 Targets which did not respond after this amount of time are considered non-functional and no result will be returned to the Prometheus server.
 
-The default value of this option is 5000ms (=5 seconds)
+The unit of this configuration option is milliseconds.
+
+The default value of this option is 5000 (=5 seconds).
 
 Warning! The value should always be lower than the (shortest) scraping interval you expose Promregator to.
+
+#### Option "promregator.scraping.connectionTimeout" (optional)
+Specifies the maximal time which may be used for establishing a connection to a single target. If this timeout is reached, the target is considered unreachable and no metrics will be transferred.
+
+The unit of this configuration option is milliseconds.
+
+The default value of this option is 5000 (=5 seconds).
+
+Warning! The value should always be lower than the the maximal processing time (`promregator.scraping.maxProcessingTime`).
+
+#### Option "promregator.scraping.socketReadTimeout" (optional)
+Specifies the maximal time which may pass between two received packets from a single target. If this timeout is reached, the target is considered unreachable and no metrics will be transferred. The connection established will be aborted. Metrics, which might have been read (partially) already, will be ignored (as the request is considered incomplete and probably inconsistent).
+
+The unit of this configuration option is milliseconds.
+
+The default value of this option is 5000 (=5 seconds).
+
+Warning! The value should always be lower than the the maximal processing time (`promregator.scraping.maxProcessingTime`).
 
 #### Option "promregator.scraping.threads" (optional)
 Specifies how many threads may be used to query the list of targets.
