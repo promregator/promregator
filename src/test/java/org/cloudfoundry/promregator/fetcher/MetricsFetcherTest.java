@@ -72,7 +72,15 @@ public class MetricsFetcherTest {
 		
 		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, false);
 		UUID currentUUID = UUID.randomUUID();
-		CFMetricsFetcher subject = new CFMetricsFetcher("http://localhost:9002/metrics", instanceId, null, dummymfse, mfm, null, currentUUID);
+		
+		CFMetricsFetcherConfig config = new CFMetricsFetcherConfig();
+		config.setMetricFamilySamplesEnricher(dummymfse);
+		config.setMetricsFetcherMetrics(mfm);
+		config.setPromregatorInstanceIdentifier(currentUUID);
+		config.setConnectionTimeoutInMillis(5000);
+		config.setSocketReadTimeoutInMillis(5000);
+		
+		CFMetricsFetcher subject = new CFMetricsFetcher("http://localhost:9002/metrics", instanceId, config);
 		
 		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
 		
@@ -109,7 +117,17 @@ public class MetricsFetcherTest {
 		String[] ownTelemetryLabelValues = labelValues.toArray(new String[0]);
 		
 		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, false);
-		CFMetricsFetcher subject = new CFMetricsFetcher("http://localhost:9002/metrics", instanceId, ae, dummymfse, mfm, null, UUID.randomUUID());
+		
+		CFMetricsFetcherConfig config = new CFMetricsFetcherConfig();
+		config.setAuthenticationEnricher(ae);
+		config.setMetricFamilySamplesEnricher(dummymfse);
+		config.setMetricsFetcherMetrics(mfm);
+		config.setPromregatorInstanceIdentifier(UUID.randomUUID());
+		config.setConnectionTimeoutInMillis(5000);
+		config.setSocketReadTimeoutInMillis(5000);
+
+		
+		CFMetricsFetcher subject = new CFMetricsFetcher("http://localhost:9002/metrics", instanceId, config);
 		
 		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
 		

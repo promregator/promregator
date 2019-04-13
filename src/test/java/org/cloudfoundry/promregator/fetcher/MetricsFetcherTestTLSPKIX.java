@@ -64,7 +64,15 @@ public class MetricsFetcherTestTLSPKIX {
 		
 		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, false);
 		UUID currentUUID = UUID.randomUUID();
-		CFMetricsFetcher subject = new CFMetricsFetcher("https://localhost:9003/metrics", instanceId, null, dummymfse, mfm, null, currentUUID);
+		
+		CFMetricsFetcherConfig config = new CFMetricsFetcherConfig();
+		config.setMetricFamilySamplesEnricher(dummymfse);
+		config.setMetricsFetcherMetrics(mfm);
+		config.setPromregatorInstanceIdentifier(currentUUID);
+		config.setConnectionTimeoutInMillis(5000);
+		config.setSocketReadTimeoutInMillis(5000);
+		
+		CFMetricsFetcher subject = new CFMetricsFetcher("https://localhost:9003/metrics", instanceId, config);
 		
 		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
 		
