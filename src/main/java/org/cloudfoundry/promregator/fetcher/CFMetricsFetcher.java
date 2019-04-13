@@ -4,11 +4,10 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.UUID;
 
-import javax.annotation.Nullable;
-
 import org.apache.http.HttpHost;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.config.RequestConfig.Builder;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -53,37 +52,36 @@ public class CFMetricsFetcher implements MetricsFetcher {
 
 	private UUID promregatorUUID;
 
-	public CFMetricsFetcher(String endpointUrl, String instanceId, AuthenticationEnricher ae, @Nullable AbstractMetricFamilySamplesEnricher mfse, 
-			String proxyHost, int proxyPort, MetricsFetcherMetrics mfm, Gauge.Child up, UUID promregatorUUID) {
-		this.endpointUrl = endpointUrl;
-		this.instanceId = instanceId;
-		this.ae = ae;
-		this.mfse = mfse;
-		this.mfm = mfm;
-		
-		this.up = up;
-		this.promregatorUUID = promregatorUUID;
-
-		if (proxyHost != null && proxyPort != 0) {
-			this.config = RequestConfig.custom().setProxy(new HttpHost(proxyHost, proxyPort, "http")).build();
-		} else {
-			this.config = null;
-		}
-	}
-
 	/**
 	 * creates a new Metrics Fetcher by defining the target endpoint where the metrics can be read, the instance identifier
 	 * of the instance, which shall be queried. 
-	 * Optionally, also an <code>AuthenticationEnricher</code> may be provided to allow setting authentication identifiers 
-	 * into the HTTP GET request which is sent by this class.
+	 * Additional configuration options can be provided using the CFMetricsFetcherConfig reference.
 	 * @param endpointUrl the endpoint URL, which shall be used to query the CF app for the Prometheus metrics.
 	 * @param instanceId the instance Id in format <i><app guid>:<instance number></i>, which identifies the instance uniquely.
-	 * @param ae (optional) an AuthenticationEnricher, which enriches the HTTP GET request for fetching the Prometheus metrics with additional authentication information.
-	 * May be <code>null</code> in which case no enriching takes place.
+	 * @param config additional configurations specifing additional properties for retrieving data.
 	 */
-	public CFMetricsFetcher(String endpointUrl, String instanceId, AuthenticationEnricher ae, @Nullable AbstractMetricFamilySamplesEnricher mfse, 
-			MetricsFetcherMetrics mfm, Gauge.Child up, UUID promregatorUUID) {
-		this(endpointUrl, instanceId, ae, mfse, null, 0, mfm, up, promregatorUUID);
+	public CFMetricsFetcher(String endpointUrl, String instanceId, CFMetricsFetcherConfig config) {
+		this.endpointUrl = endpointUrl;
+		this.instanceId = instanceId;
+		this.ae = config.getAuthenticationEnricher();
+		this.mfse = config.getMetricFamilySamplesEnricher();
+		this.mfm = config.getMetricsFetcherMetrics();
+		
+		this.up = config.getUpChild();
+		this.promregatorUUID = config.getPromregatorInstanceIdentifier();
+
+		Builder requestConfigBuilder = RequestConfig.custom()
+			.setRedirectsEnabled(true)
+			.setCircularRedirectsAllowed(false)
+			.setMaxRedirects(10)
+			.setSocketTimeout(config.getSocketReadTimeoutInMillis())
+			.setConnectTimeout(config.getConnectionTimeoutInMillis());
+		
+		if (config.getProxyHost() != null && config.getProxyPort() != 0) {
+			requestConfigBuilder = requestConfigBuilder.setProxy(new HttpHost(config.getProxyHost(), config.getProxyPort(), "http"));
+		}
+		
+		this.config = requestConfigBuilder.build();
 	}
 
 	@Override

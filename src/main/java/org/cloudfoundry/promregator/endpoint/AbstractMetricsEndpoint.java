@@ -23,6 +23,7 @@ import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.auth.AuthenticatorController;
 import org.cloudfoundry.promregator.discovery.CFMultiDiscoverer;
 import org.cloudfoundry.promregator.fetcher.CFMetricsFetcher;
+import org.cloudfoundry.promregator.fetcher.CFMetricsFetcherConfig;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcher;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcherMetrics;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcherSimulator;
@@ -90,6 +91,12 @@ public abstract class AbstractMetricsEndpoint {
 	
 	@Value("${promregator.scraping.labelEnrichment:true}")
 	private boolean labelEnrichment;
+
+	@Value("${promregator.scraping.connectionTimeout:5000}")
+	private int fetcherConnectionTimeout;
+
+	@Value("${promregator.scraping.socketReadTimeout:5000}")
+	private int fetcherSocketReadTimeout;
 	
 	@Autowired
 	private UUID promregatorInstanceIdentifier;
@@ -125,6 +132,23 @@ public abstract class AbstractMetricsEndpoint {
 		if (this.maxProcessingTimeOld.isPresent()) {
 			log.warn("You are still using the deprecated option promregator.endpoint.maxProcessingTime. "
 					+ "Please switch to promregator.scraping.maxProcessingTime (same meaning) instead and remove the old one.");
+		}
+	}
+	
+	@PostConstruct
+	public void validateAndFixFetcherTimeouts() {
+		long localMaxProcessingTime = this.getMaxProcessingTime();
+		
+		if (this.fetcherConnectionTimeout > localMaxProcessingTime) {
+			log.warn("Fetcher's Connection Timeout is longer than the configured Maximal Processing Time of all fetchers; shortening timeout value to that value, as this does not make sense. "+
+					"Check your configured values for configuration options promregator.scraping.connectionTimeout and promregator.scraping.maxProcessingTime respectively promregator.endpoint.maxProcessingTime (deprecated)");
+			this.fetcherConnectionTimeout = (int) localMaxProcessingTime;
+		}
+		
+		if (this.fetcherSocketReadTimeout > localMaxProcessingTime) {
+			log.warn("Fetcher's Socket Read Timeout is longer than the configured Maximal Processing Time of all fetchers; shortening timeout value to that value, as this does not make sense. "+
+					"Check your configured values for configuration options promregator.scraping.socketReadTimeout and promregator.scraping.maxProcessingTime respectively promregator.endpoint.maxProcessingTime (deprecated)");
+			this.fetcherSocketReadTimeout = (int) localMaxProcessingTime;
 		}
 	}
 	
@@ -305,11 +329,20 @@ public abstract class AbstractMetricsEndpoint {
 			if (this.simulationMode) {
 				mf = new MetricsFetcherSimulator(accessURL, ae, mfse, mfm, upChild);
 			} else {
+				CFMetricsFetcherConfig cfmfConfig = new CFMetricsFetcherConfig();
+				cfmfConfig.setAuthenticationEnricher(ae);
+				cfmfConfig.setMetricFamilySamplesEnricher(mfse);
+				cfmfConfig.setMetricsFetcherMetrics(mfm);
+				cfmfConfig.setUpChild(upChild);
+				cfmfConfig.setPromregatorInstanceIdentifier(this.promregatorInstanceIdentifier);
+				cfmfConfig.setConnectionTimeoutInMillis(this.fetcherConnectionTimeout);
+				cfmfConfig.setSocketReadTimeoutInMillis(this.fetcherSocketReadTimeout);
+				
 				if (this.proxyHost != null && this.proxyPort != 0) {
-					mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), ae, mfse, this.proxyHost, this.proxyPort, mfm, upChild, this.promregatorInstanceIdentifier);
-				} else {
-					mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), ae, mfse, mfm, upChild, this.promregatorInstanceIdentifier);
+					cfmfConfig.setProxyHost(this.proxyHost);
+					cfmfConfig.setProxyPort(this.proxyPort);
 				}
+				mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), cfmfConfig);
 			}
 			callablesList.add(mf);
 		}
