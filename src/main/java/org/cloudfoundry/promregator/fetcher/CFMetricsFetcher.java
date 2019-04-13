@@ -1,6 +1,7 @@
 package org.cloudfoundry.promregator.fetcher;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -10,6 +11,8 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.config.RequestConfig.Builder;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.conn.ConnectTimeoutException;
+import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
@@ -112,19 +115,32 @@ public class CFMetricsFetcher implements MetricsFetcher {
 				timer = this.mfm.getLatencyRequest().startTimer();
 			}
 			
-			response = httpclient.execute(httpget);
+			String result = null;
+			try {
+				response = httpclient.execute(httpget);
 
-			if (timer != null) {
-				timer.observeDuration();
-			}
-			
-			if (response.getStatusLine().getStatusCode() != 200) {
-				log.warn(String.format("Target server at '%s' and instance '%s' responded with a non-200 status code: %d", this.endpointUrl, this.instanceId, response.getStatusLine().getStatusCode()));
+				if (response.getStatusLine().getStatusCode() != 200) {
+					log.warn(String.format("Target server at '%s' and instance '%s' responded with a non-200 status code: %d", this.endpointUrl, this.instanceId, response.getStatusLine().getStatusCode()));
+					return null;
+				}
+				
+				result = EntityUtils.toString(response.getEntity());
+			} catch (HttpHostConnectException hhce) {
+				log.warn(String.format("Unable to connect to server trying to fetch metrics from %s, instance %s", this.endpointUrl, this.instanceId), hhce);
 				return null;
+			} catch (SocketTimeoutException ste) {
+				log.warn(String.format("Read timeout for data from socket while trying to fetch metrics from %s, instance %s", this.endpointUrl, this.instanceId), ste);
+				return null;
+			} catch (ConnectTimeoutException cte) {
+				log.warn(String.format("Timeout while trying to connect to %s, instance %s for fetching metrics", this.endpointUrl, this.instanceId), cte);
+				return null;
+			} finally {
+				if (timer != null) {
+					timer.observeDuration();
+				}
 			}
-			log.debug(String.format("Successfully received metrics from %s for instance %s", this.endpointUrl, this.instanceId));
 			
-			String result = EntityUtils.toString(response.getEntity());
+			log.debug(String.format("Successfully received metrics from %s for instance %s", this.endpointUrl, this.instanceId));
 			
 			if (this.mfm.getRequestSize() != null) {
 				this.mfm.getRequestSize().observe(result.length());
