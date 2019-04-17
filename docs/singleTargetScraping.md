@@ -27,7 +27,7 @@ Single Target Scraping mode has the following disadvantages:
 
 ## Advantages of this Approach
 
-Single Target Scraping mode has the following disadvantages:
+Single Target Scraping mode has the following advantages:
 
 * Control of when scraping for which target happens is back to Prometheus (where it belongs in general). This allows to scale significantly better, if you have a large number of targets on your scraping list. Major advantage here is that Prometheus is able to prevent peak loads on scraping by distributing the scraping requests within the scraping interval.
 * As Prometheus is in control of each target again, individual relabeling is possible again. This may become necessary, if the default labels provided by Promregator do not suite your needs.
