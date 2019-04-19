@@ -250,7 +250,7 @@ This group configures the behavior of Promregator itself. It is mainly meant on 
 Lists one or more Cloud Foundry applications, which shall be queried for metrics.
 The subgroup expects an item list, which contains additional mandatory properties
 
-#### Item property "promregator.targets[].orgName" (mandatory)
+#### Item property "promregator.targets[].orgName" (optional)
 Specifies the name of the Cloud Foundry Organization which hosts the application, which you want to query for metrics.
 
 To ensure consistency with the behavior of many Cloud Foundry implementations, the name is treated case-**in**sensitively since Promregator version 0.5.0.
