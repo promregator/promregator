@@ -122,7 +122,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			
 			List<String> urls = sas.getUrls();
 			if (urls != null && !urls.isEmpty()) {
-				v.accessURL = this.determineAccessURL(v.target.getProtocol(), urls, v.target.getOriginalTarget().getPreferredRouteRegex(), v.target.getPath());
+				v.accessURL = this.determineAccessURL(v.target.getProtocol(), urls, v.target.getOriginalTarget().getPreferredRouteRegexPatterns(), v.target.getPath());
 			}
 			
 			v.numberOfInstances = sas.getInstances();
@@ -231,7 +231,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			});
 	}
 	
-	private String determineAccessURL(final String protocol, final List<String> urls, final List<String> preferredRouteRegex, final String path) {
+	private String determineAccessURL(final String protocol, final List<String> urls, final List<Pattern> preferredRouteRegex, final String path) {
 		
 		final String url = determineApplicationUrl(urls, preferredRouteRegex);
 		final String applicationUrl = String.format("%s://%s", protocol, url);
@@ -249,25 +249,13 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		return applUrl + internalPath;
 	}
 
-	private String determineApplicationUrl(final List<String> urls, final List<String> preferredRouteRegex) {
+	private String determineApplicationUrl(final List<String> urls, final List<Pattern> patterns) {
 		if (urls == null || urls.size() == 0) {
 			return null;
 		}
 
-		if (preferredRouteRegex == null || preferredRouteRegex.size() == 0) {
+		if (patterns == null || patterns.size() == 0) {
 			return urls.get(0);
-		}
-		
-		final List<Pattern> patterns = new ArrayList<>(preferredRouteRegex.size());
-		
-		for (String routeRegex : preferredRouteRegex) {
-			try {
-				Pattern pattern = Pattern.compile(routeRegex);
-				patterns.add(pattern);
-			} catch (PatternSyntaxException e) {
-				log.warn(String.format("Invalid preferredRouteRegex '%s' detected. Fix your configuration; until then, the regex will be ignored", routeRegex), e);
-				continue;
-			}
 		}
 		
 		for (Pattern pattern : patterns) {
