@@ -247,7 +247,7 @@ By default, this value is set to 4000 milliseconds.
 This group configures the behavior of Promregator itself. It is mainly meant on how requests shall be handled, as soon as the Prometheus server starts to pull metrics.
 
 ### Subgroup "promregator.targets"
-Lists one or more Clound Foundry applications, which shall be queried for metrics.
+Lists one or more Cloud Foundry applications, which shall be queried for metrics.
 The subgroup expects an item list, which contains additional mandatory properties
 
 #### Item property "promregator.targets[].orgName" (mandatory)
