@@ -24,8 +24,8 @@ public class ResolvedTarget {
 		this.orgName = configTarget.getOrgName();
 		this.spaceName = configTarget.getSpaceName();
 		this.applicationName = configTarget.getApplicationName();
-		this.path = configTarget.getPath();
-		this.protocol = configTarget.getProtocol();
+		this.path = configTarget.getPathOrDefault();
+		this.protocol = configTarget.getProtocolOrDefault();
 	}
 	
 	public String getOrgName() {

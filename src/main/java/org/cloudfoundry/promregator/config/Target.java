@@ -22,7 +22,7 @@ public class Target extends CommonConfigurationApplication implements Cloneable 
 	 * @param source the template which shall be used for copying
 	 */
 	public Target(Target source) {
-		super(source.getApplicationName(), source.getApplicationRegex(), source.getPath(), source.getProtocol(), source.getAuthenticatorId(), source.getPreferredRouteRegex());
+		super(source.getApplicationName(), source.getApplicationRegex(), source.getPathOrDefault(), source.getProtocolOrDefault(), source.getAuthenticatorId(), source.getPreferredRouteRegex());
 		
 		this.orgName = source.orgName;
 		this.orgRegex = source.orgRegex;
@@ -82,9 +82,9 @@ public class Target extends CommonConfigurationApplication implements Cloneable 
 		builder.append(", getApplicationRegex()=");
 		builder.append(getApplicationRegex());
 		builder.append(", getPath()=");
-		builder.append(getPath());
+		builder.append(getPathOrDefault());
 		builder.append(", getProtocol()=");
-		builder.append(getProtocol());
+		builder.append(getProtocolOrDefault());
 		builder.append(", getAuthenticatorId()=");
 		builder.append(getAuthenticatorId());
 		builder.append(", getPreferredRouteRegex()=");

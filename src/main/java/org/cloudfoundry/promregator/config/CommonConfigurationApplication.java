@@ -1,6 +1,7 @@
 package org.cloudfoundry.promregator.config;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -36,7 +37,7 @@ public class CommonConfigurationApplication {
 		this.authenticatorId = authenticatorId;
 		
 		if (preferredRouteRegex == null) {
-			this.preferredRouteRegex = new ArrayList<>(0);
+			this.preferredRouteRegex = null;
 		} else {
 			this.preferredRouteRegex = new ArrayList<>(preferredRouteRegex);
 		}
@@ -58,7 +59,7 @@ public class CommonConfigurationApplication {
 		this.applicationRegex = applicationRegex;
 	}
 
-	public String getPath() {
+	public String getPathOrDefault() {
 		if (this.path == null)
 			return "/metrics";
 		
@@ -69,7 +70,7 @@ public class CommonConfigurationApplication {
 		this.path = path;
 	}
 
-	public String getProtocol() {
+	public String getProtocolOrDefault() {
 		if (this.protocol == null)
 			return "https";
 		
@@ -97,7 +98,7 @@ public class CommonConfigurationApplication {
 	 */
 	public List<String> getPreferredRouteRegex() {
 		if (this.preferredRouteRegex == null) {
-			return null;
+			return Collections.emptyList();
 		}
 		
 		return new ArrayList<>(preferredRouteRegex);
@@ -139,28 +140,28 @@ public class CommonConfigurationApplication {
 	
 	public void copyFromCommonConfigurationApplication(CommonConfigurationApplication other) {
 		
-		if (other.getApplicationName() != null) {
-			this.setApplicationName(other.getApplicationName());
+		if (other.applicationName != null) {
+			this.setApplicationName(other.applicationName);
 		}
 		
-		if (other.getApplicationRegex() != null) {
-			this.setApplicationRegex(other.getApplicationRegex());
+		if (other.applicationRegex != null) {
+			this.setApplicationRegex(other.applicationRegex);
 		}
 		
-		if (other.getAuthenticatorId() != null) {
-			this.setAuthenticatorId(other.getAuthenticatorId());
+		if (other.authenticatorId != null) {
+			this.setAuthenticatorId(other.authenticatorId);
 		}
 		
-		if (other.getPath() != null) {
-			this.setPath(other.getPath());
+		if (other.path != null) {
+			this.setPath(other.path);
 		}
 		
-		if (other.getPreferredRouteRegex() != null) {
-			this.setPreferredRouteRegex(other.getPreferredRouteRegex());
+		if (other.preferredRouteRegex != null) {
+			this.setPreferredRouteRegex(other.preferredRouteRegex);
 		}
 		
-		if (other.getProtocol() != null) {
-			this.setProtocol(other.getProtocol());
+		if (other.protocol != null) {
+			this.setProtocol(other.protocol);
 		}
 	}
 

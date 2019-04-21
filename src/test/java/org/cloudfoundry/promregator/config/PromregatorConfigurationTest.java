@@ -58,13 +58,13 @@ public class PromregatorConfigurationTest {
 			
 			if (target.getApplicationName().equals("appName1")) {
 				app1 = true;
-				Assert.assertEquals("/metrics", target.getPath());
+				Assert.assertEquals("/metrics", target.getPathOrDefault());
 			} else if (target.getApplicationName().equals("appName2")) {
 				app2 = true;
-				Assert.assertEquals("/metrics2", target.getPath());
+				Assert.assertEquals("/metrics2", target.getPathOrDefault());
 			} else if (target.getApplicationName().equals("appName3")) {
 				app3 = true;
-				Assert.assertEquals("/prometheus", target.getPath());
+				Assert.assertEquals("/prometheus", target.getPathOrDefault());
 			} else {
 				Assert.fail("Unknown application name");
 			}

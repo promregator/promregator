@@ -55,8 +55,8 @@ public class ReactiveTargetResolver implements TargetResolver {
 			rt.setOrgName(this.resolvedOrgName);
 			rt.setSpaceName(this.resolvedSpaceName);
 			rt.setApplicationName(this.resolvedApplicationName);
-			rt.setProtocol(this.configTarget.getProtocol());
-			rt.setPath(this.configTarget.getPath());
+			rt.setProtocol(this.configTarget.getProtocolOrDefault());
+			rt.setPath(this.configTarget.getPathOrDefault());
 			return rt;
 		}
 
