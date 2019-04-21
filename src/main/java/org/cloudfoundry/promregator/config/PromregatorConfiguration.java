@@ -1,6 +1,7 @@
 package org.cloudfoundry.promregator.config;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -11,17 +12,24 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix="promregator")
 @EnableConfigurationProperties
 public class PromregatorConfiguration {
-	private List<Target> targets = new ArrayList<>();
+	private List<ConfigurationTarget> targets = new ArrayList<>();
 
 	private AuthenticatorConfiguration authenticatorConfiguration;
 	
 	private List<TargetAuthenticatorConfiguration> targetAuthenticators = new ArrayList<>();
 	
 	public List<Target> getTargets() {
-		return targets;
+		List<Target> result = new LinkedList<>();
+		
+		for (ConfigurationTarget ct : this.targets) {
+			List<Target> unrolledTargets = ct.unrollTargets();
+			result.addAll(unrolledTargets);
+		}
+		
+		return result;
 	}
 
-	public void setTargets(List<Target> targets) {
+	public void setTargets(List<ConfigurationTarget> targets) {
 		this.targets = targets;
 	}
 

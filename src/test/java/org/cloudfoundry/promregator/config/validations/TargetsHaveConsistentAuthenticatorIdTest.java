@@ -3,6 +3,7 @@ package org.cloudfoundry.promregator.config.validations;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.cloudfoundry.promregator.config.ConfigurationTarget;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.config.Target;
 import org.cloudfoundry.promregator.config.TargetAuthenticatorConfiguration;
@@ -14,10 +15,10 @@ public class TargetsHaveConsistentAuthenticatorIdTest {
 
 	@Test
 	public void testValidateConfigBrokenNotExistingAtAll() {
-		Target t = new Target();
+		ConfigurationTarget t = new ConfigurationTarget();
 		t.setAuthenticatorId("unittest");
 		
-		List<Target> targets = new LinkedList<>();
+		List<ConfigurationTarget> targets = new LinkedList<>();
 		targets.add(t);
 		
 		PromregatorConfiguration pc = new PromregatorConfiguration();
@@ -31,10 +32,10 @@ public class TargetsHaveConsistentAuthenticatorIdTest {
 	
 	@Test
 	public void testValidateConfigBrokenWithWrongTAC() {
-		Target t = new Target();
+		ConfigurationTarget t = new ConfigurationTarget();
 		t.setAuthenticatorId("unittest");
 		
-		List<Target> targets = new LinkedList<>();
+		List<ConfigurationTarget> targets = new LinkedList<>();
 		targets.add(t);
 		
 		
@@ -55,10 +56,10 @@ public class TargetsHaveConsistentAuthenticatorIdTest {
 	
 	@Test
 	public void testValidateConfigOk() {
-		Target t = new Target();
+		ConfigurationTarget t = new ConfigurationTarget();
 		t.setAuthenticatorId("unittest");
 		
-		List<Target> targets = new LinkedList<>();
+		List<ConfigurationTarget> targets = new LinkedList<>();
 		targets.add(t);
 		
 		

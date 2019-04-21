@@ -14,6 +14,7 @@ import javax.validation.constraints.Null;
 
 import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
+import org.cloudfoundry.promregator.config.Target;
 import org.cloudfoundry.promregator.messagebus.MessageBusDestination;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.Instance;
@@ -57,9 +58,11 @@ public class CFMultiDiscoverer implements CFDiscoverer {
 	 */
 	@Null
 	public List<Instance> discover(@Null Predicate<? super String> applicationIdFilter, @Null Predicate<? super Instance> instanceFilter) {
-		log.debug(String.format("We have %d targets configured", this.promregatorConfiguration.getTargets().size()));
+		List<Target> targets = this.promregatorConfiguration.getTargets();
 		
-		List<ResolvedTarget> resolvedTargets = this.targetResolver.resolveTargets(this.promregatorConfiguration.getTargets());
+		log.debug(String.format("We have %d targets configured", targets.size()));
+		
+		List<ResolvedTarget> resolvedTargets = this.targetResolver.resolveTargets(targets);
 		if (resolvedTargets == null) {
 			log.warn("Target resolved was unable to resolve configured targets");
 			return null;

@@ -5,8 +5,8 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.apache.log4j.Logger;
+import org.cloudfoundry.promregator.config.CommonConfigurationApplication;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
-import org.cloudfoundry.promregator.config.Target;
 
 public class PreferredRouteRegexMustBeCompilable implements ConfigurationValidation {
 	private static final Logger log = Logger.getLogger(PreferredRouteRegexMustBeCompilable.class);
@@ -15,7 +15,7 @@ public class PreferredRouteRegexMustBeCompilable implements ConfigurationValidat
 	public String validate(PromregatorConfiguration promregatorConfiguration) {
 		boolean failed = false;
 	
-		for (Target target : promregatorConfiguration.getTargets()) {
+		for (CommonConfigurationApplication target : promregatorConfiguration.getTargets()) {
 			List<String> preferredRouteRegex = target.getPreferredRouteRegex();
 			if (preferredRouteRegex == null) {
 				continue;

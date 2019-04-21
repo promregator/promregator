@@ -3,6 +3,7 @@ package org.cloudfoundry.promregator.config.validations;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.cloudfoundry.promregator.config.ConfigurationTarget;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.config.Target;
 import org.junit.Assert;
@@ -14,8 +15,8 @@ public class PreferredRouteRegexMustBeCompilableTest {
 	public void testNullPreferredRouteRegexDoesNotCrash() {
 		PreferredRouteRegexMustBeCompilable subject = new PreferredRouteRegexMustBeCompilable();
 		PromregatorConfiguration promregatorConfiguration = new PromregatorConfiguration();
-		List<Target> targets = new LinkedList<>();
-		Target target = new Target();
+		List<ConfigurationTarget> targets = new LinkedList<>();
+		ConfigurationTarget target = new ConfigurationTarget();
 		target.setPreferredRouteRegex(null);
 		targets.add(target);
 		promregatorConfiguration.setTargets(targets);
@@ -27,8 +28,8 @@ public class PreferredRouteRegexMustBeCompilableTest {
 	public void testValidDoesNotBreak() {
 		PreferredRouteRegexMustBeCompilable subject = new PreferredRouteRegexMustBeCompilable();
 		PromregatorConfiguration promregatorConfiguration = new PromregatorConfiguration();
-		List<Target> targets = new LinkedList<>();
-		Target target = new Target();
+		List<ConfigurationTarget> targets = new LinkedList<>();
+		ConfigurationTarget target = new ConfigurationTarget();
 		LinkedList<String> preferredRouteRegex = new LinkedList<>();
 		preferredRouteRegex.add("dummy");
 		target.setPreferredRouteRegex(preferredRouteRegex);
@@ -42,8 +43,8 @@ public class PreferredRouteRegexMustBeCompilableTest {
 	public void testInvalidRaisesError() {
 		PreferredRouteRegexMustBeCompilable subject = new PreferredRouteRegexMustBeCompilable();
 		PromregatorConfiguration promregatorConfiguration = new PromregatorConfiguration();
-		List<Target> targets = new LinkedList<>();
-		Target target = new Target();
+		List<ConfigurationTarget> targets = new LinkedList<>();
+		ConfigurationTarget target = new ConfigurationTarget();
 		LinkedList<String> preferredRouteRegex = new LinkedList<>();
 		preferredRouteRegex.add("[");
 		target.setPreferredRouteRegex(preferredRouteRegex);

@@ -1,13 +1,8 @@
 package org.cloudfoundry.promregator.config;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-
 import org.apache.log4j.Logger;
 
-public class Target implements Cloneable {
+public class Target extends CommonConfigurationApplication implements Cloneable {
 	private static final Logger log = Logger.getLogger(Target.class);
 	
 	private String orgName;
@@ -18,19 +13,6 @@ public class Target implements Cloneable {
 	
 	private String spaceRegex;
 	
-	private String applicationName;
-	
-	private String applicationRegex;
-
-	private String path;
-	
-	private String protocol;
-	
-	private String authenticatorId;
-	
-	private List<String> preferredRouteRegex;
-	private List<Pattern> cachedPreferredRouteRegexPattern;
-	
 	public Target() {
 		super();
 	}
@@ -40,21 +22,12 @@ public class Target implements Cloneable {
 	 * @param source the template which shall be used for copying
 	 */
 	public Target(Target source) {
+		super(source.getApplicationName(), source.getApplicationRegex(), source.getPath(), source.getProtocol(), source.getAuthenticatorId(), source.getPreferredRouteRegex());
+		
 		this.orgName = source.orgName;
 		this.orgRegex = source.orgRegex;
 		this.spaceName = source.spaceName;
 		this.spaceRegex = source.spaceRegex;
-		this.applicationName = source.applicationName;
-		this.applicationRegex = source.applicationRegex;
-		this.path = source.path;
-		this.protocol = source.protocol;
-		this.authenticatorId = source.authenticatorId;
-		
-		if (source.preferredRouteRegex == null) {
-			this.preferredRouteRegex = new ArrayList<>(0);
-		} else {
-			this.preferredRouteRegex = new ArrayList<>(source.preferredRouteRegex);
-		}
 	}
 	
 	public String getOrgName() {
@@ -90,101 +63,6 @@ public class Target implements Cloneable {
 		this.spaceRegex = spaceRegex;
 	}
 
-	public String getApplicationName() {
-		return applicationName;
-	}
-
-	public void setApplicationName(String applicationName) {
-		this.applicationName = applicationName;
-	}
-
-	public String getApplicationRegex() {
-		return applicationRegex;
-	}
-	
-	public void setApplicationRegex(String applicationRegex) {
-		this.applicationRegex = applicationRegex;
-	}
-	
-	public String getPath() {
-		if (this.path == null)
-			return "/metrics";
-		
-		return path;
-	}
-
-	public void setPath(String path) {
-		this.path = path;
-	}
-
-	public String getProtocol() {
-		if (this.protocol == null)
-			return "https";
-		
-		return protocol;
-	}
-
-	public void setProtocol(String protocol) {
-		if ("http".equals(protocol) || "https".equals(protocol)) {
-			this.protocol = protocol;
-		} else {
-			throw new Error(String.format("Invalid configuration: Target attempted to be configured with non-http(s) protocol: %s", protocol));
-		}
-	}
-
-	public String getAuthenticatorId() {
-		return authenticatorId;
-	}
-
-	public void setAuthenticatorId(String authenticatorId) {
-		this.authenticatorId = authenticatorId;
-	}
-
-	/**
-	 * @return the preferredRouteRegex
-	 */
-	public List<String> getPreferredRouteRegex() {
-		if (this.preferredRouteRegex == null) {
-			return null;
-		}
-		
-		return new ArrayList<>(preferredRouteRegex);
-	}
-
-	/**
-	 * @param preferredRouteRegex the preferredRouteRegex to set
-	 */
-	public void setPreferredRouteRegex(List<String> preferredRouteRegex) {
-		this.preferredRouteRegex = preferredRouteRegex;
-		this.cachedPreferredRouteRegexPattern = null; // reset cache
-	}
-
-	public List<Pattern> getPreferredRouteRegexPatterns() {
-		if (this.cachedPreferredRouteRegexPattern != null) {
-			return this.cachedPreferredRouteRegexPattern;
-		}
-		
-		List<String> regexStringList = this.getPreferredRouteRegex();
-		if (regexStringList == null) {
-			return null;
-		}
-		
-		List<Pattern> patterns = new ArrayList<>(regexStringList.size());
-		for (String routeRegex : regexStringList) {
-			try {
-				Pattern pattern = Pattern.compile(routeRegex);
-				patterns.add(pattern);
-			} catch (PatternSyntaxException e) {
-				log.warn(String.format("Invalid preferredRouteRegex '%s' detected. Fix your configuration; until then, the regex will be ignored", routeRegex), e);
-				continue;
-			}
-		}
-		
-		this.cachedPreferredRouteRegexPattern = patterns;
-		
-		return this.cachedPreferredRouteRegexPattern;
-	}
-	
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
@@ -199,18 +77,18 @@ public class Target implements Cloneable {
 		builder.append(spaceName);
 		builder.append(", spaceRegex=");
 		builder.append(spaceRegex);
-		builder.append(", applicationName=");
-		builder.append(applicationName);
-		builder.append(", applicationRegex=");
-		builder.append(applicationRegex);
-		builder.append(", path=");
-		builder.append(path);
-		builder.append(", protocol=");
-		builder.append(protocol);
-		builder.append(", authenticatorId=");
-		builder.append(authenticatorId);
-		builder.append(", preferredRouteRegex=");
-		builder.append(preferredRouteRegex);
+		builder.append(", getApplicationName()=");
+		builder.append(getApplicationName());
+		builder.append(", getApplicationRegex()=");
+		builder.append(getApplicationRegex());
+		builder.append(", getPath()=");
+		builder.append(getPath());
+		builder.append(", getProtocol()=");
+		builder.append(getProtocol());
+		builder.append(", getAuthenticatorId()=");
+		builder.append(getAuthenticatorId());
+		builder.append(", getPreferredRouteRegex()=");
+		builder.append(getPreferredRouteRegex());
 		builder.append("]");
 		return builder.toString();
 	}
