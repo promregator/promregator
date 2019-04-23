@@ -301,7 +301,11 @@ By this, automatic detection of new applications is possible. Note that discover
 #### Item property "promregator.targets[].path" (optional)
 Specifies the path under which the application's endpoint provides its Prometheus metrics.
 
+Note that the data returned by this endpoint of the target must comply to the [Text-Based Exposition Format (a.k.a. Text Format "0.0.4")](https://github.com/prometheus/docs/blob/ad9fcc1b0c13ec199358bab9af6913b2ffab95ac/content/docs/instrumenting/exposition_formats.md#text-based-format). If it does not, scraping will fail. 
+
 Defaults to `/metrics`, as this is the value which is suggested by Prometheus.
+
+Note that there may be frameworks out there, which expose their metrics in a different format using the same path `/metrics`, though. 
 
 #### Item property "promregator.targets[].protocol" (optional)
 Specifies the protocol (`http` or `https`) which shall be used to retrieve the metrics.
