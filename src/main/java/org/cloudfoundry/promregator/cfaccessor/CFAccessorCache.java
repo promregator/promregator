@@ -130,6 +130,7 @@ public class CFAccessorCache implements CFAccessor {
 	public Mono<ListSpacesResponse> retrieveSpaceId(String orgId, String spaceName) {
 		final CacheKeySpace key = new CacheKeySpace(orgId, spaceName);
 		
+		// TODO Unclear if problem: locking in the cache works on object instance level! We just created a new instance there. Separate lock objects?
 		Mono<ListSpacesResponse> mono = this.spaceCache.get(key);
 		
 		return mono;
@@ -139,6 +140,7 @@ public class CFAccessorCache implements CFAccessor {
 	public Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String orgId, String spaceId) {
 		final CacheKeyAppsInSpace key = new CacheKeyAppsInSpace(orgId, spaceId);
 		
+		// TODO Unclear if problem: locking in the cache works on object instance level! We just created a new instance there. Separate lock objects?
 		return this.appsInSpaceCache.get(key);
 	}
 
