@@ -212,4 +212,73 @@ public class AutoRefreshingCacheMapTest {
 		Assert.assertEquals(1, this.lockObjectStringWorksCalls);
 	}
 	
+	private class CompositeKey {
+		private String a;
+		private String b;
+		public CompositeKey(String a, String b) {
+			super();
+			this.a = a;
+			this.b = b;
+		}
+		/**
+		 * @return the a
+		 */
+		public String getA() {
+			return a;
+		}
+		/**
+		 * @return the b
+		 */
+		public String getB() {
+			return b;
+		}
+		
+	}
+	
+	private class LockObjectCompositeWorksThread extends Thread {
+		private AutoRefreshingCacheMap<CompositeKey, Mono<String>> subject;
+		
+		public LockObjectCompositeWorksThread(AutoRefreshingCacheMap<CompositeKey, Mono<String>> subject) {
+			this.subject = subject;
+		}
+
+		@Override
+		public void run() {
+			this.subject.get(new CompositeKey("a1", "b1"));
+		}
+		
+	}
+	
+	private int lockObjectCompositeWorksCalls = 0;
+	
+	@Test
+	public void testLockObjectCompositeWorks() throws InterruptedException {
+		AutoRefreshingCacheMap<CompositeKey, Mono<String>> subject = new AutoRefreshingCacheMap<>("test",null, Duration.ofSeconds(10), Duration.ofSeconds(10), key -> {
+			lockObjectCompositeWorksCalls++;
+			try {
+				Thread.sleep(200);
+			} catch (InterruptedException e) {
+				Assert.fail("Interrupted");
+			}
+			return Mono.just(key.getA() + key.getB() +"*");
+		});
+		
+		LockObjectCompositeWorksThread[] threads = new LockObjectCompositeWorksThread[5];
+		for (int i = 0;i<threads.length;i++) {
+			threads[i] = new LockObjectCompositeWorksThread(subject);
+			threads[i].start();
+		}
+		
+		for (int i = 0;i<threads.length;i++) {
+			threads[i].join(5000);
+		}
+		
+		for (int i = 0;i<threads.length;i++) {
+			Assert.assertFalse(threads[i].isAlive());
+		}
+		
+		// there shall only be one call to the loader function!
+		Assert.assertEquals(1, this.lockObjectCompositeWorksCalls);
+	}
+	
 }
