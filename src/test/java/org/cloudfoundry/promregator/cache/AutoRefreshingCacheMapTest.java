@@ -6,6 +6,8 @@ import java.time.Duration;
 import org.junit.Assert;
 import org.junit.Test;
 
+import reactor.core.publisher.Mono;
+
 public class AutoRefreshingCacheMapTest {
 
 	@Test
@@ -163,4 +165,51 @@ public class AutoRefreshingCacheMapTest {
 		}
 	}
 
+	private int lockObjectStringWorksCalls = 0;
+	
+	private class LockObjectStringWorksThread extends Thread {
+		private AutoRefreshingCacheMap<String, Mono<String>> subject;
+		
+		public LockObjectStringWorksThread(AutoRefreshingCacheMap<String, Mono<String>> subject) {
+			super();
+			this.subject = subject;
+		}
+
+		@Override
+		public void run() {
+			this.subject.get("abc");
+		}
+		
+	}
+	
+	@Test
+	public void testLockObjectStringWorks() throws InterruptedException {
+		AutoRefreshingCacheMap<String, Mono<String>> subject = new AutoRefreshingCacheMap<>("test",null, Duration.ofSeconds(10), Duration.ofSeconds(10), key -> {
+			lockObjectStringWorksCalls++;
+			try {
+				Thread.sleep(200);
+			} catch (InterruptedException e) {
+				Assert.fail("Interrupted");
+			}
+			return Mono.just(key+"*");
+		});
+		
+		LockObjectStringWorksThread[] threads = new LockObjectStringWorksThread[5];
+		for (int i = 0;i<threads.length;i++) {
+			threads[i] = new LockObjectStringWorksThread(subject);
+			threads[i].start();
+		}
+		
+		for (int i = 0;i<threads.length;i++) {
+			threads[i].join(5000);
+		}
+		
+		for (int i = 0;i<threads.length;i++) {
+			Assert.assertFalse(threads[i].isAlive());
+		}
+		
+		// there shall only be one call to the loader function!
+		Assert.assertEquals(1, this.lockObjectStringWorksCalls);
+	}
+	
 }
