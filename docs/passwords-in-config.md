@@ -46,3 +46,37 @@ docker run --env MY_PASSWORD_OS_VARIABLE=mysecretPassword promregator/promregato
 
 Further information on this can also be found in the official [Docker reference documentation](https://docs.docker.com/engine/reference/commandline/run/#set-environment-variables--e---env---env-file).
 
+## Using Encrypted Password in Configuration
+
+As an alternative for using environment variables for the password you can use encrypted password (values starting with `{cipher}`) in the configuration.
+See also the documentation about [Encryption & Decryprtion](http://cloud.spring.io/spring-cloud-config/spring-cloud-config.html#_encryption_and_decryption) of the Spring Cloud Config Server.
+
+Following example illustrates the usage:
+
+```yaml
+promregator:
+  targetAuthenticators:
+    - id: testAuthenticator
+      type: basic
+      basic: 
+        username: username
+        password: '{cipher}682bc583f4641835fa2db009355293665d2647dade3375c0ee201de2a49f7bda'
+```
+
+To create the encrypted password you have two options. 
+* Use a Spring Cloud Config Server and POST the password to the `/encrypt` endpoint
+```bash
+curl localhost:8888/encrypt -d mysecret
+682bc583f4641835fa2db009355293665d2647dade3375c0ee201de2a49f7bda
+``` 
+* Use the Spring Cloud CLI extension and encrypt the password on the command line.
+```bash
+spring encrypt mysecret --key foo
+682bc583f4641835fa2db009355293665d2647dade3375c0ee201de2a49f7bda
+```
+
+You still need to provide the decryption key to your application for example as environment variable:
+```bash
+export ENCRYPT_KEY=mySecretKey
+java -Dspring.config.location=file:/path/to/your/enrypted/myconfig.yaml -jar promregator-0.0.1-SNAPSHOT.jar
+```
