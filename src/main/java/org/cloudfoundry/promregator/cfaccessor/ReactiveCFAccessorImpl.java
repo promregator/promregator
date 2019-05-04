@@ -3,7 +3,6 @@ package org.cloudfoundry.promregator.cfaccessor;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Duration;
-import java.util.Optional;
 import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
