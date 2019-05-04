@@ -61,7 +61,7 @@ d93dd725143e187804e4105a681706c1185c58f92086bf55aa830e61c0527060
 Then you need to set the encryption key as environment variable so that promregator can process it:
 ```bash
 export ENCRYPT_KEY=mySecretKey
-java -Dspring.config.location=file:/path/to/your/config/with/encrypted/attributes/myconfig.yaml -jar promregator-0.0.1-SNAPSHOT.jar
+java -Dspring.config.location=file:/path/to/your/config/with/encrypted/attributes/myconfig.yaml -jar promregator-x.y.z-SNAPSHOT.jar
 ```
 
 The config file would the look something like this. Note the value of the password attribute.
