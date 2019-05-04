@@ -30,7 +30,7 @@ In the example above you see that the password was not specified directly, but a
 
 ```bash
 export MY_PASSWORD_OS_VARIABLE=mysecretPassword
-java -Dspring.config.location=file:/path/to/your/myconfig.yaml -jar promregator-0.0.1-SNAPSHOT.jar
+java -Dspring.config.location=file:/path/to/your/myconfig.yaml -jar promregator-x.y.z.jar
 ```
 
 Observe here that the placeholder `${my.password.os.variable}` gets capitalized and all dots in the placeholder gets replaced by the underscore symbol to form the OS environment variable you have to set.
@@ -41,7 +41,7 @@ Note that you could also set the Java system properties with the same naming con
 ## Note on Setting OS Environment Variables using Docker
 Keep in mind that you able to set OS environment variables for the Docker container by using 
 ```bash
-docker run --env MY_PASSWORD_OS_VARIABLE=mysecretPassword promregator/promregator:0.0.1
+docker run --env MY_PASSWORD_OS_VARIABLE=mysecretPassword promregator/promregator:x.y.z
 ```
 
 Further information on this can also be found in the official [Docker reference documentation](https://docs.docker.com/engine/reference/commandline/run/#set-environment-variables--e---env---env-file).
