@@ -98,6 +98,11 @@ public class CFAccessorCache implements CFAccessor {
 				 *    simply be a NOOP. => no harm done either.
 				 */
 				this.orgCache.remove(orgName);
+				
+				// Notify metrics of this case
+				if (this.internalMetrics != null) {
+					this.internalMetrics.countAutoRefreshingCacheMapErroneousEntriesDisplaced(this.orgCache.getName());
+				}
 			}
 		});
 		/*
@@ -150,6 +155,11 @@ public class CFAccessorCache implements CFAccessor {
 				 *    simply be a NOOP. => no harm done either.
 				 */
 				this.spaceCache.remove(cacheKey);
+				
+				// Notify metrics of this case
+				if (this.internalMetrics != null) {
+					this.internalMetrics.countAutoRefreshingCacheMapErroneousEntriesDisplaced(this.spaceCache.getName());
+				}
 			}
 		});
 		/*
@@ -201,6 +211,11 @@ public class CFAccessorCache implements CFAccessor {
 				 *    simply be a NOOP. => no harm done either.
 				 */
 				this.appsInSpaceCache.remove(cacheKey);
+				
+				// Notify metrics of this case
+				if (this.internalMetrics != null) {
+					this.internalMetrics.countAutoRefreshingCacheMapErroneousEntriesDisplaced(this.appsInSpaceCache.getName());
+				}
 			}
 		});
 		/*
@@ -252,6 +267,11 @@ public class CFAccessorCache implements CFAccessor {
 				 *    simply be a NOOP. => no harm done either.
 				 */
 				this.spaceSummaryCache.remove(spaceId);
+				
+				// Notify metrics of this case
+				if (this.internalMetrics != null) {
+					this.internalMetrics.countAutoRefreshingCacheMapErroneousEntriesDisplaced(this.spaceSummaryCache.getName());
+				}
 			}
 		});
 		/*
