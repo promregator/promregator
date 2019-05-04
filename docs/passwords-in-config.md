@@ -76,3 +76,10 @@ promregator:
         password: '{cipher}d93dd725143e187804e4105a681706c1185c58f92086bf55aa830e61c0527060'
 ```
 
+If you are running promregator as docker container you can provide the environment variable in the following way
+```
+docker run -d \
+ --env ENCRYPT_KEY=mySecretKey \
+ -v /path/to/your/config/with/encrypted/attributes/myconfig.yaml:/etc/promregator/promregator.yml \
+ promregator/promregator:<version>
+```

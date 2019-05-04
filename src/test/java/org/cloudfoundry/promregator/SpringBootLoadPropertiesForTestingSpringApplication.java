@@ -12,8 +12,8 @@ public class SpringBootLoadPropertiesForTestingSpringApplication {
 	@Value("${dummy.value:false}")
 	private boolean dummyValue;
 
-	@Value("${encrypted.value:''}")
-	private String encryptedValue;
+	@Value("${secret.value:''}")
+	private String secretValue;
 	
 	@Bean
 	public Object anything() {
@@ -25,7 +25,7 @@ public class SpringBootLoadPropertiesForTestingSpringApplication {
 		Assert.assertTrue(dummyValue);
 	}
 
-	public String getEncryptedValue() {
-		return encryptedValue;
+	public String getSecretValue() {
+		return secretValue;
 	}
 }

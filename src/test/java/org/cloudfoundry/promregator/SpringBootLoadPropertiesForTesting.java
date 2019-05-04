@@ -14,7 +14,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
@@ -39,13 +38,13 @@ public class SpringBootLoadPropertiesForTesting {
 
 	@Test
 	public void testContextLoadsWithEncryptedValue() {
-		String encryptedValue = springBootLoadPropertiesForTestingSpringApplication.getEncryptedValue();
-		assertThat("passwords do not match but should", encryptedValue, is("mysecret"));
+		String secretValue = springBootLoadPropertiesForTestingSpringApplication.getSecretValue();
+		assertThat("passwords do not match but should", secretValue, is("mysecret"));
 	}
 
 	@Test
 	public void testContextLoadsWithEncryptedValueNotMatching() {
-		String encryptedValue = springBootLoadPropertiesForTestingSpringApplication.getEncryptedValue();
-		assertThat("passwords do match but shouldn't", encryptedValue, not("notMySecret"));
+		String secretValue = springBootLoadPropertiesForTestingSpringApplication.getSecretValue();
+		assertThat("passwords do match but shouldn't", secretValue, not("notMySecret"));
 	}
 }
