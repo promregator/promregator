@@ -1,6 +1,7 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
 import java.time.Duration;
+import java.util.concurrent.TimeoutException;
 
 import javax.annotation.PostConstruct;
 
@@ -69,6 +70,41 @@ public class CFAccessorCache implements CFAccessor {
 
 	private Mono<ListOrganizationsResponse> orgCacheLoader(String orgName) {
 		Mono<ListOrganizationsResponse> mono = this.parent.retrieveOrgId(orgName).cache();
+		
+		/*
+		 * Handling for issue #96: If a timeout of the request to the  CF Cloud Controller occurs, 
+		 * we must make sure that the erroneous Mono is not kept in the cache. Instead we have to displace the item, 
+		 * which triggers a refresh of the cache.
+		 */
+		mono = mono.doOnError(e -> {
+			if (e instanceof TimeoutException) {
+				log.warn(String.format("Timed-out entry using key %s detected, which would get stuck in our org cache; displacing it now to prevent further harm", orgName), e);
+				/* 
+				 * Note that it *might* happen that a different Mono gets displaced than the one we are in here now. 
+				 * Yet, we can't make use of the
+				 * 
+				 * remove(key, value)
+				 * 
+				 * method, as providing value would lead to a hen-egg problem (we were required to provide the reference
+				 * of the Mono instance, which we are just creating).
+				 * Instead, we just blindly remove the entry from the cache. This may lead to four cases to consider:
+				 * 
+				 * 1. We hit the correct (erroneous) entry: then this is exactly what we want to do.
+				 * 2. We hit another erroneous entry: then we have no harm done, because we fixed yet another case.
+				 * 3. We hit a healthy entry: Bad luck; on next iteration, we will get a cache miss, which automatically
+				 *    fixes the issue (as long this does not happen too often, ...)
+				 * 4. The entry has already been deleted by someone else: the remove(key) operation will 
+				 *    simply be a NOOP. => no harm done either.
+				 */
+				this.orgCache.remove(orgName);
+			}
+		});
+		/*
+		 * Keep in mind that doOnError is a side-effect:  The logic above only removes it from the cache. 
+		 * The erroneous instance still is used downstream and will trigger subsequent error handling (including 
+		 * logging) there.
+		 */
+
 		
 		/*
 		 * Note that the mono does not have any subscriber, yet! 
