@@ -72,9 +72,23 @@ public class CFAccessorCache implements CFAccessor {
 		Mono<ListOrganizationsResponse> mono = this.parent.retrieveOrgId(orgName).cache();
 		
 		/*
+		 * Note that the mono does not have any subscriber, yet! 
+		 * The cache which we are using is working "on-stock", i.e. we need to ensure
+		 * that the underlying calls to the CF API really is triggered.
+		 * Fortunately, we can do this very easily:
+		 */
+		mono.subscribe();
+		
+		/*
 		 * Handling for issue #96: If a timeout of the request to the  CF Cloud Controller occurs, 
 		 * we must make sure that the erroneous Mono is not kept in the cache. Instead we have to displace the item, 
 		 * which triggers a refresh of the cache.
+		 * 
+		 * Note that subscribe() must be called *before* adding this error handling below.
+		 * Otherwise we will run into the situation that the error handling routine is called by this
+		 * subscribe() already - but the Mono has not been written into the cache yet!
+		 * If we do it in this order, the doOnError method will only be called once the first "real subscriber" 
+		 * of the Mono will start requesting.
 		 */
 		mono = mono.doOnError(e -> {
 			if (e instanceof TimeoutException) {
@@ -113,7 +127,12 @@ public class CFAccessorCache implements CFAccessor {
 		 * be written to the cache, thus all consumers of the cache will be handed out the cached, not-yet-resolved 
 		 * object instance. This implicitly makes sure that there can only be one valid pending request is out there.
 		 */
-
+		
+		return mono;
+	}
+	
+	private Mono<ListSpacesResponse> spaceCacheLoader(CacheKeySpace cacheKey) {
+		Mono<ListSpacesResponse> mono = this.parent.retrieveSpaceId(cacheKey.getOrgId(), cacheKey.getSpaceName()).cache();
 		
 		/*
 		 * Note that the mono does not have any subscriber, yet! 
@@ -122,16 +141,17 @@ public class CFAccessorCache implements CFAccessor {
 		 * Fortunately, we can do this very easily:
 		 */
 		mono.subscribe();
-		return mono;
-	}
-	
-	private Mono<ListSpacesResponse> spaceCacheLoader(CacheKeySpace cacheKey) {
-		Mono<ListSpacesResponse> mono = this.parent.retrieveSpaceId(cacheKey.getOrgId(), cacheKey.getSpaceName()).cache();
 		
 		/*
 		 * Handling for issue #96: If a timeout of the request to the  CF Cloud Controller occurs, 
 		 * we must make sure that the erroneous Mono is not kept in the cache. Instead we have to displace the item, 
 		 * which triggers a refresh of the cache.
+		 * 
+		 * Note that subscribe() must be called *before* adding this error handling below.
+		 * Otherwise we will run into the situation that the error handling routine is called by this
+		 * subscribe() already - but the Mono has not been written into the cache yet!
+		 * If we do it in this order, the doOnError method will only be called once the first "real subscriber" 
+		 * of the Mono will start requesting.
 		 */
 		mono = mono.doOnError(e -> {
 			if (e instanceof TimeoutException) {
@@ -170,6 +190,13 @@ public class CFAccessorCache implements CFAccessor {
 		 * be written to the cache, thus all consumers of the cache will be handed out the cached, not-yet-resolved 
 		 * object instance. This implicitly makes sure that there can only be one valid pending request is out there.
 		 */
+
+		return mono;
+	}
+	
+	private Mono<ListApplicationsResponse> appsInSpaceCacheLoader(CacheKeyAppsInSpace cacheKey) {
+		Mono<ListApplicationsResponse> mono = this.parent.retrieveAllApplicationIdsInSpace(cacheKey.getOrgId(), cacheKey.getSpaceId()).cache();
+		
 		
 		/*
 		 * Note that the mono does not have any subscriber, yet! 
@@ -178,16 +205,17 @@ public class CFAccessorCache implements CFAccessor {
 		 * Fortunately, we can do this very easily:
 		 */
 		mono.subscribe();
-		return mono;
-	}
-	
-	private Mono<ListApplicationsResponse> appsInSpaceCacheLoader(CacheKeyAppsInSpace cacheKey) {
-		Mono<ListApplicationsResponse> mono = this.parent.retrieveAllApplicationIdsInSpace(cacheKey.getOrgId(), cacheKey.getSpaceId()).cache();
 		
 		/*
 		 * Handling for issue #96: If a timeout of the request to the  CF Cloud Controller occurs, 
 		 * we must make sure that the erroneous Mono is not kept in the cache. Instead we have to displace the item, 
 		 * which triggers a refresh of the cache.
+		 * 
+		 * Note that subscribe() must be called *before* adding this error handling below.
+		 * Otherwise we will run into the situation that the error handling routine is called by this
+		 * subscribe() already - but the Mono has not been written into the cache yet!
+		 * If we do it in this order, the doOnError method will only be called once the first "real subscriber" 
+		 * of the Mono will start requesting.
 		 */
 		mono = mono.doOnError(e -> {
 			if (e instanceof TimeoutException) {
@@ -226,6 +254,12 @@ public class CFAccessorCache implements CFAccessor {
 		 * be written to the cache, thus all consumers of the cache will be handed out the cached, not-yet-resolved 
 		 * object instance. This implicitly makes sure that there can only be one valid pending request is out there.
 		 */
+
+		return mono;
+	}
+	
+	private Mono<GetSpaceSummaryResponse> spaceSummaryCacheLoader(String spaceId) {
+		Mono<GetSpaceSummaryResponse> mono = this.parent.retrieveSpaceSummary(spaceId).cache();
 		
 		/*
 		 * Note that the mono does not have any subscriber, yet! 
@@ -234,16 +268,17 @@ public class CFAccessorCache implements CFAccessor {
 		 * Fortunately, we can do this very easily:
 		 */
 		mono.subscribe();
-		return mono;
-	}
-	
-	private Mono<GetSpaceSummaryResponse> spaceSummaryCacheLoader(String spaceId) {
-		Mono<GetSpaceSummaryResponse> mono = this.parent.retrieveSpaceSummary(spaceId).cache();
 		
 		/*
 		 * Handling for issue #96: If a timeout of the request to the  CF Cloud Controller occurs, 
 		 * we must make sure that the erroneous Mono is not kept in the cache. Instead we have to displace the item, 
 		 * which triggers a refresh of the cache.
+		 * 
+		 * Note that subscribe() must be called *before* adding this error handling below.
+		 * Otherwise we will run into the situation that the error handling routine is called by this
+		 * subscribe() already - but the Mono has not been written into the cache yet!
+		 * If we do it in this order, the doOnError method will only be called once the first "real subscriber" 
+		 * of the Mono will start requesting.
 		 */
 		mono = mono.doOnError(e -> {
 			if (e instanceof TimeoutException) {
@@ -283,13 +318,6 @@ public class CFAccessorCache implements CFAccessor {
 		 * object instance. This implicitly makes sure that there can only be one valid pending request is out there.
 		 */
 		
-		/*
-		 * Note that the mono does not have any subscriber, yet! 
-		 * The cache which we are using is working "on-stock", i.e. we need to ensure
-		 * that the underlying calls to the CF API really is triggered.
-		 * Fortunately, we can do this very easily:
-		 */
-		mono.subscribe();
 		return mono;
 	}
 	
