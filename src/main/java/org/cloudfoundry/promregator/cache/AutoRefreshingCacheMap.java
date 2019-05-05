@@ -15,7 +15,6 @@ import org.apache.log4j.MDC;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 
 public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
-
 	private Duration refreshInterval;
 	private Duration expiryDuration;
 	private Function<K, V> loaderFunction;
@@ -26,6 +25,7 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 	private static class EntryProperties {
 		private Instant lastUsed;
 		private Instant lastLoaded;
+		private Object lockObject = new Object();
 		
 		public EntryProperties() {
 			this.lastUsed = null;
@@ -55,6 +55,15 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 		public void justLoaded() {
 			this.lastLoaded = Instant.now();
 		}
+
+		/**
+		 * @return the lockObject
+		 */
+		public Object getLockObject() {
+			return lockObject;
+		}
+		
+		
 	}
 	
 	private Map<K, EntryProperties> entryPropertiesMap = Collections.synchronizedMap(new HashMap<K, EntryProperties>());
@@ -105,12 +114,21 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 	 */
 	@Override
 	public V get(Object key) {
-		EntryProperties ep = this.entryPropertiesMap.get(key);
-		if (ep != null) {
-			ep.justUsed();
+		EntryProperties ep;
+		
+		synchronized (this.entryPropertiesMap) {
+			ep = this.entryPropertiesMap.get(key);
+			if (ep == null) {
+				// this creates a new EntryProperties element quite early for which there is no entry in the main map yet.
+				ep = new EntryProperties();
+				this.entryPropertiesMap.put((K) key, ep);
+			} else {
+				ep.justUsed();
+			}
 		}
 		
-		Object lockObject = determineLockObject(key);
+		Object lockObject = ep.getLockObject();
+		
 		V value = null;
 		synchronized (lockObject) {
 			value = super.get(key);
@@ -133,13 +151,6 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 		}
 		
 		return value;
-	}
-
-	private static Object determineLockObject(Object o) {
-		if (o instanceof String) {
-			return ((String) o).intern();
-		}
-		return o;
 	}
 	
 	/* (non-Javadoc)
