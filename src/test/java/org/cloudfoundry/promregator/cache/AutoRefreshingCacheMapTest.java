@@ -3,12 +3,14 @@ package org.cloudfoundry.promregator.cache;
 
 import java.time.Duration;
 
+import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 
 import reactor.core.publisher.Mono;
 
 public class AutoRefreshingCacheMapTest {
+	private static final Logger log = Logger.getLogger(AutoRefreshingCacheMapTest.class);
 
 	@Test
 	public void testPutAndGet() {
@@ -212,9 +214,10 @@ public class AutoRefreshingCacheMapTest {
 		Assert.assertEquals(1, this.lockObjectStringWorksCalls);
 	}
 	
-	private class CompositeKey {
+	private static class CompositeKey {
 		private String a;
 		private String b;
+		
 		public CompositeKey(String a, String b) {
 			super();
 			this.a = a;
@@ -232,7 +235,41 @@ public class AutoRefreshingCacheMapTest {
 		public String getB() {
 			return b;
 		}
-		
+		/* (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((a == null) ? 0 : a.hashCode());
+			result = prime * result + ((b == null) ? 0 : b.hashCode());
+			return result;
+		}
+		/* (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			CompositeKey other = (CompositeKey) obj;
+			if (a == null) {
+				if (other.a != null)
+					return false;
+			} else if (!a.equals(other.a))
+				return false;
+			if (b == null) {
+				if (other.b != null)
+					return false;
+			} else if (!b.equals(other.b))
+				return false;
+			return true;
+		}
 	}
 	
 	private class LockObjectCompositeWorksThread extends Thread {
@@ -253,6 +290,8 @@ public class AutoRefreshingCacheMapTest {
 	
 	@Test
 	public void testLockObjectCompositeWorks() throws InterruptedException {
+		log.info("Start of testLockObjectCompositeWorks");
+		
 		AutoRefreshingCacheMap<CompositeKey, Mono<String>> subject = new AutoRefreshingCacheMap<>("test",null, Duration.ofSeconds(10), Duration.ofSeconds(10), key -> {
 			lockObjectCompositeWorksCalls++;
 			try {
