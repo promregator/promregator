@@ -185,7 +185,7 @@ EOT
 				}
 			
 				sh """
-					mvn -U -B verify deploy
+					mvn -U -B -DskipTests -Prelease verify deploy
 					
 					ls -al target/*
 				"""
