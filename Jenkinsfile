@@ -38,7 +38,20 @@ timestamps {
 			}
 			
 			stage("Static Code Checks") {
-				recordIssues aggregatingResults: true, enabledForFailure: true, healthy: 10, ignoreQualityGate: true, sourceCodeEncoding: 'UTF-8', tools: [java(pattern: 'target/**/*.xml', reportEncoding: 'UTF-8')], unhealthy: 20
+				recordIssues aggregatingResults: true, 
+					enabledForFailure: true, 
+					healthy: 10, 
+					unhealthy: 20,
+					ignoreQualityGate: true, 
+					sourceCodeEncoding: 'UTF-8', 
+					tools: [
+						java(reportEncoding: 'UTF-8'),
+						pmdParser(pattern: 'target/*.xml', reportEncoding: 'UTF-8'),
+						findBugs(pattern: 'target/findbugsXml.xml', reportEncoding: 'UTF-8', useRankAsPriority: true)
+						cpd(pattern: 'target/cpd.xml', reportEncoding: 'UTF-8'), 
+						javaDoc(reportEncoding: 'UTF-8'), 
+						mavenConsole(reportEncoding: 'UTF-8')
+					]
 			
 				step([
 					$class: 'FindBugsPublisher',
