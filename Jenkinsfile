@@ -149,17 +149,15 @@ EOT
 				archiveArtifacts "promregator-${currentVersion}.hashsums"
 			}
 			
-		}
-		
-		stage("Deploy to OSSRH") {
-			withCredentials([usernamePassword(credentialsId: 'JIRA_SONARTYPE', passwordVariable: 'JIRA_PASSWORD', usernameVariable: 'JIRA_USERNAME')]) {
-				assert !"${JIRA_USERNAME}".contains("<")
-				assert !"${JIRA_USERNAME}".contains(">")
-				assert !"${JIRA_PASSWORD}".contains("<")
-				assert !"${JIRA_PASSWORD}".contains(">")
-			
-				// see also https://central.sonatype.org/pages/apache-maven.html
-				String settingsXML = """
+			stage("Deploy to OSSRH") {
+				withCredentials([usernamePassword(credentialsId: 'JIRA_SONARTYPE', passwordVariable: 'JIRA_PASSWORD', usernameVariable: 'JIRA_USERNAME')]) {
+					assert !"${JIRA_USERNAME}".contains("<")
+					assert !"${JIRA_USERNAME}".contains(">")
+					assert !"${JIRA_PASSWORD}".contains("<")
+					assert !"${JIRA_PASSWORD}".contains(">")
+				
+					// see also https://central.sonatype.org/pages/apache-maven.html
+					String settingsXML = """
 <settings>
   <servers>
     <server>
@@ -181,17 +179,20 @@ EOT
     </profile>
   </profiles>
 </settings>"""
-				writeFile file : "~/.m2/settings.xml", text: settingsXML
-			}
-		
-			sh """
-				mvn verify deploy
-				
-				ls -al target/*
-			"""
+					writeFile file : "~/.m2/settings.xml", text: settingsXML
+				}
 			
-			archiveArtifacts "promregator-${currentVersion}*.asc"
+				sh """
+					mvn -U -B verify deploy
+					
+					ls -al target/*
+				"""
+				
+				archiveArtifacts "promregator-${currentVersion}*.asc"
+			}
+			
 		}
+		
 		
 	}
 }
