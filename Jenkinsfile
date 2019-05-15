@@ -13,6 +13,28 @@ def getVersion() {
 	return mvnOutput.substring(8) // trim prefix "VERSION="
 }
 
+def runWithGPG(job) {
+	withCredentials([file(credentialsId: 'PROMREGATOR_GPG_KEY', variable: 'GPGKEYFILE')]) {
+		try {
+			sh """
+				gpg --import ${GPGKEYFILE}
+				echo "C66B4B348F6D4071047318C52483051C0D49EDA0:6:" | gpg --import-ownertrust
+			"""
+			
+			job()
+			
+		} finally {
+			// ensure that the valuable signing key is deleted again
+			sh """
+				gpg --batch --delete-secret-keys C66B4B348F6D4071047318C52483051C0D49EDA0
+				gpg --batch --delete-keys C66B4B348F6D4071047318C52483051C0D49EDA0
+			"""
+		}
+	}
+	
+
+}
+
 timestamps {
 	node("slave") {
 	
@@ -141,22 +163,12 @@ Docker Image Id: ${dockerImageIdentifierCanonical}
 EOT
 					"""
 				}
-			
-				withCredentials([file(credentialsId: 'PROMREGATOR_GPG_KEY', variable: 'GPGKEYFILE')]) {
-					try {
-						sh """
-							gpg --import ${GPGKEYFILE}
-							echo "C66B4B348F6D4071047318C52483051C0D49EDA0:6:" | gpg --import-ownertrust
-							gpg --clearsign --personal-digest-preferences SHA512,SHA384,SHA256,SHA224,SHA1 promregator-${currentVersion}.hashsums
-							mv promregator-${currentVersion}.hashsums.asc promregator-${currentVersion}.hashsums
-						"""
-					} finally {
-						// ensure that the valuable signing key is deleted again
-						sh """
-							gpg --batch --delete-secret-keys C66B4B348F6D4071047318C52483051C0D49EDA0
-							gpg --batch --delete-keys C66B4B348F6D4071047318C52483051C0D49EDA0
-						"""
-					}
+				
+				runWithGPG job: {
+					sh """
+						gpg --clearsign --personal-digest-preferences SHA512,SHA384,SHA256,SHA224,SHA1 promregator-${currentVersion}.hashsums
+						mv promregator-${currentVersion}.hashsums.asc promregator-${currentVersion}.hashsums
+					"""
 				}
 				
 				sh "cat promregator-${currentVersion}.hashsums"
@@ -197,11 +209,14 @@ EOT
 					writeFile file : "~/.m2/settings.xml", text: settingsXML
 				}
 			
-				sh """
-					mvn -U -B -Dskip.unit.tests=true -Prelease verify deploy
-					
-					ls -al target/*
-				"""
+
+				runWithGPG job: {
+					sh """
+						mvn -U -B -Dskip.unit.tests=true -Prelease verify deploy
+						
+						ls -al target/*
+					"""
+				}
 				
 				archiveArtifacts "target/promregator-${currentVersion}*.asc"
 			}
