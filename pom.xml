@@ -276,6 +276,7 @@
 						<artifactId>maven-pmd-plugin</artifactId>
 						<version>3.5</version>
 						<configuration>
+							<linkXRef>false</linkXRef> <!--  see also https://stackoverflow.com/a/18390459 -->
 						</configuration>
 						<executions>
 							<execution>
