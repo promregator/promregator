@@ -19,19 +19,6 @@ timestamps {
 		dir("build") {
 			checkout scm
 			
-			stage("Static Code Checks") {
-				step([
-					$class: 'FindBugsPublisher',
-					pattern: '**/findbugsXml.xml',
-					failedTotalAll: '100'
-				])
-				
-				step([
-					$class: 'PmdPublisher',
-					failedTotalAll: '100'
-				])
-			}
-			
 			stage("Build") {
 				try {
 					sh """#!/bin/bash -xe
@@ -47,6 +34,21 @@ timestamps {
 				
 				step([
 					$class: 'JacocoPublisher'
+				])
+			}
+			
+			stage("Static Code Checks") {
+				recordIssues aggregatingResults: true, enabledForFailure: true, healthy: 10, ignoreQualityGate: true, sourceCodeEncoding: 'UTF-8', tools: [java(pattern: 'target/**/*.xml', reportEncoding: 'UTF-8')], unhealthy: 20
+			
+				step([
+					$class: 'FindBugsPublisher',
+					pattern: '**/findbugsXml.xml',
+					failedTotalAll: '100'
+				])
+				
+				step([
+					$class: 'PmdPublisher',
+					failedTotalAll: '100'
 				])
 			}
 			
