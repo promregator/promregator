@@ -9,8 +9,6 @@ import org.cloudfoundry.promregator.config.validations.TargetsHaveConsistentAuth
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class ConfigurationValidations {
-	private static final Logger log = Logger.getLogger(ConfigurationValidations.class);
-
 	@Autowired
 	private PromregatorConfiguration promregatorConfiguration;
 
