@@ -152,7 +152,7 @@ EOT
 		}
 		
 		stage("Deploy to OSSRH") {
-			withCredentials([usernamePassword(credentialsId: '', passwordVariable: 'JIRA_PASSWORD', usernameVariable: 'JIRA_USERNAME')]) {
+			withCredentials([usernamePassword(credentialsId: 'JIRA_SONARTYPE', passwordVariable: 'JIRA_PASSWORD', usernameVariable: 'JIRA_USERNAME')]) {
 				assert !"${JIRA_USERNAME}".contains("<")
 				assert !"${JIRA_USERNAME}".contains(">")
 				assert !"${JIRA_PASSWORD}".contains("<")
