@@ -57,6 +57,15 @@ public class Target implements Cloneable {
 		}
 	}
 	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#clone()
+	 */
+	@Override
+	protected Object clone() throws CloneNotSupportedException {
+		return new Target(this);
+	}
+
+	
 	public String getOrgName() {
 		return orgName;
 	}
@@ -215,4 +224,6 @@ public class Target implements Cloneable {
 		return builder.toString();
 	}
 
+
+	
 }
