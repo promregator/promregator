@@ -196,9 +196,9 @@ EOT
 				}
 			
 
+				String withDeploy = currentVersion.endsWith("-SNAPSHOT") ? "" : "-PwithDeploy"
 				runWithGPG() {
-					String withDeploy = currentVersion.endsWith("-SNAPSHOT") ? "" : "-PwithDeploy"
-				
+					// unfortunately this also recreates the JAR files again (so we only can archive them afterwards)
 					sh """
 						mvn -U -B -DskipTests -Prelease ${withDeploy} verify
 						
@@ -209,16 +209,21 @@ EOT
 			}
 
 			stage("Hashsumming/Archiving") {
+				// show the current state
+				sh "ls -al"
+				
 				archiveArtifacts "target/promregator-${currentVersion}*.asc"
 				
 				runWithGPG() {
 					sh """
 						gpg --clearsign --personal-digest-preferences SHA512,SHA384,SHA256,SHA224,SHA1 promregator-${currentVersion}.hashsums
-						mv promregator-${currentVersion}.hashsums.asc promregator-${currentVersion}.hashsums
 					"""
 				}
 				
-				sh "cat promregator-${currentVersion}.hashsums"
+				sh """
+					mv promregator-${currentVersion}.hashsums.asc promregator-${currentVersion}.hashsums
+					cat promregator-${currentVersion}.hashsums
+				"""
 				
 				archiveArtifacts "promregator-${currentVersion}.hashsums"
 				
