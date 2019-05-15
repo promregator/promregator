@@ -15,6 +15,7 @@ def getVersion() {
 
 timestamps {
 	node("slave") {
+	
 		dir("build") {
 			checkout scm
 			
@@ -148,6 +149,41 @@ EOT
 				archiveArtifacts "promregator-${currentVersion}.hashsums"
 			}
 			
+		}
+		
+		stage("Deploy to OSSRH") {
+			withCredentials([usernamePassword(credentialsId: '', passwordVariable: 'JIRA_PASSWORD', usernameVariable: 'JIRA_USERNAME')]) {
+				assert !"${JIRA_USERNAME}".contains("<")
+				assert !"${JIRA_USERNAME}".contains(">")
+				assert !"${JIRA_PASSWORD}".contains("<")
+				assert !"${JIRA_PASSWORD}".contains(">")
+			
+				// see also https://central.sonatype.org/pages/apache-maven.html
+				String settingsXML = """
+<settings>
+  <servers>
+    <server>
+      <id>ossrh</id>
+      <username>${JIRA_USERNAME}</username>
+      <password>${JIRA_PASSWORD}</password>
+    </server>
+  </servers>
+  <profiles>
+    <profile>
+      <id>release</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <properties>
+        <gpg.executable>gpg</gpg.executable>
+        <gpg.passphrase></gpg.passphrase>
+      </properties>
+    </profile>
+  </profiles>
+</settings>"""
+				writeFile file : "~/.m2/settings.xml", text: settingsXML
+			}
+		
 		}
 		
 	}
