@@ -23,7 +23,7 @@ timestamps {
 				try {
 					sh """#!/bin/bash -xe
 						export CF_PASSWORD=dummypassword
-						mvn -U -B clean verify
+						mvn -U -B -PwithTests clean verify
 					"""
 				} finally {
 					junit 'target/surefire-reports/*.xml'
@@ -185,7 +185,7 @@ EOT
 				}
 			
 				sh """
-					mvn -U -B -DskipTests -Prelease verify deploy
+					mvn -U -B -Dskip.unit.tests=true -Prelease verify deploy
 					
 					ls -al target/*
 				"""
