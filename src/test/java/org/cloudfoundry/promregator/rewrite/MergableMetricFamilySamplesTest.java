@@ -125,7 +125,6 @@ public class MergableMetricFamilySamplesTest {
 		subject.merge(map1);
 		
 		String result = subject.toType004String();
-		System.out.println(result);
 		
 		String expectedResult = new String(Files.readAllBytes(Paths.get(getClass().getResource("issue104-result.text004").toURI())));
 		Assert.assertEquals(expectedResult, result);
