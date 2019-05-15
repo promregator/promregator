@@ -52,7 +52,7 @@ timestamps {
 				}
 			}
 			
-			stage("Post-processing quality data") {
+			stage("Post-process Jacoco") {
 				
 				step([
 					$class: 'JacocoPublisher'
@@ -125,7 +125,7 @@ timestamps {
 				}
 			}
 			
-			stage("Generate hash values and signature") {
+			stage("Generate hashsum file") {
 				// determine jar file hash values
 				sh """
 					cd target
