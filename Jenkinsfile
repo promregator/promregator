@@ -87,10 +87,6 @@ timestamps {
 				])
 			}
 			
-			stage("Archive") {
-				archiveArtifacts 'target/promregator*.jar'
-			}
-
 			def currentVersion = getVersion()
 			println "Current version is ${currentVersion}"
 			
@@ -164,16 +160,6 @@ EOT
 					"""
 				}
 				
-				runWithGPG() {
-					sh """
-						gpg --clearsign --personal-digest-preferences SHA512,SHA384,SHA256,SHA224,SHA1 promregator-${currentVersion}.hashsums
-						mv promregator-${currentVersion}.hashsums.asc promregator-${currentVersion}.hashsums
-					"""
-				}
-				
-				sh "cat promregator-${currentVersion}.hashsums"
-				
-				archiveArtifacts "promregator-${currentVersion}.hashsums"
 			}
 			
 			stage("Deploy to OSSRH") {
@@ -211,16 +197,34 @@ EOT
 			
 
 				runWithGPG() {
+					String withDeploy = currentVersion.endsWith("-SNAPSHOT") ? "" : "-PwithDeploy"
+				
 					sh """
-						mvn -U -B -Dskip.unit.tests=true -DskipTests -Prelease verify deploy
+						mvn -U -B -DskipTests -Prelease ${withDeploy} verify
 						
 						ls -al target/*
 					"""
 				}
 				
-				archiveArtifacts "target/promregator-${currentVersion}*.asc"
 			}
-			
+
+			stage("Hashsumming/Archiving") {
+				archiveArtifacts "target/promregator-${currentVersion}*.asc"
+				
+				runWithGPG() {
+					sh """
+						gpg --clearsign --personal-digest-preferences SHA512,SHA384,SHA256,SHA224,SHA1 promregator-${currentVersion}.hashsums
+						mv promregator-${currentVersion}.hashsums.asc promregator-${currentVersion}.hashsums
+					"""
+				}
+				
+				sh "cat promregator-${currentVersion}.hashsums"
+				
+				archiveArtifacts "promregator-${currentVersion}.hashsums"
+				
+				archiveArtifacts 'target/promregator*.jar'
+				
+			}
 		}
 		
 		
