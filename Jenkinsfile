@@ -212,7 +212,7 @@ EOT
 
 				runWithGPG() {
 					sh """
-						mvn -U -B -Dskip.unit.tests=true -Prelease verify deploy
+						mvn -U -B -Dskip.unit.tests=true -DskipTests -Prelease verify deploy
 						
 						ls -al target/*
 					"""
