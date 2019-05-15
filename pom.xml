@@ -315,17 +315,17 @@
 							</execution>
 						</executions>
 					</plugin>
-					<plugin>
+<!-- 					<plugin>
 						<groupId>org.sonatype.plugins</groupId>
 						<artifactId>nexus-staging-maven-plugin</artifactId>
-						<version>1.6.7</version>
+						<version>1.6.8</version>
 						<extensions>true</extensions>
 						<configuration>
 							<serverId>ossrh</serverId>
 							<nexusUrl>https://oss.sonatype.org/</nexusUrl>
 							<autoReleaseAfterClose>true</autoReleaseAfterClose>
 						</configuration>
-					</plugin>
+					</plugin> -->
 					<!--  note, that we don't deploy yet, as the namespace isn't registered for us yet -->
 				</plugins>
 

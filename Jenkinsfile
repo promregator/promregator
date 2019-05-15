@@ -184,6 +184,9 @@ EOT
 				writeFile file : "~/.m2/settings.xml", text: settingsXML
 			}
 		
+			sh """
+				mvn verify deploy
+			"""
 		}
 		
 	}
