@@ -13,7 +13,7 @@ def getVersion() {
 	return mvnOutput.substring(8) // trim prefix "VERSION="
 }
 
-def runWithGPG(job) {
+def runWithGPG(Closure job) {
 	withCredentials([file(credentialsId: 'PROMREGATOR_GPG_KEY', variable: 'GPGKEYFILE')]) {
 		try {
 			sh """
@@ -164,7 +164,7 @@ EOT
 					"""
 				}
 				
-				runWithGPG job: {
+				runWithGPG() {
 					sh """
 						gpg --clearsign --personal-digest-preferences SHA512,SHA384,SHA256,SHA224,SHA1 promregator-${currentVersion}.hashsums
 						mv promregator-${currentVersion}.hashsums.asc promregator-${currentVersion}.hashsums
@@ -210,7 +210,7 @@ EOT
 				}
 			
 
-				runWithGPG job: {
+				runWithGPG() {
 					sh """
 						mvn -U -B -Dskip.unit.tests=true -Prelease verify deploy
 						
