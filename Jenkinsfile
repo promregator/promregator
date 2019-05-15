@@ -74,17 +74,6 @@ timestamps {
 						javaDoc(reportEncoding: 'UTF-8'),
 						mavenConsole(reportEncoding: 'UTF-8')
 					]
-			
-				step([
-					$class: 'FindBugsPublisher',
-					pattern: '**/findbugsXml.xml',
-					failedTotalAll: '100'
-				])
-				
-				step([
-					$class: 'PmdPublisher',
-					failedTotalAll: '100'
-				])
 			}
 			
 			def currentVersion = getVersion()
