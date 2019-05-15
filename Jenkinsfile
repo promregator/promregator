@@ -186,6 +186,8 @@ EOT
 		
 			sh """
 				mvn verify deploy
+				
+				ls -al target/*
 			"""
 		}
 		
