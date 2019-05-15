@@ -191,7 +191,7 @@ public abstract class AbstractMetricsEndpoint {
 	 * 
 	 * The implementing class is suggested to write the duration into an own sample for the corresponding
 	 * metric.
-	 * @param requestReqistry the registry to which the metric shall be / is registered.
+	 * @param requestRegistry the registry to which the metric shall be / is registered.
 	 * @param duration the duration of the just completed scrape request.
 	 */
 	protected abstract void handleScrapeDuration(CollectorRegistry requestRegistry, Duration duration);
