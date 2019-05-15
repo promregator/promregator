@@ -148,3 +148,7 @@ then comes to your rescue.
 6. Play around with the other metrics, which are provided.
 
 Done! You have just created your first promregator setup!
+
+## Final Remarks
+
+This is only a very quick walk through the most important settings to get you started. There are many more configuration options available to you. Foremost, there are the [documentation](./documentation.md) and [configuration](./config.md) pages. They also explain how you can operate Promregator using the JAR files (instead of the docker image).
