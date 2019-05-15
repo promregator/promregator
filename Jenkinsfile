@@ -188,7 +188,7 @@ EOT
 					ls -al target/*
 				"""
 				
-				archiveArtifacts "promregator-${currentVersion}*.asc"
+				archiveArtifacts "target/promregator-${currentVersion}*.asc"
 			}
 			
 		}
