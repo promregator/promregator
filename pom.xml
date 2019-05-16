@@ -9,8 +9,31 @@
 	<version>0.6.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>promregator</name>
+	<name>Promregator</name>
 	<description>Prometheus/CloudFoundry Metrics Aggregator</description>
+	<url>https://github.com/promregator/promregator</url>
+
+	<licenses>
+		<license>
+			<name>The Apache License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+		</license>
+	</licenses>
+	
+	<developers>
+		<developer>
+			<name>Nico Schmoigl</name>
+			<email>github@schmoigl-online.de</email>
+			<organization>n/a</organization>
+			<organizationUrl>https://github.com/eaglerainbow</organizationUrl>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection>scm:git:https://github.com/promregator/promregator.git</connection>
+		<developerConnection>scm:git:ssh://github.com:promregator/promregator.git</developerConnection>
+		<url>https://github.com/promregator/promregator/tree/master/</url>
+	</scm>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -276,8 +299,8 @@
 						<artifactId>maven-pmd-plugin</artifactId>
 						<version>3.12.0</version>
 						<configuration>
-							<linkXRef>false</linkXRef> <!--  see also https://stackoverflow.com/a/18390459 -->
-							<!--  see also https://stackoverflow.com/a/38958480 -->
+							<linkXRef>false</linkXRef> <!-- see also https://stackoverflow.com/a/18390459 -->
+							<!-- see also https://stackoverflow.com/a/38958480 -->
 							<rulesets>
 								<ruleset>${pom.basedir}/test/pmd/pmd-exclude.xml</ruleset>
 							</rulesets>
