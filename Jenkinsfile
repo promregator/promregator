@@ -68,7 +68,7 @@ timestamps {
 					sourceCodeEncoding: 'UTF-8', 
 					tools: [
 						java(reportEncoding: 'UTF-8'),
-						pmdParser(pattern: 'target/*.xml', reportEncoding: 'UTF-8'),
+						pmdParser(pattern: 'target/pmd.xml', reportEncoding: 'UTF-8'),
 						findBugs(pattern: 'target/findbugsXml.xml', reportEncoding: 'UTF-8', useRankAsPriority: true),
 						cpd(pattern: 'target/cpd.xml', reportEncoding: 'UTF-8'),
 						javaDoc(reportEncoding: 'UTF-8'),

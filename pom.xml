@@ -274,9 +274,13 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-pmd-plugin</artifactId>
-						<version>3.5</version>
+						<version>3.12.0</version>
 						<configuration>
 							<linkXRef>false</linkXRef> <!--  see also https://stackoverflow.com/a/18390459 -->
+							<!--  see also https://stackoverflow.com/a/38958480 -->
+							<rulesets>
+								<ruleset>${pom.basedir}/test/pmd/pmd-exclude.xml</ruleset>
+							</rulesets>
 						</configuration>
 						<executions>
 							<execution>
