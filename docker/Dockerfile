@@ -27,14 +27,19 @@ RUN groupadd --gid $gid $group && useradd --gid $gid --uid $uid $user && \
 	mkdir -p /home/$user && \
 	chown $user.$group /home/$user && \
 	chmod 0700 /home/$user && \
-	mkdir -p /opt/promregator /etc/promregator && \
-	chmod 0750 /opt/promregator /etc/promregator
+	mkdir -p /etc/promregator && \
+	chmod 0750 /etc/promregator && \
+	chown -R $user.$group /etc/promregator 
 
-COPY data/* /opt/promregator/
+# for the idea, see also https://stackoverflow.com/a/53398981
+COPY data/* /tmp/promregator/
 
-RUN chown -R $user.$group /opt/promregator /etc/promregator && \
-	chmod 0640 /opt/promregator/* && \
-	chmod 0770 /opt/promregator/promregator.sh 
+RUN chown -R $user.$group /tmp/promregator && \
+	chmod 0750 /tmp/promregator && \
+	chmod 0640 /tmp/promregator/* && \
+	chmod 0770 /tmp/promregator/promregator.sh && \
+	cd /tmp && \
+	mv promregator /opt
 
 USER $user
 
