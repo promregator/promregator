@@ -21,5 +21,11 @@ cd /home/promregator
 ln -sf ../../$PROMREGATOR_CONFIG_DIR/promregator.yml .
 ln -sf ../../$PROMREGATOR_CONFIG_DIR/promregator.properties .
 
+
+# Configuring ENCRYPT_KEY from docker secrets (if available) - see also #88 and #62
+if [ "$ENCRYPT_KEY_FILE" == "" ]; then
+	export ENCRYPT_KEY="`cat /run/secrets/$ENCRYPT_KEY_FILE`"
+fi
+
 $JAVACMD $JAVA_MEM_OPTS $JAVA_OPTS -Dspring.config.name=promregator -jar /opt/promregator/promregator.jar
 
