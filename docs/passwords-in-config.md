@@ -88,3 +88,41 @@ docker run -d \
 ### Note on Spring Boot Version Clashes
 
 Note that there is an incompatibility on the spring-boot-cli at 2.0.9 and above against the spring-boot-cloud-cli 2.0.0. To prevent this, make sure that you first install spring-boot-cli:2.0.8 until a compatible version is provided.
+
+
+### Support for Docker Secrets
+
+The Docker image of Promregator (starting with version 0.6.0) also supports setting the ENCRYPT_KEY environment variable using the [Docker Secrets approach](https://docs.docker.com/engine/swarm/secrets/). Note that there is also a configuration option "secrets" in Docker Compose, which permits you [using docker secrets even without having swarm enabled](https://stackoverflow.com/a/48460539).
+
+For this, the environment variable `ENCRYPT_KEY_FILE` must specify the name of the file containing the secret in the `/run/secrets` directory. Here is an example:
+
+Let us assume that you have the following two files in your folder:
+
+```
+docker-compose.yaml
+promregator_encrypt_key.txt
+```
+
+The latter file contains the secret which you want to set as `ENCRYPT_KEY` (keep in mind that you should NOT have a newline at the end in this file, if you do not mean so!). Then, consider the following content of your `docker-compose.yaml` file:
+
+```yaml
+version: '3.3'
+
+services:
+  promregator:
+    image: promregator/promregator:0.6.0
+    environment:
+     ENCRYPT_KEY_FILE: promregator_encrypt_key
+    volumes:
+     - ./promregator.yaml:/etc/promregator/promregator.yml
+    secrets:
+     - promregator_encrypt_key
+    
+secrets:
+  promregator_encrypt_key:
+    file: promregator_encrypt_key.txt
+```
+
+Technically, this makes docker read the file `promregator_encrypt_key.txt` and bind it as `/run/secrets/promregator_encrypt_key` into the running container. The value `promregator_encrypt_key` of the environment variable `ENCRYPT_KEY_FILE` instructs Promregator to look for the file `/run/secrets/promregator_encrypt_key` and retrieve its content. It then will be mapped to the `ENCRYPT_KEY` environment variable prior to starting Promregator.
+
+By this, the spring cloud encryption key never is stored in the container's environment context, but only read at the last moment into the environment *inside* the container, where it is the hardest to be retrieved for a potential attacker.
