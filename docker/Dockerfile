@@ -35,7 +35,7 @@ RUN groupadd --gid $gid $group && useradd --gid $gid --uid $uid $user && \
 	chown -R $user.$group /etc/promregator 
 
 # Setup folder et al.
-RUN mkdir -o /opt/promregator && \
+RUN mkdir -p /opt/promregator && \
 	chown -R $user.$group /opt/promregator && \
 	chmod 0750 /opt/promregator && \
 	chmod 0640 /opt/promregator/* && \
