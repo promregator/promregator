@@ -1,6 +1,9 @@
 #!/bin/bash -xe
 
-JAVACMD=/usr/bin/java
+if [ "$JAVACMD" == "" ]; then
+	# Note: this supports mocking for our test environment of this script
+	JAVACMD=/usr/bin/java
+fi
 
 if [ "$JAVA_MEM_OPTS" == "" ]; then
 	JAVA_MEM_OPTS="-XX:+PrintFlagsFinal -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Xss600k -XX:ReservedCodeCacheSize=256m -XX:MaxMetaspaceSize=300m"
