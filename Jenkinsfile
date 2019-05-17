@@ -76,6 +76,15 @@ timestamps {
 					]
 			}
 			
+			stage("Tests for Docker Image") {
+				sh """
+					chmod +x docker/data/promregator.sh
+					chmod +x test/docker/startscript/*.sh
+					cd test/docker/startscript
+					./runtests.sh
+				"""
+			}
+			
 			def currentVersion = getVersion()
 			println "Current version is ${currentVersion}"
 			
