@@ -48,7 +48,7 @@ Further information on this can also be found in the official [Docker reference 
 
 ## Using Encrypted Password in Configuration
 
-As an alternative for using environment variables for the password you can use encrypted password (values starting with `{cipher}`) in the configuration. 
+As an alternative for using environment variables for the password, you can use encrypted password (values starting with `{cipher}`) in the configuration (available since Promregator version 0.6.0).
 This allows you to check the configuration into a version control system. 
 See also the documentation about [Encryption & Decryption](http://cloud.spring.io/spring-cloud-config/spring-cloud-config.html#_encryption_and_decryption) of the Spring Cloud Config Server.
 
@@ -77,9 +77,14 @@ promregator:
 ```
 
 If you are running promregator as docker container you can provide the environment variable in the following way
-```
+
+```bash
 docker run -d \
  --env ENCRYPT_KEY=mySecretKey \
  -v /path/to/your/config/with/encrypted/attributes/myconfig.yaml:/etc/promregator/promregator.yml \
  promregator/promregator:<version>
 ```
+
+### Note on Spring Boot Version Clashes
+
+Note that there is an incompatibility on the spring-boot-cli at 2.0.9 and above against the spring-boot-cloud-cli 2.0.0. To prevent this, make sure that you first install spring-boot-cli:2.0.8 until a compatible version is provided.
