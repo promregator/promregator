@@ -9,8 +9,6 @@ FROM openjdk:8-jdk
 # Warning! We are currently unable to use openjdk9 due to https://github.com/docker-library/openjdk/issues/145
 # Warning! If changing to 9-jre, we also have to change the options "-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap" in data/promregator.sh
 
-ARG user=promregator
-ARG group=promregator
 ARG uid=1000
 ARG gid=1000
 
@@ -26,24 +24,24 @@ RUN apt-get update && apt-get -y install -y \
 	&& apt-get -q autoremove && apt-get -q clean -y && rm -rf /var/lib/apt/lists/*
 
 # Setup of promregator user
-RUN groupadd --gid $gid $group && useradd --gid $gid --uid $uid $user && \
-	mkdir -p /home/$user && \
-	chown $user.$group /home/$user && \
-	chmod 0700 /home/$user && \
+RUN groupadd --gid $gid promregator && useradd --gid $gid --uid $uid promregator && \
+	mkdir -p /home/promregator && \
+	chown promregator.promregator /home/promregator && \
+	chmod 0700 /home/promregator && \
 	mkdir -p /etc/promregator && \
 	chmod 0750 /etc/promregator && \
-	chown -R $user.$group /etc/promregator 
+	chown -R promregator.promregator /etc/promregator 
 
 # Setup folder et al.
 RUN mkdir -p /opt/promregator && \
-	chown -R $user.$group /opt/promregator && \
+	chown -R promregator.promregator /opt/promregator && \
 	chmod 0750 /opt/promregator && \
 	chmod 0640 /opt/promregator/* 
 
 # for the idea, see also https://stackoverflow.com/a/53398981
-COPY --chown $user:$group data/* /opt/promregator/
+COPY --chown promregator:promregator data/* /opt/promregator/
 
-USER $user
+USER promregator
 
 CMD /opt/promregator/promregator.sh
 
