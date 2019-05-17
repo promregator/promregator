@@ -1,5 +1,8 @@
 
 # Note: jre does not include the support tools like jstack etc. That's why
+# Warning! This script assumes that the files in data/* already have the right *permissions* set.
+# Ownership will be adjusted by this script, though
+
 # we use the JDK as foundation.
 FROM openjdk:8-jdk
 
@@ -31,15 +34,14 @@ RUN groupadd --gid $gid $group && useradd --gid $gid --uid $uid $user && \
 	chmod 0750 /etc/promregator && \
 	chown -R $user.$group /etc/promregator 
 
-# for the idea, see also https://stackoverflow.com/a/53398981
-COPY data/* /tmp/promregator/
+# Setup folder et al.
+RUN mkdir -o /opt/promregator && \
+	chown -R $user.$group /opt/promregator && \
+	chmod 0750 /opt/promregator && \
+	chmod 0640 /opt/promregator/* && \
 
-RUN chown -R $user.$group /tmp/promregator && \
-	chmod 0750 /tmp/promregator && \
-	chmod 0640 /tmp/promregator/* && \
-	chmod 0770 /tmp/promregator/promregator.sh && \
-	cd /tmp && \
-	mv promregator /opt
+# for the idea, see also https://stackoverflow.com/a/53398981
+COPY --chown $user:$group data/* /opt/promregator/
 
 USER $user
 

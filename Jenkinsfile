@@ -88,6 +88,11 @@ timestamps {
 					sh """
 						ln ../target/promregator-${currentVersion}.jar data/promregator.jar
 						
+						# Necessary Preperation
+						chmod 0750 data
+						chmod 0640 data/*
+						chmod 0770 data/promregator.sh 
+						
 						docker build --pull --compress -t ${imageName} .
 						
 						docker history ${imageName}
