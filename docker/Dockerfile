@@ -38,7 +38,7 @@ RUN groupadd --gid $gid $group && useradd --gid $gid --uid $uid $user && \
 RUN mkdir -p /opt/promregator && \
 	chown -R $user.$group /opt/promregator && \
 	chmod 0750 /opt/promregator && \
-	chmod 0640 /opt/promregator/* && \
+	chmod 0640 /opt/promregator/* 
 
 # for the idea, see also https://stackoverflow.com/a/53398981
 COPY --chown $user:$group data/* /opt/promregator/
