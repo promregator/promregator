@@ -41,7 +41,7 @@ RUN mkdir -p /opt/promregator && \
 	chmod 0640 /opt/promregator/* 
 
 # for the idea, see also https://stackoverflow.com/a/53398981
-COPY --chown $user:$group data/* /opt/promregator/
+COPY --chown=$user:$group data/* /opt/promregator/
 
 USER $user
 
