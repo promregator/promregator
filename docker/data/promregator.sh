@@ -27,7 +27,7 @@ ln -sf ../../$PROMREGATOR_CONFIG_DIR/promregator.properties .
 
 # Configuring ENCRYPT_KEY from docker secrets (if available) - see also #88 and #62
 if [ -d /run/secrets ]; then
-	ls -al /run/secrets/*
+	ls -al /run/secrets/
 fi
 
 set +x
