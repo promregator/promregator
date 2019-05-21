@@ -245,6 +245,13 @@ scrape_configs:
       password: somepassword
 ```
 
+## Limitations
+
+The following limitations of Promregator are known:
+
+* In Single Endpoint Scraping mode, target instances which expose metrics that have conflicting metric types will cause that some metrics values must be dropped. For a discussion of this case (and suggested solutions), please refer to [this wiki page](https://github.com/promregator/promregator/wiki/Multiple-Type-Declarations-of-a-Metric-Cause-a-Collision-in-Single-Endpoint-Scraping-Mode).
+
+
 ## Logging
 
 ### Log Levels
