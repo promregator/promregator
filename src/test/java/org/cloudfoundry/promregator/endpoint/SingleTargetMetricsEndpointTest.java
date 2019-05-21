@@ -5,8 +5,10 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.fetcher.TextFormat004Parser;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,6 +32,11 @@ public class SingleTargetMetricsEndpointTest {
 	@After
 	public void resetMockedHTTPServletRequest() {
 		Mockito.reset(MockedMetricsEndpointSpringApplication.mockedHttpServletRequest);
+	}
+	
+	@AfterClass
+	public static void cleanupEnvironment() {
+		JUnitTestUtils.cleanUpAll();
 	}
 	
 	@Autowired
