@@ -15,7 +15,6 @@ import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-import io.netty.handler.codec.CorruptedFrameException;
 import reactor.core.publisher.Mono;
 
 public class CFAccessorCache implements CFAccessor {
@@ -118,17 +117,6 @@ public class CFAccessorCache implements CFAccessor {
 				if (this.internalMetrics != null) {
 					this.internalMetrics.countAutoRefreshingCacheMapErroneousEntriesDisplaced(this.orgCache.getName());
 				}
-			} else if (e instanceof CorruptedFrameException) {
-				// TODO should get removed once https://github.com/cloudfoundry/cf-java-client/issues/964 has been resolved / a fix is available
-				log.warn(String.format("Entry with invalid data response using key %s detected, which would get stuck in our org cache; "
-						+ "displacing it now to prevent further harm", orgName), e);
-				
-				this.orgCache.remove(orgName);
-				
-				// Notify metrics of this case
-				if (this.internalMetrics != null) {
-					this.internalMetrics.countAutoRefreshingCacheMapErroneousEntriesDisplaced(this.orgCache.getName());
-				}
 			}
 		});
 		/*
@@ -186,17 +174,6 @@ public class CFAccessorCache implements CFAccessor {
 				 * 4. The entry has already been deleted by someone else: the remove(key) operation will 
 				 *    simply be a NOOP. => no harm done either.
 				 */
-				this.spaceCache.remove(cacheKey);
-				
-				// Notify metrics of this case
-				if (this.internalMetrics != null) {
-					this.internalMetrics.countAutoRefreshingCacheMapErroneousEntriesDisplaced(this.spaceCache.getName());
-				}
-			} else if (e instanceof CorruptedFrameException) {
-				// TODO should get removed once https://github.com/cloudfoundry/cf-java-client/issues/964 has been resolved / a fix is available
-				log.warn(String.format("Entry with invalid data response using key %s detected, which would get stuck in our space cache; "
-						+ "displacing it now to prevent further harm", cacheKey), e);
-				
 				this.spaceCache.remove(cacheKey);
 				
 				// Notify metrics of this case
@@ -267,17 +244,6 @@ public class CFAccessorCache implements CFAccessor {
 				if (this.internalMetrics != null) {
 					this.internalMetrics.countAutoRefreshingCacheMapErroneousEntriesDisplaced(this.appsInSpaceCache.getName());
 				}
-			} else if (e instanceof CorruptedFrameException) {
-				// TODO should get removed once https://github.com/cloudfoundry/cf-java-client/issues/964 has been resolved / a fix is available
-				log.warn(String.format("Entry with invalid data response using key %s detected, which would get stuck in our appsInSpace cache; "
-						+ "displacing it now to prevent further harm", cacheKey), e);
-				
-				this.appsInSpaceCache.remove(cacheKey);
-				
-				// Notify metrics of this case
-				if (this.internalMetrics != null) {
-					this.internalMetrics.countAutoRefreshingCacheMapErroneousEntriesDisplaced(this.appsInSpaceCache.getName());
-				}
 			}
 		});
 		/*
@@ -335,17 +301,6 @@ public class CFAccessorCache implements CFAccessor {
 				 * 4. The entry has already been deleted by someone else: the remove(key) operation will 
 				 *    simply be a NOOP. => no harm done either.
 				 */
-				this.spaceSummaryCache.remove(spaceId);
-				
-				// Notify metrics of this case
-				if (this.internalMetrics != null) {
-					this.internalMetrics.countAutoRefreshingCacheMapErroneousEntriesDisplaced(this.spaceSummaryCache.getName());
-				}
-			} else if (e instanceof CorruptedFrameException) {
-				// TODO should get removed once https://github.com/cloudfoundry/cf-java-client/issues/964 has been resolved / a fix is available
-				log.warn(String.format("Entry with invalid data response using key %s detected, which would get stuck in our spaceSummary cache; "
-						+ "displacing it now to prevent further harm", spaceId), e);
-				
 				this.spaceSummaryCache.remove(spaceId);
 				
 				// Notify metrics of this case
