@@ -1,6 +1,7 @@
 package org.cloudfoundry.promregator;
 
 
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -30,6 +31,11 @@ public class SpringBootLoadPropertiesForTesting {
 	@Autowired
 	private SpringBootLoadPropertiesForTestingSpringApplication springBootLoadPropertiesForTestingSpringApplication;
 
+	@AfterClass
+	public static void cleanupEnvironment() {
+		JUnitTestUtils.cleanUpAll();
+	}
+	
 	@Test
 	public void testContextLoads() {
 		springBootLoadPropertiesForTestingSpringApplication.check();

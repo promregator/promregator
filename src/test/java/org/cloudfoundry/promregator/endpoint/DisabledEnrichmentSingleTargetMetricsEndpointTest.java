@@ -3,6 +3,7 @@ package org.cloudfoundry.promregator.endpoint;
 import java.io.IOException;
 import java.util.HashMap;
 
+import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.fetcher.TextFormat004Parser;
 import org.cloudfoundry.promregator.mockServer.DefaultMetricsEndpointHttpHandler;
 import org.cloudfoundry.promregator.mockServer.MetricsEndpointMockServer;
@@ -41,6 +42,11 @@ public class DisabledEnrichmentSingleTargetMetricsEndpointTest {
 	@AfterClass
 	public static void stopMockedTargetMetricsEndpoint() {
 		mockServer.stop();
+	}
+	
+	@AfterClass
+	public static void cleanupEnvironment() {
+		JUnitTestUtils.cleanUpAll();
 	}
 	
 	@Autowired
