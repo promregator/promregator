@@ -7,12 +7,12 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 import reactor.core.publisher.Mono;
 
-@SpringBootApplication
+@Configuration
 public class CFAccessorCacheTimeoutSpringApplication {
 
 	@Bean
