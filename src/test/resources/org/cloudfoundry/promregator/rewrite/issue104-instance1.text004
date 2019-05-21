@@ -63,7 +63,7 @@ population{org_name="org1",space_name="QA",app_name="prometheus-exporter-java-sp
 # TYPE tomcat_threads_config_max_threads gauge
 tomcat_threads_config_max_threads{name="http-nio-8080",org_name="org1",space_name="QA",app_name="prometheus-exporter-java-spring-demo2",cf_instance_id="7618547f-06d1-468f-93cc-9f2c7082fb67:1",cf_instance_number="1",} 200.0
 # HELP http_server_requests_seconds 
-# TYPE http_server_requests_seconds histogram
+# TYPE http_server_requests_seconds summary
 http_server_requests_seconds_bucket{exception="None",method="GET",outcome="SUCCESS",status="200",uri="/actuator/prometheus",le="0.001",org_name="org1",space_name="QA",app_name="prometheus-exporter-java-spring-demo2",cf_instance_id="7618547f-06d1-468f-93cc-9f2c7082fb67:1",cf_instance_number="1",} 0.0
 http_server_requests_seconds_bucket{exception="None",method="GET",outcome="SUCCESS",status="200",uri="/actuator/prometheus",le="0.005",org_name="org1",space_name="QA",app_name="prometheus-exporter-java-spring-demo2",cf_instance_id="7618547f-06d1-468f-93cc-9f2c7082fb67:1",cf_instance_number="1",} 0.0
 http_server_requests_seconds_bucket{exception="None",method="GET",outcome="SUCCESS",status="200",uri="/actuator/prometheus",le="0.1",org_name="org1",space_name="QA",app_name="prometheus-exporter-java-spring-demo2",cf_instance_id="7618547f-06d1-468f-93cc-9f2c7082fb67:1",cf_instance_number="1",} 1.0

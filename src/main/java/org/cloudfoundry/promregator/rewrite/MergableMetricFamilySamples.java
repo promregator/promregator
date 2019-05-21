@@ -44,7 +44,12 @@ public class MergableMetricFamilySamples {
 			}
 			
 			if (otherMFS.type != mfs.type) {
-				log.warn(String.format("Attempt to merge metric %s, but types are deviating: %s vs. %s", metricName, otherMFS.toString(), mfs.toString()));
+				final String logmsg = String.format("Scraping resulted in a collision of metric types for metric with name %s. "
+						+ "The conflicting types provided were %s and %s. The data with type %s is kept, while the other metrics values will be dropped. "
+						+ "For further details see also https://github.com/promregator/promregator/wiki/Multiple-Type-Declarations-of-a-Metric-Cause-a-Collision-in-Single-Endpoint-Scraping-Mode ; "
+						+ "Details: metric data already stored: %s --- metric data requested to be merged, but failed to do so: %s", 
+						metricName, mfs.type.toString(), otherMFS.type.toString(), mfs.type.toString(), mfs.toString(), otherMFS.toString());
+				log.warn(logmsg);
 				continue;
 			}
 			
