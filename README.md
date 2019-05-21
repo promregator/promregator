@@ -1,4 +1,4 @@
-<div style="font-size:large">Promregator is looking for <a href="https://github.com/promregator/promregator/wiki/Supporters-Wanted!">contributors/supports</a></div>!
+<div style="font-size:large">Promregator is looking for <a href="https://github.com/promregator/promregator/wiki/Supporters-Wanted!">contributors/supporters</a>!</div>
 
 # Promregator Project
 
