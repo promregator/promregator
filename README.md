@@ -1,4 +1,7 @@
+<div style="font-size:large">Promregator is seeking [contributors/supports](https://github.com/promregator/promregator/wiki/Supporters-Wanted!)!</div>
+
 # Promregator Project
+
 
 The term "Promregator" is an artifical composite of the two terms "Prometheus" and "aggregator".
 
