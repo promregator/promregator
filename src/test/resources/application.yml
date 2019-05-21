@@ -3,6 +3,8 @@ spring.profiles: springBootLoadPropertiesForTesting
 
 dummy:
   value: true
+secret:
+  value : '{cipher}d93dd725143e187804e4105a681706c1185c58f92086bf55aa830e61c0527060'
 
 ---
 

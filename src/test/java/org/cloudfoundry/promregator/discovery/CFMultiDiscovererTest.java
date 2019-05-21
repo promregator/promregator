@@ -104,7 +104,7 @@ public class CFMultiDiscovererTest {
 		
 		for (int i = 0;i<10;i++) {
 			if (this.removerTriggerForInstances.size() == 0) {
-				Thread.sleep(100);
+				Thread.sleep(400);
 				continue;
 			}
 			Assert.assertEquals(2, this.removerTriggerForInstances.size());

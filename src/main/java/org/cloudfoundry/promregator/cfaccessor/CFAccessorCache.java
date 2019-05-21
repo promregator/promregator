@@ -1,6 +1,7 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
 import java.time.Duration;
+import java.util.concurrent.TimeoutException;
 
 import javax.annotation.PostConstruct;
 
@@ -77,6 +78,56 @@ public class CFAccessorCache implements CFAccessor {
 		 * Fortunately, we can do this very easily:
 		 */
 		mono.subscribe();
+		
+		/*
+		 * Handling for issue #96: If a timeout of the request to the  CF Cloud Controller occurs, 
+		 * we must make sure that the erroneous Mono is not kept in the cache. Instead we have to displace the item, 
+		 * which triggers a refresh of the cache.
+		 * 
+		 * Note that subscribe() must be called *before* adding this error handling below.
+		 * Otherwise we will run into the situation that the error handling routine is called by this
+		 * subscribe() already - but the Mono has not been written into the cache yet!
+		 * If we do it in this order, the doOnError method will only be called once the first "real subscriber" 
+		 * of the Mono will start requesting.
+		 */
+		mono = mono.doOnError(e -> {
+			if (e instanceof TimeoutException) {
+				log.warn(String.format("Timed-out entry using key %s detected, which would get stuck in our org cache; "
+						+ "displacing it now to prevent further harm", orgName), e);
+				/* 
+				 * Note that it *might* happen that a different Mono gets displaced than the one we are in here now. 
+				 * Yet, we can't make use of the
+				 * 
+				 * remove(key, value)
+				 * 
+				 * method, as providing value would lead to a hen-egg problem (we were required to provide the reference
+				 * of the Mono instance, which we are just creating).
+				 * Instead, we just blindly remove the entry from the cache. This may lead to four cases to consider:
+				 * 
+				 * 1. We hit the correct (erroneous) entry: then this is exactly what we want to do.
+				 * 2. We hit another erroneous entry: then we have no harm done, because we fixed yet another case.
+				 * 3. We hit a healthy entry: Bad luck; on next iteration, we will get a cache miss, which automatically
+				 *    fixes the issue (as long this does not happen too often, ...)
+				 * 4. The entry has already been deleted by someone else: the remove(key) operation will 
+				 *    simply be a NOOP. => no harm done either.
+				 */
+				this.orgCache.remove(orgName);
+				
+				// Notify metrics of this case
+				if (this.internalMetrics != null) {
+					this.internalMetrics.countAutoRefreshingCacheMapErroneousEntriesDisplaced(this.orgCache.getName());
+				}
+			}
+		});
+		/*
+		 * Keep in mind that doOnError is a side-effect:  The logic above only removes it from the cache. 
+		 * The erroneous instance still is used downstream and will trigger subsequent error handling (including 
+		 * logging) there.
+		 * Note that this also holds true during the timeframe of the timeout: This instance of the Mono will 
+		 * be written to the cache, thus all consumers of the cache will be handed out the cached, not-yet-resolved 
+		 * object instance. This implicitly makes sure that there can only be one valid pending request is out there.
+		 */
+		
 		return mono;
 	}
 	
@@ -90,11 +141,62 @@ public class CFAccessorCache implements CFAccessor {
 		 * Fortunately, we can do this very easily:
 		 */
 		mono.subscribe();
+		
+		/*
+		 * Handling for issue #96: If a timeout of the request to the  CF Cloud Controller occurs, 
+		 * we must make sure that the erroneous Mono is not kept in the cache. Instead we have to displace the item, 
+		 * which triggers a refresh of the cache.
+		 * 
+		 * Note that subscribe() must be called *before* adding this error handling below.
+		 * Otherwise we will run into the situation that the error handling routine is called by this
+		 * subscribe() already - but the Mono has not been written into the cache yet!
+		 * If we do it in this order, the doOnError method will only be called once the first "real subscriber" 
+		 * of the Mono will start requesting.
+		 */
+		mono = mono.doOnError(e -> {
+			if (e instanceof TimeoutException) {
+				log.warn(String.format("Timed-out entry using key %s detected, which would get stuck in our space cache; "
+						+ "displacing it now to prevent further harm", cacheKey), e);
+				/* 
+				 * Note that it *might* happen that a different Mono gets displaced than the one we are in here now. 
+				 * Yet, we can't make use of the
+				 * 
+				 * remove(key, value)
+				 * 
+				 * method, as providing value would lead to a hen-egg problem (we were required to provide the reference
+				 * of the Mono instance, which we are just creating).
+				 * Instead, we just blindly remove the entry from the cache. This may lead to four cases to consider:
+				 * 
+				 * 1. We hit the correct (erroneous) entry: then this is exactly what we want to do.
+				 * 2. We hit another erroneous entry: then we have no harm done, because we fixed yet another case.
+				 * 3. We hit a healthy entry: Bad luck; on next iteration, we will get a cache miss, which automatically
+				 *    fixes the issue (as long this does not happen too often, ...)
+				 * 4. The entry has already been deleted by someone else: the remove(key) operation will 
+				 *    simply be a NOOP. => no harm done either.
+				 */
+				this.spaceCache.remove(cacheKey);
+				
+				// Notify metrics of this case
+				if (this.internalMetrics != null) {
+					this.internalMetrics.countAutoRefreshingCacheMapErroneousEntriesDisplaced(this.spaceCache.getName());
+				}
+			}
+		});
+		/*
+		 * Keep in mind that doOnError is a side-effect:  The logic above only removes it from the cache. 
+		 * The erroneous instance still is used downstream and will trigger subsequent error handling (including 
+		 * logging) there.
+		 * Note that this also holds true during the timeframe of the timeout: This instance of the Mono will 
+		 * be written to the cache, thus all consumers of the cache will be handed out the cached, not-yet-resolved 
+		 * object instance. This implicitly makes sure that there can only be one valid pending request is out there.
+		 */
+
 		return mono;
 	}
 	
 	private Mono<ListApplicationsResponse> appsInSpaceCacheLoader(CacheKeyAppsInSpace cacheKey) {
 		Mono<ListApplicationsResponse> mono = this.parent.retrieveAllApplicationIdsInSpace(cacheKey.getOrgId(), cacheKey.getSpaceId()).cache();
+		
 		
 		/*
 		 * Note that the mono does not have any subscriber, yet! 
@@ -103,6 +205,56 @@ public class CFAccessorCache implements CFAccessor {
 		 * Fortunately, we can do this very easily:
 		 */
 		mono.subscribe();
+		
+		/*
+		 * Handling for issue #96: If a timeout of the request to the  CF Cloud Controller occurs, 
+		 * we must make sure that the erroneous Mono is not kept in the cache. Instead we have to displace the item, 
+		 * which triggers a refresh of the cache.
+		 * 
+		 * Note that subscribe() must be called *before* adding this error handling below.
+		 * Otherwise we will run into the situation that the error handling routine is called by this
+		 * subscribe() already - but the Mono has not been written into the cache yet!
+		 * If we do it in this order, the doOnError method will only be called once the first "real subscriber" 
+		 * of the Mono will start requesting.
+		 */
+		mono = mono.doOnError(e -> {
+			if (e instanceof TimeoutException) {
+				log.warn(String.format("Timed-out entry using key %s detected, which would get stuck in our appsInSpace cache; "
+						+ "displacing it now to prevent further harm", cacheKey), e);
+				/* 
+				 * Note that it *might* happen that a different Mono gets displaced than the one we are in here now. 
+				 * Yet, we can't make use of the
+				 * 
+				 * remove(key, value)
+				 * 
+				 * method, as providing value would lead to a hen-egg problem (we were required to provide the reference
+				 * of the Mono instance, which we are just creating).
+				 * Instead, we just blindly remove the entry from the cache. This may lead to four cases to consider:
+				 * 
+				 * 1. We hit the correct (erroneous) entry: then this is exactly what we want to do.
+				 * 2. We hit another erroneous entry: then we have no harm done, because we fixed yet another case.
+				 * 3. We hit a healthy entry: Bad luck; on next iteration, we will get a cache miss, which automatically
+				 *    fixes the issue (as long this does not happen too often, ...)
+				 * 4. The entry has already been deleted by someone else: the remove(key) operation will 
+				 *    simply be a NOOP. => no harm done either.
+				 */
+				this.appsInSpaceCache.remove(cacheKey);
+				
+				// Notify metrics of this case
+				if (this.internalMetrics != null) {
+					this.internalMetrics.countAutoRefreshingCacheMapErroneousEntriesDisplaced(this.appsInSpaceCache.getName());
+				}
+			}
+		});
+		/*
+		 * Keep in mind that doOnError is a side-effect:  The logic above only removes it from the cache. 
+		 * The erroneous instance still is used downstream and will trigger subsequent error handling (including 
+		 * logging) there.
+		 * Note that this also holds true during the timeframe of the timeout: This instance of the Mono will 
+		 * be written to the cache, thus all consumers of the cache will be handed out the cached, not-yet-resolved 
+		 * object instance. This implicitly makes sure that there can only be one valid pending request is out there.
+		 */
+
 		return mono;
 	}
 	
@@ -116,6 +268,56 @@ public class CFAccessorCache implements CFAccessor {
 		 * Fortunately, we can do this very easily:
 		 */
 		mono.subscribe();
+		
+		/*
+		 * Handling for issue #96: If a timeout of the request to the  CF Cloud Controller occurs, 
+		 * we must make sure that the erroneous Mono is not kept in the cache. Instead we have to displace the item, 
+		 * which triggers a refresh of the cache.
+		 * 
+		 * Note that subscribe() must be called *before* adding this error handling below.
+		 * Otherwise we will run into the situation that the error handling routine is called by this
+		 * subscribe() already - but the Mono has not been written into the cache yet!
+		 * If we do it in this order, the doOnError method will only be called once the first "real subscriber" 
+		 * of the Mono will start requesting.
+		 */
+		mono = mono.doOnError(e -> {
+			if (e instanceof TimeoutException) {
+				log.warn(String.format("Timed-out entry using key %s detected, which would get stuck in our spaceSummary cache; "
+						+ "displacing it now to prevent further harm", spaceId), e);
+				/* 
+				 * Note that it *might* happen that a different Mono gets displaced than the one we are in here now. 
+				 * Yet, we can't make use of the
+				 * 
+				 * remove(key, value)
+				 * 
+				 * method, as providing value would lead to a hen-egg problem (we were required to provide the reference
+				 * of the Mono instance, which we are just creating).
+				 * Instead, we just blindly remove the entry from the cache. This may lead to four cases to consider:
+				 * 
+				 * 1. We hit the correct (erroneous) entry: then this is exactly what we want to do.
+				 * 2. We hit another erroneous entry: then we have no harm done, because we fixed yet another case.
+				 * 3. We hit a healthy entry: Bad luck; on next iteration, we will get a cache miss, which automatically
+				 *    fixes the issue (as long this does not happen too often, ...)
+				 * 4. The entry has already been deleted by someone else: the remove(key) operation will 
+				 *    simply be a NOOP. => no harm done either.
+				 */
+				this.spaceSummaryCache.remove(spaceId);
+				
+				// Notify metrics of this case
+				if (this.internalMetrics != null) {
+					this.internalMetrics.countAutoRefreshingCacheMapErroneousEntriesDisplaced(this.spaceSummaryCache.getName());
+				}
+			}
+		});
+		/*
+		 * Keep in mind that doOnError is a side-effect:  The logic above only removes it from the cache. 
+		 * The erroneous instance still is used downstream and will trigger subsequent error handling (including 
+		 * logging) there.
+		 * Note that this also holds true during the timeframe of the timeout: This instance of the Mono will 
+		 * be written to the cache, thus all consumers of the cache will be handed out the cached, not-yet-resolved 
+		 * object instance. This implicitly makes sure that there can only be one valid pending request is out there.
+		 */
+		
 		return mono;
 	}
 	
@@ -130,6 +332,7 @@ public class CFAccessorCache implements CFAccessor {
 	public Mono<ListSpacesResponse> retrieveSpaceId(String orgId, String spaceName) {
 		final CacheKeySpace key = new CacheKeySpace(orgId, spaceName);
 		
+		// TODO Unclear if problem: locking in the cache works on object instance level! We just created a new instance there. Separate lock objects?
 		Mono<ListSpacesResponse> mono = this.spaceCache.get(key);
 		
 		return mono;
@@ -139,6 +342,7 @@ public class CFAccessorCache implements CFAccessor {
 	public Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String orgId, String spaceId) {
 		final CacheKeyAppsInSpace key = new CacheKeyAppsInSpace(orgId, spaceId);
 		
+		// TODO Unclear if problem: locking in the cache works on object instance level! We just created a new instance there. Separate lock objects?
 		return this.appsInSpaceCache.get(key);
 	}
 

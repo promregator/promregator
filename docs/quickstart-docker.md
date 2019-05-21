@@ -7,7 +7,7 @@ For this purpose, we will use multiple Docker images, as this greatly relieves y
 
 ## Setup metrics-generating Cloud Foundry application
 
-1. Make sure that you have access to a Cloud Foundry Platform. If you don't have one, yet, then you may get a trial account at various providers, such as [IBM Bluemix](https://www.ibm.com/cloud-computing/bluemix).
+1. Make sure that you have access to a Cloud Foundry Platform. If you don't have one, yet, then you may get a trial account at various providers, such as [IBM Cloud](https://www.ibm.com/cloud-computing/bluemix) (f.k.a. IBM Bluemix).
 2. Download `TestMetricsApplication.jar` from https://github.com/promregator/promregator/releases/tag/v0.1.0 to your local machine.
 3. Deploy this app onto the platform, for example with
 
@@ -35,6 +35,8 @@ For this purpose, we will use multiple Docker images, as this greatly relieves y
    Note that the exact text may deviate.
    
    Also note that, if you don't have a browser at hand, you simply may also just use `curl` or `wget` for that.
+   
+   _Side remark_: The application also exposes the Spring Boot Actuator metrics at endpoint `/actuator/prometheus`. However, the application is not set up properly for scraping them. Therefore, for the sake of this quickstart guide here, you **must** use the metrics provided at path `/metrics`.
 
 6. Check the certificate used when having `https://<URLToYourApp>/metrics` open in your browser: The certificate must be valid and signed by one of the official Root CAs that OpenJDK supports. 
 
@@ -146,3 +148,7 @@ then comes to your rescue.
 6. Play around with the other metrics, which are provided.
 
 Done! You have just created your first promregator setup!
+
+## Final Remarks
+
+This is only a very quick walk through the most important settings to get you started. There are many more configuration options available to you. Foremost, there are the [documentation](./documentation.md) and [configuration](./config.md) pages. They also explain how you can operate Promregator using the JAR files (instead of the docker image).

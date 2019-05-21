@@ -828,5 +828,23 @@ public class TextFormat004ParserTest {
 		// this file contains multiple samples for the same metric
 		Assert.assertEquals(5, mfs.samples.size());
 	}
-
+	
+	@Test
+	public void testIssue104() throws IOException, URISyntaxException {
+		String textToParse = new String(Files.readAllBytes(Paths.get(getClass().getResource("issue104.txt").toURI())));
+		
+		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
+		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
+		
+		Assert.assertEquals(1, resultMap.keySet().size());
+		
+		MetricFamilySamples mfs = resultMap.get("http_server_requests_seconds");
+		Assert.assertNotNull(mfs);
+		
+		// this file contains multiple samples for the same metric
+		Assert.assertEquals(66, mfs.samples.size());
+		
+		Assert.assertEquals(0.034350549,  mfs.samples.get(65).value, 0.001);
+	}
+		
 }

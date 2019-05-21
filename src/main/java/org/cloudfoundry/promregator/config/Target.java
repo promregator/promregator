@@ -2,8 +2,14 @@ package org.cloudfoundry.promregator.config;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
+import org.apache.log4j.Logger;
 
 public class Target implements Cloneable {
+	private static final Logger log = Logger.getLogger(Target.class);
+	
 	private String orgName;
 	
 	private String orgRegex;
@@ -23,6 +29,7 @@ public class Target implements Cloneable {
 	private String authenticatorId;
 	
 	private List<String> preferredRouteRegex;
+	private List<Pattern> cachedPreferredRouteRegexPattern;
 	
 	public Target() {
 		super();
@@ -49,6 +56,15 @@ public class Target implements Cloneable {
 			this.preferredRouteRegex = new ArrayList<>(source.preferredRouteRegex);
 		}
 	}
+	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#clone()
+	 */
+	@Override
+	protected Object clone() throws CloneNotSupportedException {
+		return new Target(this);
+	}
+
 	
 	public String getOrgName() {
 		return orgName;
@@ -149,8 +165,35 @@ public class Target implements Cloneable {
 	 */
 	public void setPreferredRouteRegex(List<String> preferredRouteRegex) {
 		this.preferredRouteRegex = preferredRouteRegex;
+		this.cachedPreferredRouteRegexPattern = null; // reset cache
 	}
 
+	public List<Pattern> getPreferredRouteRegexPatterns() {
+		if (this.cachedPreferredRouteRegexPattern != null) {
+			return this.cachedPreferredRouteRegexPattern;
+		}
+		
+		List<String> regexStringList = this.getPreferredRouteRegex();
+		if (regexStringList == null) {
+			return null;
+		}
+		
+		List<Pattern> patterns = new ArrayList<>(regexStringList.size());
+		for (String routeRegex : regexStringList) {
+			try {
+				Pattern pattern = Pattern.compile(routeRegex);
+				patterns.add(pattern);
+			} catch (PatternSyntaxException e) {
+				log.warn(String.format("Invalid preferredRouteRegex '%s' detected. Fix your configuration; until then, the regex will be ignored", routeRegex), e);
+				continue;
+			}
+		}
+		
+		this.cachedPreferredRouteRegexPattern = patterns;
+		
+		return this.cachedPreferredRouteRegexPattern;
+	}
+	
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
@@ -181,4 +224,6 @@ public class Target implements Cloneable {
 		return builder.toString();
 	}
 
+
+	
 }

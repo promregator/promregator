@@ -23,6 +23,7 @@ public class AuthenticatorController {
 	private AuthenticationEnricher globalAuthenticationEnricher;
 
 	@PostConstruct
+	@SuppressWarnings("unused")
 	private void determineGlobalAuthenticationEnricher() {
 		AuthenticatorConfiguration authConfig = promregatorConfiguration.getAuthenticator();
 		if (authConfig == null) {
@@ -34,6 +35,7 @@ public class AuthenticatorController {
 	}
 	
 	@PostConstruct
+	@SuppressWarnings("unused")
 	private void loadMapFromConfiguration() {
 		for (TargetAuthenticatorConfiguration tac : this.promregatorConfiguration.getTargetAuthenticators()) {
 			String id = tac.getId();

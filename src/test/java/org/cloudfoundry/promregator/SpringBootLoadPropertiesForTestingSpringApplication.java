@@ -11,6 +11,9 @@ import org.springframework.context.annotation.Profile;
 public class SpringBootLoadPropertiesForTestingSpringApplication {
 	@Value("${dummy.value:false}")
 	private boolean dummyValue;
+
+	@Value("${secret.value:''}")
+	private String secretValue;
 	
 	@Bean
 	public Object anything() {
@@ -20,5 +23,9 @@ public class SpringBootLoadPropertiesForTestingSpringApplication {
 	
 	public void check() {
 		Assert.assertTrue(dummyValue);
+	}
+
+	public String getSecretValue() {
+		return secretValue;
 	}
 }

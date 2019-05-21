@@ -203,12 +203,8 @@ This option defines the request timeout value for sending requests retrieving da
 
 By default, this value is set to 2500 milliseconds.
 
-### Option "cf.request.timeout.app" (optional)
-During discovery Promregator needs to retrieve metadata from the Cloud Foundry platform. To prevent congestion on requests, which may be caused by ongoing requests of scraping by Prometheus, requests sent to the Cloud Foundry platform have to respond within a certain timeframe (the "request timeout"). 
-
-This option defines the request timeout value for sending requests retrieving data about a single application. Its unit always is specified in milliseconds.
-
-By default, this value is set to 2500 milliseconds.
+### Option "cf.request.timeout.app" (deprecated)
+This option is no longer in use. Use `cf.request.timeout.appInSpace` instead.
 
 
 ### Option "cf.request.timeout.appInSpace" (optional)
@@ -247,10 +243,10 @@ By default, this value is set to 4000 milliseconds.
 This group configures the behavior of Promregator itself. It is mainly meant on how requests shall be handled, as soon as the Prometheus server starts to pull metrics.
 
 ### Subgroup "promregator.targets"
-Lists one or more Clound Foundry applications, which shall be queried for metrics.
+Lists one or more Cloud Foundry applications, which shall be queried for metrics.
 The subgroup expects an item list, which contains additional mandatory properties
 
-#### Item property "promregator.targets[].orgName" (mandatory)
+#### Item property "promregator.targets[].orgName" (optional)
 Specifies the name of the Cloud Foundry Organization which hosts the application, which you want to query for metrics.
 
 To ensure consistency with the behavior of many Cloud Foundry implementations, the name is treated case-**in**sensitively since Promregator version 0.5.0.
@@ -301,7 +297,11 @@ By this, automatic detection of new applications is possible. Note that discover
 #### Item property "promregator.targets[].path" (optional)
 Specifies the path under which the application's endpoint provides its Prometheus metrics.
 
+Note that the data returned by this endpoint of the target must comply to the [Text-Based Exposition Format (a.k.a. Text Format "0.0.4")](https://github.com/prometheus/docs/blob/ad9fcc1b0c13ec199358bab9af6913b2ffab95ac/content/docs/instrumenting/exposition_formats.md#text-based-format). If it does not, scraping will fail. 
+
 Defaults to `/metrics`, as this is the value which is suggested by Prometheus.
+
+Note that there may be frameworks out there, which expose their metrics in a different format using the same path `/metrics`, though. 
 
 #### Item property "promregator.targets[].protocol" (optional)
 Specifies the protocol (`http` or `https`) which shall be used to retrieve the metrics.
@@ -380,9 +380,29 @@ Configures the way how the scraping is performed.
 Specifies the maximal time which may be used to query (all) targets. The value is expected to be specified in milliseconds. 
 Targets which did not respond after this amount of time are considered non-functional and no result will be returned to the Prometheus server.
 
-The default value of this option is 5000ms (=5 seconds)
+The unit of this configuration option is milliseconds.
+
+The default value of this option is 5000 (=5 seconds).
 
 Warning! The value should always be lower than the (shortest) scraping interval you expose Promregator to.
+
+#### Option "promregator.scraping.connectionTimeout" (optional)
+Specifies the maximal time which may be used for establishing a connection to a single target. If this timeout is reached, the target is considered unreachable and no metrics will be transferred.
+
+The unit of this configuration option is milliseconds.
+
+The default value of this option is 5000 (=5 seconds).
+
+Warning! The value should always be lower than the the maximal processing time (`promregator.scraping.maxProcessingTime`).
+
+#### Option "promregator.scraping.socketReadTimeout" (optional)
+Specifies the maximal time which may pass between two received packets from a single target. If this timeout is reached, the target is considered unreachable and no metrics will be transferred. The connection established will be aborted. Metrics, which might have been read (partially) already, will be ignored (as the request is considered incomplete and probably inconsistent).
+
+The unit of this configuration option is milliseconds.
+
+The default value of this option is 5000 (=5 seconds).
+
+Warning! The value should always be lower than the the maximal processing time (`promregator.scraping.maxProcessingTime`).
 
 #### Option "promregator.scraping.threads" (optional)
 Specifies how many threads may be used to query the list of targets.

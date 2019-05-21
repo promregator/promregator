@@ -3,7 +3,6 @@ package org.cloudfoundry.promregator.cfaccessor;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Duration;
-import java.util.Optional;
 import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
@@ -54,9 +53,6 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	@Value("${cf.skipSslValidation:false}")
 	private boolean skipSSLValidation;
 	
-	@Value("${cf.watchdog:false}")
-	private boolean watchdogEnabled;
-	
 	@Value("${cf.proxyHost:#{null}}") 
 	private String proxyHost;
 	
@@ -69,9 +65,6 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	@Value("${cf.request.timeout.space:2500}")
 	private int requestTimeoutSpace;
 
-	@Value("${cf.request.timeout.app:2500}")
-	private int requestTimeoutApplication;
-	
 	@Value("${cf.request.timeout.appInSpace:2500}")
 	private int requestTimeoutAppInSpace;
 	
@@ -95,7 +88,6 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	
 	private ReactorCloudFoundryClient cloudFoundryClient;
 	private ReactiveCFPaginatedRequestFetcher paginatedRequestFetcher;
-
 	
 	private DefaultConnectionContext connectionContext(ProxyConfiguration proxyConfiguration) throws ConfigurationException {
 		if (apiHost != null && PATTERN_HTTP_BASED_PROTOCOL_PREFIX.matcher(apiHost).find()) {
@@ -165,6 +157,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	}
 	
 	@PostConstruct
+	@SuppressWarnings("unused")
 	private void constructCloudFoundryClient() throws ConfigurationException {
 		this.resetCloudFoundryClient();
 		
@@ -189,6 +182,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	private static final GetInfoResponse ERRONEOUS_GET_INFO_RESPONSE = GetInfoResponse.builder().apiVersion("FAILED").build();
 	
 	@Scheduled(fixedRate=1*60*1000, initialDelay=60*1000)
+	@SuppressWarnings("unused")
 	private void connectionWatchdog() {
 		// see also https://github.com/promregator/promregator/issues/83
 		
@@ -217,6 +211,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	}
 	
 	@PostConstruct
+	@SuppressWarnings("unused")
 	private void setupPaginatedRequestFetcher() {
 		this.paginatedRequestFetcher = new ReactiveCFPaginatedRequestFetcher(this.internalMetrics);
 	}

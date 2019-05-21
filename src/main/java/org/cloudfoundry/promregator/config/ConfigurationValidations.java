@@ -2,15 +2,12 @@ package org.cloudfoundry.promregator.config;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.config.validations.ConfigurationValidation;
 import org.cloudfoundry.promregator.config.validations.PreferredRouteRegexMustBeCompilable;
 import org.cloudfoundry.promregator.config.validations.TargetsHaveConsistentAuthenticatorId;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class ConfigurationValidations {
-	private static final Logger log = Logger.getLogger(ConfigurationValidations.class);
-
 	@Autowired
 	private PromregatorConfiguration promregatorConfiguration;
 

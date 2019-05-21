@@ -72,7 +72,15 @@ public class MetricsFetcherTest {
 		
 		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, false);
 		UUID currentUUID = UUID.randomUUID();
-		CFMetricsFetcher subject = new CFMetricsFetcher("http://localhost:9002/metrics", instanceId, null, dummymfse, mfm, null, currentUUID);
+		
+		CFMetricsFetcherConfig config = new CFMetricsFetcherConfig();
+		config.setMetricFamilySamplesEnricher(dummymfse);
+		config.setMetricsFetcherMetrics(mfm);
+		config.setPromregatorInstanceIdentifier(currentUUID);
+		config.setConnectionTimeoutInMillis(5000);
+		config.setSocketReadTimeoutInMillis(5000);
+		
+		CFMetricsFetcher subject = new CFMetricsFetcher("http://localhost:9002/metrics", instanceId, config);
 		
 		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
 		
@@ -109,7 +117,17 @@ public class MetricsFetcherTest {
 		String[] ownTelemetryLabelValues = labelValues.toArray(new String[0]);
 		
 		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, false);
-		CFMetricsFetcher subject = new CFMetricsFetcher("http://localhost:9002/metrics", instanceId, ae, dummymfse, mfm, null, UUID.randomUUID());
+		
+		CFMetricsFetcherConfig config = new CFMetricsFetcherConfig();
+		config.setAuthenticationEnricher(ae);
+		config.setMetricFamilySamplesEnricher(dummymfse);
+		config.setMetricsFetcherMetrics(mfm);
+		config.setPromregatorInstanceIdentifier(UUID.randomUUID());
+		config.setConnectionTimeoutInMillis(5000);
+		config.setSocketReadTimeoutInMillis(5000);
+
+		
+		CFMetricsFetcher subject = new CFMetricsFetcher("http://localhost:9002/metrics", instanceId, config);
 		
 		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
 		
@@ -121,5 +139,60 @@ public class MetricsFetcherTest {
 		Assert.assertEquals(instanceId, this.mems.getMetricsEndpointHandler().getHeaders().getFirst("X-CF-APP-INSTANCE"));
 		Assert.assertEquals("Bearer abc", this.mems.getMetricsEndpointHandler().getHeaders().getFirst("Authentication"));
 	}
+	
+	@Test
+	public void testSocketReadTimeoutTriggered() throws Exception {
+		String instanceId = "abcd:7";
+		NullMetricFamilySamplesEnricher dummymfse = new NullMetricFamilySamplesEnricher("dummy", "dummy", "dummy", "dummy:0");
+		List<String> labelValues = dummymfse.getEnrichedLabelValues(new LinkedList<>());
+		String[] ownTelemetryLabelValues = labelValues.toArray(new String[0]);
+		
+		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, false);
+		UUID currentUUID = UUID.randomUUID();
+		
+		CFMetricsFetcherConfig config = new CFMetricsFetcherConfig();
+		config.setMetricFamilySamplesEnricher(dummymfse);
+		config.setMetricsFetcherMetrics(mfm);
+		config.setPromregatorInstanceIdentifier(currentUUID);
+		config.setConnectionTimeoutInMillis(5000);
+		config.setSocketReadTimeoutInMillis(10); // Note that this is way too strict
+		
+		CFMetricsFetcher subject = new CFMetricsFetcher("http://localhost:9002/metrics", instanceId, config);
+		
+		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
+		this.mems.getMetricsEndpointHandler().setDelayInMillis(500);
+		
+		HashMap<String, MetricFamilySamples> response = subject.call();
+		
+		Assert.assertNull(response);
+	}
+	
+	@Test
+	public void testInvalidEndpointURL() throws Exception {
+		String instanceId = "abcd:8";
+		NullMetricFamilySamplesEnricher dummymfse = new NullMetricFamilySamplesEnricher("dummy", "dummy", "dummy", "dummy:0");
+		List<String> labelValues = dummymfse.getEnrichedLabelValues(new LinkedList<>());
+		String[] ownTelemetryLabelValues = labelValues.toArray(new String[0]);
+		
+		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, false);
+		UUID currentUUID = UUID.randomUUID();
+		
+		CFMetricsFetcherConfig config = new CFMetricsFetcherConfig();
+		config.setMetricFamilySamplesEnricher(dummymfse);
+		config.setMetricsFetcherMetrics(mfm);
+		config.setPromregatorInstanceIdentifier(currentUUID);
+		config.setConnectionTimeoutInMillis(5000);
+		config.setSocketReadTimeoutInMillis(5000); // Note that this is very strict
+		
+		CFMetricsFetcher subject = new CFMetricsFetcher("http://localhost:9042/metrics", instanceId, config);
+		
+		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
+		this.mems.getMetricsEndpointHandler().setDelayInMillis(500);
+		
+		HashMap<String, MetricFamilySamples> response = subject.call();
+		
+		Assert.assertNull(response);
+	}
+
 
 }

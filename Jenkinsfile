@@ -13,46 +13,78 @@ def getVersion() {
 	return mvnOutput.substring(8) // trim prefix "VERSION="
 }
 
+def runWithGPG(Closure job) {
+	withCredentials([file(credentialsId: 'PROMREGATOR_GPG_KEY', variable: 'GPGKEYFILE')]) {
+		try {
+			sh """
+				gpg --import ${GPGKEYFILE}
+				echo "C66B4B348F6D4071047318C52483051C0D49EDA0:6:" | gpg --import-ownertrust
+			"""
+			
+			job()
+			
+		} finally {
+			// ensure that the valuable signing key is deleted again
+			sh """
+				gpg --batch --delete-secret-keys C66B4B348F6D4071047318C52483051C0D49EDA0
+				gpg --batch --delete-keys C66B4B348F6D4071047318C52483051C0D49EDA0
+			"""
+		}
+	}
+	
+
+}
+
 timestamps {
 	node("slave") {
+	
 		dir("build") {
 			checkout scm
-			
-			stage("Static Code Checks") {
-				step([
-					$class: 'FindBugsPublisher',
-					pattern: '**/findbugsXml.xml',
-					failedTotalAll: '100'
-				])
-				
-				step([
-					$class: 'PmdPublisher',
-					failedTotalAll: '100'
-				])
-			}
 			
 			stage("Build") {
 				try {
 					sh """#!/bin/bash -xe
 						export CF_PASSWORD=dummypassword
-						mvn -U -B clean verify
+						mvn -U -B -PwithTests clean verify
 					"""
 				} finally {
 					junit 'target/surefire-reports/*.xml'
 				}
 			}
 			
-			stage("Post-processing quality data") {
+			stage("Post-process Jacoco") {
 				
 				step([
 					$class: 'JacocoPublisher'
 				])
 			}
 			
-			stage("Archive") {
-				archiveArtifacts 'target/promregator*.jar'
+			stage("Static Code Checks") {
+				recordIssues aggregatingResults: true, 
+					enabledForFailure: true, 
+					healthy: 10, 
+					unhealthy: 20,
+					ignoreQualityGate: true, 
+					sourceCodeEncoding: 'UTF-8', 
+					tools: [
+						java(reportEncoding: 'UTF-8'),
+						pmdParser(pattern: 'target/pmd.xml', reportEncoding: 'UTF-8'),
+						findBugs(pattern: 'target/findbugsXml.xml', reportEncoding: 'UTF-8', useRankAsPriority: true),
+						cpd(pattern: 'target/cpd.xml', reportEncoding: 'UTF-8'),
+						javaDoc(reportEncoding: 'UTF-8'),
+						mavenConsole(reportEncoding: 'UTF-8')
+					]
 			}
-
+			
+			stage("Tests for Docker Image") {
+				sh """
+					chmod +x docker/data/promregator.sh
+					chmod +x test/docker/startscript/*.sh
+					cd test/docker/startscript
+					./runtests.sh
+				"""
+			}
+			
 			def currentVersion = getVersion()
 			println "Current version is ${currentVersion}"
 			
@@ -64,6 +96,11 @@ timestamps {
 				
 					sh """
 						ln ../target/promregator-${currentVersion}.jar data/promregator.jar
+						
+						# Necessary Preperation
+						chmod 0750 data
+						chmod 0640 data/*
+						chmod 0770 data/promregator.sh 
 						
 						docker build --pull --compress -t ${imageName} .
 						
@@ -91,7 +128,7 @@ timestamps {
 				}
 			}
 			
-			stage("Generate hash values and signature") {
+			stage("Generate hashsum file") {
 				// determine jar file hash values
 				sh """
 					cd target
@@ -125,30 +162,79 @@ Docker Image Id: ${dockerImageIdentifierCanonical}
 EOT
 					"""
 				}
-			
-				withCredentials([file(credentialsId: 'PROMREGATOR_GPG_KEY', variable: 'GPGKEYFILE')]) {
-					try {
-						sh """
-							gpg --import ${GPGKEYFILE}
-							echo "C66B4B348F6D4071047318C52483051C0D49EDA0:6:" | gpg --import-ownertrust
-							gpg --clearsign --personal-digest-preferences SHA512,SHA384,SHA256,SHA224,SHA1 promregator-${currentVersion}.hashsums
-							mv promregator-${currentVersion}.hashsums.asc promregator-${currentVersion}.hashsums
-						"""
-					} finally {
-						// ensure that the valuable signing key is deleted again
-						sh """
-							gpg --batch --delete-secret-keys C66B4B348F6D4071047318C52483051C0D49EDA0
-							gpg --batch --delete-keys C66B4B348F6D4071047318C52483051C0D49EDA0
-						"""
-					}
-				}
 				
-				sh "cat promregator-${currentVersion}.hashsums"
-				
-				archiveArtifacts "promregator-${currentVersion}.hashsums"
 			}
 			
+			stage("Deploy to OSSRH") {
+				withCredentials([usernamePassword(credentialsId: 'JIRA_SONARTYPE', passwordVariable: 'JIRA_PASSWORD', usernameVariable: 'JIRA_USERNAME')]) {
+					assert !"${JIRA_USERNAME}".contains("<")
+					assert !"${JIRA_USERNAME}".contains(">")
+					assert !"${JIRA_PASSWORD}".contains("<")
+					assert !"${JIRA_PASSWORD}".contains(">")
+				
+					// see also https://central.sonatype.org/pages/apache-maven.html
+					String settingsXML = """
+<settings>
+  <servers>
+    <server>
+      <id>ossrh</id>
+      <username>${JIRA_USERNAME}</username>
+      <password>${JIRA_PASSWORD}</password>
+    </server>
+  </servers>
+  <profiles>
+    <profile>
+      <id>release</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <properties>
+        <gpg.executable>gpg</gpg.executable>
+        <gpg.passphrase></gpg.passphrase>
+      </properties>
+    </profile>
+  </profiles>
+</settings>"""
+					writeFile file : "~/.m2/settings.xml", text: settingsXML
+				}
+			
+
+				String withDeploy = currentVersion.endsWith("-SNAPSHOT") ? "" : "-PwithDeploy"
+				runWithGPG() {
+					// unfortunately this also recreates the JAR files again (so we only can archive them afterwards)
+					sh """
+						mvn -U -B -DskipTests -Prelease ${withDeploy} verify
+						
+						ls -al target/*
+					"""
+				}
+				
+			}
+
+			stage("Hashsumming/Archiving") {
+				// show the current state
+				sh "ls -al"
+				
+				archiveArtifacts "target/promregator-${currentVersion}*.asc"
+				
+				runWithGPG() {
+					sh """
+						gpg --clearsign --personal-digest-preferences SHA512,SHA384,SHA256,SHA224,SHA1 promregator-${currentVersion}.hashsums
+					"""
+				}
+				
+				sh """
+					mv promregator-${currentVersion}.hashsums.asc promregator-${currentVersion}.hashsums
+					cat promregator-${currentVersion}.hashsums
+				"""
+				
+				archiveArtifacts "promregator-${currentVersion}.hashsums"
+				
+				archiveArtifacts 'target/promregator*.jar'
+				
+			}
 		}
+		
 		
 	}
 }
