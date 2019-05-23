@@ -567,4 +567,19 @@ public class ReactiveTargetResolverTest {
 		Assert.assertEquals(t.getProtocol(), rt.getProtocol());
 
 	}
+	
+	@Test
+	public void testInvalidOrgNameDoesNotRaiseExceptionIssue109() {
+		List<Target> list = new LinkedList<>();
+		
+		Target t = new Target();
+		t.setOrgName("doesnotexist");
+		list.add(t);
+		
+		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
+		
+		Assert.assertEquals(0, actualList.size());
+		
+	}
+
 }

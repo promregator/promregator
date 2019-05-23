@@ -1,5 +1,6 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -56,7 +57,7 @@ public class CFAccessorMock implements CFAccessor {
 			
 			return Mono.just(resp);
 		} else if ("doesnotexist".equals(orgName)) {
-			return Mono.just(org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse.builder().build());
+			return Mono.just(org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse.builder().resources(new ArrayList<>()).build());
 		} else if ("exception".equals(orgName)) {
 			return Mono.just(org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse.builder().build())
 					.map(x -> {throw new Error("exception org name provided");});

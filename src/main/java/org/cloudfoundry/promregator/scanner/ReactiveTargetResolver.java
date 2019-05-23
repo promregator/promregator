@@ -134,7 +134,13 @@ public class ReactiveTargetResolver implements TargetResolver {
 			// Case 3: we have the orgName, but we also need its id
 			Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveOrgId(it.configTarget.getOrgName())
 					.map(lor -> lor.getResources())
-					.map(list -> list.get(0))
+					.flatMap(resList -> {
+						if (resList == null || resList.isEmpty()) {
+							return Mono.empty();
+						}
+						
+						return Mono.just(resList.get(0));
+					})
 					.map(res -> {
 						it.resolvedOrgName = res.getEntity().getName();
 						it.resolvedOrgId = res.getMetadata().getId();
