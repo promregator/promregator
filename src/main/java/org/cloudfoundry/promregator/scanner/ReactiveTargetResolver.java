@@ -193,7 +193,13 @@ public class ReactiveTargetResolver implements TargetResolver {
 			// Case 3: we have the spaceName, but we also need its id
 			Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveSpaceId(it.resolvedOrgId, it.configTarget.getSpaceName())
 					.map(lsr -> lsr.getResources())
-					.map(list -> list.get(0))
+					.flatMap(resList -> {
+						if (resList == null || resList.isEmpty()) {
+							return Mono.empty();
+						}
+						
+						return Mono.just(resList.get(0));
+					})
 					.map(res -> {
 						it.resolvedSpaceName = res.getEntity().getName();
 						it.resolvedSpaceId = res.getMetadata().getId();

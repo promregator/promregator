@@ -582,4 +582,19 @@ public class ReactiveTargetResolverTest {
 		
 	}
 
+	@Test
+	public void testInvalidSpaceNameDoesNotRaiseExceptionIssue109() {
+		
+		List<Target> list = new LinkedList<>();
+		
+		Target t = new Target();
+		t.setOrgName("unittestorg");
+		t.setSpaceName("doesnotexist");
+		list.add(t);
+		
+		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
+		
+		Assert.assertEquals(0, actualList.size());
+	}
+
 }

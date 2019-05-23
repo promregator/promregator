@@ -100,7 +100,7 @@ public class CFAccessorMock implements CFAccessor {
 				ListSpacesResponse resp = ListSpacesResponse.builder().addAllResources(list).build();
 				return Mono.just(resp);
 			} else if ("doesnotexist".equals(spaceName)) {
-				return Mono.just(ListSpacesResponse.builder().build());
+				return Mono.just(ListSpacesResponse.builder().resources(new ArrayList<>()).build());
 			} else if ("exception".equals(spaceName)) {
 				return Mono.just(ListSpacesResponse.builder().build()).map(x -> { throw new Error("exception space name provided"); });
 			}
