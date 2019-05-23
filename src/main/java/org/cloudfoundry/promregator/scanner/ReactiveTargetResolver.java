@@ -1,5 +1,6 @@
 package org.cloudfoundry.promregator.scanner;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.NoSuchElementException;
@@ -15,6 +16,7 @@ import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.config.Target;
+import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import reactor.core.publisher.Flux;
@@ -22,6 +24,9 @@ import reactor.core.publisher.Mono;
 
 public class ReactiveTargetResolver implements TargetResolver {
 	private static final Logger log = Logger.getLogger(ReactiveTargetResolver.class);
+	
+	@Autowired
+	private InternalMetrics internalMetrics;
 	
 	@Autowired
 	private CFAccessor cfAccessor;
@@ -119,9 +124,11 @@ public class ReactiveTargetResolver implements TargetResolver {
 			log.debug(String.format("Successfully resolved %d configuration targets to %d resolved targets", configTargets.size(), resultList.size()));
 		}
 		
+		this.provideConfigStats(configTargets, resultList);
+		
 		return resultList;
 	}
-	
+
 	private Flux<IntermediateTarget> resolveOrg(IntermediateTarget it) {
 		/* NB: Now we have to consider three cases:
 		 * Case 1: both orgName and orgRegex is empty => select all orgs
@@ -328,4 +335,42 @@ public class ReactiveTargetResolver implements TargetResolver {
 		
 		return false;
 	}
+	
+	private void provideConfigStats(List<Target> configTargets, List<ResolvedTarget> resultList) {
+		if (this.internalMetrics == null) {
+			return;
+		}
+		
+		/*
+		 * Note that it is especially important that also those targets, which did not provide
+		 * any Resolved Target is listed here.
+		 * For details, please refer to https://github.com/promregator/promregator/issues/109.
+		 */
+		HashMap<Target, Integer> detectedTargets = new HashMap<>(configTargets.size());
+		
+		for (ResolvedTarget resolvedTarget : resultList) {
+			Target configTarget = resolvedTarget.getOriginalTarget();
+			
+			detectedTargets.compute(configTarget, (key, counter) -> {
+				if (counter == null) {
+					return 1;
+				}
+				
+				return counter++;
+			});
+		}
+		
+		this.internalMetrics.resetAllConfigResolvedTargets();
+		for (Target target : configTargets) {
+			Integer counter = detectedTargets.get(target);
+			
+			if (counter == null) {
+				counter = 0;
+			}
+			
+			this.internalMetrics.setConfigResolvedTargets(target.labelValues(), counter);
+		}
+		
+	}
+
 }

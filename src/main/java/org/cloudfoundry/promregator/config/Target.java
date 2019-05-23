@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.apache.log4j.Logger;
+import org.apache.logging.log4j.util.Strings;
 
 public class Target implements Cloneable {
 	private static final Logger log = Logger.getLogger(Target.class);
@@ -224,6 +225,141 @@ public class Target implements Cloneable {
 		return builder.toString();
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((applicationName == null) ? 0 : applicationName.hashCode());
+		result = prime * result + ((applicationRegex == null) ? 0 : applicationRegex.hashCode());
+		result = prime * result + ((authenticatorId == null) ? 0 : authenticatorId.hashCode());
+		result = prime * result + ((orgName == null) ? 0 : orgName.hashCode());
+		result = prime * result + ((orgRegex == null) ? 0 : orgRegex.hashCode());
+		result = prime * result + ((path == null) ? 0 : path.hashCode());
+		result = prime * result + ((preferredRouteRegex == null) ? 0 : preferredRouteRegex.hashCode());
+		result = prime * result + ((protocol == null) ? 0 : protocol.hashCode());
+		result = prime * result + ((spaceName == null) ? 0 : spaceName.hashCode());
+		result = prime * result + ((spaceRegex == null) ? 0 : spaceRegex.hashCode());
+		return result;
+	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		Target other = (Target) obj;
+		if (applicationName == null) {
+			if (other.applicationName != null) {
+				return false;
+			}
+		} else if (!applicationName.equals(other.applicationName)) {
+			return false;
+		}
+		if (applicationRegex == null) {
+			if (other.applicationRegex != null) {
+				return false;
+			}
+		} else if (!applicationRegex.equals(other.applicationRegex)) {
+			return false;
+		}
+		if (authenticatorId == null) {
+			if (other.authenticatorId != null) {
+				return false;
+			}
+		} else if (!authenticatorId.equals(other.authenticatorId)) {
+			return false;
+		}
+		if (orgName == null) {
+			if (other.orgName != null) {
+				return false;
+			}
+		} else if (!orgName.equals(other.orgName)) {
+			return false;
+		}
+		if (orgRegex == null) {
+			if (other.orgRegex != null) {
+				return false;
+			}
+		} else if (!orgRegex.equals(other.orgRegex)) {
+			return false;
+		}
+		if (path == null) {
+			if (other.path != null) {
+				return false;
+			}
+		} else if (!path.equals(other.path)) {
+			return false;
+		}
+		if (preferredRouteRegex == null) {
+			if (other.preferredRouteRegex != null) {
+				return false;
+			}
+		} else if (!preferredRouteRegex.equals(other.preferredRouteRegex)) {
+			return false;
+		}
+		if (protocol == null) {
+			if (other.protocol != null) {
+				return false;
+			}
+		} else if (!protocol.equals(other.protocol)) {
+			return false;
+		}
+		if (spaceName == null) {
+			if (other.spaceName != null) {
+				return false;
+			}
+		} else if (!spaceName.equals(other.spaceName)) {
+			return false;
+		}
+		if (spaceRegex == null) {
+			if (other.spaceRegex != null) {
+				return false;
+			}
+		} else if (!spaceRegex.equals(other.spaceRegex)) {
+			return false;
+		}
+		return true;
+	}
+	
+	public static String[] labelNames() {
+		final String[] labels = {
+				"orgName", "orgRegex", "spaceName", "spaceRegex", "applicationName", "applicationRegex", "path", "protocol",
+				"authenticatorId", "preferredRouteRegex"
+		};
+		
+		return labels;
+	}
+	
+	public String[] labelValues() {
+		final String[] values = {
+				protectAgainstNull(this.getOrgName()), protectAgainstNull(this.getOrgRegex()), 
+				protectAgainstNull(this.getSpaceName()), protectAgainstNull(this.getSpaceRegex()), 
+				protectAgainstNull(this.getApplicationName()), protectAgainstNull(this.getApplicationRegex()),
+				protectAgainstNull(this.getPath()), protectAgainstNull(this.getProtocol()), protectAgainstNull(this.getAuthenticatorId()), 
+				protectAgainstNull(Strings.join(this.getPreferredRouteRegex(), '|'))
+		};
+		
+		return values;
+	}
+	
+	public String protectAgainstNull(String original) {
+		if (original == null) {
+			return "";
+		}
+		
+		return original;
+	}
 	
 }

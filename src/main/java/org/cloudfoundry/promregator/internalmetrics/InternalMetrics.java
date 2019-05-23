@@ -2,6 +2,7 @@ package org.cloudfoundry.promregator.internalmetrics;
 
 import javax.annotation.PostConstruct;
 
+import org.cloudfoundry.promregator.config.Target;
 import org.springframework.beans.factory.annotation.Value;
 
 import io.prometheus.client.Counter;
@@ -21,6 +22,8 @@ public class InternalMetrics {
 	private Counter autoRefreshingCacheMapRefreshFailure;
 	private Counter autoRefreshingCacheMapErroneousEntryDisplaced;
 	private Gauge autoRefreshingCacheMapLastScan;
+	
+	private Gauge configResolvedTargets;
 	
 	private Counter connectionWatchdogReconnects;
 
@@ -52,6 +55,9 @@ public class InternalMetrics {
 		
 		this.connectionWatchdogReconnects = Counter.build("promregator_connection_watchdog_reconnect", "The number of reconnection attempts made by the Connection Watchdog")
 				.register();
+		
+		this.configResolvedTargets = Gauge.build("promregator_config_resolved_targets_count", "The number of resolved targets per configured target")
+				.labelNames(Target.labelNames()).register();
 	}
 
 	
@@ -106,5 +112,21 @@ public class InternalMetrics {
 	
 	public void countConnectionWatchdogReconnect() {
 		this.connectionWatchdogReconnects.inc();
+	}
+	
+	public void resetAllConfigResolvedTargets() {
+		if (!this.enabled) {
+			return;
+		}
+		
+		this.configResolvedTargets.clear();
+	}
+	
+	public void setConfigResolvedTargets(String[] configLabelValues, int value) {
+		if (!this.enabled) {
+			return;
+		}
+		
+		this.configResolvedTargets.labels(configLabelValues).set(value);
 	}
 }
