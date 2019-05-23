@@ -1,5 +1,6 @@
 package org.cloudfoundry.promregator.scanner;
 
+import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -16,6 +17,10 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import io.prometheus.client.Collector.MetricFamilySamples;
+import io.prometheus.client.Collector.MetricFamilySamples.Sample;
+import io.prometheus.client.CollectorRegistry;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = MockedReactiveTargetResolverSpringApplication.class)
@@ -35,7 +40,7 @@ public class ReactiveTargetResolverTest {
 	
 	@Autowired
 	private CFAccessor cfAccessor;
-
+	
 	@Test
 	public void testFullyResolvedAlready() {
 		
@@ -597,4 +602,38 @@ public class ReactiveTargetResolverTest {
 		Assert.assertEquals(0, actualList.size());
 	}
 
+	@Test
+	public void testStatisticsOnResolutionIsProvidedIssue109() {
+		
+		List<Target> list = new LinkedList<>();
+		
+		Target t = new Target();
+		t.setOrgName("unittestorg");
+		t.setSpaceName("unittestspace");
+		t.setApplicationName("testapp");
+		t.setPath("path");
+		t.setProtocol("https");
+		list.add(t);
+		
+		this.targetResolver.resolveTargets(list);
+		
+		Enumeration<MetricFamilySamples> emfs = CollectorRegistry.defaultRegistry.metricFamilySamples();
+		
+		boolean found = false;
+		boolean atLeastOneWithOneTarget = false;
+		while(emfs.hasMoreElements()) {
+			MetricFamilySamples mfs = emfs.nextElement();
+			if (mfs.name.equals("promregator_config_resolved_targets_count")) {
+				found = true;
+				for (Sample sample : mfs.samples) {
+					if (sample.value > 0) {
+						atLeastOneWithOneTarget = true;
+					}
+				}
+			}
+		}
+		
+		Assert.assertTrue(found);
+		Assert.assertTrue(atLeastOneWithOneTarget);
+	}
 }
