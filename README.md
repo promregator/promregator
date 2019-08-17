@@ -45,6 +45,7 @@ Here is the list of major features provided by Promregator:
   *(>= 0.4.0)* Each target may be configured to use its own authentication scheme, thus you may authenticate to multiple CF apps using different credentials.
 * *(>= 0.2.0)* **Support for inbound authentication** (e.g. Prometheus authenticates to Promregator) using Basic HTTP Authentication. 
 * **Configuration using standard Spring properties** as defined by the Spring Framework (e.g. using `application.yml` file).
+* *(>= 0.6.0)* Support for **encrypted passwords in configuration files** including providing the encryption key via **Docker Secrets**
 * Simple **HTTP proxy support** is available for contacting CF app endpoints.
 * All metrics provided from the Cloud Foundry applications are **automatically [enriched with additional labels](docs/enrichment.md)**, indicating their origin (similar to the `job` and `instance` labels [created by Prometheus](https://prometheus.io/docs/concepts/jobs_instances/)).
 * [Additional metrics are provided](docs/enrichment.md) supporting you to **monitor Promregator** and the **communication to the Cloud Foundry applications**.
