@@ -33,6 +33,7 @@ Here is the list of major features provided by Promregator:
   * *(>= 0.5.0)* **Filtering of organizations** based on **Regular Expression** permits selection of multiple applications even if they are distributed over several organizations.
   * *(>= 0.5.0)* **Auto-detection of all applications** across all organizations and spaces allows a simplified configuration
   * *(>= 0.5.0)* **Filtering of applications** across all organizations and spaces based on **Regular Expression** allows a simplified configuration
+  * *(>= 0.6.0)* **Selecting the route** to be used for scraping can be controlled by providing **Regular Expressions**
 * Fetching of the **Prometheus Metric endpoints** of multiple app instances is performed in **parallel** (number of concurrent threads used for retrieving metrics can be configured)
 * **Support of Authentication Schemes** at the CF app's endpoint. The following Authentication schemes are currently available:
   - Basic HTTP Authentication (as of [RFC2617](https://www.ietf.org/rfc/rfc2617.txt))
