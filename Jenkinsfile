@@ -199,18 +199,22 @@ EOT
 					writeFile file : "settings.xml", text: settingsXML
 				}
 			
-
-				String withDeploy = currentVersion.endsWith("-SNAPSHOT") ? "" : "-PwithDeploy"
-				runWithGPG() {
-					// unfortunately this also recreates the JAR files again (so we only can archive them afterwards)
+				try {
+					String withDeploy = currentVersion.endsWith("-SNAPSHOT") ? "" : "-PwithDeploy"
+					runWithGPG() {
+						// unfortunately this also recreates the JAR files again (so we only can archive them afterwards)
+						sh """
+							mvn --settings ./settings.xml -U -B -DskipTests -Prelease ${withDeploy} verify org.sonatype.plugins:nexus-staging-maven-plugin:deploy
+							
+							ls -al target/*
+						"""
+					}
+				} finally {
 					sh """
-						mvn --settings ./settings.xml -U -B -DskipTests -Prelease ${withDeploy} verify org.sonatype.plugins:nexus-staging-maven-plugin:deploy
-						
-						ls -al target/*
 						rm -f ./settings.xml
 					"""
 				}
-				
+
 			}
 
 			stage("Hashsumming/Archiving") {
