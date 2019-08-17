@@ -195,7 +195,7 @@ EOT
     </profile>
   </profiles>
 </settings>"""
-					writeFile file : "~/.m2/settings.xml", text: settingsXML
+					writeFile file : "settings.xml", text: settingsXML
 				}
 			
 
@@ -203,9 +203,10 @@ EOT
 				runWithGPG() {
 					// unfortunately this also recreates the JAR files again (so we only can archive them afterwards)
 					sh """
-						mvn -U -B -DskipTests -Prelease ${withDeploy} verify
+						mvn --settings ./settings.xml -U -B -DskipTests -Prelease ${withDeploy} verify
 						
 						ls -al target/*
+						rm -f ./settings.xml
 					"""
 				}
 				
