@@ -6,7 +6,7 @@
 
 	<groupId>org.cloudfoundry</groupId>
 	<artifactId>promregator</artifactId>
-	<version>0.5.8-SNAPSHOT</version>
+	<version>0.5.8</version>
 	<packaging>jar</packaging>
 
 	<name>promregator</name>
