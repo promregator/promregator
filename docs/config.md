@@ -313,6 +313,14 @@ Specifies the identifier of the *target-specific* authentication configuration, 
 
 If not specified, the global authentication configuration is applied for this target.
 
+#### Subgroup "promregator.targets[].preferredRouteRegex" (optional)
+Specifies a list of one or more regular expressions (based on a [Java Regular expression](https://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html)) which can be used to determine the route that shall be taken for this target for scraping. If multiple patterns are provided, the pattern of the application, which matches first (from top to bottom), is taken. 
+If no `preferredRouteRegex` is specified (default), the first route provided by the Cloud Foundry Platform is taken (legacy behavior due to compatibility). If `preferredRouteRegex` are specified, but they did not match any of the routes, also the first route is still taken (even if they did not match!).
+
+Note that the routes are without the protocol (http or https) specified. They *may* (but not must) contain paths. A possible value `path` of the same target (as specified here in configuration) is *not* included. 
+
+For a set of examples, refer to the [preferredRouteRegex example page](./preferredRouteRegex-examples.md).
+
 
 ### Subgroup "promregator.discovery"
 Configures the way how the discovery endpoint `/discovery` behaves.
