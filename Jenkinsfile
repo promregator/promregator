@@ -137,6 +137,7 @@ timestamps {
 					cat >../promregator-${currentVersion}.hashsums <<EOT
 commit(promregator.git)=`git rev-parse HEAD`
 `openssl dgst -sha256 -hex promregator-${currentVersion}.jar`
+`openssl dgst -sha1 -hex promregator-${currentVersion}.jar`
 `openssl dgst -md5 -hex promregator-${currentVersion}.jar`
 EOT
 				"""
