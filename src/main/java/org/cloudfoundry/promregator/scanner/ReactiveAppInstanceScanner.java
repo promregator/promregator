@@ -232,8 +232,9 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	
 	private String determineAccessURL(final String protocol, final List<String> urls, final List<Pattern> preferredRouteRegex, final String path) {
 		
-		final String url = determineApplicationUrl(urls, preferredRouteRegex);
+		final String url = determineApplicationRoute(urls, preferredRouteRegex);
 		final String applicationUrl = String.format("%s://%s", protocol, url);
+		log.debug (String.format("Using Application URL: '%s'", applicationUrl));
 		
 		String applUrl = applicationUrl;
 		if (!applicationUrl.endsWith("/")) {
@@ -248,19 +249,23 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		return applUrl + internalPath;
 	}
 
-	private String determineApplicationUrl(final List<String> urls, final List<Pattern> patterns) {
+	private String determineApplicationRoute(final List<String> urls, final List<Pattern> patterns) {
 		if (urls == null || urls.size() == 0) {
+			log.debug("No URLs provided to determine ApplicationURL with");
 			return null;
 		}
 
 		if (patterns == null || patterns.size() == 0) {
+			log.debug("No Preferred Route URL (Regex) provided; taking first Application Route in the list provided");
 			return urls.get(0);
 		}
 		
 		for (Pattern pattern : patterns) {
 			for (String url : urls) {
+				log.debug(String.format("Attempting to match Application Route '%s' against pattern '%s'", url, pattern.toString()));
 				Matcher m = pattern.matcher(url);
 				if (m.matches()) {
+					log.debug(String.format("Match found, using Application Route '%s'", url));
 					return url;
 				}
 			}
@@ -268,6 +273,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		
 		// if we reach this here, then we did not find any match in the regex.
 		// The fallback then is the old behavior by returned just the first-guess element
+		log.debug(String.format("Though Preferred Router URLs were provided, no route matched; taking the first route as fallback (compatibility!), which is '%s'", urls.get(0))); 
 		return urls.get(0);
 	}
 	
