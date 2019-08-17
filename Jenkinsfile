@@ -54,6 +54,11 @@ timestamps {
 				}
 			}
 			
+			// debug probe: what is the md5 sum of our output?
+			sh """
+				md5sum target/promregator*.jar
+			"""
+			
 			stage("Post-process Jacoco") {
 				
 				step([
@@ -130,6 +135,12 @@ timestamps {
 				}
 			}
 			
+			// debug probe: what is the md5 sum of our output?
+			sh """
+				md5sum target/promregator*.jar
+			"""
+			
+			
 			stage("Generate hashsum file") {
 				// determine jar file hash values
 				sh """
@@ -167,6 +178,10 @@ EOT
 				}
 				
 			}
+			
+			sh """
+				md5sum target/promregator*.jar
+			"""
 			
 			stage("Deploy to OSSRH") {
 				withCredentials([usernamePassword(credentialsId: 'JIRA_SONARTYPE', passwordVariable: 'JIRA_PASSWORD', usernameVariable: 'JIRA_USERNAME')]) {
@@ -218,7 +233,11 @@ EOT
 				}
 
 			}
-
+			
+			sh """
+				md5sum target/promregator*.jar
+			"""
+			
 			stage("Hashsumming/Archiving") {
 				// show the current state
 				sh "ls -al"
