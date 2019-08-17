@@ -204,7 +204,7 @@ EOT
 				runWithGPG() {
 					// unfortunately this also recreates the JAR files again (so we only can archive them afterwards)
 					sh """
-						mvn --settings ./settings.xml -U -B -DskipTests -Prelease ${withDeploy} verify nexus-staging-maven-plugin:deploy
+						mvn --settings ./settings.xml -U -B -DskipTests -Prelease ${withDeploy} verify org.sonatype.plugins:nexus-staging-maven-plugin:deploy
 						
 						ls -al target/*
 						rm -f ./settings.xml
