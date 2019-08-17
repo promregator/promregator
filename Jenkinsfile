@@ -1,5 +1,7 @@
 #!groovy
 
+import groovy.xml.XmlUtil
+
 def executeShell(command) {
 	def result = sh returnStdout: true, script: command
 	return result.trim()
@@ -167,10 +169,9 @@ EOT
 			
 			stage("Deploy to OSSRH") {
 				withCredentials([usernamePassword(credentialsId: 'JIRA_SONARTYPE', passwordVariable: 'JIRA_PASSWORD', usernameVariable: 'JIRA_USERNAME')]) {
-					assert !"${JIRA_USERNAME}".contains("<")
-					assert !"${JIRA_USERNAME}".contains(">")
-					assert !"${JIRA_PASSWORD}".contains("<")
-					assert !"${JIRA_PASSWORD}".contains(">")
+					jiraUsername = XmlUtil.escapeXml("${JIRA_USERNAME}")
+					jiraPassword = XmlUtil.escaleXml("${JIRA_PASSWORD}")
+
 				
 					// see also https://central.sonatype.org/pages/apache-maven.html
 					String settingsXML = """
@@ -178,8 +179,8 @@ EOT
   <servers>
     <server>
       <id>ossrh</id>
-      <username>${JIRA_USERNAME}</username>
-      <password>${JIRA_PASSWORD}</password>
+      <username>${jiraUsername}</username>
+      <password>${jiraPassword}</password>
     </server>
   </servers>
   <profiles>
