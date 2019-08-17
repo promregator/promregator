@@ -200,13 +200,14 @@ EOT
 				}
 			
 				try {
-					String withDeploy = currentVersion.endsWith("-SNAPSHOT") ? "" : "-PwithDeploy"
+					String withDeployProfile = currentVersion.endsWith("-SNAPSHOT") ? "" : "-PwithDeploy"
+					String withDeployGoal = currentVersion.endsWith("-SNAPSHOT") ? "" : "org.sonatype.plugins:nexus-staging-maven-plugin:deploy"
 					runWithGPG() {
 						// unfortunately this also recreates the JAR files again (so we only can archive them afterwards)
 						sh """
-							mvn --settings ./settings.xml -U -B -DskipTests -Prelease ${withDeploy} verify org.sonatype.plugins:nexus-staging-maven-plugin:deploy
+							mvn --settings ./settings.xml -U -B -DskipTests -Prelease ${withDeployProfile} verify ${withDeployGoal}
 							
-							ls -al target/*
+							ls -al target/
 						"""
 					}
 				} finally {
