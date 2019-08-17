@@ -170,7 +170,7 @@ EOT
 			stage("Deploy to OSSRH") {
 				withCredentials([usernamePassword(credentialsId: 'JIRA_SONARTYPE', passwordVariable: 'JIRA_PASSWORD', usernameVariable: 'JIRA_USERNAME')]) {
 					jiraUsername = XmlUtil.escapeXml("${JIRA_USERNAME}")
-					jiraPassword = XmlUtil.escaleXml("${JIRA_PASSWORD}")
+					jiraPassword = XmlUtil.escapeXml("${JIRA_PASSWORD}")
 
 				
 					// see also https://central.sonatype.org/pages/apache-maven.html
