@@ -204,7 +204,7 @@ EOT
 				runWithGPG() {
 					// unfortunately this also recreates the JAR files again (so we only can archive them afterwards)
 					sh """
-						mvn --settings ./settings.xml -U -B -DskipTests -Prelease ${withDeploy} verify
+						mvn --settings ./settings.xml -U -B -DskipTests -Prelease ${withDeploy} deploy
 						
 						ls -al target/*
 						rm -f ./settings.xml
