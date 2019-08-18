@@ -344,6 +344,10 @@
 					<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
 				</repository>
 			</distributionManagement>
+		</profile>
+
+		<profile>
+			<id>withDeploy</id>
 			<build>
 				<plugins>
 					<!-- see also https://central.sonatype.org/pages/apache-maven.html -->
@@ -351,27 +355,7 @@
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-gpg-plugin</artifactId>
 						<version>1.6</version>
-						<executions>
-							<execution>
-								<id>sign-artifacts</id>
-								<phase>verify</phase>
-								<goals>
-									<goal>sign</goal>
-								</goals>
-							</execution>
-						</executions>
 					</plugin>
-					<!-- note, that we don't deploy yet, as the namespace isn't registered 
-						for us yet -->
-				</plugins>
-
-			</build>
-		</profile>
-
-		<profile>
-			<id>withDeploy</id>
-			<build>
-				<plugins>
 					<plugin>
 						<groupId>org.sonatype.plugins</groupId>
 						<artifactId>nexus-staging-maven-plugin</artifactId>
