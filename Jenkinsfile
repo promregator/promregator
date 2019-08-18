@@ -220,7 +220,10 @@ EOT
 				// show the current state
 				sh "ls -al"
 				
-				archiveArtifacts "target/promregator-${currentVersion}*.asc"
+				if (!currentVersion.endsWith("-SNAPSHOT")) {
+					// signing only happens, if deployment is in place
+					archiveArtifacts "target/promregator-${currentVersion}*.asc"
+				}
 				
 				runWithGPG() {
 					sh """
