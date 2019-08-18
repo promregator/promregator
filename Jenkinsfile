@@ -185,7 +185,7 @@ EOT
   </servers>
   <profiles>
     <profile>
-      <id>release</id>
+      <id>withDeploy</id>
       <activation>
         <activeByDefault>false</activeByDefault>
       </activation>
@@ -202,7 +202,7 @@ EOT
 					try {
 						runWithGPG() {
 							sh """
-								mvn --settings ./settings.xml -U -B -DskipTests -Prelease -PwithDeploy org.sonatype.plugins:nexus-staging-maven-plugin:deploy
+								mvn --settings ./settings.xml -U -B -DskipTests -Prelease -PwithDeploy org.apache.maven.plugins:maven-gpg-plugin:sign org.sonatype.plugins:nexus-staging-maven-plugin:deploy
 								
 								ls -al target/
 							"""
