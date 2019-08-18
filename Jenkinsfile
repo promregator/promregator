@@ -47,7 +47,7 @@ timestamps {
 				try {
 					sh """#!/bin/bash -xe
 						export CF_PASSWORD=dummypassword
-						mvn -U -B -PwithTests clean verify
+						mvn -U -B -PwithTests -Prelease clean verify
 					"""
 				} finally {
 					junit 'target/surefire-reports/*.xml'
@@ -168,14 +168,14 @@ EOT
 			}
 			
 			stage("Deploy to OSSRH") {
-				withCredentials([usernamePassword(credentialsId: 'JIRA_SONARTYPE', passwordVariable: 'JIRA_PASSWORD', usernameVariable: 'JIRA_USERNAME')]) {
-					jiraUsername = XmlUtil.escapeXml("${JIRA_USERNAME}")
-					jiraPassword = XmlUtil.escapeXml("${JIRA_PASSWORD}")
-
-				
-					// see also https://central.sonatype.org/pages/apache-maven.html
-					String settingsXML = """
-<settings>
+				if (!currentVersion.endsWith("-SNAPSHOT")) {
+					withCredentials([usernamePassword(credentialsId: 'JIRA_SONARTYPE', passwordVariable: 'JIRA_PASSWORD', usernameVariable: 'JIRA_USERNAME')]) {
+						jiraUsername = XmlUtil.escapeXml("${JIRA_USERNAME}")
+						jiraPassword = XmlUtil.escapeXml("${JIRA_PASSWORD}")
+	
+					
+						// see also https://central.sonatype.org/pages/apache-maven.html
+						String settingsXML = """<settings>
   <servers>
     <server>
       <id>ossrh</id>
@@ -196,24 +196,22 @@ EOT
     </profile>
   </profiles>
 </settings>"""
-					writeFile file : "settings.xml", text: settingsXML
-				}
-			
-				try {
-					String withDeployProfile = currentVersion.endsWith("-SNAPSHOT") ? "" : "-PwithDeploy"
-					String withDeployGoal = currentVersion.endsWith("-SNAPSHOT") ? "" : "org.sonatype.plugins:nexus-staging-maven-plugin:deploy"
-					runWithGPG() {
-						// unfortunately this also recreates the JAR files again (so we only can archive them afterwards)
+						writeFile file : "settings.xml", text: settingsXML
+					}
+				
+					try {
+						runWithGPG() {
+							sh """
+								mvn --settings ./settings.xml -U -B -DskipTests -Prelease -PwithDeploy org.sonatype.plugins:nexus-staging-maven-plugin:deploy
+								
+								ls -al target/
+							"""
+						}
+					} finally {
 						sh """
-							mvn --settings ./settings.xml -U -B -DskipTests -Prelease ${withDeployProfile} verify ${withDeployGoal}
-							
-							ls -al target/
+							rm -f ./settings.xml
 						"""
 					}
-				} finally {
-					sh """
-						rm -f ./settings.xml
-					"""
 				}
 
 			}
