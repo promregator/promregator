@@ -47,17 +47,12 @@ timestamps {
 				try {
 					sh """#!/bin/bash -xe
 						export CF_PASSWORD=dummypassword
-						mvn -U -B -PwithTests clean verify
+						mvn -U -B -PwithTests -Prelease clean verify
 					"""
 				} finally {
 					junit 'target/surefire-reports/*.xml'
 				}
 			}
-			
-			// debug probe: what is the md5 sum of our output?
-			sh """
-				md5sum target/promregator*.jar
-			"""
 			
 			stage("Post-process Jacoco") {
 				
@@ -135,12 +130,6 @@ timestamps {
 				}
 			}
 			
-			// debug probe: what is the md5 sum of our output?
-			sh """
-				md5sum target/promregator*.jar
-			"""
-			
-			
 			stage("Generate hashsum file") {
 				// determine jar file hash values
 				sh """
@@ -148,7 +137,6 @@ timestamps {
 					cat >../promregator-${currentVersion}.hashsums <<EOT
 commit(promregator.git)=`git rev-parse HEAD`
 `openssl dgst -sha256 -hex promregator-${currentVersion}.jar`
-`openssl dgst -sha1 -hex promregator-${currentVersion}.jar`
 `openssl dgst -md5 -hex promregator-${currentVersion}.jar`
 EOT
 				"""
@@ -179,19 +167,15 @@ EOT
 				
 			}
 			
-			sh """
-				md5sum target/promregator*.jar
-			"""
-			
 			stage("Deploy to OSSRH") {
-				withCredentials([usernamePassword(credentialsId: 'JIRA_SONARTYPE', passwordVariable: 'JIRA_PASSWORD', usernameVariable: 'JIRA_USERNAME')]) {
-					jiraUsername = XmlUtil.escapeXml("${JIRA_USERNAME}")
-					jiraPassword = XmlUtil.escapeXml("${JIRA_PASSWORD}")
-
-				
-					// see also https://central.sonatype.org/pages/apache-maven.html
-					String settingsXML = """
-<settings>
+				if (!currentVersion.endsWith("-SNAPSHOT")) {
+					withCredentials([usernamePassword(credentialsId: 'JIRA_SONARTYPE', passwordVariable: 'JIRA_PASSWORD', usernameVariable: 'JIRA_USERNAME')]) {
+						jiraUsername = XmlUtil.escapeXml("${JIRA_USERNAME}")
+						jiraPassword = XmlUtil.escapeXml("${JIRA_PASSWORD}")
+	
+					
+						// see also https://central.sonatype.org/pages/apache-maven.html
+						String settingsXML = """<settings>
   <servers>
     <server>
       <id>ossrh</id>
@@ -212,32 +196,26 @@ EOT
     </profile>
   </profiles>
 </settings>"""
-					writeFile file : "settings.xml", text: settingsXML
-				}
-			
-				try {
-					String withDeployProfile = currentVersion.endsWith("-SNAPSHOT") ? "" : "-PwithDeploy"
-					String withDeployGoal = currentVersion.endsWith("-SNAPSHOT") ? "" : "org.sonatype.plugins:nexus-staging-maven-plugin:deploy"
-					runWithGPG() {
-						// unfortunately this also recreates the JAR files again (so we only can archive them afterwards)
+						writeFile file : "settings.xml", text: settingsXML
+					}
+				
+					try {
+						runWithGPG() {
+							sh """
+								mvn --settings ./settings.xml -U -B -DskipTests -Prelease -PwithDeploy org.sonatype.plugins:nexus-staging-maven-plugin:deploy
+								
+								ls -al target/
+							"""
+						}
+					} finally {
 						sh """
-							mvn --settings ./settings.xml -U -B -DskipTests -Prelease ${withDeployProfile} verify ${withDeployGoal}
-							
-							ls -al target/
+							rm -f ./settings.xml
 						"""
 					}
-				} finally {
-					sh """
-						rm -f ./settings.xml
-					"""
 				}
 
 			}
-			
-			sh """
-				md5sum target/promregator*.jar
-			"""
-			
+
 			stage("Hashsumming/Archiving") {
 				// show the current state
 				sh "ls -al"
