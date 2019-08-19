@@ -98,5 +98,5 @@ Then `routexdomain.example` (first route available) will be taken as route, as t
       preferredRouteRegex:
         - 'route\.domain\.example'
 ```
-Mind the single-quotes around the route, as otherwise the backslashes are [considered as escaping by YAML](https://stackoverflow.com/a/33000792) - and thus would most likely end in a YAML parsing error to be raised!
+Mind the single-quotes around the route, as otherwise the backslashes are [considered as escaping by YAML](https://stackoverflow.com/a/33000792) - and thus would most likely end in a YAML parsing error to be raised! You might also want to read [this comment of issue #91](https://github.com/promregator/promregator/issues/91#issuecomment-522735324) on the background (tl;dr: don't use double-quotes in this case - it will make life even more complex).
 
