@@ -50,26 +50,10 @@ timestamps {
 				try {
 					boolean withSigning = !currentVersion.endsWith("-SNAPSHOT")
 				
-					if (withSigning) {
-						// Note: Signing can only be done within the same mvn command as a "package"
-						// (NB: "verify" includes "package").
-						// On the other hand, we don't want to build the artifact twice
-						// Hence, we have to do it in the same case.
-						runWithGPG() {
-							sh """#!/bin/bash -xe
-								export CF_PASSWORD=dummypassword
-								mvn -U -B -PwithTests -Prelease clean verify org.apache.maven.plugins:maven-gpg-plugin:sign
-								
-								ls -al target/
-							"""
-						}
-						
-					} else {
-						sh """#!/bin/bash -xe
-							export CF_PASSWORD=dummypassword
-							mvn -U -B -PwithTests -Prelease clean verify
-						"""
-					}
+					sh """#!/bin/bash -xe
+						export CF_PASSWORD=dummypassword
+						mvn -U -B -PwithTests -Prelease clean verify
+					"""
 				} finally {
 					junit 'target/surefire-reports/*.xml'
 				}
@@ -107,6 +91,59 @@ timestamps {
 					./runtests.sh
 				"""
 			}
+			
+			stage("Official Build / OSSRH") {
+				if (!currentVersion.endsWith("-SNAPSHOT")) {
+					// Problem: org.apache.maven.plugins:maven-gpg-plugin:sign org.sonatype.plugins:nexus-staging-maven-plugin:deploy
+					// must be run within the same "package" call. Otherwise they don't do their job.
+					// This means that we have to run a new build process. This build process will create
+					// other CRC values than before. Unfortunately, we can't prevent this.
+					// Yet, at the same time, we want to make sure that we will use the very same version
+					// for building the docker image than for the version that we ship as jar (via github release page).
+					withCredentials([usernamePassword(credentialsId: 'JIRA_SONARTYPE', passwordVariable: 'JIRA_PASSWORD', usernameVariable: 'JIRA_USERNAME')]) {
+						jiraUsername = XmlUtil.escapeXml("${JIRA_USERNAME}")
+						jiraPassword = XmlUtil.escapeXml("${JIRA_PASSWORD}")
+	
+					
+						// see also https://central.sonatype.org/pages/apache-maven.html
+						String settingsXML = """<settings>
+  <servers>
+    <server>
+      <id>ossrh</id>
+      <username>${jiraUsername}</username>
+      <password>${jiraPassword}</password>
+    </server>
+  </servers>
+  <profiles>
+    <profile>
+      <id>withDeploy</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <properties>
+        <gpg.executable>gpg</gpg.executable>
+        <gpg.passphrase></gpg.passphrase>
+      </properties>
+    </profile>
+  </profiles>
+</settings>"""
+						writeFile file : "settings.xml", text: settingsXML
+					}
+				
+					try {
+						runWithGPG() {
+							sh """
+								mvn --settings ./settings.xml -U -B -DskipTests -Prelease -PwithDeploy org.apache.maven.plugins:maven-gpg-plugin:sign org.sonatype.plugins:nexus-staging-maven-plugin:deploy
+							"""
+						}
+					} finally {
+						sh """
+							rm -f ./settings.xml
+						"""
+					}
+				}
+			}
+
 			
 			def imageName = "promregator/promregator:${currentVersion}"
 			
@@ -183,51 +220,6 @@ EOT
 					"""
 				}
 				
-			}
-			
-			stage("Deploy to OSSRH") {
-				if (!currentVersion.endsWith("-SNAPSHOT")) {
-					withCredentials([usernamePassword(credentialsId: 'JIRA_SONARTYPE', passwordVariable: 'JIRA_PASSWORD', usernameVariable: 'JIRA_USERNAME')]) {
-						jiraUsername = XmlUtil.escapeXml("${JIRA_USERNAME}")
-						jiraPassword = XmlUtil.escapeXml("${JIRA_PASSWORD}")
-	
-					
-						// see also https://central.sonatype.org/pages/apache-maven.html
-						String settingsXML = """<settings>
-  <servers>
-    <server>
-      <id>ossrh</id>
-      <username>${jiraUsername}</username>
-      <password>${jiraPassword}</password>
-    </server>
-  </servers>
-  <profiles>
-    <profile>
-      <id>withDeploy</id>
-      <activation>
-        <activeByDefault>false</activeByDefault>
-      </activation>
-      <properties>
-        <gpg.executable>gpg</gpg.executable>
-        <gpg.passphrase></gpg.passphrase>
-      </properties>
-    </profile>
-  </profiles>
-</settings>"""
-						writeFile file : "settings.xml", text: settingsXML
-					}
-				
-					try {
-						sh """
-							mvn --settings ./settings.xml -U -B -DskipTests -Prelease -PwithDeploy org.sonatype.plugins:nexus-staging-maven-plugin:deploy
-						"""
-					} finally {
-						sh """
-							rm -f ./settings.xml
-						"""
-					}
-				}
-
 			}
 
 			stage("Hashsumming/Archiving") {
