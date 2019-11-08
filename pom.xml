@@ -38,7 +38,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.1.7.RELEASE</version> <!-- see also https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-parent -->
+		<version>2.1.9.RELEASE</version> <!-- see also https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-parent -->
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 
