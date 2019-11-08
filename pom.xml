@@ -19,7 +19,7 @@
 			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
 		</license>
 	</licenses>
-	
+
 	<developers>
 		<developer>
 			<name>Nico Schmoigl</name>
@@ -49,7 +49,8 @@
 		<spring-cloud.version>Greenwich.SR1</spring-cloud.version>
 		<prometheus.version>0.6.0</prometheus.version>
 		<cloudfoundry.client.version>3.15.0.RELEASE</cloudfoundry.client.version>
-		<tomcat.version>9.0.24</tomcat.version> <!--  required due to https://github.com/promregator/promregator/issues/119 -->
+		<tomcat.version>9.0.24</tomcat.version> <!-- required due to https://github.com/promregator/promregator/issues/119 -->
+		<logback.contrib.version>0.1.5</logback.contrib.version>
 	</properties>
 
 	<dependencies>
@@ -106,7 +107,20 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>log4j-over-slf4j</artifactId>
 		</dependency>
+		
+		<!-- ch.qos.logback.contrib.jackson.JacksonJsonFormatter -->
+		<dependency>
+			<groupId>ch.qos.logback.contrib</groupId>
+			<artifactId>logback-jackson</artifactId>
+			<version>${logback.contrib.version}</version>
+		</dependency>
 
+		<!-- ch.qos.logback.contrib.json.classic.JsonLayout -->
+		<dependency>
+			<groupId>ch.qos.logback.contrib</groupId>
+			<artifactId>logback-json-classic</artifactId>
+			<version>${logback.contrib.version}</version>
+		</dependency>
 
 		<!-- CF API -->
 		<dependency>
@@ -121,13 +135,10 @@
 			<version>${cloudfoundry.client.version}</version>
 		</dependency>
 
-		<!--  omitted here, as implicitly provided by cloudfoundry-client-reactor
-		<dependency>
-			<groupId>io.projectreactor.ipc</groupId>
-			<artifactId>reactor-netty</artifactId>
-		</dependency>
-		 -->
-		
+		<!-- omitted here, as implicitly provided by cloudfoundry-client-reactor 
+			<dependency> <groupId>io.projectreactor.ipc</groupId> <artifactId>reactor-netty</artifactId> 
+			</dependency> -->
+
 		<!-- https://mvnrepository.com/artifact/io.projectreactor/reactor-core -->
 		<dependency>
 			<groupId>io.projectreactor</groupId>
