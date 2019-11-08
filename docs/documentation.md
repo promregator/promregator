@@ -304,3 +304,28 @@ docker run -d \
  promregator/promregator:<version>
 ```
 
+
+### JSON format
+
+If you want to have your logs formatted based on JSON, remember that Promregator uses logback (and not log4j or log4j2). Starting with Promregator version 0.6.2, also the necessary `logback-contrib` packages are shipped with Promregator, such that a (sample) `logback.xml` configuration file in the classpath with the following content would do the trick:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<appender name="json"
+		class="ch.qos.logback.core.ConsoleAppender">
+		<layout class="ch.qos.logback.contrib.json.classic.JsonLayout">
+			<jsonFormatter
+				class="ch.qos.logback.contrib.jackson.JacksonJsonFormatter">
+				<prettyPrint>true</prettyPrint>
+			</jsonFormatter>
+			<timestampFormat>yyyy-MM-dd' 'HH:mm:ss.SSS</timestampFormat>
+		</layout>
+	</appender>
+	<include
+		resource="org/springframework/boot/logging/logback/base.xml" />
+	<logger name="jsonLogger" level="INFO">
+		<appender-ref ref="json" />
+	</logger>
+</configuration>
+```
