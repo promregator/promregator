@@ -43,12 +43,33 @@ timestamps {
 		dir("build") {
 			checkout scm
 			
+			def currentVersion = getVersion()
+			println "Current version is ${currentVersion}"
+			
 			stage("Build") {
 				try {
-					sh """#!/bin/bash -xe
-						export CF_PASSWORD=dummypassword
-						mvn -U -B -PwithTests -Prelease clean verify
-					"""
+					boolean withSigning = !currentVersion.endsWith("-SNAPSHOT")
+				
+					if (withSigning) {
+						// Note: Signing can only be done within the same mvn command as a "package"
+						// (NB: "verify" includes "package").
+						// On the other hand, we don't want to build the artifact twice
+						// Hence, we have to do it in the same case.
+						runWithGPG() {
+							sh """#!/bin/bash -xe
+								export CF_PASSWORD=dummypassword
+								mvn -U -B -PwithTests -Prelease clean verify org.apache.maven.plugins:maven-gpg-plugin:sign
+								
+								ls -al target/
+							"""
+						}
+						
+					} else {
+						sh """#!/bin/bash -xe
+							export CF_PASSWORD=dummypassword
+							mvn -U -B -PwithTests -Prelease clean verify
+						"""
+					}
 				} finally {
 					junit 'target/surefire-reports/*.xml'
 				}
@@ -86,9 +107,6 @@ timestamps {
 					./runtests.sh
 				"""
 			}
-			
-			def currentVersion = getVersion()
-			println "Current version is ${currentVersion}"
 			
 			def imageName = "promregator/promregator:${currentVersion}"
 			
@@ -200,13 +218,9 @@ EOT
 					}
 				
 					try {
-						runWithGPG() {
-							sh """
-								mvn --settings ./settings.xml -U -B -DskipTests -Prelease -PwithDeploy org.apache.maven.plugins:maven-gpg-plugin:sign org.sonatype.plugins:nexus-staging-maven-plugin:deploy
-								
-								ls -al target/
-							"""
-						}
+						sh """
+							mvn --settings ./settings.xml -U -B -DskipTests -Prelease -PwithDeploy org.sonatype.plugins:nexus-staging-maven-plugin:deploy
+						"""
 					} finally {
 						sh """
 							rm -f ./settings.xml
