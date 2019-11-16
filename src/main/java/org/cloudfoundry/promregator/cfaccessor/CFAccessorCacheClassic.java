@@ -1,9 +1,6 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
 import java.time.Duration;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import javax.annotation.PostConstruct;
@@ -18,24 +15,16 @@ import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.google.common.util.concurrent.ListenableFuture;
-
-import net.javacrumbs.futureconverter.java8guava.FutureConverter;
 import reactor.core.publisher.Mono;
 
-public class CFAccessorCacheClassic implements CFAccessor {
+public class CFAccessorCacheClassic implements CFAccessorCache {
 	private static final Logger log = Logger.getLogger(CFAccessorCacheClassic.class);
 
-	private AutoRefreshingCacheMap<String, Mono<ListOrganizationsResponse>> orgCacheClassic;
-	private AutoRefreshingCacheMap<CacheKeySpace, Mono<ListSpacesResponse>> spaceCacheClassic;
-	private AutoRefreshingCacheMap<CacheKeyAppsInSpace, Mono<ListApplicationsResponse>> appsInSpaceCacheClassic;
-	private AutoRefreshingCacheMap<String, Mono<GetSpaceSummaryResponse>> spaceSummaryCacheClassic;
+	private AutoRefreshingCacheMap<String, Mono<ListOrganizationsResponse>> orgCache;
+	private AutoRefreshingCacheMap<CacheKeySpace, Mono<ListSpacesResponse>> spaceCache;
+	private AutoRefreshingCacheMap<CacheKeyAppsInSpace, Mono<ListApplicationsResponse>> appsInSpaceCache;
+	private AutoRefreshingCacheMap<String, Mono<GetSpaceSummaryResponse>> spaceSummaryCache;
 
-	private LoadingCache<String, ListOrganizationsResponse> orgCacheGuava;
-	
 	@Value("${cf.cache.timeout.org:3600}")
 	private int refreshCacheOrgLevelInSeconds;
 
@@ -53,9 +42,6 @@ public class CFAccessorCacheClassic implements CFAccessor {
 	
 	@Value("${cf.cache.expiry.application:120}")
 	private int expiryCacheApplicationLevelInSeconds;
-	
-	@Value("${cf.cache.type:classic}")
-	private AccessorCacheType cacheType;
 	
 	@Autowired
 	private InternalMetrics internalMetrics;
@@ -76,39 +62,10 @@ public class CFAccessorCacheClassic implements CFAccessor {
 		/*
 		 * initializing caches
 		 */
-		if (this.cacheType == AccessorCacheType.classic) {
-			this.orgCacheClassic = new AutoRefreshingCacheMap<>("org", this.internalMetrics, Duration.ofSeconds(this.expiryCacheOrgLevelInSeconds), Duration.ofSeconds(this.refreshCacheOrgLevelInSeconds), this::orgCacheLoader);
-			this.spaceCacheClassic = new AutoRefreshingCacheMap<>("space", this.internalMetrics, Duration.ofSeconds(this.expiryCacheSpaceLevelInSeconds), Duration.ofSeconds(refreshCacheSpaceLevelInSeconds), this::spaceCacheLoader);
-			this.appsInSpaceCacheClassic = new AutoRefreshingCacheMap<>("appsInSpace", this.internalMetrics, Duration.ofSeconds(this.expiryCacheApplicationLevelInSeconds), Duration.ofSeconds(refreshCacheApplicationLevelInSeconds), this::appsInSpaceCacheLoader);
-			this.spaceSummaryCacheClassic = new AutoRefreshingCacheMap<>("spaceSummary", this.internalMetrics, Duration.ofSeconds(this.expiryCacheApplicationLevelInSeconds), Duration.ofSeconds(refreshCacheApplicationLevelInSeconds), this::spaceSummaryCacheLoader);
-		} else if (this.cacheType == AccessorCacheType.guava) {
-			this.orgCacheGuava = CacheBuilder.newBuilder()
-					.expireAfterAccess(this.expiryCacheOrgLevelInSeconds, TimeUnit.SECONDS)
-					.refreshAfterWrite(this.refreshCacheOrgLevelInSeconds, TimeUnit.SECONDS)
-					.recordStats()
-					.build(new CacheLoader<String, ListOrganizationsResponse>() {
-
-						@Override
-						public ListOrganizationsResponse load(String key) throws Exception {
-							Mono<ListOrganizationsResponse> mono = orgCacheLoader(key);
-							return mono.block();
-						}
-
-						/* (non-Javadoc)
-						 * @see com.google.common.cache.CacheLoader#reload(java.lang.Object, java.lang.Object)
-						 */
-						@Override
-						public ListenableFuture<ListOrganizationsResponse> reload(String key,
-								ListOrganizationsResponse oldValue) throws Exception {
-							
-							Mono<ListOrganizationsResponse> mono = orgCacheLoader(key);
-							CompletableFuture<ListOrganizationsResponse> future = mono.toFuture();
-							// see also https://github.com/google/guava/issues/2350#issuecomment-169097253
-							return FutureConverter.toListenableFuture(future);
-						}
-					});
-			// TODO: handling of cache statistics via metrics!
-		}
+		this.orgCache = new AutoRefreshingCacheMap<>("org", this.internalMetrics, Duration.ofSeconds(this.expiryCacheOrgLevelInSeconds), Duration.ofSeconds(this.refreshCacheOrgLevelInSeconds), this::orgCacheLoader);
+		this.spaceCache = new AutoRefreshingCacheMap<>("space", this.internalMetrics, Duration.ofSeconds(this.expiryCacheSpaceLevelInSeconds), Duration.ofSeconds(refreshCacheSpaceLevelInSeconds), this::spaceCacheLoader);
+		this.appsInSpaceCache = new AutoRefreshingCacheMap<>("appsInSpace", this.internalMetrics, Duration.ofSeconds(this.expiryCacheApplicationLevelInSeconds), Duration.ofSeconds(refreshCacheApplicationLevelInSeconds), this::appsInSpaceCacheLoader);
+		this.spaceSummaryCache = new AutoRefreshingCacheMap<>("spaceSummary", this.internalMetrics, Duration.ofSeconds(this.expiryCacheApplicationLevelInSeconds), Duration.ofSeconds(refreshCacheApplicationLevelInSeconds), this::spaceSummaryCacheLoader);
 	}
 
 	private Mono<ListOrganizationsResponse> orgCacheLoader(String orgName) {
@@ -135,7 +92,7 @@ public class CFAccessorCacheClassic implements CFAccessor {
 		 */
 		mono = mono.doOnError(e -> {
 			if (e instanceof TimeoutException) {
-				if (this.orgCacheClassic != null) {
+				if (this.orgCache != null) {
 					log.warn(String.format("Timed-out entry using key %s detected, which would get stuck in our org cache; "
 							+ "displacing it now to prevent further harm", orgName), e);
 					/* 
@@ -156,12 +113,12 @@ public class CFAccessorCacheClassic implements CFAccessor {
 					 *    simply be a NOOP. => no harm done either.
 					 */
 					
-					this.orgCacheClassic.remove(orgName);
+					this.orgCache.remove(orgName);
 				}
 				
 				// Notify metrics of this case
 				if (this.internalMetrics != null) {
-					this.internalMetrics.countAutoRefreshingCacheMapErroneousEntriesDisplaced(this.orgCacheClassic.getName());
+					this.internalMetrics.countAutoRefreshingCacheMapErroneousEntriesDisplaced(this.orgCache.getName());
 				}
 			}
 		});
@@ -221,11 +178,11 @@ public class CFAccessorCacheClassic implements CFAccessor {
 				 * 4. The entry has already been deleted by someone else: the remove(key) operation will 
 				 *    simply be a NOOP. => no harm done either.
 				 */
-				this.spaceCacheClassic.remove(cacheKey);
+				this.spaceCache.remove(cacheKey);
 				
 				// Notify metrics of this case
 				if (this.internalMetrics != null) {
-					this.internalMetrics.countAutoRefreshingCacheMapErroneousEntriesDisplaced(this.spaceCacheClassic.getName());
+					this.internalMetrics.countAutoRefreshingCacheMapErroneousEntriesDisplaced(this.spaceCache.getName());
 				}
 			}
 		});
@@ -285,11 +242,11 @@ public class CFAccessorCacheClassic implements CFAccessor {
 				 * 4. The entry has already been deleted by someone else: the remove(key) operation will 
 				 *    simply be a NOOP. => no harm done either.
 				 */
-				this.appsInSpaceCacheClassic.remove(cacheKey);
+				this.appsInSpaceCache.remove(cacheKey);
 				
 				// Notify metrics of this case
 				if (this.internalMetrics != null) {
-					this.internalMetrics.countAutoRefreshingCacheMapErroneousEntriesDisplaced(this.appsInSpaceCacheClassic.getName());
+					this.internalMetrics.countAutoRefreshingCacheMapErroneousEntriesDisplaced(this.appsInSpaceCache.getName());
 				}
 			}
 		});
@@ -348,11 +305,11 @@ public class CFAccessorCacheClassic implements CFAccessor {
 				 * 4. The entry has already been deleted by someone else: the remove(key) operation will 
 				 *    simply be a NOOP. => no harm done either.
 				 */
-				this.spaceSummaryCacheClassic.remove(spaceId);
+				this.spaceSummaryCache.remove(spaceId);
 				
 				// Notify metrics of this case
 				if (this.internalMetrics != null) {
-					this.internalMetrics.countAutoRefreshingCacheMapErroneousEntriesDisplaced(this.spaceSummaryCacheClassic.getName());
+					this.internalMetrics.countAutoRefreshingCacheMapErroneousEntriesDisplaced(this.spaceSummaryCache.getName());
 				}
 			}
 		});
@@ -370,18 +327,7 @@ public class CFAccessorCacheClassic implements CFAccessor {
 	
 	@Override
 	public Mono<ListOrganizationsResponse> retrieveOrgId(String orgName) {
-		Mono<ListOrganizationsResponse> mono;
-		if (this.cacheType == AccessorCacheType.classic) {
-			mono = this.orgCacheClassic.get(orgName);
-		} else if (this.cacheType == AccessorCacheType.guava) {
-			try {
-				mono = Mono.just(this.orgCacheGuava.get(orgName));
-			} catch (ExecutionException e) {
-				mono = Mono.error(e);
-			}
-		} else {
-			throw new UnknownAccessorCacheTypeError("Unknown Accessor Cache Type while retrieving OrgId from cache");
-		}
+		Mono<ListOrganizationsResponse> mono = this.orgCache.get(orgName);
 
 		return mono;
 	}
@@ -391,7 +337,7 @@ public class CFAccessorCacheClassic implements CFAccessor {
 		final CacheKeySpace key = new CacheKeySpace(orgId, spaceName);
 		
 		// TODO Unclear if problem: locking in the cache works on object instance level! We just created a new instance there. Separate lock objects?
-		Mono<ListSpacesResponse> mono = this.spaceCacheClassic.get(key);
+		Mono<ListSpacesResponse> mono = this.spaceCache.get(key);
 		
 		return mono;
 	}
@@ -401,7 +347,7 @@ public class CFAccessorCacheClassic implements CFAccessor {
 		final CacheKeyAppsInSpace key = new CacheKeyAppsInSpace(orgId, spaceId);
 		
 		// TODO Unclear if problem: locking in the cache works on object instance level! We just created a new instance there. Separate lock objects?
-		return this.appsInSpaceCacheClassic.get(key);
+		return this.appsInSpaceCache.get(key);
 	}
 
 	@Override
@@ -425,22 +371,26 @@ public class CFAccessorCacheClassic implements CFAccessor {
 	
 	@Override
 	public Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId) {
-		return this.spaceSummaryCacheClassic.get(spaceId);
+		return this.spaceSummaryCache.get(spaceId);
 	}
 
+	@Override
 	public void invalidateCacheApplications() {
 		log.info("Invalidating application cache");
-		this.spaceSummaryCacheClassic.clear();
+		this.spaceSummaryCache.clear();
+		// TODO why is appsInSpaceCache not cleared here?
 	}
 	
+	@Override
 	public void invalidateCacheSpace() {
 		log.info("Invalidating space cache");
-		this.spaceCacheClassic.clear();
+		this.spaceCache.clear();
 	}
 
+	@Override
 	public void invalidateCacheOrg() {
 		log.info("Invalidating org cache");
-		this.orgCacheClassic.clear();
+		this.orgCache.clear();
 	}
 
 }

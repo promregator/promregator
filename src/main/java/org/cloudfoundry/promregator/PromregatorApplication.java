@@ -9,8 +9,11 @@ import java.util.concurrent.Executors;
 import javax.annotation.PostConstruct;
 
 import org.apache.log4j.Logger;
+import org.cloudfoundry.promregator.cfaccessor.AccessorCacheType;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
+import org.cloudfoundry.promregator.cfaccessor.CFAccessorCache;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorCacheClassic;
+import org.cloudfoundry.promregator.cfaccessor.CFAccessorCacheGuava;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorSimulator;
 import org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl;
 import org.cloudfoundry.promregator.config.ConfigurationException;
@@ -62,6 +65,10 @@ public class PromregatorApplication {
 	
 	@Value("${promregator.workaround.dnscache.timeout:-1}")
 	private int javaDnsCacheWorkaroundTimeout;
+
+	@Value("${cf.cache.type:classic}")
+	private AccessorCacheType cacheType;
+	
 	
 	private static final Logger log = Logger.getLogger(PromregatorApplication.class);
 	
@@ -95,12 +102,18 @@ public class PromregatorApplication {
 	}
 	
 	@Bean
-	public CFAccessorCacheClassic cfAccessorCache(CFAccessor mainCFAccessor) {
-		return new CFAccessorCacheClassic(mainCFAccessor);
+	public CFAccessorCache cfAccessorCache(CFAccessor mainCFAccessor) {
+		if (this.cacheType == AccessorCacheType.classic) {
+			return new CFAccessorCacheClassic(mainCFAccessor);
+		} else if (this.cacheType == AccessorCacheType.guava) {
+			return new CFAccessorCacheGuava(mainCFAccessor);
+		} else {
+			throw new Error("Unknown CF Accessor Cache selected: "+this.cacheType);
+		}
 	}
 	
 	@Bean
-	public CFAccessor cfAccessor(CFAccessorCacheClassic cfAccessorCache) {
+	public CFAccessor cfAccessor(CFAccessorCache cfAccessorCache) {
 		return cfAccessorCache;
 	}
 	
