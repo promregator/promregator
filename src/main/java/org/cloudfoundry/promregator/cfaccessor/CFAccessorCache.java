@@ -1,6 +1,9 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
 import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import javax.annotation.PostConstruct;
@@ -15,15 +18,23 @@ import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.util.concurrent.ListenableFuture;
+
+import net.javacrumbs.futureconverter.java8guava.FutureConverter;
 import reactor.core.publisher.Mono;
 
 public class CFAccessorCache implements CFAccessor {
 	private static final Logger log = Logger.getLogger(CFAccessorCache.class);
 
-	private AutoRefreshingCacheMap<String, Mono<ListOrganizationsResponse>> orgCache;
-	private AutoRefreshingCacheMap<CacheKeySpace, Mono<ListSpacesResponse>> spaceCache;
-	private AutoRefreshingCacheMap<CacheKeyAppsInSpace, Mono<ListApplicationsResponse>> appsInSpaceCache;
-	private AutoRefreshingCacheMap<String, Mono<GetSpaceSummaryResponse>> spaceSummaryCache;
+	private AutoRefreshingCacheMap<String, Mono<ListOrganizationsResponse>> orgCacheClassic;
+	private AutoRefreshingCacheMap<CacheKeySpace, Mono<ListSpacesResponse>> spaceCacheClassic;
+	private AutoRefreshingCacheMap<CacheKeyAppsInSpace, Mono<ListApplicationsResponse>> appsInSpaceCacheClassic;
+	private AutoRefreshingCacheMap<String, Mono<GetSpaceSummaryResponse>> spaceSummaryCacheClassic;
+
+	private LoadingCache<String, ListOrganizationsResponse> orgCacheGuava;
 	
 	@Value("${cf.cache.timeout.org:3600}")
 	private int refreshCacheOrgLevelInSeconds;
@@ -42,6 +53,9 @@ public class CFAccessorCache implements CFAccessor {
 	
 	@Value("${cf.cache.expiry.application:120}")
 	private int expiryCacheApplicationLevelInSeconds;
+	
+	@Value("${cf.cache.type:classic}")
+	private AccessorCacheType cacheType;
 	
 	@Autowired
 	private InternalMetrics internalMetrics;
@@ -62,10 +76,39 @@ public class CFAccessorCache implements CFAccessor {
 		/*
 		 * initializing caches
 		 */
-		this.orgCache = new AutoRefreshingCacheMap<>("org", this.internalMetrics, Duration.ofSeconds(this.expiryCacheOrgLevelInSeconds), Duration.ofSeconds(this.refreshCacheOrgLevelInSeconds), this::orgCacheLoader);
-		this.spaceCache = new AutoRefreshingCacheMap<>("space", this.internalMetrics, Duration.ofSeconds(this.expiryCacheSpaceLevelInSeconds), Duration.ofSeconds(refreshCacheSpaceLevelInSeconds), this::spaceCacheLoader);
-		this.appsInSpaceCache = new AutoRefreshingCacheMap<>("appsInSpace", this.internalMetrics, Duration.ofSeconds(this.expiryCacheApplicationLevelInSeconds), Duration.ofSeconds(refreshCacheApplicationLevelInSeconds), this::appsInSpaceCacheLoader);
-		this.spaceSummaryCache = new AutoRefreshingCacheMap<>("spaceSummary", this.internalMetrics, Duration.ofSeconds(this.expiryCacheApplicationLevelInSeconds), Duration.ofSeconds(refreshCacheApplicationLevelInSeconds), this::spaceSummaryCacheLoader);
+		if (this.cacheType == AccessorCacheType.classic) {
+			this.orgCacheClassic = new AutoRefreshingCacheMap<>("org", this.internalMetrics, Duration.ofSeconds(this.expiryCacheOrgLevelInSeconds), Duration.ofSeconds(this.refreshCacheOrgLevelInSeconds), this::orgCacheLoader);
+			this.spaceCacheClassic = new AutoRefreshingCacheMap<>("space", this.internalMetrics, Duration.ofSeconds(this.expiryCacheSpaceLevelInSeconds), Duration.ofSeconds(refreshCacheSpaceLevelInSeconds), this::spaceCacheLoader);
+			this.appsInSpaceCacheClassic = new AutoRefreshingCacheMap<>("appsInSpace", this.internalMetrics, Duration.ofSeconds(this.expiryCacheApplicationLevelInSeconds), Duration.ofSeconds(refreshCacheApplicationLevelInSeconds), this::appsInSpaceCacheLoader);
+			this.spaceSummaryCacheClassic = new AutoRefreshingCacheMap<>("spaceSummary", this.internalMetrics, Duration.ofSeconds(this.expiryCacheApplicationLevelInSeconds), Duration.ofSeconds(refreshCacheApplicationLevelInSeconds), this::spaceSummaryCacheLoader);
+		} else if (this.cacheType == AccessorCacheType.guava) {
+			this.orgCacheGuava = CacheBuilder.newBuilder()
+					.expireAfterAccess(this.expiryCacheOrgLevelInSeconds, TimeUnit.SECONDS)
+					.refreshAfterWrite(this.refreshCacheOrgLevelInSeconds, TimeUnit.SECONDS)
+					.recordStats()
+					.build(new CacheLoader<String, ListOrganizationsResponse>() {
+
+						@Override
+						public ListOrganizationsResponse load(String key) throws Exception {
+							Mono<ListOrganizationsResponse> mono = orgCacheLoader(key);
+							return mono.block();
+						}
+
+						/* (non-Javadoc)
+						 * @see com.google.common.cache.CacheLoader#reload(java.lang.Object, java.lang.Object)
+						 */
+						@Override
+						public ListenableFuture<ListOrganizationsResponse> reload(String key,
+								ListOrganizationsResponse oldValue) throws Exception {
+							
+							Mono<ListOrganizationsResponse> mono = orgCacheLoader(key);
+							CompletableFuture<ListOrganizationsResponse> future = mono.toFuture();
+							// see also https://github.com/google/guava/issues/2350#issuecomment-169097253
+							return FutureConverter.toListenableFuture(future);
+						}
+					});
+			// TODO: handling of cache statistics via metrics!
+		}
 	}
 
 	private Mono<ListOrganizationsResponse> orgCacheLoader(String orgName) {
@@ -92,34 +135,38 @@ public class CFAccessorCache implements CFAccessor {
 		 */
 		mono = mono.doOnError(e -> {
 			if (e instanceof TimeoutException) {
-				log.warn(String.format("Timed-out entry using key %s detected, which would get stuck in our org cache; "
-						+ "displacing it now to prevent further harm", orgName), e);
-				/* 
-				 * Note that it *might* happen that a different Mono gets displaced than the one we are in here now. 
-				 * Yet, we can't make use of the
-				 * 
-				 * remove(key, value)
-				 * 
-				 * method, as providing value would lead to a hen-egg problem (we were required to provide the reference
-				 * of the Mono instance, which we are just creating).
-				 * Instead, we just blindly remove the entry from the cache. This may lead to four cases to consider:
-				 * 
-				 * 1. We hit the correct (erroneous) entry: then this is exactly what we want to do.
-				 * 2. We hit another erroneous entry: then we have no harm done, because we fixed yet another case.
-				 * 3. We hit a healthy entry: Bad luck; on next iteration, we will get a cache miss, which automatically
-				 *    fixes the issue (as long this does not happen too often, ...)
-				 * 4. The entry has already been deleted by someone else: the remove(key) operation will 
-				 *    simply be a NOOP. => no harm done either.
-				 */
-				this.orgCache.remove(orgName);
+				if (this.orgCacheClassic != null) {
+					log.warn(String.format("Timed-out entry using key %s detected, which would get stuck in our org cache; "
+							+ "displacing it now to prevent further harm", orgName), e);
+					/* 
+					 * Note that it *might* happen that a different Mono gets displaced than the one we are in here now. 
+					 * Yet, we can't make use of the
+					 * 
+					 * remove(key, value)
+					 * 
+					 * method, as providing value would lead to a hen-egg problem (we were required to provide the reference
+					 * of the Mono instance, which we are just creating).
+					 * Instead, we just blindly remove the entry from the cache. This may lead to four cases to consider:
+					 * 
+					 * 1. We hit the correct (erroneous) entry: then this is exactly what we want to do.
+					 * 2. We hit another erroneous entry: then we have no harm done, because we fixed yet another case.
+					 * 3. We hit a healthy entry: Bad luck; on next iteration, we will get a cache miss, which automatically
+					 *    fixes the issue (as long this does not happen too often, ...)
+					 * 4. The entry has already been deleted by someone else: the remove(key) operation will 
+					 *    simply be a NOOP. => no harm done either.
+					 */
+					
+					this.orgCacheClassic.remove(orgName);
+				}
 				
 				// Notify metrics of this case
 				if (this.internalMetrics != null) {
-					this.internalMetrics.countAutoRefreshingCacheMapErroneousEntriesDisplaced(this.orgCache.getName());
+					this.internalMetrics.countAutoRefreshingCacheMapErroneousEntriesDisplaced(this.orgCacheClassic.getName());
 				}
 			}
 		});
-		/*
+		/* Valid for AccessorCacheType = classic only:
+		 * 
 		 * Keep in mind that doOnError is a side-effect:  The logic above only removes it from the cache. 
 		 * The erroneous instance still is used downstream and will trigger subsequent error handling (including 
 		 * logging) there.
@@ -174,11 +221,11 @@ public class CFAccessorCache implements CFAccessor {
 				 * 4. The entry has already been deleted by someone else: the remove(key) operation will 
 				 *    simply be a NOOP. => no harm done either.
 				 */
-				this.spaceCache.remove(cacheKey);
+				this.spaceCacheClassic.remove(cacheKey);
 				
 				// Notify metrics of this case
 				if (this.internalMetrics != null) {
-					this.internalMetrics.countAutoRefreshingCacheMapErroneousEntriesDisplaced(this.spaceCache.getName());
+					this.internalMetrics.countAutoRefreshingCacheMapErroneousEntriesDisplaced(this.spaceCacheClassic.getName());
 				}
 			}
 		});
@@ -238,11 +285,11 @@ public class CFAccessorCache implements CFAccessor {
 				 * 4. The entry has already been deleted by someone else: the remove(key) operation will 
 				 *    simply be a NOOP. => no harm done either.
 				 */
-				this.appsInSpaceCache.remove(cacheKey);
+				this.appsInSpaceCacheClassic.remove(cacheKey);
 				
 				// Notify metrics of this case
 				if (this.internalMetrics != null) {
-					this.internalMetrics.countAutoRefreshingCacheMapErroneousEntriesDisplaced(this.appsInSpaceCache.getName());
+					this.internalMetrics.countAutoRefreshingCacheMapErroneousEntriesDisplaced(this.appsInSpaceCacheClassic.getName());
 				}
 			}
 		});
@@ -301,11 +348,11 @@ public class CFAccessorCache implements CFAccessor {
 				 * 4. The entry has already been deleted by someone else: the remove(key) operation will 
 				 *    simply be a NOOP. => no harm done either.
 				 */
-				this.spaceSummaryCache.remove(spaceId);
+				this.spaceSummaryCacheClassic.remove(spaceId);
 				
 				// Notify metrics of this case
 				if (this.internalMetrics != null) {
-					this.internalMetrics.countAutoRefreshingCacheMapErroneousEntriesDisplaced(this.spaceSummaryCache.getName());
+					this.internalMetrics.countAutoRefreshingCacheMapErroneousEntriesDisplaced(this.spaceSummaryCacheClassic.getName());
 				}
 			}
 		});
@@ -323,7 +370,18 @@ public class CFAccessorCache implements CFAccessor {
 	
 	@Override
 	public Mono<ListOrganizationsResponse> retrieveOrgId(String orgName) {
-		Mono<ListOrganizationsResponse> mono = this.orgCache.get(orgName);
+		Mono<ListOrganizationsResponse> mono;
+		if (this.cacheType == AccessorCacheType.classic) {
+			mono = this.orgCacheClassic.get(orgName);
+		} else if (this.cacheType == AccessorCacheType.guava) {
+			try {
+				mono = Mono.just(this.orgCacheGuava.get(orgName));
+			} catch (ExecutionException e) {
+				mono = Mono.error(e);
+			}
+		} else {
+			throw new UnknownAccessorCacheTypeError("Unknown Accessor Cache Type while retrieving OrgId from cache");
+		}
 
 		return mono;
 	}
@@ -333,7 +391,7 @@ public class CFAccessorCache implements CFAccessor {
 		final CacheKeySpace key = new CacheKeySpace(orgId, spaceName);
 		
 		// TODO Unclear if problem: locking in the cache works on object instance level! We just created a new instance there. Separate lock objects?
-		Mono<ListSpacesResponse> mono = this.spaceCache.get(key);
+		Mono<ListSpacesResponse> mono = this.spaceCacheClassic.get(key);
 		
 		return mono;
 	}
@@ -343,7 +401,7 @@ public class CFAccessorCache implements CFAccessor {
 		final CacheKeyAppsInSpace key = new CacheKeyAppsInSpace(orgId, spaceId);
 		
 		// TODO Unclear if problem: locking in the cache works on object instance level! We just created a new instance there. Separate lock objects?
-		return this.appsInSpaceCache.get(key);
+		return this.appsInSpaceCacheClassic.get(key);
 	}
 
 	@Override
@@ -367,22 +425,22 @@ public class CFAccessorCache implements CFAccessor {
 	
 	@Override
 	public Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId) {
-		return this.spaceSummaryCache.get(spaceId);
+		return this.spaceSummaryCacheClassic.get(spaceId);
 	}
 
 	public void invalidateCacheApplications() {
 		log.info("Invalidating application cache");
-		this.spaceSummaryCache.clear();
+		this.spaceSummaryCacheClassic.clear();
 	}
 	
 	public void invalidateCacheSpace() {
 		log.info("Invalidating space cache");
-		this.spaceCache.clear();
+		this.spaceCacheClassic.clear();
 	}
 
 	public void invalidateCacheOrg() {
 		log.info("Invalidating org cache");
-		this.orgCache.clear();
+		this.orgCacheClassic.clear();
 	}
 
 }
