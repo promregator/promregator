@@ -7,7 +7,7 @@ import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.auth.AuthenticatorController;
 import org.cloudfoundry.promregator.auth.NullEnricher;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
-import org.cloudfoundry.promregator.cfaccessor.CFAccessorCache;
+import org.cloudfoundry.promregator.cfaccessor.CFAccessorCacheClassic;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
@@ -54,7 +54,7 @@ public class MockedAppInstanceScannerEndpointSpringApplication {
 
 	}
 	
-	public class MockedCFAccessorCache extends CFAccessorCache {
+	public class MockedCFAccessorCache extends CFAccessorCacheClassic {
 		public MockedCFAccessorCache() {
 			super(null);
 		}
@@ -114,8 +114,8 @@ public class MockedAppInstanceScannerEndpointSpringApplication {
 	}
 	
 	@Bean
-	public CFAccessorCache cfAccessorCache(@Qualifier("cfAccessor") CFAccessor cfAccessor) {
-		return (CFAccessorCache) cfAccessor;
+	public CFAccessorCacheClassic cfAccessorCache(@Qualifier("cfAccessor") CFAccessor cfAccessor) {
+		return (CFAccessorCacheClassic) cfAccessor;
 	}
 	
 	@Bean

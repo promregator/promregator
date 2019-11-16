@@ -10,7 +10,7 @@ import javax.annotation.PostConstruct;
 
 import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
-import org.cloudfoundry.promregator.cfaccessor.CFAccessorCache;
+import org.cloudfoundry.promregator.cfaccessor.CFAccessorCacheClassic;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorSimulator;
 import org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl;
 import org.cloudfoundry.promregator.config.ConfigurationException;
@@ -95,12 +95,12 @@ public class PromregatorApplication {
 	}
 	
 	@Bean
-	public CFAccessorCache cfAccessorCache(CFAccessor mainCFAccessor) {
-		return new CFAccessorCache(mainCFAccessor);
+	public CFAccessorCacheClassic cfAccessorCache(CFAccessor mainCFAccessor) {
+		return new CFAccessorCacheClassic(mainCFAccessor);
 	}
 	
 	@Bean
-	public CFAccessor cfAccessor(CFAccessorCache cfAccessorCache) {
+	public CFAccessor cfAccessor(CFAccessorCacheClassic cfAccessorCache) {
 		return cfAccessorCache;
 	}
 	

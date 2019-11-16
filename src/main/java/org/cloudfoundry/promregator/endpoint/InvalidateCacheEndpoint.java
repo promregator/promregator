@@ -1,6 +1,6 @@
 package org.cloudfoundry.promregator.endpoint;
 
-import org.cloudfoundry.promregator.cfaccessor.CFAccessorCache;
+import org.cloudfoundry.promregator.cfaccessor.CFAccessorCacheClassic;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.CachingTargetResolver;
 import org.cloudfoundry.promregator.scanner.ReactiveAppInstanceScanner;
@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class InvalidateCacheEndpoint {
 
 	@Autowired
-	private CFAccessorCache cfAccessorCache;
+	private CFAccessorCacheClassic cfAccessorCache;
 	
 	@Autowired
 	private AppInstanceScanner appInstanceScanner;

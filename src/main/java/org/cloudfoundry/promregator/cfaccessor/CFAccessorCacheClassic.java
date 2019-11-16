@@ -26,8 +26,8 @@ import com.google.common.util.concurrent.ListenableFuture;
 import net.javacrumbs.futureconverter.java8guava.FutureConverter;
 import reactor.core.publisher.Mono;
 
-public class CFAccessorCache implements CFAccessor {
-	private static final Logger log = Logger.getLogger(CFAccessorCache.class);
+public class CFAccessorCacheClassic implements CFAccessor {
+	private static final Logger log = Logger.getLogger(CFAccessorCacheClassic.class);
 
 	private AutoRefreshingCacheMap<String, Mono<ListOrganizationsResponse>> orgCacheClassic;
 	private AutoRefreshingCacheMap<CacheKeySpace, Mono<ListSpacesResponse>> spaceCacheClassic;
@@ -62,7 +62,7 @@ public class CFAccessorCache implements CFAccessor {
 	
 	private CFAccessor parent;
 	
-	public CFAccessorCache(CFAccessor parent) {
+	public CFAccessorCacheClassic(CFAccessor parent) {
 		this.parent = parent;
 	}
 	

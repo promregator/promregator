@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import reactor.core.publisher.Mono;
 
 @Configuration
-public class CFAccessorCacheSpringApplication {
+public class CFAccessorCacheClassicSpringApplication {
 
 	@Bean
 	public InternalMetrics internalMetrics() {
@@ -28,8 +28,8 @@ public class CFAccessorCacheSpringApplication {
 	}
 	
 	@Bean
-	public CFAccessorCache subject(@Qualifier("parentMock") CFAccessor parentMock) {
-		return new CFAccessorCache(parentMock);
+	public CFAccessorCacheClassic subject(@Qualifier("parentMock") CFAccessor parentMock) {
+		return new CFAccessorCacheClassic(parentMock);
 	}
 	
 }
