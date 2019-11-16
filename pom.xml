@@ -152,11 +152,11 @@
 			<version>4.4</version>
 		</dependency>
 
-		<!--  see also https://github.com/google/guava/issues/2350#issuecomment-169097253 -->
+		<!--  see also https://github.com/google/guava/issues/2350#issuecomment-169097253 and https://stackoverflow.com/a/52345191 -->
 		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>28.1-jre</version>
+			<groupId>com.github.ben-manes.caffeine</groupId>
+			<artifactId>caffeine</artifactId>
+			<version>2.8.0</version>
 		</dependency>
 
 

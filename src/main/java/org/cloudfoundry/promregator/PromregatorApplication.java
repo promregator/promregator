@@ -13,7 +13,7 @@ import org.cloudfoundry.promregator.cfaccessor.AccessorCacheType;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorCache;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorCacheClassic;
-import org.cloudfoundry.promregator.cfaccessor.CFAccessorCacheGuava;
+import org.cloudfoundry.promregator.cfaccessor.CFAccessorCacheCaffeine;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorSimulator;
 import org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl;
 import org.cloudfoundry.promregator.config.ConfigurationException;
@@ -106,7 +106,7 @@ public class PromregatorApplication {
 		if (this.cacheType == AccessorCacheType.classic) {
 			return new CFAccessorCacheClassic(mainCFAccessor);
 		} else if (this.cacheType == AccessorCacheType.guava) {
-			return new CFAccessorCacheGuava(mainCFAccessor);
+			return new CFAccessorCacheCaffeine(mainCFAccessor);
 		} else {
 			throw new Error("Unknown CF Accessor Cache selected: "+this.cacheType);
 		}
