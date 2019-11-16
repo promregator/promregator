@@ -12,6 +12,8 @@ import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
+import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 
@@ -21,6 +23,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 
 import reactor.core.publisher.Mono;
 
+// TODO Unit tests still missing!
 public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	private static final Logger log = Logger.getLogger(CFAccessorCacheCaffeine.class);
 
@@ -48,6 +51,10 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	private int expiryCacheApplicationLevelInSeconds;
 	
 	
+	@Autowired
+	private InternalMetrics internalMetrics;
+
+	
 	private CFAccessor parent;
 	
 	public CFAccessorCacheCaffeine(CFAccessor parent) {
@@ -56,6 +63,12 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	
 	@PostConstruct
 	public void setupCaches() {
+		log.info(String.format("Cache refresh timings: org cache: %ds, space cache: %ds, app cache: %ds, app summary cache: %ds", 
+				this.refreshCacheOrgLevelInSeconds, this.refreshCacheSpaceLevelInSeconds, this.refreshCacheApplicationLevelInSeconds, this.refreshCacheApplicationLevelInSeconds));
+		log.info(String.format("Cache expiry timings: org cache: %ds, space cache: %ds, app cache: %ds, app summary cache: %ds", 
+				this.expiryCacheOrgLevelInSeconds, this.expiryCacheSpaceLevelInSeconds, this.expiryCacheApplicationLevelInSeconds, this.expiryCacheApplicationLevelInSeconds));
+
+		
 		this.orgCache = Caffeine.newBuilder()
 				.expireAfterAccess(this.expiryCacheOrgLevelInSeconds, TimeUnit.SECONDS)
 				.refreshAfterWrite(this.refreshCacheOrgLevelInSeconds, TimeUnit.SECONDS)
@@ -72,7 +85,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 					
 
 				});
-		// TODO: handling of cache statistics via metrics!
+		this.internalMetrics.addCaffeineCache("orgCache", this.orgCache);
 		
 		
 		this.spaceCache = Caffeine.newBuilder()
@@ -88,7 +101,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 						return mono.toFuture();
 					}
 				});
-		// TODO: handling of cache statistics via metrics!
+		this.internalMetrics.addCaffeineCache("spaceCache", this.spaceCache);
 		
 		
 		this.appsInSpaceCache = Caffeine.newBuilder()
@@ -104,7 +117,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 						return mono.toFuture();
 					}
 				});
-		// TODO: handling of cache statistics via metrics!
+		this.internalMetrics.addCaffeineCache("appsInSpace", this.appsInSpaceCache);
 		
 		
 		this.spaceSummaryCache = Caffeine.newBuilder()
@@ -119,7 +132,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 						return mono.toFuture();
 					}
 				});
-		// TODO: handling of cache statistics via metrics!
+		this.internalMetrics.addCaffeineCache("spaceSummary", this.spaceSummaryCache);
 	}
 	
 	@Scheduled(initialDelay=10000, fixedDelay=60*1000)
