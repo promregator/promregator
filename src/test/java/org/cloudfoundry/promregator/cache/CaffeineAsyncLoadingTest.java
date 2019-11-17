@@ -21,7 +21,7 @@ import reactor.core.scheduler.Schedulers;
 public class CaffeineAsyncLoadingTest {
 	private static final Logger log = Logger.getLogger(CaffeineAsyncLoadingTest.class);
 
-	private final class AsyncCacheLoaderImplementation implements AsyncCacheLoader<String, Integer> {
+	private final class AsyncCacheLoaderTimingImplementation implements AsyncCacheLoader<String, Integer> {
 		private int executionNumber = 0;
 		
 		@Override
@@ -65,7 +65,7 @@ public class CaffeineAsyncLoadingTest {
 				.refreshAfterWrite(120, TimeUnit.SECONDS)
 				.ticker(ticker::read)
 				.recordStats()
-				.buildAsync(new AsyncCacheLoaderImplementation());
+				.buildAsync(new AsyncCacheLoaderTimingImplementation());
 		
 		log.info("Starting first request");
 		Assert.assertEquals(new Integer(0), Mono.fromFuture(subject.get("a")).block());
@@ -93,4 +93,58 @@ public class CaffeineAsyncLoadingTest {
 		
 	}
 	
+	
+	private final class AsyncCacheLoaderFailureImplementation implements AsyncCacheLoader<String, Integer> {
+		private int executionNumber = 0;
+		
+		@Override
+		public @NonNull CompletableFuture<Integer> asyncLoad(@NonNull String key,
+				@NonNull Executor executor) {
+
+			log.info(String.format("Request loading iteration %d for request %s", this.executionNumber, key));
+			Mono<Integer> result = null;
+			
+			synchronized(this) {
+				result = Mono.just(executionNumber++);
+			}
+			
+			result = result.subscribeOn(Schedulers.fromExecutor(executor)).cache();
+			
+			if (this.executionNumber > 1) {
+				result = Mono.error(new Error("Failure while async loading"));
+			}
+			
+			return result.toFuture();
+		}
+	}
+	@Test
+	public void testFailureOnAsynchronous() throws InterruptedException {
+		FakeTicker ticker = new FakeTicker();
+		
+		AsyncLoadingCache<String, Integer> subject = Caffeine.newBuilder()
+				.expireAfterAccess(240, TimeUnit.SECONDS)
+				.refreshAfterWrite(120, TimeUnit.SECONDS)
+				.ticker(ticker::read)
+				.recordStats()
+				.buildAsync(new AsyncCacheLoaderFailureImplementation());
+		
+		Assert.assertEquals(new Integer(0), Mono.fromFuture(subject.get("a")).block());
+		
+		ticker.advance(Duration.ofSeconds(10));
+		
+		Assert.assertEquals(new Integer(0), Mono.fromFuture(subject.get("a")).block());
+		
+		ticker.advance(Duration.ofSeconds(250));
+		
+		Mono<Integer> errorMono = Mono.fromFuture(subject.get("a"));
+		
+		boolean thrown = false;
+		try {
+			errorMono.block();
+			thrown = false;
+		} catch (Throwable t) {
+			thrown = true;
+		}
+		Assert.assertTrue(thrown);
+	}
 }
