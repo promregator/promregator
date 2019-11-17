@@ -22,13 +22,16 @@ import com.github.benmanes.caffeine.cache.AsyncLoadingCache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 // TODO Unit tests still missing!
 public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	private static final Logger log = Logger.getLogger(CFAccessorCacheCaffeine.class);
 
 	private AsyncLoadingCache<String, ListOrganizationsResponse> orgCache;
+	private AsyncLoadingCache<Void, ListOrganizationsResponse> allOrgIdCache;
 	private AsyncLoadingCache<CacheKeySpace, ListSpacesResponse> spaceCache;
+	private AsyncLoadingCache<String, ListSpacesResponse> spaceIdInOrgCache;
 	private AsyncLoadingCache<CacheKeyAppsInSpace, ListApplicationsResponse> appsInSpaceCache;
 	private AsyncLoadingCache<String, GetSpaceSummaryResponse> spaceSummaryCache;
 	
@@ -69,6 +72,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 				this.expiryCacheOrgLevelInSeconds, this.expiryCacheSpaceLevelInSeconds, this.expiryCacheApplicationLevelInSeconds, this.expiryCacheApplicationLevelInSeconds));
 
 		
+		
 		this.orgCache = Caffeine.newBuilder()
 				.expireAfterAccess(this.expiryCacheOrgLevelInSeconds, TimeUnit.SECONDS)
 				.refreshAfterWrite(this.refreshCacheOrgLevelInSeconds, TimeUnit.SECONDS)
@@ -79,7 +83,9 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 					public @NonNull CompletableFuture<ListOrganizationsResponse> asyncLoad(@NonNull String key,
 							@NonNull Executor executor) {
 						
-						Mono<ListOrganizationsResponse> mono = parent.retrieveOrgId(key);
+						Mono<ListOrganizationsResponse> mono = parent.retrieveOrgId(key)
+								.subscribeOn(Schedulers.fromExecutor(executor))
+								.cache();
 						return mono.toFuture();
 					}
 					
@@ -87,6 +93,26 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 				});
 		this.internalMetrics.addCaffeineCache("orgCache", this.orgCache);
 		
+		
+		this.allOrgIdCache = Caffeine.newBuilder()
+				.expireAfterAccess(this.expiryCacheOrgLevelInSeconds, TimeUnit.SECONDS)
+				.refreshAfterWrite(this.refreshCacheOrgLevelInSeconds, TimeUnit.SECONDS)
+				.recordStats()
+				.buildAsync(new AsyncCacheLoader<Void, ListOrganizationsResponse>() {
+
+					@Override
+					public @NonNull CompletableFuture<ListOrganizationsResponse> asyncLoad(@NonNull Void key,
+							@NonNull Executor executor) {
+						
+						Mono<ListOrganizationsResponse> mono = parent.retrieveAllOrgIds()
+								.subscribeOn(Schedulers.fromExecutor(executor))
+								.cache();
+						return mono.toFuture();
+					}
+					
+
+				});
+		this.internalMetrics.addCaffeineCache("allOrgCache", this.allOrgIdCache);
 		
 		this.spaceCache = Caffeine.newBuilder()
 				.expireAfterAccess(this.expiryCacheSpaceLevelInSeconds, TimeUnit.SECONDS)
@@ -97,11 +123,30 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 					@Override
 					public @NonNull CompletableFuture<ListSpacesResponse> asyncLoad(@NonNull CacheKeySpace key,
 							@NonNull Executor executor) {
-						Mono<ListSpacesResponse> mono = parent.retrieveSpaceId(key.getOrgId(), key.getSpaceName());
+						Mono<ListSpacesResponse> mono = parent.retrieveSpaceId(key.getOrgId(), key.getSpaceName())
+								.subscribeOn(Schedulers.fromExecutor(executor))
+								.cache();
 						return mono.toFuture();
 					}
 				});
 		this.internalMetrics.addCaffeineCache("spaceCache", this.spaceCache);
+		
+		this.spaceIdInOrgCache = Caffeine.newBuilder()
+				.expireAfterAccess(this.expiryCacheSpaceLevelInSeconds, TimeUnit.SECONDS)
+				.refreshAfterWrite(this.refreshCacheSpaceLevelInSeconds, TimeUnit.SECONDS)
+				.recordStats()
+				.buildAsync(new AsyncCacheLoader<String, ListSpacesResponse>() {
+
+					@Override
+					public @NonNull CompletableFuture<ListSpacesResponse> asyncLoad(@NonNull String key,
+							@NonNull Executor executor) {
+						Mono<ListSpacesResponse> mono = parent.retrieveSpaceIdsInOrg(key)
+								.subscribeOn(Schedulers.fromExecutor(executor))
+								.cache();
+						return mono.toFuture();
+					}
+				});
+		this.internalMetrics.addCaffeineCache("spaceInOrgCache", this.spaceIdInOrgCache);
 		
 		
 		this.appsInSpaceCache = Caffeine.newBuilder()
@@ -113,7 +158,9 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 					@Override
 					public @NonNull CompletableFuture<ListApplicationsResponse> asyncLoad(
 							@NonNull CacheKeyAppsInSpace key, @NonNull Executor executor) {
-						Mono<ListApplicationsResponse> mono = parent.retrieveAllApplicationIdsInSpace(key.getOrgId(), key.getSpaceId());
+						Mono<ListApplicationsResponse> mono = parent.retrieveAllApplicationIdsInSpace(key.getOrgId(), key.getSpaceId())
+								.subscribeOn(Schedulers.fromExecutor(executor))
+								.cache();
 						return mono.toFuture();
 					}
 				});
@@ -128,7 +175,9 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 					@Override
 					public @NonNull CompletableFuture<GetSpaceSummaryResponse> asyncLoad(@NonNull String key,
 							@NonNull Executor executor) {
-						Mono<GetSpaceSummaryResponse> mono = parent.retrieveSpaceSummary(key).cache();
+						Mono<GetSpaceSummaryResponse> mono = parent.retrieveSpaceSummary(key)
+								.subscribeOn(Schedulers.fromExecutor(executor))
+								.cache();
 						return mono.toFuture();
 					}
 				});
@@ -138,7 +187,9 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	@Scheduled(initialDelay=10000, fixedDelay=60*1000)
 	public void guavaCacheCleanup() {
 		this.orgCache.synchronous().cleanUp();
+		this.allOrgIdCache.synchronous().cleanUp();
 		this.spaceCache.synchronous().cleanUp();
+		this.spaceIdInOrgCache.synchronous().cleanUp();
 		this.appsInSpaceCache.synchronous().cleanUp();
 		this.spaceSummaryCache.synchronous().cleanUp();
 	}
@@ -173,20 +224,12 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	
 	@Override
 	public Mono<ListOrganizationsResponse> retrieveAllOrgIds() {
-		/*
-		 * special case: we don't cache the result here in an own cache,
-		 * as we always want to have "fresh data".
-		 */
-		return this.parent.retrieveAllOrgIds();
+		return Mono.fromFuture(this.allOrgIdCache.get(null));
 	}
 	
 	@Override
 	public Mono<ListSpacesResponse> retrieveSpaceIdsInOrg(String orgId) {
-		/*
-		 * special case: we don't cache the result here in an own cache,
-		 * as we always want to have "fresh data".
-		 */
-		return this.parent.retrieveSpaceIdsInOrg(orgId);
+		return Mono.fromFuture(this.spaceIdInOrgCache.get(orgId));
 	}
 
 
@@ -202,12 +245,14 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	public void invalidateCacheSpace() {
 		log.info("Invalidating space cache");
 		this.spaceCache.synchronous().invalidateAll();
+		this.spaceIdInOrgCache.synchronous().invalidateAll();
 	}
 
 	@Override
 	public void invalidateCacheOrg() {
 		log.info("Invalidating org cache");
 		this.orgCache.synchronous().invalidateAll();
+		this.allOrgIdCache.synchronous().invalidateAll();
 	}
 
 }
