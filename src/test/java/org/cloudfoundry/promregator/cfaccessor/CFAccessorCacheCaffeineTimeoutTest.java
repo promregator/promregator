@@ -45,10 +45,13 @@ public class CFAccessorCacheCaffeineTimeoutTest {
 	}
 	
 	@Test
-	public void testRetrieveOrgId() {
+	public void testRetrieveOrgId() throws InterruptedException {
 		Mono<ListOrganizationsResponse> response1 = subject.retrieveOrgId("dummy");
 		response1.subscribe();
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveOrgId("dummy");
+		
+		// required to permit asynchronous updates of caches => test stability
+		Thread.sleep(10);
 		
 		Mono<ListOrganizationsResponse> response2 = subject.retrieveOrgId("dummy");
 		response2.subscribe();
@@ -57,11 +60,14 @@ public class CFAccessorCacheCaffeineTimeoutTest {
 	}
 
 	@Test
-	public void testRetrieveSpaceId() {
+	public void testRetrieveSpaceId() throws InterruptedException {
 		
 		Mono<ListSpacesResponse> response1 = subject.retrieveSpaceId("dummy1", "dummy2");
 		response1.subscribe();
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveSpaceId("dummy1", "dummy2");
+		
+		// required to permit asynchronous updates of caches => test stability
+		Thread.sleep(10);
 		
 		Mono<ListSpacesResponse> response2 = subject.retrieveSpaceId("dummy1", "dummy2");
 		response2.subscribe();
@@ -70,10 +76,13 @@ public class CFAccessorCacheCaffeineTimeoutTest {
 	}
 
 	@Test
-	public void testRetrieveAllApplicationIdsInSpace() {
+	public void testRetrieveAllApplicationIdsInSpace() throws InterruptedException {
 		Mono<ListApplicationsResponse> response1 = subject.retrieveAllApplicationIdsInSpace("dummy1", "dummy2");
 		response1.subscribe();
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllApplicationIdsInSpace("dummy1", "dummy2");
+		
+		// required to permit asynchronous updates of caches => test stability
+		Thread.sleep(10);
 		
 		Mono<ListApplicationsResponse> response2 = subject.retrieveAllApplicationIdsInSpace("dummy1", "dummy2");
 		response2.subscribe();
@@ -82,10 +91,13 @@ public class CFAccessorCacheCaffeineTimeoutTest {
 	}
 
 	@Test
-	public void testRetrieveSpaceSummary() {
+	public void testRetrieveSpaceSummary() throws InterruptedException {
 		Mono<GetSpaceSummaryResponse> response1 = subject.retrieveSpaceSummary("dummy");
 		response1.subscribe();
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveSpaceSummary("dummy");
+		
+		// required to permit asynchronous updates of caches => test stability
+		Thread.sleep(10);
 		
 		Mono<GetSpaceSummaryResponse> response2 = subject.retrieveSpaceSummary("dummy");
 		response2.subscribe();
