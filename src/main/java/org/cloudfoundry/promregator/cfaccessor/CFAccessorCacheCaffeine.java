@@ -2,6 +2,8 @@ package org.cloudfoundry.promregator.cfaccessor;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
@@ -20,6 +22,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import com.github.benmanes.caffeine.cache.AsyncCacheLoader;
 import com.github.benmanes.caffeine.cache.AsyncLoadingCache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.Scheduler;
 
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -72,10 +75,12 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 				this.expiryCacheOrgLevelInSeconds, this.expiryCacheSpaceLevelInSeconds, this.expiryCacheApplicationLevelInSeconds, this.expiryCacheApplicationLevelInSeconds));
 
 		
+		Scheduler caffeineScheduler = Scheduler.forScheduledExecutorService(new ScheduledThreadPoolExecutor(1));
 		
 		this.orgCache = Caffeine.newBuilder()
 				.expireAfterAccess(this.expiryCacheOrgLevelInSeconds, TimeUnit.SECONDS)
 				.refreshAfterWrite(this.refreshCacheOrgLevelInSeconds, TimeUnit.SECONDS)
+				.scheduler(caffeineScheduler)
 				.recordStats()
 				.buildAsync(new AsyncCacheLoader<String, ListOrganizationsResponse>() {
 
@@ -98,6 +103,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 				.expireAfterAccess(this.expiryCacheOrgLevelInSeconds, TimeUnit.SECONDS)
 				.refreshAfterWrite(this.refreshCacheOrgLevelInSeconds, TimeUnit.SECONDS)
 				.recordStats()
+				.scheduler(caffeineScheduler)
 				.buildAsync(new AsyncCacheLoader<Void, ListOrganizationsResponse>() {
 
 					@Override
@@ -118,6 +124,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 				.expireAfterAccess(this.expiryCacheSpaceLevelInSeconds, TimeUnit.SECONDS)
 				.refreshAfterWrite(this.refreshCacheSpaceLevelInSeconds, TimeUnit.SECONDS)
 				.recordStats()
+				.scheduler(caffeineScheduler)
 				.buildAsync(new AsyncCacheLoader<CacheKeySpace, ListSpacesResponse>() {
 
 					@Override
@@ -135,6 +142,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 				.expireAfterAccess(this.expiryCacheSpaceLevelInSeconds, TimeUnit.SECONDS)
 				.refreshAfterWrite(this.refreshCacheSpaceLevelInSeconds, TimeUnit.SECONDS)
 				.recordStats()
+				.scheduler(caffeineScheduler)
 				.buildAsync(new AsyncCacheLoader<String, ListSpacesResponse>() {
 
 					@Override
@@ -153,6 +161,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 				.expireAfterAccess(this.expiryCacheApplicationLevelInSeconds, TimeUnit.SECONDS)
 				.refreshAfterWrite(this.refreshCacheApplicationLevelInSeconds, TimeUnit.SECONDS)
 				.recordStats()
+				.scheduler(caffeineScheduler)
 				.buildAsync(new AsyncCacheLoader<CacheKeyAppsInSpace, ListApplicationsResponse>() {
 
 					@Override
@@ -171,6 +180,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 				.expireAfterAccess(this.expiryCacheApplicationLevelInSeconds, TimeUnit.SECONDS)
 				.refreshAfterWrite(this.refreshCacheApplicationLevelInSeconds, TimeUnit.SECONDS)
 				.recordStats()
+				.scheduler(caffeineScheduler)
 				.buildAsync(new AsyncCacheLoader<String, GetSpaceSummaryResponse>() {
 					@Override
 					public @NonNull CompletableFuture<GetSpaceSummaryResponse> asyncLoad(@NonNull String key,
@@ -183,17 +193,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 				});
 		this.internalMetrics.addCaffeineCache("spaceSummary", this.spaceSummaryCache);
 	}
-	
-	@Scheduled(initialDelay=10000, fixedDelay=60*1000)
-	public void guavaCacheCleanup() {
-		this.orgCache.synchronous().cleanUp();
-		this.allOrgIdCache.synchronous().cleanUp();
-		this.spaceCache.synchronous().cleanUp();
-		this.spaceIdInOrgCache.synchronous().cleanUp();
-		this.appsInSpaceCache.synchronous().cleanUp();
-		this.spaceSummaryCache.synchronous().cleanUp();
-	}
-	
+
 	@Override
 	public Mono<ListOrganizationsResponse> retrieveOrgId(String orgName) {
 		return Mono.fromFuture(this.orgCache.get(orgName));
