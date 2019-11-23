@@ -83,6 +83,15 @@ timestamps {
 					]
 			}
 			
+			stage("SecDependency Scan") {
+				sh """
+					mvn -B org.owasp:dependency-check-maven:5.2.4:check
+				"""
+				
+				archiveArtifacts "target/dependency-check-report.html"
+			}
+
+			
 			stage("Tests for Docker Image") {
 				sh """
 					chmod +x docker/data/promregator.sh
