@@ -48,7 +48,7 @@
 		<java.version>1.8</java.version>
 		<spring-cloud.version>Greenwich.SR1</spring-cloud.version>
 		<prometheus.version>0.6.0</prometheus.version>
-		<cloudfoundry.client.version>3.15.0.RELEASE</cloudfoundry.client.version>
+		<cloudfoundry.client.version>3.17.1.RELEASE</cloudfoundry.client.version>
 		<tomcat.version>9.0.24</tomcat.version> <!-- required due to https://github.com/promregator/promregator/issues/119 -->
 		<logback.contrib.version>0.1.5</logback.contrib.version>
 	</properties>
