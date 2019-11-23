@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
+import com.google.json.JsonSanitizer;
 import org.apache.http.Consts;
 import org.apache.http.NameValuePair;
 import org.apache.http.ParseException;
@@ -158,7 +159,7 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
 		}
 		
 		Gson gson = new Gson();
-		TokenResponse oAuthResponse = gson.fromJson(json, TokenResponse.class);
+		TokenResponse oAuthResponse = gson.fromJson(JsonSanitizer.sanitize(json), TokenResponse.class);
 		
 		String jwt = oAuthResponse.getAccessToken();
 		log.info(String.format("JWT token retrieved: %s...", jwt.substring(0, Math.min(jwt.length() / 2, 30))));

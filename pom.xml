@@ -38,7 +38,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.1.9.RELEASE</version> <!-- see also https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-parent -->
+		<version>2.1.10.RELEASE</version> <!-- see also https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-parent -->
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 
@@ -128,11 +128,23 @@
 			<artifactId>cloudfoundry-client-reactor</artifactId>
 			<version>${cloudfoundry.client.version}</version>
 		</dependency>
+		<!--Need to override version of compress due to CVE-2019-12402 -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-compress</artifactId>
+            <version>1.19</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.cloudfoundry</groupId>
 			<artifactId>cloudfoundry-operations</artifactId>
 			<version>${cloudfoundry.client.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.mikesamuel</groupId>
+			<artifactId>json-sanitizer</artifactId>
+			<version>1.2.0</version>
 		</dependency>
 
 		<!-- omitted here, as implicitly provided by cloudfoundry-client-reactor 
