@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions
+	xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+	<suppress>
+		<notes><![CDATA[
+      file name: spring-cloud-cloudfoundry-connector-2.0.6.RELEASE.jar
+      ]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.springframework\.cloud/spring\-cloud\-cloudfoundry\-connector@.*$
+		</packageUrl>
+		<cpe>cpe:/a:pivotal:cloud_foundry</cpe>
+	</suppress>
+	<suppress>
+		<notes><![CDATA[
+   file name: spring-cloud-cloudfoundry-connector-2.0.6.RELEASE.jar
+   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.springframework\.cloud/spring\-cloud\-cloudfoundry\-connector@.*$
+		</packageUrl>
+		<cpe>cpe:/a:pivotal_software:cloud_foundry</cpe>
+	</suppress>
+	<suppress>
+		<notes><![CDATA[
+   file name: spring-security-rsa-1.0.7.RELEASE.jar
+   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring\-security\-rsa@.*$
+		</packageUrl>
+		<cpe>cpe:/a:vmware:springsource_spring_security</cpe>
+	</suppress>
+	<suppress>
+		<notes><![CDATA[
+   file name: spring-security-rsa-1.0.7.RELEASE.jar
+   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring\-security\-rsa@.*$
+		</packageUrl>
+		<cpe>cpe:/a:pivotal:spring_security_oauth</cpe>
+	</suppress>
+</suppressions>
