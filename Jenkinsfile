@@ -85,7 +85,7 @@ timestamps {
 			
 			stage("SecDependency Scan") {
 				sh """
-					mvn -B -DsuppressionFiles=./ org.owasp:dependency-check-maven:5.2.4:check
+					mvn -B -DsuppressionFiles=./secscan/owasp-suppression.xml org.owasp:dependency-check-maven:5.2.4:check
 				"""
 				
 				archiveArtifacts "target/dependency-check-report.html"
