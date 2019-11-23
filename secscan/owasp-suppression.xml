@@ -2,225 +2,221 @@
 <suppressions
 	xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
 
-	<!-- invalid CPE -->
 	<suppress>
 		<notes><![CDATA[
       file name: spring-cloud-cloudfoundry-connector-2.0.6.RELEASE.jar
+      invalid CPE 
       ]]></notes>
 		<packageUrl regex="true">^pkg:maven/org\.springframework\.cloud/spring\-cloud\-cloudfoundry\-connector@.*$
 		</packageUrl>
 		<cpe>cpe:/a:pivotal:cloud_foundry</cpe>
 	</suppress>
 
-	<!-- invalid CPE -->
 	<suppress>
 		<notes><![CDATA[
    file name: spring-cloud-cloudfoundry-connector-2.0.6.RELEASE.jar
+   invalid CPE 
    ]]></notes>
 		<packageUrl regex="true">^pkg:maven/org\.springframework\.cloud/spring\-cloud\-cloudfoundry\-connector@.*$
 		</packageUrl>
 		<cpe>cpe:/a:pivotal_software:cloud_foundry</cpe>
 	</suppress>
 
-	<!-- invalid CPE -->
 	<suppress>
 		<notes><![CDATA[
    file name: spring-security-rsa-1.0.7.RELEASE.jar
+   invalid CPE 
    ]]></notes>
 		<packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring\-security\-rsa@.*$
 		</packageUrl>
 		<cpe>cpe:/a:vmware:springsource_spring_security</cpe>
 	</suppress>
 
-	<!-- invalid CPE -->
 	<suppress>
 		<notes><![CDATA[
    file name: spring-security-rsa-1.0.7.RELEASE.jar
+   invalid CPE 
    ]]></notes>
 		<packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring\-security\-rsa@.*$
 		</packageUrl>
 		<cpe>cpe:/a:pivotal:spring_security_oauth</cpe>
 	</suppress>
 
-	<!-- invalid CPE: That's a different package -->
 	<suppress>
 		<notes><![CDATA[
    file name: spring-security-rsa-1.0.7.RELEASE.jar
+   invalid CPE: That's a different package
    ]]></notes>
 		<packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring\-security\-rsa@.*$
 		</packageUrl>
 		<cpe>cpe:/a:pivotal_software:spring_security</cpe>
 	</suppress>
 
-	<!-- invalid CPE: That's a different package -->
 	<suppress>
 		<notes><![CDATA[
    file name: spring-security-rsa-1.0.7.RELEASE.jar
+   invalid CPE: That's a different package
    ]]></notes>
 		<packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring\-security\-rsa@.*$
 		</packageUrl>
 		<cpe>cpe:/a:vmware:springsource_spring_security</cpe>
 	</suppress>
 
-	<!-- invalid CPE: Logback-json contributed is not the logback core in general -->
 	<suppress>
 		<notes><![CDATA[
    file name: logback-json-core-0.1.5.jar
+   invalid CPE: Logback-json contributed is not the logback core in general
    ]]></notes>
 		<packageUrl regex="true">^pkg:maven/ch\.qos\.logback\.contrib/logback\-json\-core@.*$
 		</packageUrl>
 		<cpe>cpe:/a:logback:logback</cpe>
 	</suppress>
 
-	<!-- invalid CPE: Logback-jackson from contributed is not the logback core 
-		in general -->
 	<suppress>
 		<notes><![CDATA[
    file name: logback-jackson-0.1.5.jar
+   invalid CPE: Logback-jackson from contributed is not the logback core in general
    ]]></notes>
 		<packageUrl regex="true">^pkg:maven/ch\.qos\.logback\.contrib/logback\-jackson@.*$
 		</packageUrl>
 		<cpe>cpe:/a:logback:logback</cpe>
 	</suppress>
 
-	<!-- invalid CPE: Logback-json-classic from contributed is not the logback 
-		core in general -->
 	<suppress>
 		<notes><![CDATA[
    file name: logback-json-classic-0.1.5.jar
+   invalid CPE: Logback-json-classic from contributed is not the logback core in general
    ]]></notes>
 		<packageUrl regex="true">^pkg:maven/ch\.qos\.logback\.contrib/logback\-json\-classic@.*$
 		</packageUrl>
 		<cpe>cpe:/a:logback:logback</cpe>
 	</suppress>
 
-	<!-- apache-log4j-extra not in dependency list -->
 	<suppress>
 		<notes><![CDATA[
    file name: spring-cloud-cloudfoundry-connector-2.0.6.RELEASE.jar (shaded: com.fasterxml.jackson.core:jackson-databind:2.9.9.1)
+   apache-log4j-extra not in dependency list of this project pom
    ]]></notes>
 		<packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-databind@.*$
 		</packageUrl>
 		<cve>CVE-2019-17531</cve>
 	</suppress>
 
-	<!-- ehcache not in dependency list -->
 	<suppress>
 		<notes><![CDATA[
    file name: spring-cloud-cloudfoundry-connector-2.0.6.RELEASE.jar (shaded: com.fasterxml.jackson.core:jackson-databind:2.9.9.1)
+   ehcache not in dependency list of this project pom
    ]]></notes>
 		<packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-databind@.*$
 		</packageUrl>
 		<cve>CVE-2019-17267</cve>
 	</suppress>
 
-	<!-- p6spy not in dependency list -->
 	<suppress>
 		<notes><![CDATA[
    file name: spring-cloud-cloudfoundry-connector-2.0.6.RELEASE.jar (shaded: com.fasterxml.jackson.core:jackson-databind:2.9.9.1)
+   p6spy not in dependency list of this project pom
    ]]></notes>
 		<packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-databind@.*$
 		</packageUrl>
 		<cve>CVE-2019-16943</cve>
 	</suppress>
 
-	<!-- commons-dbcp not in dependency list -->
 	<suppress>
 		<notes><![CDATA[
    file name: spring-cloud-cloudfoundry-connector-2.0.6.RELEASE.jar (shaded: com.fasterxml.jackson.core:jackson-databind:2.9.9.1)
+   commons-dbcp not in dependency list of this project pom
    ]]></notes>
 		<packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-databind@.*$
 		</packageUrl>
 		<cve>CVE-2019-16942</cve>
 	</suppress>
 
-	<!-- Hikari not in dependency list -->
 	<suppress>
 		<notes><![CDATA[
    file name: spring-cloud-cloudfoundry-connector-2.0.6.RELEASE.jar (shaded: com.fasterxml.jackson.core:jackson-databind:2.9.9.1)
+   Hikari not in dependency list of this project pom
    ]]></notes>
 		<packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-databind@.*$
 		</packageUrl>
 		<cve>CVE-2019-16335</cve>
 	</suppress>
 
-	<!-- Hikari not in dependency list -->
 	<suppress>
 		<notes><![CDATA[
    file name: spring-cloud-cloudfoundry-connector-2.0.6.RELEASE.jar (shaded: com.fasterxml.jackson.core:jackson-databind:2.9.9.1)
+   Hikari not in dependency list of this project pom
    ]]></notes>
 		<packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-databind@.*$
 		</packageUrl>
 		<cve>CVE-2019-14540</cve>
 	</suppress>
 
-	<!-- ehcache not in dependency list -->
 	<suppress>
 		<notes><![CDATA[
    file name: spring-cloud-cloudfoundry-connector-2.0.6.RELEASE.jar (shaded: com.fasterxml.jackson.core:jackson-databind:2.9.9.1)
+   ehcache not in dependency list of this project pom
    ]]></notes>
 		<packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-databind@.*$
 		</packageUrl>
 		<cve>CVE-2019-14379</cve>
 	</suppress>
 
-	<!-- only valid for spring framework 5.0.5; however, we are already beyond 
-		that version number -->
 	<suppress>
 		<notes><![CDATA[
    file name: spring-security-core-5.1.7.RELEASE.jar
+   only valid for spring framework 5.0.5; however, we are already beyond that version number
    ]]></notes>
 		<packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring\-security\-core@.*$
 		</packageUrl>
 		<cve>CVE-2018-1258</cve>
 	</suppress>
 
-	<!-- only valid for spring framework 5.0.5; however, we are already beyond 
-		that version number -->
+	<!--  -->
 	<suppress>
 		<notes><![CDATA[
    file name: spring-security-web-5.1.7.RELEASE.jar
+   only valid for spring framework 5.0.5; however, we are already beyond that version number
    ]]></notes>
 		<packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring\-security\-web@.*$
 		</packageUrl>
 		<cve>CVE-2018-1258</cve>
 	</suppress>
 
-	<!-- only valid for spring framework 5.0.5; however, we are already beyond 
-		that version number -->
 	<suppress>
 		<notes><![CDATA[
    file name: spring-security-crypto-5.1.7.RELEASE.jar
+   only valid for spring framework 5.0.5; however, we are already beyond that version number
    ]]></notes>
 		<packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring\-security\-crypto@.*$
 		</packageUrl>
 		<cve>CVE-2018-1258</cve>
 	</suppress>
 
-	<!-- ActiveMQ is only used internally; no exposure of the REST API -->
 	<suppress>
 		<notes><![CDATA[
    file name: activemq-broker-5.15.10.jar
+   ActiveMQ is only used internally; no exposure of the REST API
    ]]></notes>
 		<packageUrl regex="true">^pkg:maven/org\.apache\.activemq/activemq\-broker@.*$
 		</packageUrl>
 		<cve>CVE-2015-5182</cve>
 	</suppress>
 
-	<!-- ActiveMQ is only used internally; no exposure of the REST API -->
 	<suppress>
 		<notes><![CDATA[
    file name: activemq-client-5.15.10.jar
+   ActiveMQ is only used internally; no exposure of the REST API
    ]]></notes>
 		<packageUrl regex="true">^pkg:maven/org\.apache\.activemq/activemq\-client@.*$
 		</packageUrl>
 		<cve>CVE-2015-5182</cve>
 	</suppress>
 
-	<!-- ActiveMQ is only used internally; no exposure of the REST API -->
 	<suppress>
 		<notes><![CDATA[
    file name: activemq-openwire-legacy-5.15.10.jar
+   ActiveMQ is only used internally; no exposure of the REST API
    ]]></notes>
 		<packageUrl regex="true">^pkg:maven/org\.apache\.activemq/activemq\-openwire\-legacy@.*$
 		</packageUrl>
@@ -228,10 +224,10 @@
 	</suppress>
 
 
-	<!-- hawtio is no longer incorporated into Apache Activemq (external product) -->
 	<suppress>
 		<notes><![CDATA[
    file name: activemq-broker-5.15.10.jar
+   hawtio is no longer incorporated into Apache Activemq (external product)
    ]]></notes>
 		<packageUrl regex="true">^pkg:maven/org\.apache\.activemq/activemq\-broker@.*$
 		</packageUrl>
@@ -239,60 +235,60 @@
 	</suppress>
 
 
-	<!-- hawtio is no longer incorporated into Apache Activemq (external product) -->
 	<suppress>
 		<notes><![CDATA[
    file name: activemq-client-5.15.10.jar
+   hawtio is no longer incorporated into Apache Activemq (external product)
    ]]></notes>
 		<packageUrl regex="true">^pkg:maven/org\.apache\.activemq/activemq\-client@.*$
 		</packageUrl>
 		<cve>CVE-2015-5183</cve>
 	</suppress>
 
-	<!-- hawtio is no longer incorporated into Apache Activemq (external product) -->
 	<suppress>
 		<notes><![CDATA[
    file name: activemq-openwire-legacy-5.15.10.jar
+   hawtio is no longer incorporated into Apache Activemq (external product)
    ]]></notes>
 		<packageUrl regex="true">^pkg:maven/org\.apache\.activemq/activemq\-openwire\-legacy@.*$
 		</packageUrl>
 		<cve>CVE-2015-5183</cve>
 	</suppress>
 
-	<!-- hawtio is no longer incorporated into Apache Activemq (external product) -->
 	<suppress>
 		<notes><![CDATA[
    file name: activemq-broker-5.15.10.jar
+   hawtio is no longer incorporated into Apache Activemq (external product)
    ]]></notes>
 		<packageUrl regex="true">^pkg:maven/org\.apache\.activemq/activemq\-broker@.*$
 		</packageUrl>
 		<cve>CVE-2015-5184</cve>
 	</suppress>
 
-	<!-- hawtio is no longer incorporated into Apache Activemq (external product) -->
 	<suppress>
 		<notes><![CDATA[
    file name: activemq-client-5.15.10.jar
+   hawtio is no longer incorporated into Apache Activemq (external product)
    ]]></notes>
 		<packageUrl regex="true">^pkg:maven/org\.apache\.activemq/activemq\-client@.*$
 		</packageUrl>
 		<cve>CVE-2015-5184</cve>
 	</suppress>
 
-	<!-- hawtio is no longer incorporated into Apache Activemq (external product) -->
 	<suppress>
 		<notes><![CDATA[
    file name: activemq-openwire-legacy-5.15.10.jar
+   hawtio is no longer incorporated into Apache Activemq (external product)
    ]]></notes>
 		<packageUrl regex="true">^pkg:maven/org\.apache\.activemq/activemq\-openwire\-legacy@.*$
 		</packageUrl>
 		<cve>CVE-2015-5184</cve>
 	</suppress>
 
-	<!-- Not being used in Android context -->
 	<suppress>
 		<notes><![CDATA[
    file name: wire-runtime-2.2.0.jar
+   Not being used in Android context
    ]]></notes>
 		<packageUrl regex="true">^pkg:maven/com\.squareup\.wire/wire\-runtime@.*$
 		</packageUrl>
