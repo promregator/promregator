@@ -83,6 +83,17 @@
 		<cpe>cpe:/a:logback:logback</cpe>
 	</suppress>
 
+	<!-- invalid CPE: Logback-json-classic from contributed is not the logback 
+		core in general -->
+	<suppress>
+		<notes><![CDATA[
+   file name: logback-json-classic-0.1.5.jar
+   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/ch\.qos\.logback\.contrib/logback\-json\-classic@.*$
+		</packageUrl>
+		<cpe>cpe:/a:logback:logback</cpe>
+	</suppress>
+
 	<!-- apache-log4j-extra not in dependency list -->
 	<suppress>
 		<notes><![CDATA[
@@ -175,6 +186,17 @@
 		<cve>CVE-2018-1258</cve>
 	</suppress>
 
+	<!-- only valid for spring framework 5.0.5; however, we are already beyond 
+		that version number -->
+	<suppress>
+		<notes><![CDATA[
+   file name: spring-security-crypto-5.1.7.RELEASE.jar
+   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring\-security\-crypto@.*$
+		</packageUrl>
+		<cve>CVE-2018-1258</cve>
+	</suppress>
+
 	<!-- ActiveMQ is only used internally; no exposure of the REST API -->
 	<suppress>
 		<notes><![CDATA[
@@ -194,6 +216,17 @@
 		</packageUrl>
 		<cve>CVE-2015-5182</cve>
 	</suppress>
+
+	<!-- ActiveMQ is only used internally; no exposure of the REST API -->
+	<suppress>
+		<notes><![CDATA[
+   file name: activemq-openwire-legacy-5.15.10.jar
+   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.apache\.activemq/activemq\-openwire\-legacy@.*$
+		</packageUrl>
+		<cve>CVE-2015-5182</cve>
+	</suppress>
+
 
 	<!-- hawtio is no longer incorporated into Apache Activemq (external product) -->
 	<suppress>
@@ -212,6 +245,16 @@
    file name: activemq-client-5.15.10.jar
    ]]></notes>
 		<packageUrl regex="true">^pkg:maven/org\.apache\.activemq/activemq\-client@.*$
+		</packageUrl>
+		<cve>CVE-2015-5183</cve>
+	</suppress>
+
+	<!-- hawtio is no longer incorporated into Apache Activemq (external product) -->
+	<suppress>
+		<notes><![CDATA[
+   file name: activemq-openwire-legacy-5.15.10.jar
+   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.apache\.activemq/activemq\-openwire\-legacy@.*$
 		</packageUrl>
 		<cve>CVE-2015-5183</cve>
 	</suppress>
@@ -232,6 +275,16 @@
    file name: activemq-client-5.15.10.jar
    ]]></notes>
 		<packageUrl regex="true">^pkg:maven/org\.apache\.activemq/activemq\-client@.*$
+		</packageUrl>
+		<cve>CVE-2015-5184</cve>
+	</suppress>
+
+	<!-- hawtio is no longer incorporated into Apache Activemq (external product) -->
+	<suppress>
+		<notes><![CDATA[
+   file name: activemq-openwire-legacy-5.15.10.jar
+   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.apache\.activemq/activemq\-openwire\-legacy@.*$
 		</packageUrl>
 		<cve>CVE-2015-5184</cve>
 	</suppress>
