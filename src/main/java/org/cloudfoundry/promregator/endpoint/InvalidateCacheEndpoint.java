@@ -1,9 +1,7 @@
 package org.cloudfoundry.promregator.endpoint;
 
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorCache;
-import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.CachingTargetResolver;
-import org.cloudfoundry.promregator.scanner.ReactiveAppInstanceScanner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -21,9 +19,6 @@ public class InvalidateCacheEndpoint {
 	private CFAccessorCache cfAccessorCache;
 	
 	@Autowired
-	private AppInstanceScanner appInstanceScanner;
-	
-	@Autowired
 	private CachingTargetResolver cachingTargetResolver;
 	
 	@RequestMapping(method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)
@@ -34,10 +29,7 @@ public class InvalidateCacheEndpoint {
 			@RequestParam(name = "resolver", required = false) boolean resolver
 			) {
 
-		ReactiveAppInstanceScanner reactiveAppInstanceScanner = (ReactiveAppInstanceScanner) this.appInstanceScanner;
-		
 		if (application) {
-			reactiveAppInstanceScanner.invalidateApplicationUrlCache();
 			cfAccessorCache.invalidateCacheApplications();
 		}
 		
