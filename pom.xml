@@ -6,7 +6,7 @@
 
 	<groupId>com.github.promregator</groupId>
 	<artifactId>promregator</artifactId>
-	<version>0.6.3-SNAPSHOT</version>
+	<version>0.6.3</version>
 	<packaging>jar</packaging>
 
 	<name>Promregator</name>
