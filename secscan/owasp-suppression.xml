@@ -64,6 +64,16 @@
 
 	<suppress>
 		<notes><![CDATA[
+   file name: spring-security-config-5.1.7.RELEASE.jar
+   invalid CPE: That's a different package
+   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring\-security\-config@.*$
+		</packageUrl>
+		<cpe>cpe:/a:pivotal_software:spring_security</cpe>
+	</suppress>
+
+	<suppress>
+		<notes><![CDATA[
    file name: logback-json-core-0.1.5.jar
    invalid CPE: Logback-json contributed is not the logback core in general
    ]]></notes>
@@ -172,7 +182,7 @@
 		<cve>CVE-2018-1258</cve>
 	</suppress>
 
-	<!--  -->
+	<!-- -->
 	<suppress>
 		<notes><![CDATA[
    file name: spring-security-web-5.1.7.RELEASE.jar
