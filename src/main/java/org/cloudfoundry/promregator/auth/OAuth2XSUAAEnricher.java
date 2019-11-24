@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.config.OAuth2XSUAAAuthenticationConfiguration;
 
 import com.google.gson.Gson;
+import com.google.json.JsonSanitizer;
 
 public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
 	
@@ -158,7 +159,7 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
 		}
 		
 		Gson gson = new Gson();
-		TokenResponse oAuthResponse = gson.fromJson(json, TokenResponse.class);
+		TokenResponse oAuthResponse = gson.fromJson(JsonSanitizer.sanitize(json), TokenResponse.class);
 		
 		String jwt = oAuthResponse.getAccessToken();
 		log.info(String.format("JWT token retrieved: %s...", jwt.substring(0, Math.min(jwt.length() / 2, 30))));

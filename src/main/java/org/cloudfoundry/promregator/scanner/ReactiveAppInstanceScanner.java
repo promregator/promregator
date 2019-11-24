@@ -5,15 +5,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.PostConstruct;
 import javax.validation.constraints.Null;
 
-import org.apache.commons.collections4.map.PassiveExpiringMap;
 import org.apache.log4j.Logger;
 import org.cloudfoundry.client.v2.organizations.OrganizationResource;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
@@ -33,8 +30,6 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	private static final String INVALID_SPACE_ID = "***invalid***";
 	private static final Map<String, SpaceApplicationSummary> INVALID_SUMMARY = new HashMap<>();
 
-	private PassiveExpiringMap<String, Mono<String>> applicationUrlMap;
-	
 	@Value("${cf.cache.timeout.application:300}")
 	private int timeoutCacheApplicationLevel;
 
@@ -48,11 +43,6 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	 */
 	private static final Locale LOCALE_OF_LOWER_CASE_CONVERSION_FOR_IDENTIFIER_COMPARISON = Locale.ENGLISH;
 
-	@PostConstruct
-	public void setupMaps() {
-		this.applicationUrlMap = new PassiveExpiringMap<>(this.timeoutCacheApplicationLevel, TimeUnit.SECONDS);
-	}
-	
 	private static class OSAVector {
 		public ResolvedTarget target;
 		
@@ -275,9 +265,5 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		// The fallback then is the old behavior by returned just the first-guess element
 		log.debug(String.format("Though Preferred Router URLs were provided, no route matched; taking the first route as fallback (compatibility!), which is '%s'", urls.get(0))); 
 		return urls.get(0);
-	}
-	
-	public void invalidateApplicationUrlCache() {
-		this.applicationUrlMap.clear();
 	}
 }
