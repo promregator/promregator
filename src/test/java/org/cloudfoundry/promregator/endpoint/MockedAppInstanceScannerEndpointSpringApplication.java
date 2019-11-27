@@ -40,19 +40,6 @@ import io.prometheus.client.CollectorRegistry;
 @Import({ PromregatorConfiguration.class })
 @TestPropertySource(locations="../default.properties")
 public class MockedAppInstanceScannerEndpointSpringApplication {
-	public static class MockedReactiveAppInstanceScanner extends ReactiveAppInstanceScanner {
-		private boolean appURLInvalidated;
-		
-		@Override
-		public void invalidateApplicationUrlCache() {
-			this.appURLInvalidated = true;
-		}
-
-		public boolean isAppURLInvalidated() {
-			return appURLInvalidated;
-		}
-
-	}
 	
 	public class MockedCFAccessorCache extends CFAccessorCache {
 		public MockedCFAccessorCache() {
@@ -125,7 +112,7 @@ public class MockedAppInstanceScannerEndpointSpringApplication {
 	
 	@Bean
 	public AppInstanceScanner appInstanceScanner() {
-		return new MockedReactiveAppInstanceScanner();
+		return new ReactiveAppInstanceScanner();
 	}
 
 	@Bean

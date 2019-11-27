@@ -38,7 +38,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.1.9.RELEASE</version> <!-- see also https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-parent -->
+		<version>2.1.10.RELEASE</version> <!-- see also https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-parent -->
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 
@@ -48,8 +48,7 @@
 		<java.version>1.8</java.version>
 		<spring-cloud.version>Greenwich.SR1</spring-cloud.version>
 		<prometheus.version>0.6.0</prometheus.version>
-		<cloudfoundry.client.version>3.15.0.RELEASE</cloudfoundry.client.version>
-		<tomcat.version>9.0.24</tomcat.version> <!-- required due to https://github.com/promregator/promregator/issues/119 -->
+		<cloudfoundry.client.version>3.17.1.RELEASE</cloudfoundry.client.version>
 		<logback.contrib.version>0.1.5</logback.contrib.version>
 	</properties>
 
@@ -216,6 +215,12 @@
 			<version>3.0.1</version>
 		</dependency>
 
+		<!--  see also https://github.com/owasp/json-sanitizer - Apache 2.0 license -->
+		<dependency>
+			<groupId>com.mikesamuel</groupId>
+			<artifactId>json-sanitizer</artifactId>
+			<version>1.2.0</version>
+		</dependency>
 	</dependencies>
 
 	<dependencyManagement>

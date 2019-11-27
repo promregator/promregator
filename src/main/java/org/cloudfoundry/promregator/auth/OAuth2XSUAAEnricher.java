@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.config.OAuth2XSUAAAuthenticationConfiguration;
 
 import com.google.gson.Gson;
+import com.google.json.JsonSanitizer;
 
 public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
 	

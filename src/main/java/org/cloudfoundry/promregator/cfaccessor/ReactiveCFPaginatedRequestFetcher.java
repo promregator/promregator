@@ -54,9 +54,21 @@ class ReactiveCFPaginatedRequestFetcher {
 	 *            CF Cloud Controller
 	 * @return a Mono on the response provided by the CF Cloud Controller
 	 */
+	@SuppressWarnings("lgtm[java/sync-on-boxed-types]")
+	/*
+	 * Reasoning: The string used as foundation for the lock is made very unique.
+	 * The risk of another thread using exactly the very same value of the string for a different purpose
+	 * is considered acceptable.
+	 * Moreover, the performance impact of the lock being engaged improperly is considered small,
+	 * as the duration of this method is assumed to be within milliseconds.
+	 * The effort of implementing a key to lock-object mapping (as alternative) is expected to be rather high
+	 * and would imply the risk of memory leaks. 
+	 */
 	public <P, R> Mono<P> performGenericRetrieval(String retrievalTypeName, String logName, String key, R requestData,
 			Function<R, Mono<P>> requestFunction, int timeoutInMS) {
-		synchronized (key.intern()) {
+		final String lock = (this.getClass().getCanonicalName()+"|"+retrievalTypeName+"|"+key).intern();
+		
+		synchronized (lock) {
 			Mono<P> result = null;
 
 			ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, retrievalTypeName);

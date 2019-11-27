@@ -1,5 +1,9 @@
 <div style="font-size:large">Promregator is looking for <a href="https://github.com/promregator/promregator/wiki/Supporters-Wanted!">contributors/supporters</a>!</div>
 
+# Status
+
+[![Total alerts](https://img.shields.io/lgtm/alerts/g/promregator/promregator.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/promregator/promregator/alerts/) [![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/promregator/promregator.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/promregator/promregator/context:java)
+
 # Promregator Project
 
 
