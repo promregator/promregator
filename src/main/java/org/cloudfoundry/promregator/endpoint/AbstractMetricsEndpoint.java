@@ -86,7 +86,7 @@ public abstract class AbstractMetricsEndpoint {
 
 	@Value("${promregator.endpoint.maxProcessingTime:#{null}}")
 	@Deprecated
-	/**
+	/*
 	 * use maxProcessingTime instead
 	 */
 	private Optional<Integer> maxProcessingTimeOld;

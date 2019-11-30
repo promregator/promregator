@@ -78,7 +78,7 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 		this.name = cacheMapName;
 		
 		/*
-		 * Warning! Due to spring bootstraping, this constructor can be called multiple times,
+		 * Warning! Due to spring bootstrapping, this constructor can be called multiple times,
 		 * which then may create "empty" instances.
 		 * To prevent our statistics to be obfuscated across the instances, 
 		 * we start the refresherThread only lazily: Upon the first record to be arriving at the map...

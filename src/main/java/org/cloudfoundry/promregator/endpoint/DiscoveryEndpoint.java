@@ -14,8 +14,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -116,12 +116,12 @@ public class DiscoveryEndpoint {
 		}
 	}
 	
-	@RequestMapping(method = RequestMethod.GET, produces=MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@GetMapping(produces=MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<DiscoveryResponse[]> getDiscovery(HttpServletRequest request) {
 		
 		List<Instance> instances = this.cfDiscoverer.discover(null, null);
 		if (instances == null) {
-			return new ResponseEntity<DiscoveryResponse[]>(HttpStatus.SERVICE_UNAVAILABLE);
+			return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
 		}
 		
 		String localHostname = this.myHostname != null ? this.myHostname : request.getLocalName();
@@ -148,6 +148,6 @@ public class DiscoveryEndpoint {
 		
 		log.info(String.format("Returning discovery document with %d targets", result.size()));
 		
-		return new ResponseEntity<DiscoveryResponse[]>(result.toArray(new DiscoveryResponse[0]), HttpStatus.OK);
+		return new ResponseEntity<>(result.toArray(new DiscoveryResponse[0]), HttpStatus.OK);
 	}
 }

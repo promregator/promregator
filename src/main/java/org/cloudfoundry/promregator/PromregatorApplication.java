@@ -167,7 +167,7 @@ public class PromregatorApplication {
 	
 	@Value("${promregator.endpoint.threads:#{null}}")
 	@Deprecated
-	/**
+	/*
 	 * use threadPoolSize instead
 	 * @deprecated
 	 */
@@ -218,7 +218,7 @@ public class PromregatorApplication {
 	 * @return the unique identifier of the currently running instance
 	 */
 	@Bean
-	public UUID promregatorInstanceIdentifer() {
+	public UUID promregatorInstanceIdentifier() {
 		return UUID.randomUUID();
 	}
 	

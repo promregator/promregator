@@ -10,8 +10,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -30,7 +30,7 @@ import io.prometheus.client.exporter.common.TextFormat;
 public class MetricsEndpoint extends AbstractMetricsEndpoint {
 	private static final Logger log = Logger.getLogger(MetricsEndpoint.class);
 
-	@RequestMapping(method = RequestMethod.GET, produces=TextFormat.CONTENT_TYPE_004)
+	@GetMapping(produces=TextFormat.CONTENT_TYPE_004)
 	public ResponseEntity<String> getMetrics() {
 		if (this.isLoopbackRequest()) {
 			throw new HttpMessageNotReadableException("Errornous Loopback Scraping request detected");

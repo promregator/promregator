@@ -14,9 +14,9 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -33,7 +33,7 @@ public class SingleTargetMetricsEndpoint extends AbstractMetricsEndpoint {
 
 	private Instance instance;
 	
-	@RequestMapping(method = RequestMethod.GET, produces=TextFormat.CONTENT_TYPE_004)
+	@GetMapping(produces=TextFormat.CONTENT_TYPE_004)
 	public ResponseEntity<String> getMetrics(
 			@PathVariable String applicationId, 
 			@PathVariable String instanceNumber
