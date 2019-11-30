@@ -88,7 +88,7 @@ public class PromregatorApplication {
 	}
 	
 	@Bean
-	public CFAccessor mainCFAccessor() throws ConfigurationException {
+	public CFAccessor mainCFAccessor() {
 		CFAccessor mainAccessor = null;
 		
 		if (this.simulationMode) {
