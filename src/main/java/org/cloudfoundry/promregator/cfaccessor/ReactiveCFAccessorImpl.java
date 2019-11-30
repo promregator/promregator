@@ -144,7 +144,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 			throw new ConfigurationException("Configuring of cf.proxyHost or cf.proxy.host configuration parameter must not contain an http(s)://-like prefix; specify the hostname only instead");
 		}
 		
-		if (proxyHost != null && this.proxyPort != 0) {
+		if (proxyHost != null && proxyPort != 0) {
 			
 			String proxyIP = null;
 			if (!InetAddressUtils.isIPv4Address(proxyHost) && !InetAddressUtils.isIPv6Address(proxyHost)) {
