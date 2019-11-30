@@ -40,7 +40,7 @@ public class SingleTargetMetricsEndpoint extends AbstractMetricsEndpoint {
 			) {
 		
 		if (this.isLoopbackRequest()) {
-			throw new HttpMessageNotReadableException("Errornous Loopback Scraping request detected");
+			throw new HttpMessageNotReadableException("Erroneous Loopback Scraping request detected");
 		}
 		
 		String instanceId = String.format("%s:%s", applicationId, instanceNumber);

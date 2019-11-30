@@ -405,7 +405,7 @@ public abstract class AbstractMetricsEndpoint {
 		boolean loopback = this.promregatorInstanceIdentifier.toString().equals(headerValue);
 		
 		if (loopback) {
-			log.error("Errornous loopback request detected. One of your targets is improperly pointing back to Promregator itself. Please revise your configuration!");
+			log.error("Erroneous loopback request detected. One of your targets is improperly pointing back to Promregator itself. Please revise your configuration!");
 		}
 		
 		return loopback;

@@ -33,7 +33,7 @@ public class MetricsEndpoint extends AbstractMetricsEndpoint {
 	@GetMapping(produces=TextFormat.CONTENT_TYPE_004)
 	public ResponseEntity<String> getMetrics() {
 		if (this.isLoopbackRequest()) {
-			throw new HttpMessageNotReadableException("Errornous Loopback Scraping request detected");
+			throw new HttpMessageNotReadableException("Erroneous Loopback Scraping request detected");
 		}
 		try {
 			String result = this.handleRequest(null, null /* no filtering intended */);
