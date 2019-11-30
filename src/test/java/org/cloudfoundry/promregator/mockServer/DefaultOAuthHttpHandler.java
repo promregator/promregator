@@ -27,8 +27,7 @@ public class DefaultOAuthHttpHandler implements HttpHandler {
 	public void handle(HttpExchange he) throws IOException {
 		log.debug("Request was received at handler");
 		this.counterCalled++;
-		
-		Map<String, Object> parameters = new HashMap<String, Object>();
+
 		URI requestedUri = he.getRequestURI();
 
 		Assert.assertEquals("/oauth/token", requestedUri.getPath());

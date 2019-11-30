@@ -48,13 +48,13 @@ public class MetricsFetcherSimulator implements MetricsFetcher {
 			try {
 				result.close();
 			} catch (IOException e) {
-				log.warn(String.format("Unable to close result ByteArrayOutputStream having read the simulation data"));
+				log.warn("Unable to close result ByteArrayOutputStream having read the simulation data");
 			}
 			
 			try {
 				is.close();
 			} catch (IOException e) {
-				log.warn(String.format("Unable to close the input stream while reading the simulation data"));
+				log.warn("Unable to close the input stream while reading the simulation data");
 			}
 		}
 		

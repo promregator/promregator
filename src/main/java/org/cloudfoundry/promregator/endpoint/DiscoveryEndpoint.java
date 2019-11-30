@@ -121,7 +121,7 @@ public class DiscoveryEndpoint {
 		
 		List<Instance> instances = this.cfDiscoverer.discover(null, null);
 		if (instances == null) {
-			return new ResponseEntity<DiscoveryResponse[]>(HttpStatus.SERVICE_UNAVAILABLE);
+			return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
 		}
 		
 		String localHostname = this.myHostname != null ? this.myHostname : request.getLocalName();
@@ -148,6 +148,6 @@ public class DiscoveryEndpoint {
 		
 		log.info(String.format("Returning discovery document with %d targets", result.size()));
 		
-		return new ResponseEntity<DiscoveryResponse[]>(result.toArray(new DiscoveryResponse[0]), HttpStatus.OK);
+		return new ResponseEntity<>(result.toArray(new DiscoveryResponse[0]), HttpStatus.OK);
 	}
 }

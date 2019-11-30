@@ -18,14 +18,14 @@ public class NullMetricFamilySamplesEnricher extends AbstractMetricFamilySamples
 	
 	@Override
 	protected List<String> getEnrichedLabelNames(List<String> original) {
-		LinkedList<String> clone = new LinkedList<String>(original);
+		LinkedList<String> clone = new LinkedList<>(original);
 
 		return clone;
 	}
 	
 	@Override
 	public List<String> getEnrichedLabelValues(List<String> original) {
-		LinkedList<String> clone = new LinkedList<String>(original);
+		LinkedList<String> clone = new LinkedList<>(original);
 		
 		return clone;
 	}

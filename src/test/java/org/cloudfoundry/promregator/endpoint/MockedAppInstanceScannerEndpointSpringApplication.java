@@ -143,6 +143,6 @@ public class MockedAppInstanceScannerEndpointSpringApplication {
 	@Bean
 	public AuthenticationEnricher authenticationEnricher() {
 		return new NullEnricher();
-	};
+	}
 
 }

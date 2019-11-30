@@ -60,7 +60,7 @@ public class SingleTargetMetricsEndpoint extends AbstractMetricsEndpoint {
 			return new ResponseEntity<>(e.toString(), HttpStatus.NOT_FOUND);
 		}
 		
-		return new ResponseEntity<String>(response, HttpStatus.OK);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@Override
@@ -108,7 +108,7 @@ public class SingleTargetMetricsEndpoint extends AbstractMetricsEndpoint {
 				.labelNames(ownTelemetryLabels)
 				.register(requestRegistry);
 		
-		List<String> labelValues = enricher.getEnrichedLabelValues(new ArrayList<String>(0));
+		List<String> labelValues = enricher.getEnrichedLabelValues(new ArrayList<>(0));
 		scrape_duration.labels(labelValues.toArray(new String[0])).set(duration.toMillis() / 1000.0);
 	}
 

@@ -126,7 +126,7 @@ public class LabelEnrichmentMockedMetricsEndpointSpringApplication {
 	@Bean
 	public AuthenticationEnricher authenticationEnricher() {
 		return new NullEnricher();
-	};
+	}
 
 	@Bean
 	public UUID promregatorInstanceIdentifier() {
