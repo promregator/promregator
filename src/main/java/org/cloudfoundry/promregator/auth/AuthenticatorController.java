@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * This class controls the target-dependent set of AuthenticationEnrichers
  */
 public class AuthenticatorController {
-	private final Map<String, AuthenticationEnricher> mapping = new HashMap<String, AuthenticationEnricher>();
+	private final Map<String, AuthenticationEnricher> mapping = new HashMap<>();
 
 	@Autowired
 	private PromregatorConfiguration promregatorConfiguration;
