@@ -190,7 +190,7 @@ public class PromregatorApplication {
 		return Executors.newFixedThreadPool(this.threadPoolSize);
 	}
 	
-	private Object getThreadPoolSize() {
+	private int getThreadPoolSize() {
 		if (this.threadPoolSize != 5) {
 			// different value than the default, so someone must have set it explicitly.
 			return this.threadPoolSize;
