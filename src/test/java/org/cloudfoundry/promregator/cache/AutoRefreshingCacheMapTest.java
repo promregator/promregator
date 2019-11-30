@@ -151,6 +151,10 @@ public class AutoRefreshingCacheMapTest {
 			return new String(target);
 		});
 		
+		subject.setRefresherThreadWithIncreasedPriority(true);
+		// Note that this also start the refresher thread immediately.
+		// It helps keeping this unit test to stay stable.
+		
 		MassOperationTestThread[] threads = new MassOperationTestThread[10];
 		for (int i = 0;i<threads.length;i++) {
 			threads[i] = new MassOperationTestThread(subject, i);
