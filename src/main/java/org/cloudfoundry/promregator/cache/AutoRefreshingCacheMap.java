@@ -93,6 +93,12 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 		}
 	}
 	
+	public void setRefresherThreadWithIncreasedPriority(boolean increased) {
+		this.ensureRefresherThreadIsRunning();
+		
+		this.refresherThread.setIncreasedPriority(increased);
+	}
+	
 	/**
 	 * @return the name
 	 */
@@ -298,6 +304,10 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 			}
 		}
 
+		private void setIncreasedPriority(boolean increased) {
+			this.setPriority(increased ? Thread.NORM_PRIORITY+1 : Thread.NORM_PRIORITY);
+		}
+		
 		/**
 		 * may be called to shutdown this thread and release the resources
 		 */
