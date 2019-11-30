@@ -239,7 +239,7 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 				try {
 					this.refreshMap();
 				} catch (Exception e) {
-					log.warn(String.format("Unexpected exception was raised in Refresher Thread for AutoRefreshingCacheMap"), e);
+					log.warn("Unexpected exception was raised in Refresher Thread for AutoRefreshingCacheMap", e);
 					// fall-through is expected!
 				}
 				
@@ -264,8 +264,8 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 				this.map.internalMetrics.setAutoRefreshingCacheMapSize(this.map.getName(), this.map.size());
 			}
 			
-			List<K> deleteList = new LinkedList<K>();
-			List<K> refreshList = new LinkedList<K>();
+			List<K> deleteList = new LinkedList<>();
+			List<K> refreshList = new LinkedList<>();
 			
 			synchronized (this.map.entryPropertiesMap) {
 				for (Entry<K, EntryProperties> entry : this.map.entryPropertiesMap.entrySet()) {
