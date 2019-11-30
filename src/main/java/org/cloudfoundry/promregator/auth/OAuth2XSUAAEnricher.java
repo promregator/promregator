@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
-import com.google.json.JsonSanitizer;
 import org.apache.http.Consts;
 import org.apache.http.NameValuePair;
 import org.apache.http.ParseException;

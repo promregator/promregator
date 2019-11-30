@@ -128,12 +128,6 @@
 			<artifactId>cloudfoundry-client-reactor</artifactId>
 			<version>${cloudfoundry.client.version}</version>
 		</dependency>
-		<!--Need to override version of compress due to CVE-2019-12402 -->
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-compress</artifactId>
-            <version>1.19</version>
-		</dependency>
 
 		<dependency>
 			<groupId>org.cloudfoundry</groupId>
