@@ -66,7 +66,7 @@ public class PromregatorApplication {
 	@Value("${promregator.workaround.dnscache.timeout:-1}")
 	private int javaDnsCacheWorkaroundTimeout;
 
-	@Value("${cf.cache.type:classic}")
+	@Value("${cf.cache.type:CLASSIC}")
 	private AccessorCacheType cacheType;
 	
 	
@@ -103,9 +103,9 @@ public class PromregatorApplication {
 	
 	@Bean
 	public CFAccessorCache cfAccessorCache(CFAccessor mainCFAccessor) {
-		if (this.cacheType == AccessorCacheType.classic) {
+		if (this.cacheType == AccessorCacheType.CLASSIC) {
 			return new CFAccessorCacheClassic(mainCFAccessor);
-		} else if (this.cacheType == AccessorCacheType.guava) {
+		} else if (this.cacheType == AccessorCacheType.CAFFEINE) {
 			return new CFAccessorCacheCaffeine(mainCFAccessor);
 		} else {
 			throw new Error("Unknown CF Accessor Cache selected: "+this.cacheType);

@@ -122,7 +122,7 @@ public class CFAccessorCacheClassic implements CFAccessorCache {
 				}
 			}
 		});
-		/* Valid for AccessorCacheType = classic only:
+		/* Valid for AccessorCacheType = CLASSIC only:
 		 * 
 		 * Keep in mind that doOnError is a side-effect:  The logic above only removes it from the cache. 
 		 * The erroneous instance still is used downstream and will trigger subsequent error handling (including 
