@@ -354,7 +354,7 @@
 							<linkXRef>false</linkXRef> <!-- see also https://stackoverflow.com/a/18390459 -->
 							<!-- see also https://stackoverflow.com/a/38958480 -->
 							<rulesets>
-								<ruleset>${pom.basedir}/test/pmd/pmd-exclude.xml</ruleset>
+								<ruleset>${project.basedir}/test/pmd/pmd-exclude.xml</ruleset>
 							</rulesets>
 						</configuration>
 						<executions>
