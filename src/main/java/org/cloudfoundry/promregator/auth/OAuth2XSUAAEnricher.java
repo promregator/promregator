@@ -34,7 +34,7 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
 	
 	final static CloseableHttpClient httpclient = HttpClients.createDefault();
 
-	final private OAuth2XSUAAAuthenticationConfiguration config;
+	private final OAuth2XSUAAAuthenticationConfiguration config;
 	
 	public OAuth2XSUAAEnricher(OAuth2XSUAAAuthenticationConfiguration config) {
 		super();

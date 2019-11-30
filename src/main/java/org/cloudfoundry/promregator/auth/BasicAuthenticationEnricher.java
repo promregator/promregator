@@ -11,7 +11,7 @@ public class BasicAuthenticationEnricher implements AuthenticationEnricher {
 	
 	private static final Logger log = Logger.getLogger(BasicAuthenticationEnricher.class);
 	
-	final private BasicAuthenticationConfiguration authenticatorConfig;
+	private final BasicAuthenticationConfiguration authenticatorConfig;
 	
 	public BasicAuthenticationEnricher(BasicAuthenticationConfiguration authenticatorConfig) {
 		super();
