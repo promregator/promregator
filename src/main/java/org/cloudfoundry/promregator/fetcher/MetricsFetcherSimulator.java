@@ -3,6 +3,7 @@ package org.cloudfoundry.promregator.fetcher;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Random;
 
@@ -40,7 +41,7 @@ public class MetricsFetcherSimulator implements MetricsFetcher {
 			while ((length = is.read(buffer)) != -1) {
 				result.write(buffer, 0, length);
 			}
-			SIM_TEXT004 = result.toString("UTF-8");
+			SIM_TEXT004 = result.toString(StandardCharsets.UTF_8.name());
 		} catch (IOException e) {
 			SIM_TEXT004 = "";
 		} finally {

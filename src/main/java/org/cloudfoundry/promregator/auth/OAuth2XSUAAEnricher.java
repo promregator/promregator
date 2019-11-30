@@ -3,6 +3,7 @@ package org.cloudfoundry.promregator.auth;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -73,7 +74,7 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
 		if (this.config.getScopes() != null) {
 			// see also https://www.oauth.com/oauth2-servers/access-tokens/client-credentials/
 			try {
-				url += String.format("&scope=%s", URLEncoder.encode(this.config.getScopes(), "UTF-8"));
+				url += String.format("&scope=%s", URLEncoder.encode(this.config.getScopes(), StandardCharsets.UTF_8.name()));
 			} catch (UnsupportedEncodingException e) {
 				log.error("Error while adding scope information to request URL", e);
 				return null;
@@ -93,13 +94,7 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
 		
 		String b64encoding = String.format("%s:%s", this.config.getClient_id(), this.config.getClient_secret());
 		
-		byte[] encodedBytes = null;
-		try {
-			encodedBytes = b64encoding.getBytes("UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			log.error("Unable to b64-encode using UTF-8", e);
-			return null;
-		}
+		byte[] encodedBytes = b64encoding.getBytes(StandardCharsets.UTF_8);
 		String encoding = Base64.getEncoder().encodeToString(encodedBytes);
 		
 		httpPost.setHeader("Authorization", String.format("Basic %s", encoding));
@@ -137,7 +132,7 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
 			}
 			
 			try {
-				json = EntityUtils.toString(response.getEntity(), "UTF-8");
+				json = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
 			} catch (ParseException e) {
 				log.error("GSON parser exception on JWT response from token server", e);
 				return null;
