@@ -50,8 +50,6 @@ public class CaffeineAsyncLoadingTest {
 			
 			result = result.cache();
 			
-			// result.subscribe();
-			
 			return result.toFuture();
 		}
 	}
