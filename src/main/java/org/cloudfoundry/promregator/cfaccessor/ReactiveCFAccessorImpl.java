@@ -54,9 +54,17 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	private boolean skipSSLValidation;
 	
 	@Value("${cf.proxyHost:#{null}}") 
+	@Deprecated
+	private String proxyHostDeprecated;
+	
+	@Value("${cf.proxyPort:0}")
+	@Deprecated
+	private int proxyPortDeprecated;
+
+	@Value("${cf.proxy.host:#{null}}") 
 	private String proxyHost;
 	
-	@Value("${cf.proxyPort:0}") 
+	@Value("${cf.proxy.port:0}") 
 	private int proxyPort;
 	
 	@Value("${cf.request.timeout.org:2500}")
@@ -118,14 +126,28 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	}
 
 	private ProxyConfiguration proxyConfiguration() throws ConfigurationException {
-		if (this.proxyHost != null && PATTERN_HTTP_BASED_PROTOCOL_PREFIX.matcher(this.proxyHost).find()) {
-			throw new ConfigurationException("cf.proxyHost configuration parameter must not contain an http(s)://-like prefix; specify the hostname only instead");
-		}
+		
+		String proxyHost;
+		int proxyPort;
 		
 		if (this.proxyHost != null && this.proxyPort != 0) {
+			// used the new way of defining proxies
+			proxyHost = this.proxyHost;
+			proxyPort = this.proxyPort;
+		} else {
+			// the old way *may* be used
+			proxyHost = this.proxyHostDeprecated;
+			proxyPort = this.proxyPortDeprecated;
+		}
+		
+		if (proxyHost != null && PATTERN_HTTP_BASED_PROTOCOL_PREFIX.matcher(proxyHost).find()) {
+			throw new ConfigurationException("Configuring of cf.proxyHost or cf.proxy.host configuration parameter must not contain an http(s)://-like prefix; specify the hostname only instead");
+		}
+		
+		if (proxyHost != null && proxyPort != 0) {
 			
 			String proxyIP = null;
-			if (!InetAddressUtils.isIPv4Address(this.proxyHost) && !InetAddressUtils.isIPv6Address(this.proxyHost)) {
+			if (!InetAddressUtils.isIPv4Address(proxyHost) && !InetAddressUtils.isIPv6Address(proxyHost)) {
 				/*
 				 * NB: There is currently a bug in io.netty.util.internal.SocketUtils.connect()
 				 * which is called implicitly by the CF API Client library, which leads to the effect
@@ -135,17 +157,17 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 				 * and then feed that one to the CF API Client library...
 				 */
 				try {
-					InetAddress ia = InetAddress.getByName(this.proxyHost);
+					InetAddress ia = InetAddress.getByName(proxyHost);
 					proxyIP = ia.getHostAddress();
 				} catch (UnknownHostException e) {
-					throw new ConfigurationException("The cf.proxyHost provided cannot be resolved to an IP address; is there a typo in your configuration?", e);
+					throw new ConfigurationException(String.format("The proxy host '%s' cannot be resolved to an IP address; is there a typo in your configuration?", proxyHost), e);
 				}
 			} else {
 				// the address specified is already an IP address
-				proxyIP = this.proxyHost;
+				proxyIP = proxyHost;
 			}
 			
-			return ProxyConfiguration.builder().host(proxyIP).port(this.proxyPort).build();
+			return ProxyConfiguration.builder().host(proxyIP).port(proxyPort).build();
 			
 		} else {
 			return null;

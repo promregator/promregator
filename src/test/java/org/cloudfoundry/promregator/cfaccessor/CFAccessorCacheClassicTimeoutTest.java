@@ -1,5 +1,6 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
+import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
@@ -20,16 +21,16 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import reactor.core.publisher.Mono;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = CFAccessorCacheSpringApplication.class)
-@TestPropertySource(locations="../default.properties")
+@SpringBootTest(classes = CFAccessorCacheClassicTimeoutSpringApplication.class)
+@TestPropertySource(locations= { "../default.properties" })
 @DirtiesContext(classMode=ClassMode.AFTER_CLASS)
-public class CFAccessorCacheTest {
+public class CFAccessorCacheClassicTimeoutTest {
 
 	@Autowired
 	private CFAccessor parentMock;
 	
 	@Autowired
-	private CFAccessorCache subject;
+	private CFAccessorCacheClassic subject;
 	
 	@Before
 	public void invalidateCaches() {
@@ -46,41 +47,50 @@ public class CFAccessorCacheTest {
 	@Test
 	public void testRetrieveOrgId() {
 		Mono<ListOrganizationsResponse> response1 = subject.retrieveOrgId("dummy");
+		response1.subscribe();
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveOrgId("dummy");
 		
 		Mono<ListOrganizationsResponse> response2 = subject.retrieveOrgId("dummy");
-		Assert.assertEquals(response1, response2);
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveOrgId("dummy");
+		response2.subscribe();
+		Assert.assertNotEquals(response1, response2);
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveOrgId("dummy");
 	}
 
 	@Test
 	public void testRetrieveSpaceId() {
 		
 		Mono<ListSpacesResponse> response1 = subject.retrieveSpaceId("dummy1", "dummy2");
+		response1.subscribe();
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveSpaceId("dummy1", "dummy2");
 		
 		Mono<ListSpacesResponse> response2 = subject.retrieveSpaceId("dummy1", "dummy2");
-		Assert.assertEquals(response1, response2);
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveOrgId("dummy");
+		response2.subscribe();
+		Assert.assertNotEquals(response1, response2);
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveOrgId("dummy");
 	}
 
 	@Test
 	public void testRetrieveAllApplicationIdsInSpace() {
-		subject.retrieveAllApplicationIdsInSpace("dummy1", "dummy2");
+		Mono<ListApplicationsResponse> response1 = subject.retrieveAllApplicationIdsInSpace("dummy1", "dummy2");
+		response1.subscribe();
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllApplicationIdsInSpace("dummy1", "dummy2");
 		
-		subject.retrieveAllApplicationIdsInSpace("dummy1", "dummy2");
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllApplicationIdsInSpace("dummy1", "dummy2");
+		Mono<ListApplicationsResponse> response2 = subject.retrieveAllApplicationIdsInSpace("dummy1", "dummy2");
+		response2.subscribe();
+		Assert.assertNotEquals(response1, response2);
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveAllApplicationIdsInSpace("dummy1", "dummy2");
 	}
 
 	@Test
 	public void testRetrieveSpaceSummary() {
 		Mono<GetSpaceSummaryResponse> response1 = subject.retrieveSpaceSummary("dummy");
+		response1.subscribe();
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveSpaceSummary("dummy");
 		
 		Mono<GetSpaceSummaryResponse> response2 = subject.retrieveSpaceSummary("dummy");
-		Assert.assertEquals(response1, response2);
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveSpaceSummary("dummy");
+		response2.subscribe();
+		Assert.assertNotEquals(response1, response2);
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveSpaceSummary("dummy");
 	}
 
 }

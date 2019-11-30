@@ -50,6 +50,7 @@
 		<prometheus.version>0.6.0</prometheus.version>
 		<cloudfoundry.client.version>3.17.1.RELEASE</cloudfoundry.client.version>
 		<logback.contrib.version>0.1.5</logback.contrib.version>
+		<caffeine.version>2.8.0</caffeine.version>
 	</properties>
 
 	<dependencies>
@@ -106,7 +107,7 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>log4j-over-slf4j</artifactId>
 		</dependency>
-		
+
 		<!-- ch.qos.logback.contrib.jackson.JacksonJsonFormatter -->
 		<dependency>
 			<groupId>ch.qos.logback.contrib</groupId>
@@ -163,6 +164,17 @@
 			<version>4.4</version>
 		</dependency>
 
+		<!--  see also https://github.com/google/guava/issues/2350#issuecomment-169097253 and https://stackoverflow.com/a/52345191 -->
+		<dependency>
+			<groupId>com.github.ben-manes.caffeine</groupId>
+			<artifactId>caffeine</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava-testlib</artifactId>
+			<version>28.1-jre</version>
+			<scope>test</scope>
+		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
 		<dependency>
@@ -212,6 +224,12 @@
 		<dependency>
 			<groupId>io.prometheus</groupId>
 			<artifactId>simpleclient_hotspot</artifactId>
+			<version>${prometheus.version}</version>
+		</dependency>
+		<!-- Caffeine metrics -->
+		<dependency>
+			<groupId>io.prometheus</groupId>
+			<artifactId>simpleclient_caffeine</artifactId>
 			<version>${prometheus.version}</version>
 		</dependency>
 

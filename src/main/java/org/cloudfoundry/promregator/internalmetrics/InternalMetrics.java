@@ -4,10 +4,13 @@ import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Value;
 
+import com.github.benmanes.caffeine.cache.AsyncLoadingCache;
+
 import io.prometheus.client.Counter;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.Histogram;
 import io.prometheus.client.Histogram.Timer;
+import io.prometheus.client.cache.caffeine.CacheMetricsCollector;
 
 public class InternalMetrics {
 	@Value("${promregator.metrics.internal:false}")
@@ -23,6 +26,8 @@ public class InternalMetrics {
 	private Gauge autoRefreshingCacheMapLastScan;
 	
 	private Counter connectionWatchdogReconnects;
+	
+	private CacheMetricsCollector caffeineCacheMetricsCollector;
 
 	@PostConstruct
 	@SuppressWarnings("PMD.UnusedPrivateMethod")
@@ -52,6 +57,9 @@ public class InternalMetrics {
 		
 		this.connectionWatchdogReconnects = Counter.build("promregator_connection_watchdog_reconnect", "The number of reconnection attempts made by the Connection Watchdog")
 				.register();
+		
+		this.caffeineCacheMetricsCollector = new CacheMetricsCollector().register();
+		
 	}
 
 	
@@ -106,5 +114,12 @@ public class InternalMetrics {
 	
 	public void countConnectionWatchdogReconnect() {
 		this.connectionWatchdogReconnects.inc();
+	}
+	
+	public void addCaffeineCache(String cacheName, AsyncLoadingCache<?, ?> cache) {
+		if (!this.enabled)
+			return;
+		
+		this.caffeineCacheMetricsCollector.addCache(cacheName, cache);
 	}
 }

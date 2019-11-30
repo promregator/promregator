@@ -3,14 +3,13 @@ package org.cloudfoundry.promregator.cfaccessor;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import reactor.core.publisher.Mono;
 
 @Configuration
-public class CFAccessorCacheSpringApplication {
+public class CFAccessorCacheClassicSpringApplication {
 
 	@Bean
 	public InternalMetrics internalMetrics() {
@@ -28,8 +27,8 @@ public class CFAccessorCacheSpringApplication {
 	}
 	
 	@Bean
-	public CFAccessorCache subject(@Qualifier("parentMock") CFAccessor parentMock) {
-		return new CFAccessorCache(parentMock);
+	public CFAccessorCacheClassic subject(@Qualifier("parentMock") CFAccessor parentMock) {
+		return new CFAccessorCacheClassic(parentMock);
 	}
 	
 }
