@@ -54,9 +54,11 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	private boolean skipSSLValidation;
 	
 	@Value("${cf.proxyHost:#{null}}") 
+	@Deprecated
 	private String proxyHostDeprecated;
 	
-	@Value("${cf.proxyPort:0}") 
+	@Value("${cf.proxyPort:0}")
+	@Deprecated
 	private int proxyPortDeprecated;
 
 	@Value("${cf.proxy.host:#{null}}") 
