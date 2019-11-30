@@ -40,7 +40,7 @@ public class GenericMetricFamilySamplesPrefixRewriterTest {
 		Assert.assertEquals("prefix_dummyname", mfsResult.name);
 		
 		Assert.assertEquals(1, mfsResult.samples.size());
-		Sample sampleResult = mfsResult.samples.get(0);;
+		Sample sampleResult = mfsResult.samples.get(0);
 		Assert.assertEquals("prefix_dummyname", sampleResult.name);
 	}
 	
@@ -64,7 +64,7 @@ public class GenericMetricFamilySamplesPrefixRewriterTest {
 		Assert.assertEquals("prefix_dummyname", mfsResult.name);
 		
 		Assert.assertEquals(1, mfsResult.samples.size());
-		Sample sampleResult = mfsResult.samples.get(0);;
+		Sample sampleResult = mfsResult.samples.get(0);
 		Assert.assertEquals("prefix_dummyname", sampleResult.name);
 	}
 

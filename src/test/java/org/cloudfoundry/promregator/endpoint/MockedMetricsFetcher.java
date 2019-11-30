@@ -25,10 +25,10 @@ public class MockedMetricsFetcher implements MetricsFetcher {
 		String metricName = "metric_"+this.instance.getTarget().getApplicationName();
 		
 		
-		LinkedList<String> labelNames = new LinkedList<String>();
+		LinkedList<String> labelNames = new LinkedList<>();
 		labelNames.add("instanceId");
 		
-		LinkedList<String> labelValues = new LinkedList<String>();
+		LinkedList<String> labelValues = new LinkedList<>();
 		labelValues.add(this.instance.getInstanceId());
 		
 		Sample s = new Sample(metricName, labelNames, labelValues, 1.0);

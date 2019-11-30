@@ -60,7 +60,7 @@ public class SingleTargetMetricsEndpoint extends AbstractMetricsEndpoint {
 			return new ResponseEntity<>(e.toString(), HttpStatus.NOT_FOUND);
 		}
 		
-		return new ResponseEntity<String>(response, HttpStatus.OK);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@Override
