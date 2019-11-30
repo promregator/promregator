@@ -135,12 +135,6 @@
 			<version>${cloudfoundry.client.version}</version>
 		</dependency>
 
-		<dependency>
-			<groupId>com.mikesamuel</groupId>
-			<artifactId>json-sanitizer</artifactId>
-			<version>1.2.0</version>
-		</dependency>
-
 		<!-- omitted here, as implicitly provided by cloudfoundry-client-reactor 
 			<dependency> <groupId>io.projectreactor.ipc</groupId> <artifactId>reactor-netty</artifactId> 
 			</dependency> -->
