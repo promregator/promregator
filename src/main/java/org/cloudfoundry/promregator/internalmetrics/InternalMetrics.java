@@ -44,9 +44,9 @@ public class InternalMetrics {
 		
 		this.autoRefreshingCacheMapExpiry = Counter.build("promregator_autorefreshingcachemap_expiry", "The number of objects having expired so far in an AutoRefreshingCacheMap")
 				.labelNames("cache_map_name").register();
-		this.autoRefreshingCacheMapRefreshSuccess = Counter.build("promregator_autorefreshingcachemap_refresh_success", "The number of successful refreshes of objact so far in an AutoRefreshingCacheMap")
+		this.autoRefreshingCacheMapRefreshSuccess = Counter.build("promregator_autorefreshingcachemap_refresh_success", "The number of successful refreshes of object so far in an AutoRefreshingCacheMap")
 				.labelNames("cache_map_name").register();
-		this.autoRefreshingCacheMapRefreshFailure = Counter.build("promregator_autorefreshingcachemap_refresh_failure", "The number of failed refreshes of objact so far in an AutoRefreshingCacheMap")
+		this.autoRefreshingCacheMapRefreshFailure = Counter.build("promregator_autorefreshingcachemap_refresh_failure", "The number of failed refreshes of object so far in an AutoRefreshingCacheMap")
 				.labelNames("cache_map_name").register();
 		
 		this.autoRefreshingCacheMapErroneousEntryDisplaced = Counter.build("promregator_autorefreshingcachemap_erroneous_entry_displaced", "The number of cache items displaced in an AutoRefreshingCacheMap, because they were detected to be erroneous")

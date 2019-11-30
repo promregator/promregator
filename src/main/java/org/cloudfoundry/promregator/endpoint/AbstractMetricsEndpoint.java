@@ -92,11 +92,13 @@ public abstract class AbstractMetricsEndpoint {
 	@Value("${promregator.scraping.proxy.port:0}")
 	private int proxyPort;
 
+	/**
+	 * The maximal processing time permitted for Scraping (in milliseconds).
+	 * The value is deprecated as it originates from the deprecated configuration option <pre>promregator.endpoint.maxProcessingTime</pre>.
+	 * Use maxProcessingTime instead.
+	 */
 	@Value("${promregator.endpoint.maxProcessingTime:#{null}}")
 	@Deprecated
-	/**
-	 * use maxProcessingTime instead
-	 */
 	private Optional<Integer> maxProcessingTimeOld;
 
 	@Value("${promregator.scraping.maxProcessingTime:5000}")
@@ -401,7 +403,7 @@ public abstract class AbstractMetricsEndpoint {
 	 */
 	public boolean isLoopbackRequest() {
 		if (this.httpServletRequest == null) {
-			log.warn("Missing HTTP Servlet request reference; unable to verify whether this is a lookback request or not");
+			log.warn("Missing HTTP Servlet request reference; unable to verify whether this is a loopback request or not");
 			return false;
 		}
 		
@@ -414,7 +416,7 @@ public abstract class AbstractMetricsEndpoint {
 		boolean loopback = this.promregatorInstanceIdentifier.toString().equals(headerValue);
 		
 		if (loopback) {
-			log.error("Errornous loopback request detected. One of your targets is improperly pointing back to Promregator itself. Please revise your configuration!");
+			log.error("Erroneous loopback request detected. One of your targets is improperly pointing back to Promregator itself. Please revise your configuration!");
 		}
 		
 		return loopback;
