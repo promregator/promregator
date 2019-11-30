@@ -137,21 +137,16 @@ class ReactiveCFPaginatedRequestFetcher {
 
 		ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, retrievalTypeName);
 
-		Mono<P> firstPage = Mono.just(reactiveTimer).doOnNext(timer -> {
-			timer.start();
-		}).flatMap(dummy -> {
-			return this.performGenericRetrieval(pageRetrievalType, logName, key,
-					requestGenerator.apply(OrderDirection.ASCENDING, RESULTS_PER_PAGE, 1), requestFunction,
-					timeoutInMS);
-		});
+		Mono<P> firstPage = Mono.just(reactiveTimer).doOnNext(ReactiveTimer::start).flatMap(dummy ->
+				this.performGenericRetrieval(pageRetrievalType, logName, key, requestGenerator.
+								apply(OrderDirection.ASCENDING, RESULTS_PER_PAGE, 1), requestFunction,	timeoutInMS));
 
 		Flux<R> requestFlux = firstPage.map(page -> page.getTotalPages() - 1)
 				.flatMapMany(pagesCount -> Flux.range(2, pagesCount))
 				.map(pageNumber -> requestGenerator.apply(OrderDirection.ASCENDING, RESULTS_PER_PAGE, pageNumber));
 
-		Mono<List<P>> subsequentPagesList = requestFlux.flatMap(req -> {
-			return this.performGenericRetrieval(pageRetrievalType, logName, key, req, requestFunction, timeoutInMS);
-		}).collectList();
+		Mono<List<P>> subsequentPagesList = requestFlux.flatMap(req ->
+				this.performGenericRetrieval(pageRetrievalType, logName, key, req, requestFunction, timeoutInMS)).collectList();
 		/*
 		 * Word on error handling: We can't judge here what will be the consequence, if
 		 * the first page could be retrieved properly, but retrieving some some later
@@ -162,7 +157,7 @@ class ReactiveCFPaginatedRequestFetcher {
 		 * not emit any item.
 		 */
 
-		Mono<P> allPagesResult = Mono.zip(firstPage, subsequentPagesList, Mono.just(reactiveTimer)).map(tuple -> {
+		return Mono.zip(firstPage, subsequentPagesList, Mono.just(reactiveTimer)).map(tuple -> {
 			P first = tuple.getT1();
 			List<P> subsequent = tuple.getT2();
 
@@ -180,6 +175,5 @@ class ReactiveCFPaginatedRequestFetcher {
 			return retObject;
 		});
 
-		return allPagesResult;
 	}
 }
