@@ -52,11 +52,17 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	
 	@Value("${cf.skipSslValidation:false}")
 	private boolean skipSSLValidation;
-	
+
+	/**
+	 * @deprecated This option is no longer in use. Use cf.proxy.host and/or promregator.scraping.proxy.host instead.
+	 */
 	@Value("${cf.proxyHost:#{null}}") 
 	@Deprecated
 	private String proxyHostDeprecated;
-	
+
+	/**
+	 * @deprecated This option is no longer in use. Use cf.proxy.port and/or promregator.scraping.proxy.port instead.
+	 */
 	@Value("${cf.proxyPort:0}")
 	@Deprecated
 	private int proxyPortDeprecated;
