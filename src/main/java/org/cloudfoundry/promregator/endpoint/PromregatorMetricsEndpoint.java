@@ -6,8 +6,8 @@ import org.cloudfoundry.promregator.rewrite.GenericMetricFamilySamplesPrefixRewr
 import org.cloudfoundry.promregator.rewrite.MergableMetricFamilySamples;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -24,7 +24,7 @@ public class PromregatorMetricsEndpoint {
 	
 	private GenericMetricFamilySamplesPrefixRewriter gmfspr = new GenericMetricFamilySamplesPrefixRewriter("promregator");
 
-	@RequestMapping(method = RequestMethod.GET, produces=TextFormat.CONTENT_TYPE_004)
+	@GetMapping(produces=TextFormat.CONTENT_TYPE_004)
 	public String getMetrics() {
 		HashMap<String, MetricFamilySamples> mfsMap = this.gmfspr.determineEnumerationOfMetricFamilySamples(this.collectorRegistry);
 		

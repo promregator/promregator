@@ -164,13 +164,15 @@ public class PromregatorApplication {
 	public InternalMetrics internalMetrics() {
 		return new InternalMetrics();
 	}
-	
-	@Value("${promregator.endpoint.threads:#{null}}")
-	@Deprecated
+
 	/**
-	 * use threadPoolSize instead
+	 * The number of threads of the scraping thread pool.
+	 * The value is coming from the deprecated configuration option <pre>promregator.endpoint.threads</pre>.
+	 * Use threadPoolSize instead
 	 * @deprecated
 	 */
+	@Value("${promregator.endpoint.threads:#{null}}")
+	@Deprecated
 	private Optional<Integer> threadPoolSizeOld;
 
 	@Value("${promregator.scraping.threads:5}")
@@ -218,7 +220,7 @@ public class PromregatorApplication {
 	 * @return the unique identifier of the currently running instance
 	 */
 	@Bean
-	public UUID promregatorInstanceIdentifer() {
+	public UUID promregatorInstanceIdentifier() {
 		return UUID.randomUUID();
 	}
 	
