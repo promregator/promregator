@@ -162,7 +162,7 @@ class ReactiveCFPaginatedRequestFetcher {
 		 * not emit any item.
 		 */
 
-		Mono<P> allPagesResult = Mono.zip(firstPage, subsequentPagesList, Mono.just(reactiveTimer)).map(tuple -> {
+		return Mono.zip(firstPage, subsequentPagesList, Mono.just(reactiveTimer)).map(tuple -> {
 			P first = tuple.getT1();
 			List<P> subsequent = tuple.getT2();
 
@@ -179,7 +179,5 @@ class ReactiveCFPaginatedRequestFetcher {
 
 			return retObject;
 		});
-
-		return allPagesResult;
 	}
 }
