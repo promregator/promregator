@@ -53,6 +53,7 @@ import reactor.core.publisher.Hooks;
 @Import({ BasicAuthenticationSpringConfiguration.class, SecurityConfig.class, ErrorSpringConfiguration.class, JMSSpringConfiguration.class, AuthenticatorSpringConfiguration.class })
 @EnableAsync
 public class PromregatorApplication {
+	private static final Logger log = Logger.getLogger(PromregatorApplication.class);
 	
 	@Value("${promregator.simulation.enabled:false}")
 	private boolean simulationMode;
@@ -67,10 +68,8 @@ public class PromregatorApplication {
 	private int javaDnsCacheWorkaroundTimeout;
 
 	@Value("${cf.cache.type:CLASSIC}")
+	// NB: Spring supports configuration values for enums to be both upper- and lowercased
 	private AccessorCacheType cacheType;
-	
-	
-	private static final Logger log = Logger.getLogger(PromregatorApplication.class);
 	
 	public static void main(String[] args) {
 		SpringApplication.run(PromregatorApplication.class, args);
