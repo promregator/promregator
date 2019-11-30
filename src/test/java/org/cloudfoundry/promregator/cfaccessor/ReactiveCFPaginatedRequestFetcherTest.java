@@ -53,10 +53,10 @@ public class ReactiveCFPaginatedRequestFetcherTest {
 		}, 100, responseGenerator);
 		
 		ListOrganizationsResponse subjectResponse = subjectResponseMono.block();
-		Assert.assertTrue (1 == subjectResponse.getTotalPages());
-		Assert.assertTrue (0 == subjectResponse.getTotalResults());
-		Assert.assertNotNull (subjectResponse.getResources());
-		Assert.assertTrue (subjectResponse.getResources().isEmpty());
+		Assert.assertEquals(1, subjectResponse.getTotalPages().intValue());
+		Assert.assertEquals(0, subjectResponse.getTotalResults().intValue());
+		Assert.assertNotNull(subjectResponse.getResources());
+        Assert.assertTrue (subjectResponse.getResources().isEmpty());
 	}
 	
 	@Test
@@ -78,10 +78,10 @@ public class ReactiveCFPaginatedRequestFetcherTest {
 		}, 100, responseGenerator);
 		
 		ListOrganizationsResponse subjectResponse = subjectResponseMono.block();
-		Assert.assertTrue (1 == subjectResponse.getTotalPages());
-		Assert.assertTrue (2 == subjectResponse.getTotalResults());
+		Assert.assertEquals(1, subjectResponse.getTotalPages().intValue());
+		Assert.assertEquals(2, subjectResponse.getTotalResults().intValue());
 		Assert.assertNotNull (subjectResponse.getResources());
-		Assert.assertTrue (2 == subjectResponse.getResources().size());
+		Assert.assertEquals(2, subjectResponse.getResources().size());
 	}
 	
 	@Test
@@ -105,10 +105,10 @@ public class ReactiveCFPaginatedRequestFetcherTest {
 		}, 100, responseGenerator);
 		
 		ListOrganizationsResponse subjectResponse = subjectResponseMono.block();
-		Assert.assertTrue (2 == subjectResponse.getTotalPages());
-		Assert.assertTrue (2*100 == subjectResponse.getTotalResults());
-		Assert.assertNotNull (subjectResponse.getResources());
-		Assert.assertTrue (2*100 == subjectResponse.getResources().size());
+		Assert.assertEquals(2, subjectResponse.getTotalPages().intValue());
+		Assert.assertEquals(2*100, subjectResponse.getTotalResults().intValue());
+		Assert.assertNotNull(subjectResponse.getResources());
+		Assert.assertEquals(2*100, subjectResponse.getResources().size());
 	}
 	
 	@Test
@@ -134,10 +134,10 @@ public class ReactiveCFPaginatedRequestFetcherTest {
 		}, 100, responseGenerator);
 		
 		ListOrganizationsResponse subjectResponse = subjectResponseMono.block();
-		Assert.assertTrue (2 == subjectResponse.getTotalPages());
-		Assert.assertTrue (1*100 == subjectResponse.getTotalResults());
+		Assert.assertEquals(2, subjectResponse.getTotalPages().intValue());
+		Assert.assertEquals(1*100, subjectResponse.getTotalResults().intValue());
 		Assert.assertNotNull (subjectResponse.getResources());
-		Assert.assertTrue (1*100 == subjectResponse.getResources().size());
+		Assert.assertEquals(1*100, subjectResponse.getResources().size());
 	}
 	
 	@Test

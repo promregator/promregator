@@ -185,7 +185,7 @@ public class Target implements Cloneable {
 				patterns.add(pattern);
 			} catch (PatternSyntaxException e) {
 				log.warn(String.format("Invalid preferredRouteRegex '%s' detected. Fix your configuration; until then, the regex will be ignored", routeRegex), e);
-				continue;
+				// continue not necessary here
 			}
 		}
 		

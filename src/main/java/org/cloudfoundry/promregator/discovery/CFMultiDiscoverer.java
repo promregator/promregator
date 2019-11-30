@@ -97,9 +97,7 @@ public class CFMultiDiscoverer implements CFDiscoverer {
 	}
 
 	private Instant nextTimeout() {
-		Instant timeout = Instant.now(this.clock).plus(this.expiryTimeout, ChronoUnit.SECONDS);
-		
-		return timeout;
+		return Instant.now(this.clock).plus(this.expiryTimeout, ChronoUnit.SECONDS);
 	}
 	
 	/**
