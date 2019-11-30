@@ -9,8 +9,11 @@ import java.util.concurrent.Executors;
 import javax.annotation.PostConstruct;
 
 import org.apache.log4j.Logger;
+import org.cloudfoundry.promregator.cfaccessor.AccessorCacheType;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorCache;
+import org.cloudfoundry.promregator.cfaccessor.CFAccessorCacheClassic;
+import org.cloudfoundry.promregator.cfaccessor.CFAccessorCacheCaffeine;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorSimulator;
 import org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl;
 import org.cloudfoundry.promregator.config.ConfigurationException;
@@ -50,6 +53,7 @@ import reactor.core.publisher.Hooks;
 @Import({ BasicAuthenticationSpringConfiguration.class, SecurityConfig.class, ErrorSpringConfiguration.class, JMSSpringConfiguration.class, AuthenticatorSpringConfiguration.class })
 @EnableAsync
 public class PromregatorApplication {
+	private static final Logger log = Logger.getLogger(PromregatorApplication.class);
 	
 	@Value("${promregator.simulation.enabled:false}")
 	private boolean simulationMode;
@@ -62,8 +66,10 @@ public class PromregatorApplication {
 	
 	@Value("${promregator.workaround.dnscache.timeout:-1}")
 	private int javaDnsCacheWorkaroundTimeout;
-	
-	private static final Logger log = Logger.getLogger(PromregatorApplication.class);
+
+	@Value("${cf.cache.type:CLASSIC}")
+	// NB: Spring supports configuration values for enums to be both upper- and lowercased
+	private AccessorCacheType cacheType;
 	
 	public static void main(String[] args) {
 		SpringApplication.run(PromregatorApplication.class, args);
@@ -96,7 +102,13 @@ public class PromregatorApplication {
 	
 	@Bean
 	public CFAccessorCache cfAccessorCache(CFAccessor mainCFAccessor) {
-		return new CFAccessorCache(mainCFAccessor);
+		if (this.cacheType == AccessorCacheType.CLASSIC) {
+			return new CFAccessorCacheClassic(mainCFAccessor);
+		} else if (this.cacheType == AccessorCacheType.CAFFEINE) {
+			return new CFAccessorCacheCaffeine(mainCFAccessor);
+		} else {
+			throw new Error("Unknown CF Accessor Cache selected: "+this.cacheType);
+		}
 	}
 	
 	@Bean

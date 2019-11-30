@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 import reactor.core.publisher.Mono;
 
 @Configuration
-public class CFAccessorCacheTimeoutSpringApplication {
+public class CFAccessorCacheClassicTimeoutSpringApplication {
 
 	@Bean
 	public InternalMetrics internalMetrics() {
@@ -38,8 +38,8 @@ public class CFAccessorCacheTimeoutSpringApplication {
 	}
 	
 	@Bean
-	public CFAccessorCache subject(@Qualifier("parentMock") CFAccessor parentMock) {
-		return new CFAccessorCache(parentMock);
+	public CFAccessorCacheClassic subject(@Qualifier("parentMock") CFAccessor parentMock) {
+		return new CFAccessorCacheClassic(parentMock);
 	}
 	
 }

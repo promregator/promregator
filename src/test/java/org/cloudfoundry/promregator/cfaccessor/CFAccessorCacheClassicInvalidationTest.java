@@ -14,13 +14,13 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = CFAccessorCacheSpringApplication.class)
+@SpringBootTest(classes = CFAccessorCacheClassicSpringApplication.class)
 @TestPropertySource(locations="../default.properties")
 @DirtiesContext(classMode=ClassMode.AFTER_CLASS)
-public class CFAccessorCacheInvalidationTest {
+public class CFAccessorCacheClassicInvalidationTest {
 	
 	/*
-	 * Warning! Do not try to merge with CFAccessorCacheTest
+	 * Warning! Do not try to merge with CFAccessorCacheClassicTest
 	 * These tests here require that we have a clean counting state in
 	 * Mockito, which is hard to achieve, if we have the tests merged.
 	 * If they are separate, this is quite trivial...
@@ -30,7 +30,7 @@ public class CFAccessorCacheInvalidationTest {
 	private CFAccessor parentMock;
 	
 	@Autowired
-	private CFAccessorCache subject;
+	private CFAccessorCacheClassic subject;
 	
 	@Before
 	public void invalidateCaches() {
