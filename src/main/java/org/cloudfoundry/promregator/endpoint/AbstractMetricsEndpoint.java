@@ -392,7 +392,7 @@ public abstract class AbstractMetricsEndpoint {
 	 */
 	public boolean isLoopbackRequest() {
 		if (this.httpServletRequest == null) {
-			log.warn("Missing HTTP Servlet request reference; unable to verify whether this is a lookback request or not");
+			log.warn("Missing HTTP Servlet request reference; unable to verify whether this is a loopback request or not");
 			return false;
 		}
 		
