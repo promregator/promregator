@@ -71,9 +71,11 @@ public abstract class AbstractMetricsEndpoint {
 	private AuthenticatorController authenticatorController;
 
 	@Value("${cf.proxyHost:@null}")
+	@Deprecated
 	private String proxyHostDeprecated;
 	
 	@Value("${cf.proxyPort:0}")
+	@Deprecated
 	private int proxyPortDeprecated;
 	
 	@Value("${promregator.scraping.proxy.host:@null}")
