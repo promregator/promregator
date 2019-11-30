@@ -53,10 +53,18 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	@Value("${cf.skipSslValidation:false}")
 	private boolean skipSSLValidation;
 	
-	@Value("${cf.proxyHost:#{null}}") 
+	/**
+	 * The hostname of the HTTP proxy based on the deprecated configuration option <pre>cf.proxyHost</pre>.
+	 * @deprecated use <pre>proxyHost</pre> instead.
+	 */
+	@Value("${cf.proxyHost:#{null}}")
 	@Deprecated
 	private String proxyHostDeprecated;
 	
+	/**
+	 * The port of the HTTP proxy based on the deprecated configuration option <pre>cf.proxyPort</pre>.
+	 * @deprecated use <pre>proxyPort</pre> instead.
+	 */
 	@Value("${cf.proxyPort:0}")
 	@Deprecated
 	private int proxyPortDeprecated;
@@ -127,27 +135,27 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 
 	private ProxyConfiguration proxyConfiguration() throws ConfigurationException {
 		
-		String proxyHost;
-		int proxyPort;
+		String effectiveProxyHost;
+		int effectiveProxyPort;
 		
 		if (this.proxyHost != null && this.proxyPort != 0) {
 			// used the new way of defining proxies
-			proxyHost = this.proxyHost;
-			proxyPort = this.proxyPort;
+			effectiveProxyHost = this.proxyHost;
+			effectiveProxyPort = this.proxyPort;
 		} else {
 			// the old way *may* be used
-			proxyHost = this.proxyHostDeprecated;
-			proxyPort = this.proxyPortDeprecated;
+			effectiveProxyHost = this.proxyHostDeprecated;
+			effectiveProxyPort = this.proxyPortDeprecated;
 		}
 		
-		if (proxyHost != null && PATTERN_HTTP_BASED_PROTOCOL_PREFIX.matcher(proxyHost).find()) {
+		if (effectiveProxyHost != null && PATTERN_HTTP_BASED_PROTOCOL_PREFIX.matcher(effectiveProxyHost).find()) {
 			throw new ConfigurationException("Configuring of cf.proxyHost or cf.proxy.host configuration parameter must not contain an http(s)://-like prefix; specify the hostname only instead");
 		}
 		
-		if (proxyHost != null && proxyPort != 0) {
+		if (effectiveProxyHost != null && effectiveProxyPort != 0) {
 			
 			String proxyIP = null;
-			if (!InetAddressUtils.isIPv4Address(proxyHost) && !InetAddressUtils.isIPv6Address(proxyHost)) {
+			if (!InetAddressUtils.isIPv4Address(effectiveProxyHost) && !InetAddressUtils.isIPv6Address(effectiveProxyHost)) {
 				/*
 				 * NB: There is currently a bug in io.netty.util.internal.SocketUtils.connect()
 				 * which is called implicitly by the CF API Client library, which leads to the effect
@@ -157,17 +165,17 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 				 * and then feed that one to the CF API Client library...
 				 */
 				try {
-					InetAddress ia = InetAddress.getByName(proxyHost);
+					InetAddress ia = InetAddress.getByName(effectiveProxyHost);
 					proxyIP = ia.getHostAddress();
 				} catch (UnknownHostException e) {
-					throw new ConfigurationException(String.format("The proxy host '%s' cannot be resolved to an IP address; is there a typo in your configuration?", proxyHost), e);
+					throw new ConfigurationException(String.format("The proxy host '%s' cannot be resolved to an IP address; is there a typo in your configuration?", effectiveProxyHost), e);
 				}
 			} else {
 				// the address specified is already an IP address
-				proxyIP = proxyHost;
+				proxyIP = effectiveProxyHost;
 			}
 			
-			return ProxyConfiguration.builder().host(proxyIP).port(proxyPort).build();
+			return ProxyConfiguration.builder().host(proxyIP).port(effectiveProxyPort).build();
 			
 		} else {
 			return null;
@@ -257,7 +265,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	@Override
 	public Mono<ListOrganizationsResponse> retrieveAllOrgIds() {
 		PaginatedRequestGeneratorFunction<ListOrganizationsRequest> requestGenerator = (orderDirection, resultsPerPage, pageNumber) ->
-				ListOrganizationsRequest.builder()
+			ListOrganizationsRequest.builder()
 				.orderDirection(orderDirection)
 				.resultsPerPage(resultsPerPage)
 				.page(pageNumber)

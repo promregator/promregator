@@ -174,6 +174,5 @@ class ReactiveCFPaginatedRequestFetcher {
 
 			return retObject;
 		});
-
 	}
 }
