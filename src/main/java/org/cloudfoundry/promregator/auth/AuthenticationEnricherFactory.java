@@ -6,6 +6,10 @@ import org.cloudfoundry.promregator.config.AuthenticatorConfiguration;
 public class AuthenticationEnricherFactory {
 	private static final Logger log = Logger.getLogger(AuthenticationEnricherFactory.class);
 	
+	private AuthenticationEnricherFactory() {
+		// left blank intentionally
+	}
+	
 	public static AuthenticationEnricher create(AuthenticatorConfiguration authConfig) {
 		AuthenticationEnricher ae = null;
 		
