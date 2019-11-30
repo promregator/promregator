@@ -251,11 +251,12 @@ public abstract class AbstractMetricsEndpoint {
 		for (Future<HashMap<String, MetricFamilySamples>> future : futures) {
 			long maxWaitTime = starttime + this.getMaxProcessingTime() - System.currentTimeMillis();
 			
+			if (maxWaitTime < 0 && !future.isDone()) {
+				// only process those, which are already completed
+				continue;
+			}
+			
 			try {
-				if (maxWaitTime < 0 && !future.isDone()) {
-					// only process those, which are already completed
-					continue;
-				}
 				HashMap<String, MetricFamilySamples> emfs = future.get(maxWaitTime, TimeUnit.MILLISECONDS);
 				
 				if (emfs != null) {
@@ -266,12 +267,12 @@ public abstract class AbstractMetricsEndpoint {
 				Thread.currentThread().interrupt();
 			} catch (ExecutionException e) {
 				log.warn("Exception thrown while fetching Metrics data from target", e);
-				continue;
+				// continue not necessary here
 			} catch (TimeoutException e) {
 				log.info("Not all targets could be scraped within the current promregator.scraping.maxProcessingTime. "
 						+ "Consider increasing promregator.scraping.maxProcessingTime or promregator.scraping.threads, "
 						+ "but mind the implications. See also https://github.com/promregator/promregator/wiki/Handling-Timeouts-on-Scraping");
-				continue; // process the other's as well!
+				// continue not necessary here - other's shall and are still processed
 			}
 			
 		}
