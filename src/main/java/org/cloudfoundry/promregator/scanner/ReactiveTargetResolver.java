@@ -27,13 +27,13 @@ public class ReactiveTargetResolver implements TargetResolver {
 	private CFAccessor cfAccessor;
 	
 	private static class IntermediateTarget {
-		public Target configTarget;
-		public String resolvedOrgName;
-		public String resolvedOrgId;
-		public String resolvedSpaceName;
-		public String resolvedSpaceId;
-		public String resolvedApplicationName;
-		public String resolvedApplicationId;
+		private Target configTarget;
+		private String resolvedOrgName;
+		private String resolvedOrgId;
+		private String resolvedSpaceName;
+		private String resolvedSpaceId;
+		private String resolvedApplicationName;
+		private String resolvedApplicationId;
 		
 		public IntermediateTarget() {
 			super();
@@ -70,6 +70,106 @@ public class ReactiveTargetResolver implements TargetResolver {
 					+ ", resolvedSpaceId=" + resolvedSpaceId + ", resolvedApplicationName=" + resolvedApplicationName
 					+ ", resolvedApplicationId=" + resolvedApplicationId + "]";
 		}
+
+		/**
+		 * @return the configTarget
+		 */
+		public Target getConfigTarget() {
+			return configTarget;
+		}
+
+		/**
+		 * @param configTarget the configTarget to set
+		 */
+		public void setConfigTarget(Target configTarget) {
+			this.configTarget = configTarget;
+		}
+
+		/**
+		 * @return the resolvedOrgId
+		 */
+		public String getResolvedOrgId() {
+			return resolvedOrgId;
+		}
+
+		/**
+		 * @param resolvedOrgId the resolvedOrgId to set
+		 */
+		public void setResolvedOrgId(String resolvedOrgId) {
+			this.resolvedOrgId = resolvedOrgId;
+		}
+
+		/**
+		 * @return the resolvedOrgName
+		 */
+		public String getResolvedOrgName() {
+			return resolvedOrgName;
+		}
+
+		/**
+		 * @param resolvedOrgName the resolvedOrgName to set
+		 */
+		public void setResolvedOrgName(String resolvedOrgName) {
+			this.resolvedOrgName = resolvedOrgName;
+		}
+
+		/**
+		 * @return the resolvedSpaceName
+		 */
+		public String getResolvedSpaceName() {
+			return resolvedSpaceName;
+		}
+
+		/**
+		 * @param resolvedSpaceName the resolvedSpaceName to set
+		 */
+		public void setResolvedSpaceName(String resolvedSpaceName) {
+			this.resolvedSpaceName = resolvedSpaceName;
+		}
+
+		/**
+		 * @return the resolvedSpaceId
+		 */
+		public String getResolvedSpaceId() {
+			return resolvedSpaceId;
+		}
+
+		/**
+		 * @param resolvedSpaceId the resolvedSpaceId to set
+		 */
+		public void setResolvedSpaceId(String resolvedSpaceId) {
+			this.resolvedSpaceId = resolvedSpaceId;
+		}
+
+		/**
+		 * @return the resolvedApplicationName
+		 */
+		public String getResolvedApplicationName() {
+			return resolvedApplicationName;
+		}
+
+		/**
+		 * @param resolvedApplicationName the resolvedApplicationName to set
+		 */
+		public void setResolvedApplicationName(String resolvedApplicationName) {
+			this.resolvedApplicationName = resolvedApplicationName;
+		}
+
+		/**
+		 * @return the resolvedApplicationId
+		 */
+		public String getResolvedApplicationId() {
+			return resolvedApplicationId;
+		}
+
+		/**
+		 * @param resolvedApplicationId the resolvedApplicationId to set
+		 */
+		public void setResolvedApplicationId(String resolvedApplicationId) {
+			this.resolvedApplicationId = resolvedApplicationId;
+		}
+		
+		
 	}
 	
 	@Override
@@ -78,7 +178,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 		Flux<IntermediateTarget> initialFlux = Flux.fromIterable(configTargets)
 				.map(configTarget -> {
 					IntermediateTarget it = new IntermediateTarget();
-					it.configTarget = configTarget;
+					it.setConfigTarget(configTarget);
 					
 					return it;
 				});
@@ -87,28 +187,28 @@ public class ReactiveTargetResolver implements TargetResolver {
 		Flux<IntermediateTarget> spaceResolvedFlux = orgResolvedFlux.flatMap(it -> this.resolveSpace(it)).log(log.getName()+".resolveSpace");
 		Flux<IntermediateTarget> applicationResolvedFlux = spaceResolvedFlux.flatMap(it -> this.resolveApplication(it)).log(log.getName()+".resolveApplication")
 				.doOnNext(it -> {
-					if (it.resolvedOrgId == null) {
-						log.error(String.format("Target '%s' created a ResolvedTarget without resolved org id", it.configTarget));
+					if (it.getResolvedOrgId() == null) {
+						log.error(String.format("Target '%s' created a ResolvedTarget without resolved org id", it.getConfigTarget()));
 					}
 					
-					if (it.resolvedSpaceId == null) {
-						log.error(String.format("Target '%s' created a ResolvedTarget without resolved space id", it.configTarget));
+					if (it.getResolvedSpaceId() == null) {
+						log.error(String.format("Target '%s' created a ResolvedTarget without resolved space id", it.getConfigTarget()));
 					}
 					
-					if (it.resolvedApplicationId == null) {
-						log.error(String.format("Target '%s' created a ResolvedTarget without resolved application id", it.configTarget));
+					if (it.getResolvedApplicationId() == null) {
+						log.error(String.format("Target '%s' created a ResolvedTarget without resolved application id", it.getConfigTarget()));
 					}
 					
-					if (it.resolvedOrgName == null) {
-						log.error(String.format("Target '%s' created a ResolvedTarget without resolved org name", it.configTarget));
+					if (it.getResolvedOrgName() == null) {
+						log.error(String.format("Target '%s' created a ResolvedTarget without resolved org name", it.getConfigTarget()));
 					}
 					
-					if (it.resolvedSpaceName == null) {
-						log.error(String.format("Target '%s' created a ResolvedTarget without resolved space name", it.configTarget));
+					if (it.getResolvedSpaceName() == null) {
+						log.error(String.format("Target '%s' created a ResolvedTarget without resolved space name", it.getConfigTarget()));
 					}
 					
 					if (it.resolvedApplicationName == null) {
-						log.error(String.format("Target '%s' created a ResolvedTarget without resolved application name", it.configTarget));
+						log.error(String.format("Target '%s' created a ResolvedTarget without resolved application name", it.getConfigTarget()));
 					}
 				});
 		
@@ -130,9 +230,9 @@ public class ReactiveTargetResolver implements TargetResolver {
 		 * In cases 1 and 2, we need the list of all orgs on the platform.
 		 */
 		
-		if (it.configTarget.getOrgRegex() == null && it.configTarget.getOrgName() != null) {
+		if (it.getConfigTarget().getOrgRegex() == null && it.getConfigTarget().getOrgName() != null) {
 			// Case 3: we have the orgName, but we also need its id
-			Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveOrgId(it.configTarget.getOrgName())
+			Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveOrgId(it.getConfigTarget().getOrgName())
 					.map(lor -> lor.getResources())
 					.flatMap(resList -> {
 						if (resList == null || resList.isEmpty()) {
@@ -142,12 +242,12 @@ public class ReactiveTargetResolver implements TargetResolver {
 						return Mono.just(resList.get(0));
 					})
 					.map(res -> {
-						it.resolvedOrgName = res.getEntity().getName();
-						it.resolvedOrgId = res.getMetadata().getId();
+						it.setResolvedOrgName(res.getEntity().getName());
+						it.setResolvedOrgId(res.getMetadata().getId());
 						return it;
 					})
 					.doOnError(e -> {
-						log.warn(String.format("Error on retrieving org id for org '%s'", it.configTarget.getOrgName()), e);
+						log.warn(String.format("Error on retrieving org id for org '%s'", it.getConfigTarget().getOrgName()), e);
 					})
 					.onErrorResume(__ -> Mono.empty());
 			
@@ -160,9 +260,9 @@ public class ReactiveTargetResolver implements TargetResolver {
 		Flux<OrganizationResource> orgResFlux = responseMono.map(resp -> resp.getResources())
 			.flatMapMany(list -> Flux.fromIterable(list));
 		
-		if (it.configTarget.getOrgRegex() != null) {
+		if (it.getConfigTarget().getOrgRegex() != null) {
 			// Case 2
-			final Pattern filterPattern = Pattern.compile(it.configTarget.getOrgRegex(), Pattern.CASE_INSENSITIVE);
+			final Pattern filterPattern = Pattern.compile(it.getConfigTarget().getOrgRegex(), Pattern.CASE_INSENSITIVE);
 			
 			orgResFlux = orgResFlux.filter(orgRes -> {
 				Matcher m = filterPattern.matcher(orgRes.getEntity().getName());
@@ -172,8 +272,8 @@ public class ReactiveTargetResolver implements TargetResolver {
 		
 		Flux<IntermediateTarget> result = orgResFlux.map(orgRes -> {
 			IntermediateTarget itnew = new IntermediateTarget(it);
-			itnew.resolvedOrgId = orgRes.getMetadata().getId();
-			itnew.resolvedOrgName = orgRes.getEntity().getName();
+			itnew.setResolvedOrgId(orgRes.getMetadata().getId());
+			itnew.setResolvedOrgName(orgRes.getEntity().getName());
 			
 			return itnew;
 		});
@@ -189,9 +289,9 @@ public class ReactiveTargetResolver implements TargetResolver {
 		 * In cases 1 and 2, we need the list of all spaces in the org.
 		 */
 		
-		if (it.configTarget.getSpaceRegex() == null && it.configTarget.getSpaceName() != null) {
+		if (it.getConfigTarget().getSpaceRegex() == null && it.getConfigTarget().getSpaceName() != null) {
 			// Case 3: we have the spaceName, but we also need its id
-			Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveSpaceId(it.resolvedOrgId, it.configTarget.getSpaceName())
+			Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveSpaceId(it.getResolvedOrgId(), it.getConfigTarget().getSpaceName())
 					.map(lsr -> lsr.getResources())
 					.flatMap(resList -> {
 						if (resList == null || resList.isEmpty()) {
@@ -201,11 +301,11 @@ public class ReactiveTargetResolver implements TargetResolver {
 						return Mono.just(resList.get(0));
 					})
 					.map(res -> {
-						it.resolvedSpaceName = res.getEntity().getName();
-						it.resolvedSpaceId = res.getMetadata().getId();
+						it.setResolvedSpaceName(res.getEntity().getName());
+						it.setResolvedSpaceId(res.getMetadata().getId());
 						return it;
 					}).doOnError(e -> {
-						log.warn(String.format("Error on retrieving space id for org '%s' and space '%s'", it.resolvedOrgName, it.configTarget.getSpaceName()), e);
+						log.warn(String.format("Error on retrieving space id for org '%s' and space '%s'", it.getResolvedOrgName(), it.getConfigTarget().getSpaceName()), e);
 					})
 					.onErrorResume(__ -> Mono.empty());
 			
@@ -213,14 +313,14 @@ public class ReactiveTargetResolver implements TargetResolver {
 		}
 		
 		// Case 1 & 2: Get all spaces in the current org
-		Mono<ListSpacesResponse> responseMono = this.cfAccessor.retrieveSpaceIdsInOrg(it.resolvedOrgId);
+		Mono<ListSpacesResponse> responseMono = this.cfAccessor.retrieveSpaceIdsInOrg(it.getResolvedOrgId());
 
 		Flux<SpaceResource> spaceResFlux = responseMono.map(resp -> resp.getResources())
 			.flatMapMany(list -> Flux.fromIterable(list));
 		
-		if (it.configTarget.getSpaceRegex() != null) {
+		if (it.getConfigTarget().getSpaceRegex() != null) {
 			// Case 2
-			final Pattern filterPattern = Pattern.compile(it.configTarget.getSpaceRegex(), Pattern.CASE_INSENSITIVE);
+			final Pattern filterPattern = Pattern.compile(it.getConfigTarget().getSpaceRegex(), Pattern.CASE_INSENSITIVE);
 			
 			spaceResFlux = spaceResFlux.filter(spaceRes -> {
 				Matcher m = filterPattern.matcher(spaceRes.getEntity().getName());
@@ -230,8 +330,8 @@ public class ReactiveTargetResolver implements TargetResolver {
 		
 		Flux<IntermediateTarget> result = spaceResFlux.map(spaceRes -> {
 			IntermediateTarget itnew = new IntermediateTarget(it);
-			itnew.resolvedSpaceId = spaceRes.getMetadata().getId();
-			itnew.resolvedSpaceName = spaceRes.getEntity().getName();
+			itnew.setResolvedSpaceId(spaceRes.getMetadata().getId());
+			itnew.setResolvedSpaceName(spaceRes.getEntity().getName());
 			
 			return itnew;
 		});
@@ -247,12 +347,12 @@ public class ReactiveTargetResolver implements TargetResolver {
 		 * In cases 1 and 2, we need the list of all applications in the space.
 		 */
 		
-		if (it.configTarget.getApplicationRegex() == null && it.configTarget.getApplicationName() != null) {
+		if (it.getConfigTarget().getApplicationRegex() == null && it.getConfigTarget().getApplicationName() != null) {
 			// Case 3: we have the applicationName, but we also need its id
 			
-			String appNameToSearchFor = it.configTarget.getApplicationName().toLowerCase(Locale.ENGLISH);
+			String appNameToSearchFor = it.getConfigTarget().getApplicationName().toLowerCase(Locale.ENGLISH);
 			
-			Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveAllApplicationIdsInSpace(it.resolvedOrgId, it.resolvedSpaceId)
+			Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveAllApplicationIdsInSpace(it.getResolvedOrgId(), it.getResolvedSpaceId())
 					.map(lsr -> lsr.getResources())
 					.flatMapMany(list -> Flux.fromIterable(list))
 					.filter(appResource -> {
@@ -261,7 +361,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 					.single()
 					.doOnError(e -> {
 						if (e instanceof NoSuchElementException) {
-							log.warn(String.format("Application id could not be found for org '%s', space '%s' and application '%s'. Check your configuration; skipping it for now", it.resolvedOrgName, it.resolvedSpaceName, it.configTarget.getApplicationName()));
+							log.warn(String.format("Application id could not be found for org '%s', space '%s' and application '%s'. Check your configuration; skipping it for now", it.getResolvedOrgName(), it.getResolvedSpaceName(), it.getConfigTarget().getApplicationName()));
 						}
 					})
 					.onErrorResume(e -> {
@@ -271,11 +371,11 @@ public class ReactiveTargetResolver implements TargetResolver {
 						return this.isApplicationInScrapableState(res.getEntity().getState());
 					})
 					.map(res -> {
-						it.resolvedApplicationName = res.getEntity().getName();
-						it.resolvedApplicationId = res.getMetadata().getId();
+						it.setResolvedApplicationName(res.getEntity().getName());
+						it.setResolvedApplicationId(res.getMetadata().getId());
 						return it;
 					}).doOnError(e -> {
-						log.warn(String.format("Error on retrieving application id for org '%s', space '%s' and application '%s'", it.resolvedOrgName, it.resolvedSpaceName, it.configTarget.getApplicationName()), e);
+						log.warn(String.format("Error on retrieving application id for org '%s', space '%s' and application '%s'", it.getResolvedOrgName(), it.getResolvedSpaceName(), it.getConfigTarget().getApplicationName()), e);
 					})
 					.onErrorResume(__ -> Mono.empty());
 			
@@ -283,18 +383,18 @@ public class ReactiveTargetResolver implements TargetResolver {
 		}
 		
 		// Case 1 & 2: Get all applications in the current space
-		Mono<ListApplicationsResponse> responseMono = this.cfAccessor.retrieveAllApplicationIdsInSpace(it.resolvedOrgId, it.resolvedSpaceId);
+		Mono<ListApplicationsResponse> responseMono = this.cfAccessor.retrieveAllApplicationIdsInSpace(it.getResolvedOrgId(), it.getResolvedSpaceId());
 
 		Flux<ApplicationResource> appResFlux = responseMono.map(resp -> resp.getResources())
 			.flatMapMany(list -> Flux.fromIterable(list))
 			.doOnError(e -> {
-				log.warn(String.format("Error on retrieving list of applications in org '%s' and space '%s'", it.resolvedOrgName, it.resolvedSpaceName), e);
+				log.warn(String.format("Error on retrieving list of applications in org '%s' and space '%s'", it.getResolvedOrgName(), it.getResolvedSpaceName()), e);
 			})
 			.onErrorResume(__ -> Flux.empty());
 		
-		if (it.configTarget.getApplicationRegex() != null) {
+		if (it.getConfigTarget().getApplicationRegex() != null) {
 			// Case 2
-			final Pattern filterPattern = Pattern.compile(it.configTarget.getApplicationRegex(), Pattern.CASE_INSENSITIVE);
+			final Pattern filterPattern = Pattern.compile(it.getConfigTarget().getApplicationRegex(), Pattern.CASE_INSENSITIVE);
 			
 			appResFlux = appResFlux.filter(appRes -> {
 				Matcher m = filterPattern.matcher(appRes.getEntity().getName());
@@ -308,8 +408,8 @@ public class ReactiveTargetResolver implements TargetResolver {
 		
 		Flux<IntermediateTarget> result = scrapableFlux.map(appRes -> {
 			IntermediateTarget itnew = new IntermediateTarget(it);
-			itnew.resolvedApplicationId = appRes.getMetadata().getId();
-			itnew.resolvedApplicationName = appRes.getEntity().getName();
+			itnew.setResolvedApplicationId(appRes.getMetadata().getId());
+			itnew.setResolvedApplicationName(appRes.getEntity().getName());
 			
 			return itnew;
 		});
