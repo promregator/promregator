@@ -150,6 +150,11 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
 			}
 		}
 		
+		if (json == null) {
+			log.warn("Null-JSON detected on OAuth response");
+			return null;
+		}
+		
 		Gson gson = new Gson();
 		TokenResponse oAuthResponse = gson.fromJson(JsonSanitizer.sanitize(json), TokenResponse.class);
 		
