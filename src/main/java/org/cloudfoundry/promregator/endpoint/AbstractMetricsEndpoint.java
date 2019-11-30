@@ -69,11 +69,17 @@ public abstract class AbstractMetricsEndpoint {
 
 	@Autowired
 	private AuthenticatorController authenticatorController;
-	
+
 	@Value("${cf.proxyHost:@null}")
-	private String proxyHost;
+	private String proxyHostDeprecated;
 	
 	@Value("${cf.proxyPort:0}")
+	private int proxyPortDeprecated;
+	
+	@Value("${promregator.scraping.proxy.host:@null}")
+	private String proxyHost;
+	
+	@Value("${promregator.scraping.proxy.port:0}")
 	private int proxyPort;
 
 	@Value("${promregator.endpoint.maxProcessingTime:#{null}}")
@@ -337,11 +343,8 @@ public abstract class AbstractMetricsEndpoint {
 				cfmfConfig.setPromregatorInstanceIdentifier(this.promregatorInstanceIdentifier);
 				cfmfConfig.setConnectionTimeoutInMillis(this.fetcherConnectionTimeout);
 				cfmfConfig.setSocketReadTimeoutInMillis(this.fetcherSocketReadTimeout);
+				this.provideProxyConfiguration(cfmfConfig);
 				
-				if (this.proxyHost != null && this.proxyPort != 0) {
-					cfmfConfig.setProxyHost(this.proxyHost);
-					cfmfConfig.setProxyPort(this.proxyPort);
-				}
 				mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), cfmfConfig);
 			}
 			callablesList.add(mf);
@@ -355,6 +358,26 @@ public abstract class AbstractMetricsEndpoint {
 		List<String> labelValues = mfse.getEnrichedLabelValues(new LinkedList<>());
 		
 		return labelValues.toArray(new String[0]);
+	}
+	
+	private void provideProxyConfiguration(CFMetricsFetcherConfig cfmfConfig) {
+		String proxyHost;
+		int proxyPort;
+		
+		if (this.proxyHost != null && this.proxyPort != 0) {
+			// using the new way
+			proxyHost = this.proxyHost;
+			proxyPort = this.proxyPort;
+		} else {
+			// possibly still using the old way
+			proxyHost = this.proxyHostDeprecated;
+			proxyPort = this.proxyPortDeprecated;
+		}
+		
+		if (proxyHost != null && proxyPort != 0) {
+			cfmfConfig.setProxyHost(proxyHost);
+			cfmfConfig.setProxyPort(proxyPort);
+		}
 	}
 	
 	/**
