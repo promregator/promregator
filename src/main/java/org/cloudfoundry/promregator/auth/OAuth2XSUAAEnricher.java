@@ -43,9 +43,9 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
 
 	@Override
 	public void enrichWithAuthentication(HttpGet httpget) {
-		RequestConfig config = httpget.getConfig();
+		final RequestConfig requestConfig = httpget.getConfig();
 		
-		String jwt = getBufferedJWT(config);
+		final String jwt = getBufferedJWT(requestConfig);
 		if (jwt == null) {
 			log.error("Unable to enrich request with JWT");
 			return;
