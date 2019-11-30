@@ -70,10 +70,16 @@ public abstract class AbstractMetricsEndpoint {
 	@Autowired
 	private AuthenticatorController authenticatorController;
 
+	/**
+	 * @deprecated This option is no longer in use. Use cf.proxy.host and/or promregator.scraping.proxy.host instead.
+	 */
 	@Value("${cf.proxyHost:@null}")
 	@Deprecated
 	private String proxyHostDeprecated;
-	
+
+	/**
+	 * @deprecated This option is no longer in use. Use cf.proxy.port and/or promregator.scraping.proxy.port instead.
+	 */
 	@Value("${cf.proxyPort:0}")
 	@Deprecated
 	private int proxyPortDeprecated;
@@ -87,7 +93,7 @@ public abstract class AbstractMetricsEndpoint {
 	/**
 	 * The maximal processing time permitted for Scraping (in milliseconds).
 	 * The value is deprecated as it originates from the deprecated configuration option <pre>promregator.endpoint.maxProcessingTime</pre>.
-	 * Use maxProcessingTime instead.
+	 * @deprecated Use maxProcessingTime instead.
 	 */
 	@Value("${promregator.endpoint.maxProcessingTime:#{null}}")
 	@Deprecated

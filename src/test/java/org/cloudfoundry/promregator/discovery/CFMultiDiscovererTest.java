@@ -103,7 +103,7 @@ public class CFMultiDiscovererTest {
 		Assert.assertFalse(this.cfDiscoverer.isInstanceRegistered(i2));
 		
 		for (int i = 0;i<10;i++) {
-			if (this.removerTriggerForInstances.size() == 0) {
+			if (this.removerTriggerForInstances.isEmpty()) {
 				Thread.sleep(400);
 				continue;
 			}
