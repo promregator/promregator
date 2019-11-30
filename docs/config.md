@@ -12,8 +12,9 @@ Example:
 cf:
   api_host: api.cf.example.org
   username: myCFUserName
-  proxyHost: 192.168.111.1
-  proxyPort: 8080
+  proxy:
+    host: 192.168.111.1
+    port: 8080
 ```
 
 ### Option "cf.api_host" (mandatory)
