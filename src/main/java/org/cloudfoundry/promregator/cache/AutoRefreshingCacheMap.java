@@ -88,7 +88,7 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 
 	private synchronized void ensureRefresherThreadIsRunning() {
 		if (this.refresherThread == null) {
-			this.refresherThread = new RefresherThread<K, V>(this);
+			this.refresherThread = new RefresherThread<>(this);
 			this.refresherThread.start();
 		}
 	}
@@ -147,12 +147,12 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 			value = this.loaderFunction.apply((K) key);
 			if (value != null) {
 				this.put((K) key, value);
-				ep = this.entryPropertiesMap.get(key);
-				if (ep == null) {
-					ep = new EntryProperties();
-					this.entryPropertiesMap.put((K) key, ep);
-				}
-				ep.justUsed();
+				
+				this.entryPropertiesMap.computeIfAbsent((K) key, k -> {
+					EntryProperties epnew = new EntryProperties();
+					epnew.justUsed();
+					return epnew;
+				});
 			}
 		}
 		
