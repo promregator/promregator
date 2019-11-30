@@ -373,22 +373,22 @@ public abstract class AbstractMetricsEndpoint {
 	}
 	
 	private void provideProxyConfiguration(CFMetricsFetcherConfig cfmfConfig) {
-		String proxyHost;
-		int proxyPort;
+		String effectiveProxyHost;
+		int effectiveProxyPort;
 		
 		if (this.proxyHost != null && this.proxyPort != 0) {
 			// using the new way
-			proxyHost = this.proxyHost;
-			proxyPort = this.proxyPort;
+			effectiveProxyHost = this.proxyHost;
+			effectiveProxyPort = this.proxyPort;
 		} else {
 			// possibly still using the old way
-			proxyHost = this.proxyHostDeprecated;
-			proxyPort = this.proxyPortDeprecated;
+			effectiveProxyHost = this.proxyHostDeprecated;
+			effectiveProxyPort = this.proxyPortDeprecated;
 		}
 		
-		if (proxyHost != null && proxyPort != 0) {
-			cfmfConfig.setProxyHost(proxyHost);
-			cfmfConfig.setProxyPort(proxyPort);
+		if (effectiveProxyHost != null && effectiveProxyPort != 0) {
+			cfmfConfig.setProxyHost(effectiveProxyHost);
+			cfmfConfig.setProxyPort(effectiveProxyPort);
 		}
 	}
 	
