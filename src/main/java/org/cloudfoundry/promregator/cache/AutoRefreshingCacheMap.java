@@ -247,7 +247,8 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 					Thread.sleep(500);
 				} catch (InterruptedException e) {
 					// received signal; check if something has to be done
-					continue;
+					log.info("Stopping RefresherThread");
+					Thread.currentThread().interrupt();
 				}
 			}
 			log.debug("Refresher Thread for this AutoRefreshingCacheMap has shut down");

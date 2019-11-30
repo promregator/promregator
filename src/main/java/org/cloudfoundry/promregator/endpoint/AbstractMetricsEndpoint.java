@@ -254,7 +254,8 @@ public abstract class AbstractMetricsEndpoint {
 					mmfs.merge(emfs);
 				}
 			} catch (InterruptedException e) {
-				continue;
+				log.warn("Interrupted unexpectedly", e);
+				Thread.currentThread().interrupt();
 			} catch (ExecutionException e) {
 				log.warn("Exception thrown while fetching Metrics data from target", e);
 				continue;
