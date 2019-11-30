@@ -49,7 +49,7 @@ public class CFMetricsFetcher implements MetricsFetcher {
 	
 	private AbstractMetricFamilySamplesEnricher mfse;
 
-	final static CloseableHttpClient httpclient = HttpClients.createDefault();
+	static final CloseableHttpClient httpclient = HttpClients.createDefault();
 
 	private MetricsFetcherMetrics mfm;
 

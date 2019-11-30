@@ -32,7 +32,7 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
 	
 	private static final Logger log = Logger.getLogger(OAuth2XSUAAEnricher.class);
 	
-	final static CloseableHttpClient httpclient = HttpClients.createDefault();
+	static final CloseableHttpClient httpclient = HttpClients.createDefault();
 
 	private final OAuth2XSUAAAuthenticationConfiguration config;
 	

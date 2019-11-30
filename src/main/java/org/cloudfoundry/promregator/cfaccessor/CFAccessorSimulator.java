@@ -23,16 +23,16 @@ import org.cloudfoundry.client.v2.spaces.SpaceResource;
 import reactor.core.publisher.Mono;
 
 public class CFAccessorSimulator implements CFAccessor {
-	public final static String ORG_UUID = "eb51aa9c-2fa3-11e8-b467-0ed5f89f718b";
-	public final static String SPACE_UUID = "db08be9a-2fa4-11e8-b467-0ed5f89f718b";
-	public final static String APP_UUID_PREFIX = "55820b2c-2fa5-11e8-b467-";
-	public final static String APP_HOST_PREFIX = "hostapp";
-	public final static String SHARED_DOMAIN = "shared.domain.example.org";
+	public static final String ORG_UUID = "eb51aa9c-2fa3-11e8-b467-0ed5f89f718b";
+	public static final String SPACE_UUID = "db08be9a-2fa4-11e8-b467-0ed5f89f718b";
+	public static final String APP_UUID_PREFIX = "55820b2c-2fa5-11e8-b467-";
+	public static final String APP_HOST_PREFIX = "hostapp";
+	public static final String SHARED_DOMAIN = "shared.domain.example.org";
 	
 	private static final Logger log = Logger.getLogger(CFAccessorSimulator.class);
 	
-	public final static String CREATED_AT_TIMESTAMP = "2014-11-24T19:32:49+00:00";
-	public final static String UPDATED_AT_TIMESTAMP = "2014-11-24T19:32:49+00:00";
+	public static final String CREATED_AT_TIMESTAMP = "2014-11-24T19:32:49+00:00";
+	public static final String UPDATED_AT_TIMESTAMP = "2014-11-24T19:32:49+00:00";
 	
 	private Random randomGen = new Random();
 	

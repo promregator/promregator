@@ -49,7 +49,7 @@ import io.prometheus.client.CollectorRegistry;
 })
 @Import({ PromregatorConfiguration.class })
 public class MockedMetricsEndpointSpringApplication {
-	public final static UUID currentPromregatorInstanceIdentifier = UUID.randomUUID();
+	public static final UUID currentPromregatorInstanceIdentifier = UUID.randomUUID();
 	
 	@Bean
 	public AppInstanceScanner appInstanceScanner() {

@@ -23,13 +23,13 @@ import org.junit.Assert;
 import reactor.core.publisher.Mono;
 
 public class CFAccessorMassMock implements CFAccessor {
-	public final static String UNITTEST_ORG_UUID = "eb51aa9c-2fa3-11e8-b467-0ed5f89f718b";
-	public final static String UNITTEST_SPACE_UUID = "db08be9a-2fa4-11e8-b467-0ed5f89f718b";
-	public final static String UNITTEST_APP_UUID_PREFIX = "55820b2c-2fa5-11e8-b467-";
-	public final static String UNITTEST_SHARED_DOMAIN = "shared.domain.example.org";
+	public static final String UNITTEST_ORG_UUID = "eb51aa9c-2fa3-11e8-b467-0ed5f89f718b";
+	public static final String UNITTEST_SPACE_UUID = "db08be9a-2fa4-11e8-b467-0ed5f89f718b";
+	public static final String UNITTEST_APP_UUID_PREFIX = "55820b2c-2fa5-11e8-b467-";
+	public static final String UNITTEST_SHARED_DOMAIN = "shared.domain.example.org";
 	
-	public final static String CREATED_AT_TIMESTAMP = "2014-11-24T19:32:49+00:00";
-	public final static String UPDATED_AT_TIMESTAMP = "2014-11-24T19:32:49+00:00";
+	public static final String CREATED_AT_TIMESTAMP = "2014-11-24T19:32:49+00:00";
+	public static final String UPDATED_AT_TIMESTAMP = "2014-11-24T19:32:49+00:00";
 	
 	private Random randomGen = new Random();
 	
