@@ -167,7 +167,7 @@ public class PromregatorApplication {
 	
 	@Value("${promregator.endpoint.threads:#{null}}")
 	@Deprecated
-	/*
+	/**
 	 * use threadPoolSize instead
 	 * @deprecated
 	 */
