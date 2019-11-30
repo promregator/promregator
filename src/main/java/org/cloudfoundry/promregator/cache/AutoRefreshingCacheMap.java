@@ -86,7 +86,7 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 		 */
 	}
 
-	private void ensureRefresherThreadIsRunning() {
+	private synchronized void ensureRefresherThreadIsRunning() {
 		if (this.refresherThread == null) {
 			this.refresherThread = new RefresherThread<K, V>(this);
 			this.refresherThread.start();
