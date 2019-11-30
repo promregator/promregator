@@ -84,11 +84,13 @@ public abstract class AbstractMetricsEndpoint {
 	@Value("${promregator.scraping.proxy.port:0}")
 	private int proxyPort;
 
+	/**
+	 * The maximal processing time permitted for Scraping (in milliseconds).
+	 * The value is deprecated as it originates from the deprecated configuration option <pre>promregator.endpoint.maxProcessingTime</pre>.
+	 * Use maxProcessingTime instead.
+	 */
 	@Value("${promregator.endpoint.maxProcessingTime:#{null}}")
 	@Deprecated
-	/**
-	 * use maxProcessingTime instead
-	 */
 	private Optional<Integer> maxProcessingTimeOld;
 
 	@Value("${promregator.scraping.maxProcessingTime:5000}")
