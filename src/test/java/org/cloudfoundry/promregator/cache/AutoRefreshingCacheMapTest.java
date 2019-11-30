@@ -9,6 +9,9 @@ import org.junit.Test;
 
 import reactor.core.publisher.Mono;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.awaitility.Awaitility.await;
+
 public class AutoRefreshingCacheMapTest {
 	private static final Logger log = Logger.getLogger(AutoRefreshingCacheMapTest.class);
 
@@ -86,8 +89,7 @@ public class AutoRefreshingCacheMapTest {
 		Assert.assertEquals("initial", value);
 		
 		// we have to wait until the thread had a chance to refresh
-		Thread.sleep(1000);
-		
+		await().atMost(5, SECONDS).until(() -> !subject.get("key").equals("initial"));
 		boolean exists = subject.containsKey("key");
 		Assert.assertTrue(exists);
 		
