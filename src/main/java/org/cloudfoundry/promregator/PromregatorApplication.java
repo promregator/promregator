@@ -215,6 +215,7 @@ public class PromregatorApplication {
 	/**
 	 * a unique identifier for the currently running instance of Promregator
 	 * esp. required for detecting loopbacking scraping requests
+	 * @return the unique identifier of the currently running instance
 	 */
 	@Bean
 	public UUID promregatorInstanceIdentifer() {
