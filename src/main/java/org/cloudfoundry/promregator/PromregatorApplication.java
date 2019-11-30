@@ -170,6 +170,7 @@ public class PromregatorApplication {
 	@Deprecated
 	/**
 	 * use threadPoolSize instead
+	 * @deprecated
 	 */
 	private Optional<Integer> threadPoolSizeOld;
 
