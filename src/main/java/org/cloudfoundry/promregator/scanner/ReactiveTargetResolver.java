@@ -207,7 +207,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 						log.error(String.format("Target '%s' created a ResolvedTarget without resolved space name", it.getConfigTarget()));
 					}
 					
-					if (it.resolvedApplicationName == null) {
+					if (it.getResolvedApplicationName() == null) {
 						log.error(String.format("Target '%s' created a ResolvedTarget without resolved application name", it.getConfigTarget()));
 					}
 				});
