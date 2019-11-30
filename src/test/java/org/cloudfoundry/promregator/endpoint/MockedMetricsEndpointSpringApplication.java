@@ -131,7 +131,7 @@ public class MockedMetricsEndpointSpringApplication {
 	@Bean
 	public AuthenticationEnricher authenticationEnricher() {
 		return new NullEnricher();
-	};
+	}
 
 	@Bean
 	public UUID promregatorInstanceIdentifier() {

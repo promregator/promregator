@@ -153,8 +153,8 @@ public class TextFormat004Parser {
 			log.info(String.format("Definition of metric %s without type information (assuming untyped)", metricName));
 		}
 
-		List<String> labelNames = labels == null ? new LinkedList<String>() : labels.getNames();
-		List<String> labelValues = labels == null ? new LinkedList<String>() : labels.getValues();
+		List<String> labelNames = labels == null ? new LinkedList<>() : labels.getNames();
+		List<String> labelValues = labels == null ? new LinkedList<>() : labels.getValues();
 		
 		Sample sample = new Sample(metricName, labelNames, labelValues, value);
 
@@ -165,7 +165,7 @@ public class TextFormat004Parser {
 				mfsStored.samples.add(sample);
 			} else {
 				// there is no such MFS entry yet; we have to create one
-				List<Sample> samples = new LinkedList<Sample>();
+				List<Sample> samples = new LinkedList<>();
 				samples.add(sample);
 
 				String docString = this.mapHelps.get(metricName);
@@ -265,8 +265,8 @@ public class TextFormat004Parser {
 	}
 	
 	private static class Labels {
-		private List<String> names = new LinkedList<String>();
-		private List<String> values = new LinkedList<String>();
+		private List<String> names = new LinkedList<>();
+		private List<String> values = new LinkedList<>();
 		
 		public Labels() {
 			super();
