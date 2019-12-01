@@ -423,7 +423,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 		}
 		
 		/* TODO: To be enhanced, once we know of further states, which are
-		 * also scrapable.
+		 * also scrapeable.
 		 */
 		
 		return false;
