@@ -8,6 +8,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
@@ -49,7 +50,7 @@ public class MergableMetricFamilySamplesTest {
 		
 		Assert.assertEquals(mfs, element);
 		
-		HashMap<String, MetricFamilySamples> returnedHMMFS = subject.getEnumerationMetricFamilySamplesInHashMap();
+		Map<String, MetricFamilySamples> returnedHMMFS = subject.getEnumerationMetricFamilySamplesInHashMap();
 		Assert.assertEquals(1, returnedHMMFS.size());
 		Assert.assertEquals(mfs, returnedHMMFS.get("dummy"));
 		
@@ -65,7 +66,7 @@ public class MergableMetricFamilySamplesTest {
 		List<MetricFamilySamples> list = new LinkedList<>();
 		list.add(mfs);
 		
-		HashMap<String, MetricFamilySamples> hmmfs = new HashMap<>();
+		Map<String, MetricFamilySamples> hmmfs = new HashMap<>();
 		hmmfs.put("dummy", mfs);
 		
 		subject.merge(hmmfs);
@@ -78,7 +79,7 @@ public class MergableMetricFamilySamplesTest {
 		
 		Assert.assertEquals(mfs, element);
 		
-		HashMap<String, MetricFamilySamples> returnedHMMFS = subject.getEnumerationMetricFamilySamplesInHashMap();
+		Map<String, MetricFamilySamples> returnedHMMFS = subject.getEnumerationMetricFamilySamplesInHashMap();
 		Assert.assertEquals(1, returnedHMMFS.size());
 		Assert.assertEquals(mfs, returnedHMMFS.get("dummy"));
 
@@ -94,7 +95,7 @@ public class MergableMetricFamilySamplesTest {
 		List<MetricFamilySamples> list = new LinkedList<>();
 		list.add(mfs);
 		
-		HashMap<String, MetricFamilySamples> hmmfs = new HashMap<>();
+		Map<String, MetricFamilySamples> hmmfs = new HashMap<>();
 		hmmfs.put("dummy", mfs);
 		
 		subject.merge(hmmfs);
@@ -109,14 +110,14 @@ public class MergableMetricFamilySamplesTest {
 		String textToParse = new String(Files.readAllBytes(Paths.get(getClass().getResource("issue104-instance0.text004").toURI())));
 		
 		TextFormat004Parser source0 = new TextFormat004Parser(textToParse);
-		HashMap<String, Collector.MetricFamilySamples> map0 = source0.parse();
+		Map<String, Collector.MetricFamilySamples> map0 = source0.parse();
 		Assert.assertEquals(50, map0.size());
 		
 		
 		textToParse = new String(Files.readAllBytes(Paths.get(getClass().getResource("issue104-instance1.text004").toURI())));
 		
 		TextFormat004Parser source1 = new TextFormat004Parser(textToParse);
-		HashMap<String, Collector.MetricFamilySamples> map1 = source1.parse();
+		Map<String, Collector.MetricFamilySamples> map1 = source1.parse();
 		Assert.assertEquals(50, map1.size());
 		
 		MergableMetricFamilySamples subject = new MergableMetricFamilySamples();

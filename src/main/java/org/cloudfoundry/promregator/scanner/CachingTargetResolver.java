@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
@@ -66,9 +67,9 @@ public class CachingTargetResolver implements TargetResolver {
 	}
 
 	private void updateTargetResolutionCache(List<ResolvedTarget> newlyResolvedTargets) {
-		HashMap<Target, LinkedList<ResolvedTarget>> map = new HashMap<>();
+		Map<Target, List<ResolvedTarget>> map = new HashMap<>();
 		for (ResolvedTarget rtarget : newlyResolvedTargets) {
-			LinkedList<ResolvedTarget> list = map.get(rtarget.getOriginalTarget());
+			List<ResolvedTarget> list = map.get(rtarget.getOriginalTarget());
 			if (list == null) {
 				list = new LinkedList<>();
 			}

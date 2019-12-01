@@ -4,6 +4,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import io.prometheus.client.Collector;
@@ -22,19 +23,19 @@ public class GenericMetricFamilySamplesPrefixRewriter {
 		}
 	}
 
-	public HashMap<String, Collector.MetricFamilySamples> determineEnumerationOfMetricFamilySamples(CollectorRegistry cr) {
+	public Map<String, MetricFamilySamples> determineEnumerationOfMetricFamilySamples(CollectorRegistry cr) {
 		Enumeration<MetricFamilySamples> rawMFS = cr.metricFamilySamples();
-		HashMap<String, MetricFamilySamples> enrichedMFS = this.determineEnumerationOfMetricFamilySamples(MFSUtils.convertToEMFSToHashMap(rawMFS));
+		Map<String, MetricFamilySamples> enrichedMFS = this.determineEnumerationOfMetricFamilySamples(MFSUtils.convertToEMFSToHashMap(rawMFS));
 		return enrichedMFS;
 	}
 	
-	public HashMap<String, Collector.MetricFamilySamples> determineEnumerationOfMetricFamilySamples(HashMap<String, Collector.MetricFamilySamples> emfs) {
+	public Map<String, Collector.MetricFamilySamples> determineEnumerationOfMetricFamilySamples(Map<String, Collector.MetricFamilySamples> emfs) {
 		
 		if (emfs == null) {
 			return null;
 		}
 		
-		HashMap<String, Collector.MetricFamilySamples> newMap = new HashMap<>();
+		Map<String, Collector.MetricFamilySamples> newMap = new HashMap<>();
 		
 		for (Entry<String, MetricFamilySamples> entry : emfs.entrySet()) {
 			MetricFamilySamples mfs = entry.getValue();

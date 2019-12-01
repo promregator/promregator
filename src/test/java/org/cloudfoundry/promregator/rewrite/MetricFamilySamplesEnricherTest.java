@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.junit.AfterClass;
@@ -33,7 +34,7 @@ public class MetricFamilySamplesEnricherTest {
 		HashMap<String, MetricFamilySamples> map = new HashMap<>();
 		map.put("metricName", mfs);
 		
-		HashMap<String, MetricFamilySamples> result = subject.determineEnumerationOfMetricFamilySamples(map);
+		Map<String, MetricFamilySamples> result = subject.determineEnumerationOfMetricFamilySamples(map);
 		
 		Assert.assertEquals(1, result.size());
 		
@@ -76,10 +77,10 @@ public class MetricFamilySamplesEnricherTest {
 		
 		MetricFamilySamples mfs = new MetricFamilySamples("dummyname", Type.GAUGE, "dummyHelp", samples);
 		
-		HashMap<String, MetricFamilySamples> map = new HashMap<>();
+		Map<String, MetricFamilySamples> map = new HashMap<>();
 		map.put("metricName", mfs);
 		
-		HashMap<String, MetricFamilySamples> result = subject.determineEnumerationOfMetricFamilySamples(map);
+		Map<String, MetricFamilySamples> result = subject.determineEnumerationOfMetricFamilySamples(map);
 		
 		Assert.assertEquals(1, result.size());
 		

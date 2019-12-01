@@ -1,6 +1,6 @@
 package org.cloudfoundry.promregator.endpoint;
 
-import java.util.HashMap;
+import java.util.Map;
 
 import org.cloudfoundry.promregator.rewrite.GenericMetricFamilySamplesPrefixRewriter;
 import org.cloudfoundry.promregator.rewrite.MergableMetricFamilySamples;
@@ -26,7 +26,7 @@ public class PromregatorMetricsEndpoint {
 
 	@GetMapping(produces=TextFormat.CONTENT_TYPE_004)
 	public String getMetrics() {
-		HashMap<String, MetricFamilySamples> mfsMap = this.gmfspr.determineEnumerationOfMetricFamilySamples(this.collectorRegistry);
+		Map<String, MetricFamilySamples> mfsMap = this.gmfspr.determineEnumerationOfMetricFamilySamples(this.collectorRegistry);
 		
 		MergableMetricFamilySamples mmfs = new MergableMetricFamilySamples();
 		mmfs.merge(mfsMap);

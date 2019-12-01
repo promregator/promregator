@@ -4,7 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 import org.apache.http.client.methods.HttpGet;
@@ -71,7 +71,7 @@ public class MetricsFetcherSimulator implements MetricsFetcher {
 	}
 
 	@Override
-	public HashMap<String, MetricFamilySamples> call() throws Exception {
+	public Map<String, MetricFamilySamples> call() throws Exception {
 		Timer timer = null;
 		if (this.mfm.getLatencyRequest() != null) {
 			timer = this.mfm.getLatencyRequest().startTimer();
@@ -86,7 +86,7 @@ public class MetricsFetcherSimulator implements MetricsFetcher {
 		String result = SIM_TEXT004;
 		
 		TextFormat004Parser parser = new TextFormat004Parser(result);
-		HashMap<String, MetricFamilySamples> emfs = parser.parse();
+		Map<String, MetricFamilySamples> emfs = parser.parse();
 		
 		emfs = this.mfse.determineEnumerationOfMetricFamilySamples(emfs);
 		

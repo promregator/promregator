@@ -6,9 +6,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.cloudfoundry.promregator.JUnitTestUtils;
@@ -29,8 +29,8 @@ public class TextFormat004ParserTest {
 	}
 
 	public static void compareEMFS(Enumeration<MetricFamilySamples> expected, Enumeration<MetricFamilySamples> actual) {
-		HashMap<String, MetricFamilySamples> expectedMap = MFSUtils.convertToEMFSToHashMap(expected);
-		HashMap<String, MetricFamilySamples> actualMap = MFSUtils.convertToEMFSToHashMap(actual);
+		Map<String, MetricFamilySamples> expectedMap = MFSUtils.convertToEMFSToHashMap(expected);
+		Map<String, MetricFamilySamples> actualMap = MFSUtils.convertToEMFSToHashMap(actual);
 		
 		Assert.assertTrue(EqualsBuilder.reflectionEquals(actualMap.keySet(), expectedMap.keySet(), false));
 		
@@ -48,7 +48,7 @@ public class TextFormat004ParserTest {
 				"metric_without_timestamp_and_labels 12.47\n";
 		
 		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
-		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
+		Map<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 		
 		// creating expected result
@@ -74,7 +74,7 @@ public class TextFormat004ParserTest {
 				"metric_without_labels 12.47 123456789012345600\n";
 		
 		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
-		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
+		Map<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
 		// creating expected result
@@ -100,7 +100,7 @@ public class TextFormat004ParserTest {
 				"metric_without_labels 1.7560473e+07\n";
 		
 		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
-		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
+		Map<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
 		// creating expected result
@@ -126,7 +126,7 @@ public class TextFormat004ParserTest {
 				"metric_without_labels +Inf 123456789012345600\n";
 		
 		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
-		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
+		Map<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
 		// creating expected result
@@ -152,7 +152,7 @@ public class TextFormat004ParserTest {
 				"metric_without_labels -Inf 123456789012345600\n";
 		
 		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
-		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
+		Map<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
 		// creating expected result
@@ -178,7 +178,7 @@ public class TextFormat004ParserTest {
 				"metric_without_labels NaN 123456789012345600\n";
 		
 		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
-		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
+		Map<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
 		// compareEMFS does not properly work with NaN values
@@ -202,7 +202,7 @@ public class TextFormat004ParserTest {
 				"metric_without_labels Nan 123456789012345600\n";
 		
 		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
-		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
+		Map<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
 		// compareEMFS does not properly work with NaN values
@@ -227,7 +227,7 @@ public class TextFormat004ParserTest {
 				"metric_without_labels 12.47 123456789012345600\n";
 		
 		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
-		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
+		Map<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
 		// creating expected result
@@ -254,7 +254,7 @@ public class TextFormat004ParserTest {
 				"metric_without_labels 12.47 123456789012345600\n";
 		
 		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
-		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
+		Map<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
 		// creating expected result
@@ -281,7 +281,7 @@ public class TextFormat004ParserTest {
 				"metric_without_labels 12.47 123456789012345600\n";
 		
 		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
-		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
+		Map<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
 		// creating expected result
@@ -308,7 +308,7 @@ public class TextFormat004ParserTest {
 				"metric_without_labels 12.47 123456789012345600\n";
 		
 		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
-		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
+		Map<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
 		// creating expected result
@@ -333,7 +333,7 @@ public class TextFormat004ParserTest {
 				"metric_with_label{name=\"value\"} 12.47\n";
 		
 		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
-		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
+		Map<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
 		// creating expected result
@@ -364,7 +364,7 @@ public class TextFormat004ParserTest {
 				"metric_with_label{name=\"value\",second=\"somevalue\",third=\"next value\",} 12.47\n";
 		
 		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
-		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
+		Map<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
 		// creating expected result
@@ -399,7 +399,7 @@ public class TextFormat004ParserTest {
 				"metric_with_label{name=\"containing \\\" and \\\\ and \\n\"} 12.47\n";
 		
 		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
-		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
+		Map<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
 		// creating expected result
@@ -430,7 +430,7 @@ public class TextFormat004ParserTest {
 				"msdos_file_access_time_seconds{path=\"C:\\\\DIR\\\\FILE.TXT\",error=\"Cannot find file:\\n\\\"FILE.TXT\\\"\"} 1.458255915e9";
 		
 		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
-		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
+		Map<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
 		// creating expected result
@@ -472,7 +472,7 @@ public class TextFormat004ParserTest {
 				"http_request_duration_seconds_count 144320";
 		
 		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
-		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
+		Map<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
 		// creating expected result
@@ -513,7 +513,7 @@ public class TextFormat004ParserTest {
 				"http_request_duration_seconds_count 144320";
 		
 		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
-		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
+		Map<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
 		// creating expected result
@@ -565,7 +565,7 @@ public class TextFormat004ParserTest {
 				"rpc_duration_seconds_count 2693";
 		
 		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
-		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
+		Map<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
 		// creating expected result
@@ -604,7 +604,7 @@ public class TextFormat004ParserTest {
 				"rpc_duration_seconds_count 2693";
 		
 		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
-		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
+		Map<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
 		// creating expected result
@@ -655,7 +655,7 @@ public class TextFormat004ParserTest {
 				"http_request_duration_seconds_count 144320";
 		
 		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
-		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
+		Map<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
 		// creating expected result
@@ -719,7 +719,7 @@ public class TextFormat004ParserTest {
 				"rpc_duration_seconds_count 2693";
 
 		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
-		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
+		Map<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
 		// creating expected result
@@ -751,7 +751,7 @@ public class TextFormat004ParserTest {
 				"rpc_duration_seconds{name=\"val/{ue}\",quantile=\"0.01\",} 3102\n";
 
 		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
-		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
+		Map<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
 		// creating expected result
@@ -804,7 +804,7 @@ public class TextFormat004ParserTest {
 		String textToParse = new String(Files.readAllBytes(Paths.get(getClass().getResource("text004-variant1.txt").toURI())));
 		
 		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
-		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
+		Map<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		
 		// ensure that all metrics are understood
 		for (MetricFamilySamples mfs : resultMap.values()) {
@@ -818,7 +818,7 @@ public class TextFormat004ParserTest {
 		String textToParse = new String(Files.readAllBytes(Paths.get(getClass().getResource("text004-logback.txt").toURI())));
 		
 		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
-		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
+		Map<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		
 		Assert.assertEquals(1, resultMap.keySet().size());
 		
@@ -834,7 +834,7 @@ public class TextFormat004ParserTest {
 		String textToParse = new String(Files.readAllBytes(Paths.get(getClass().getResource("issue104.txt").toURI())));
 		
 		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
-		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
+		Map<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		
 		Assert.assertEquals(1, resultMap.keySet().size());
 		

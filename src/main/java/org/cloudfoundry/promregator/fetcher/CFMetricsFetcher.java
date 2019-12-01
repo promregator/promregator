@@ -2,7 +2,7 @@ package org.cloudfoundry.promregator.fetcher;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import org.apache.http.HttpHost;
@@ -88,7 +88,7 @@ public class CFMetricsFetcher implements MetricsFetcher {
 	}
 
 	@Override
-	public HashMap<String, MetricFamilySamples> call() throws Exception {
+	public Map<String, MetricFamilySamples> call() throws Exception {
 		log.debug(String.format("Reading metrics from %s for instance %s", this.endpointUrl, this.instanceId));
 		
 		HttpGet httpget = new HttpGet(this.endpointUrl);
@@ -147,7 +147,7 @@ public class CFMetricsFetcher implements MetricsFetcher {
 			}
 			
 			TextFormat004Parser parser = new TextFormat004Parser(result);
-			HashMap<String, MetricFamilySamples> emfs = parser.parse();
+			Map<String, MetricFamilySamples> emfs = parser.parse();
 
 			// we got a proper response
 			available = true;

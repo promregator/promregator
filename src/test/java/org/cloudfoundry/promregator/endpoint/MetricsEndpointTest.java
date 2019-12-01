@@ -1,6 +1,6 @@
 package org.cloudfoundry.promregator.endpoint;
 
-import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
@@ -53,7 +53,7 @@ public class MetricsEndpointTest {
 		Assert.assertNotEquals("", response);
 		
 		TextFormat004Parser parser = new TextFormat004Parser(response);
-		HashMap<String, MetricFamilySamples> mapMFS = parser.parse();
+		Map<String, MetricFamilySamples> mapMFS = parser.parse();
 		
 		Assert.assertNotNull(mapMFS.get("metric_unittestapp"));
 		Assert.assertNotNull(mapMFS.get("metric_unittestapp2"));
@@ -69,7 +69,7 @@ public class MetricsEndpointTest {
 		Assert.assertNotEquals("", response);
 		
 		TextFormat004Parser parser = new TextFormat004Parser(response);
-		HashMap<String, MetricFamilySamples> mapMFS = parser.parse();
+		Map<String, MetricFamilySamples> mapMFS = parser.parse();
 		
 		Assert.assertNotNull(mapMFS.get("metric_unittestapp"));
 		Assert.assertNotNull(mapMFS.get("metric_unittestapp2"));

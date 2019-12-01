@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.junit.AfterClass;
@@ -30,10 +31,10 @@ public class GenericMetricFamilySamplesPrefixRewriterTest {
 		
 		MetricFamilySamples mfs = new MetricFamilySamples("dummyname", Type.GAUGE, "dummyHelp", samples);
 		
-		HashMap<String, MetricFamilySamples> map = new HashMap<>();
+		Map<String, MetricFamilySamples> map = new HashMap<>();
 		map.put("metricName", mfs);
 
-		HashMap<String,MetricFamilySamples> result = subject.determineEnumerationOfMetricFamilySamples(map);
+		Map<String,MetricFamilySamples> result = subject.determineEnumerationOfMetricFamilySamples(map);
 		
 		MetricFamilySamples mfsResult = result.get("prefix_metricName");
 		Assert.assertNotNull(mfsResult);
@@ -54,10 +55,10 @@ public class GenericMetricFamilySamplesPrefixRewriterTest {
 		
 		MetricFamilySamples mfs = new MetricFamilySamples("prefix_dummyname", Type.GAUGE, "dummyHelp", samples);
 		
-		HashMap<String, MetricFamilySamples> map = new HashMap<>();
+		Map<String, MetricFamilySamples> map = new HashMap<>();
 		map.put("prefix_metricName", mfs);
 
-		HashMap<String,MetricFamilySamples> result = subject.determineEnumerationOfMetricFamilySamples(map);
+		Map<String,MetricFamilySamples> result = subject.determineEnumerationOfMetricFamilySamples(map);
 		
 		MetricFamilySamples mfsResult = result.get("prefix_metricName");
 		Assert.assertNotNull(mfsResult);

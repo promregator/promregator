@@ -3,6 +3,7 @@ package org.cloudfoundry.promregator.fetcher;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,10 +24,10 @@ public class TextFormat004Parser {
 	
 	private String textFormat004data;
 	
-	private HashMap<String, String> mapHelps = new HashMap<>();
-	private HashMap<String, Collector.Type> mapTypes = new HashMap<>();
+	private Map<String, String> mapHelps = new HashMap<>();
+	private Map<String, Collector.Type> mapTypes = new HashMap<>();
 	
-	private HashMap<String, Collector.MetricFamilySamples> mapMFS = new HashMap<>();
+	private Map<String, Collector.MetricFamilySamples> mapMFS = new HashMap<>();
 	
 	private static final Pattern PATTERN_HELP = Pattern.compile("^#[ \t]+HELP[ \t]+");
 	private static final Pattern PATTERN_TYPE = Pattern.compile("^#[ \t]+TYPE[ \t]+");
@@ -49,7 +50,7 @@ public class TextFormat004Parser {
 		this.textFormat004data = textFormat004data;
 	}
 	
-	public HashMap<String, Collector.MetricFamilySamples> parse() {
+	public Map<String, MetricFamilySamples> parse() {
 		this.reset();
 		
 		StringTokenizer lines = new StringTokenizer(this.textFormat004data, "\n");

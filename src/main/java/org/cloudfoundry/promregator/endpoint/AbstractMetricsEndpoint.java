@@ -2,9 +2,9 @@ package org.cloudfoundry.promregator.endpoint;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
@@ -184,7 +184,7 @@ public abstract class AbstractMetricsEndpoint {
 		
 		List<MetricsFetcher> callablesPrep = this.createMetricsFetchers(instanceList);
 		
-		LinkedList<Future<HashMap<String, MetricFamilySamples>>> futures = this.startMetricsFetchers(callablesPrep);
+		List<Future<Map<String, MetricFamilySamples>>> futures = this.startMetricsFetchers(callablesPrep);
 		log.debug(String.format("Fetching metrics from %d distinct endpoints", futures.size()));
 		
 		MergableMetricFamilySamples mmfs = waitForMetricsFetchers(futures);
@@ -245,12 +245,12 @@ public abstract class AbstractMetricsEndpoint {
 		return this.labelEnrichment;
 	}
 
-	private MergableMetricFamilySamples waitForMetricsFetchers(LinkedList<Future<HashMap<String, MetricFamilySamples>>> futures) {
+	private MergableMetricFamilySamples waitForMetricsFetchers(List<Future<Map<String, MetricFamilySamples>>> futures) {
 		long starttime = System.currentTimeMillis();
 		
 		MergableMetricFamilySamples mmfs = new MergableMetricFamilySamples();
 		
-		for (Future<HashMap<String, MetricFamilySamples>> future : futures) {
+		for (Future<Map<String, MetricFamilySamples>> future : futures) {
 			long maxWaitTime = starttime + this.getMaxProcessingTime() - System.currentTimeMillis();
 			
 			if (maxWaitTime < 0 && !future.isDone()) {
@@ -259,7 +259,7 @@ public abstract class AbstractMetricsEndpoint {
 			}
 			
 			try {
-				HashMap<String, MetricFamilySamples> emfs = future.get(maxWaitTime, TimeUnit.MILLISECONDS);
+				Map<String, MetricFamilySamples> emfs = future.get(maxWaitTime, TimeUnit.MILLISECONDS);
 				
 				if (emfs != null) {
 					mmfs.merge(emfs);
@@ -295,11 +295,11 @@ public abstract class AbstractMetricsEndpoint {
 		return this.maxProcessingTime; // must have been the value 4000
 	}
 
-	private LinkedList<Future<HashMap<String, MetricFamilySamples>>> startMetricsFetchers(List<MetricsFetcher> callablesPrep) {
-		LinkedList<Future<HashMap<String,MetricFamilySamples>>> futures = new LinkedList<>();
+	private List<Future<Map<String, MetricFamilySamples>>> startMetricsFetchers(List<MetricsFetcher> callablesPrep) {
+		List<Future<Map<String,MetricFamilySamples>>> futures = new LinkedList<>();
 		
 		for (MetricsFetcher mf : callablesPrep) {
-			Future<HashMap<String, MetricFamilySamples>> future = this.metricsFetcherPool.submit(mf);
+			Future<Map<String, MetricFamilySamples>> future = this.metricsFetcherPool.submit(mf);
 			
 			futures.add(future);
 		}

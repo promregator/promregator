@@ -3,9 +3,9 @@ package org.cloudfoundry.promregator.fetcher;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.apache.http.client.methods.HttpGet;
@@ -58,7 +58,7 @@ public class MetricsFetcherTest {
 		}
 
 		@Override
-		public HashMap<String, MetricFamilySamples> determineEnumerationOfMetricFamilySamples(HashMap<String, MetricFamilySamples> mfs) {
+		public Map<String, MetricFamilySamples> determineEnumerationOfMetricFamilySamples(Map<String, MetricFamilySamples> mfs) {
 			return mfs;
 		}
 	}
@@ -83,8 +83,8 @@ public class MetricsFetcherTest {
 		CFMetricsFetcher subject = new CFMetricsFetcher("http://localhost:9002/metrics", instanceId, config);
 		
 		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
-		
-		HashMap<String, MetricFamilySamples> response = subject.call();
+
+		Map<String, MetricFamilySamples> response = subject.call();
 		
 		TextFormat004ParserTest.compareEMFS(this.expectedResult, Collections.enumeration(response.values()));
 		Assert.assertEquals(instanceId, this.mems.getMetricsEndpointHandler().getHeaders().getFirst("X-CF-APP-INSTANCE"));
@@ -131,7 +131,7 @@ public class MetricsFetcherTest {
 		
 		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
 		
-		HashMap<String, MetricFamilySamples> response = subject.call();
+		Map<String, MetricFamilySamples> response = subject.call();
 		
 		Assert.assertTrue(ae.isCalled());
 		
@@ -162,7 +162,7 @@ public class MetricsFetcherTest {
 		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
 		this.mems.getMetricsEndpointHandler().setDelayInMillis(500);
 		
-		HashMap<String, MetricFamilySamples> response = subject.call();
+		Map<String, MetricFamilySamples> response = subject.call();
 		
 		Assert.assertNull(response);
 	}
@@ -189,7 +189,7 @@ public class MetricsFetcherTest {
 		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
 		this.mems.getMetricsEndpointHandler().setDelayInMillis(500);
 		
-		HashMap<String, MetricFamilySamples> response = subject.call();
+		Map<String, MetricFamilySamples> response = subject.call();
 		
 		Assert.assertNull(response);
 	}
