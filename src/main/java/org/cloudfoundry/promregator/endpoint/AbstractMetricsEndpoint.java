@@ -77,7 +77,7 @@ public abstract class AbstractMetricsEndpoint {
 	@Value("${cf.proxyHost:@null}")
 	@Deprecated
 	private String proxyHostDeprecated;
-	
+
 	/**
 	 * The port of the HTTP proxy based on the deprecated configuration option <pre>cf.proxyPort</pre>.
 	 * @deprecated use <pre>proxyPort</pre> instead.
@@ -95,7 +95,7 @@ public abstract class AbstractMetricsEndpoint {
 	/**
 	 * The maximal processing time permitted for Scraping (in milliseconds).
 	 * The value is deprecated as it originates from the deprecated configuration option <pre>promregator.endpoint.maxProcessingTime</pre>.
-	 * Use maxProcessingTime instead.
+	 * @deprecated Use maxProcessingTime instead.
 	 */
 	@Value("${promregator.endpoint.maxProcessingTime:#{null}}")
 	@Deprecated
@@ -257,7 +257,7 @@ public abstract class AbstractMetricsEndpoint {
 				// only process those, which are already completed
 				continue;
 			}
-			
+
 			try {
 				Map<String, MetricFamilySamples> emfs = future.get(maxWaitTime, TimeUnit.MILLISECONDS);
 				

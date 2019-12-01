@@ -66,7 +66,7 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 		
 	}
 	
-	private Map<K, EntryProperties> entryPropertiesMap = Collections.synchronizedMap(new HashMap<>());
+	private final Map<K, EntryProperties> entryPropertiesMap = Collections.synchronizedMap(new HashMap<>());
 	private String name;
 	
 	public AutoRefreshingCacheMap(String cacheMapName, InternalMetrics internalMetrics, Duration expiryDuration, Duration refreshInterval, Function<K, V> loaderFunction) {

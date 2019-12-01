@@ -131,9 +131,7 @@ public class TextFormat004Parser {
 			}
 			end = mValue.end();
 		}
-		
-		rest = rest.substring(end);
-		
+
 		/*
 		 * currently not supported in java simpleclient!
 		 */
@@ -347,7 +345,7 @@ public class TextFormat004Parser {
 		return -1;
 	}
 
-	private double parseGoDouble(String goDouble) throws NumberFormatException {
+	private double parseGoDouble(String goDouble) {
 		double value = 0.0;
 		if (goDouble.startsWith("Nan")) {
 			value = Double.NaN;

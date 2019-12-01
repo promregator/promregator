@@ -123,8 +123,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		sec.httpBasic();
 	}
 
-	private WebSecurity determineWebSecurityForEndpoint(WebSecurity secInitial, String endpoint,
-			InboundAuthorizationMode iam) throws Exception {
+	private WebSecurity determineWebSecurityForEndpoint(WebSecurity secInitial, String endpoint, InboundAuthorizationMode iam) {
 
 		WebSecurity sec = secInitial;
 		if (iam == InboundAuthorizationMode.NONE) {

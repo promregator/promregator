@@ -25,8 +25,7 @@ public class GenericMetricFamilySamplesPrefixRewriter {
 
 	public Map<String, MetricFamilySamples> determineEnumerationOfMetricFamilySamples(CollectorRegistry cr) {
 		Enumeration<MetricFamilySamples> rawMFS = cr.metricFamilySamples();
-		Map<String, MetricFamilySamples> enrichedMFS = this.determineEnumerationOfMetricFamilySamples(MFSUtils.convertToEMFSToHashMap(rawMFS));
-		return enrichedMFS;
+		return this.determineEnumerationOfMetricFamilySamples(MFSUtils.convertToEMFSToHashMap(rawMFS));
 	}
 	
 	public Map<String, Collector.MetricFamilySamples> determineEnumerationOfMetricFamilySamples(Map<String, Collector.MetricFamilySamples> emfs) {

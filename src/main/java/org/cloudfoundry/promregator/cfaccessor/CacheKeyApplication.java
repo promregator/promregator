@@ -59,18 +59,21 @@ public class CacheKeyApplication {
 		if (applicationName == null) {
 			if (other.applicationName != null)
 				return false;
-		} else if (!applicationName.equals(other.applicationName))
+		} else if (!applicationName.equals(other.applicationName)) {
 			return false;
+		}
 		if (orgId == null) {
 			if (other.orgId != null)
 				return false;
-		} else if (!orgId.equals(other.orgId))
+		} else if (!orgId.equals(other.orgId)) {
 			return false;
+		}
 		if (spaceId == null) {
 			if (other.spaceId != null)
 				return false;
-		} else if (!spaceId.equals(other.spaceId))
+		} else if (!spaceId.equals(other.spaceId)) {
 			return false;
+		}
 		return true;
 	}
 	

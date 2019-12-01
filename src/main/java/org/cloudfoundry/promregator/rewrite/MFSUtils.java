@@ -7,6 +7,9 @@ import java.util.Map;
 import io.prometheus.client.Collector.MetricFamilySamples;
 
 public class MFSUtils {
+
+    private MFSUtils() {}
+
 	public static Map<String, MetricFamilySamples> convertToEMFSToHashMap(Enumeration<MetricFamilySamples> emfs) {
 		Map<String, MetricFamilySamples> map = new HashMap<>();
 		while (emfs.hasMoreElements()) {
