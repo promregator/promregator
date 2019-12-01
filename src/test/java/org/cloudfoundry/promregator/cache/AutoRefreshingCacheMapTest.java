@@ -78,7 +78,7 @@ public class AutoRefreshingCacheMapTest {
 	@Test
 	public void testAutoRefresh() {
 		final Counter counter = new Counter();
-		String testKey="key";
+		final String testKey = "key";
 		AutoRefreshingCacheMap<String, String> subject = new AutoRefreshingCacheMap<>("test", null, Duration.ofSeconds(10), Duration.ofMillis(500), key -> {
 			counter.increase();
 			return "refreshed";
