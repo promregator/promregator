@@ -327,9 +327,7 @@ public class CFAccessorCacheClassic implements CFAccessorCache {
 	
 	@Override
 	public Mono<ListOrganizationsResponse> retrieveOrgId(String orgName) {
-		Mono<ListOrganizationsResponse> mono = this.orgCache.get(orgName);
-
-		return mono;
+		return this.orgCache.get(orgName);
 	}
 
 	@Override
@@ -337,9 +335,7 @@ public class CFAccessorCacheClassic implements CFAccessorCache {
 		final CacheKeySpace key = new CacheKeySpace(orgId, spaceName);
 		
 		// TODO Unclear if problem: locking in the cache works on object instance level! We just created a new instance there. Separate lock objects?
-		Mono<ListSpacesResponse> mono = this.spaceCache.get(key);
-		
-		return mono;
+		return this.spaceCache.get(key);
 	}
 
 	@Override
