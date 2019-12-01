@@ -313,12 +313,12 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	}
 
 	private String determineApplicationRoute(final List<String> urls, final List<Pattern> patterns) {
-		if (urls == null || urls.size() == 0) {
+		if (urls == null || urls.isEmpty()) {
 			log.debug("No URLs provided to determine ApplicationURL with");
 			return null;
 		}
 
-		if (patterns == null || patterns.size() == 0) {
+		if (patterns == null || patterns.isEmpty()) {
 			log.debug("No Preferred Route URL (Regex) provided; taking first Application Route in the list provided");
 			return urls.get(0);
 		}

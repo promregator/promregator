@@ -4,6 +4,8 @@ import io.prometheus.client.CollectorRegistry;
 
 public class JUnitTestUtils {
 
+	private JUnitTestUtils() {}
+
 	public static void cleanUpAll() {
 		cleanupRegistry();
 	}
