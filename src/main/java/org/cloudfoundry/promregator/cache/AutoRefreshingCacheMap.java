@@ -255,7 +255,7 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 			MDC.remove("AutoRefreshingCacheMap");
 		}
 		
-		private synchronized void refreshMap() {
+		private void refreshMap() {
 			Instant expiryEntry = Instant.now().minus(this.map.expiryDuration);
 			Instant refreshEntryInstant = Instant.now().minus(this.map.refreshInterval);
 			
