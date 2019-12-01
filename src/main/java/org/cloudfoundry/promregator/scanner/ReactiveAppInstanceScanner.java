@@ -227,7 +227,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	}
 	
 	private Mono<String> getOrgId(String orgNameString) {
-		Mono<String> orgId = this.cfAccessor.retrieveOrgId(orgNameString).flatMap(response -> {
+		return this.cfAccessor.retrieveOrgId(orgNameString).flatMap(response -> {
 			List<OrganizationResource> resources = response.getResources();
 			if (resources == null) {
 				return Mono.just(INVALID_ORG_ID);
@@ -244,15 +244,14 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			log.error(String.format("retrieving Org Id for org Name '%s' resulted in an exception", orgNameString), e);
 			return Mono.just(INVALID_ORG_ID);
 		}).cache();
-		
-		return orgId;
+
 	}
 
 	private Mono<String> getSpaceId(String orgIdString, String spaceNameString) {
 
 		Mono<ListSpacesResponse> listSpacesResponse = this.cfAccessor.retrieveSpaceId(orgIdString, spaceNameString);
 
-		Mono<String> spaceId = listSpacesResponse.flatMap(response -> {
+		return listSpacesResponse.flatMap(response -> {
 			List<SpaceResource> resources = response.getResources();
 			if (resources == null) {
 				return Mono.just(INVALID_SPACE_ID);
@@ -269,8 +268,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			log.error(String.format("retrieving space id for org id '%s' and space name '%s' resulted in an exception", orgIdString, spaceNameString), e);
 			return Mono.just(INVALID_SPACE_ID);
 		}).cache();
-		
-		return spaceId;
+
 	}
 	
 	private Mono<Map<String, SpaceApplicationSummary>> getSpaceSummary(String spaceIdString) {
