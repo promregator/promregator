@@ -33,3 +33,6 @@ hs_err_pid*
 /*.yaml
 /.factorypath
 /.springBeans
+
+# files for intellij environment
+/.idea/
