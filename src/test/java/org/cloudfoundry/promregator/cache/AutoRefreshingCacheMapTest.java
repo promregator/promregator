@@ -74,7 +74,7 @@ public class AutoRefreshingCacheMapTest {
 			return this.ctr;
 		}
 	}
-	
+
 	@Test
 	public void testAutoRefresh() {
 		final Counter counter = new Counter();
@@ -89,16 +89,14 @@ public class AutoRefreshingCacheMapTest {
 		// It helps keeping this unit test to stay stable.
 
 		subject.put(testKey, "initial");
-		String value = subject.get(testKey);
-		Assert.assertEquals("initial", value);
+
+		Assert.assertTrue(subject.containsKey(testKey));
+		Assert.assertEquals("initial", subject.get(testKey));
 		
 		// we have to wait until the thread had a chance to refresh
-		await().atMost(5, SECONDS).until(() -> counter.getCounter()>0);
-		boolean exists = subject.containsKey(testKey);
-		Assert.assertTrue(exists);
-		
-		Assert.assertEquals("refreshed", subject.get("key"));
-		Assert.assertEquals(1, counter.getCounter());
+		await().atMost(3, SECONDS).untilAsserted(() -> Assert.assertEquals(1, counter.getCounter()));
+		Assert.assertTrue(subject.containsKey(testKey));
+		Assert.assertEquals("refreshed", subject.get(testKey));
 	}
 	
 	private static class MassOperationTestThread extends Thread {
@@ -271,13 +269,15 @@ public class AutoRefreshingCacheMapTest {
 			if (a == null) {
 				if (other.a != null)
 					return false;
-			} else if (!a.equals(other.a))
+			} else if (!a.equals(other.a)) {
 				return false;
+			}
 			if (b == null) {
 				if (other.b != null)
 					return false;
-			} else if (!b.equals(other.b))
+			} else if (!b.equals(other.b)) {
 				return false;
+			}
 			return true;
 		}
 	}
