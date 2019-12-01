@@ -65,32 +65,36 @@ public class AutoRefreshingCacheMapTest {
 	}
 	
 	private static class Counter {
-		private int counter;
+		private int ctr;
 		
 		public void increase() {
-			this.counter++;
+			this.ctr++;
 		}
 		public int getCounter() {
-			return this.counter;
+			return this.ctr;
 		}
 	}
 	
 	@Test
-	public void testAutoRefresh() throws InterruptedException {
+	public void testAutoRefresh() {
 		final Counter counter = new Counter();
-		
+		String testKey="key";
 		AutoRefreshingCacheMap<String, String> subject = new AutoRefreshingCacheMap<>("test", null, Duration.ofSeconds(10), Duration.ofMillis(500), key -> {
 			counter.increase();
 			return "refreshed";
 		});
-		
-		subject.put("key", "initial");
-		String value = subject.get("key");
+
+		subject.setRefresherThreadWithIncreasedPriority(true);
+		// Note that this also start the refresher thread immediately.
+		// It helps keeping this unit test to stay stable.
+
+		subject.put(testKey, "initial");
+		String value = subject.get(testKey);
 		Assert.assertEquals("initial", value);
 		
 		// we have to wait until the thread had a chance to refresh
-		await().atMost(5, SECONDS).until(() -> !subject.get("key").equals("initial"));
-		boolean exists = subject.containsKey("key");
+		await().atMost(5, SECONDS).until(() -> counter.getCounter()>0);
+		boolean exists = subject.containsKey(testKey);
 		Assert.assertTrue(exists);
 		
 		Assert.assertEquals("refreshed", subject.get("key"));

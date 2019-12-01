@@ -66,7 +66,7 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 		
 	}
 	
-	private Map<K, EntryProperties> entryPropertiesMap = Collections.synchronizedMap(new HashMap<>());
+	private final Map<K, EntryProperties> entryPropertiesMap = Collections.synchronizedMap(new HashMap<>());
 	private String name;
 	
 	public AutoRefreshingCacheMap(String cacheMapName, InternalMetrics internalMetrics, Duration expiryDuration, Duration refreshInterval, Function<K, V> loaderFunction) {
@@ -255,7 +255,7 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 			MDC.remove("AutoRefreshingCacheMap");
 		}
 		
-		private void refreshMap() {
+		private synchronized void refreshMap() {
 			Instant expiryEntry = Instant.now().minus(this.map.expiryDuration);
 			Instant refreshEntryInstant = Instant.now().minus(this.map.refreshInterval);
 			
