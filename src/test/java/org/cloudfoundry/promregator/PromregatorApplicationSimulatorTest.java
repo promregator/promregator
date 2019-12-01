@@ -47,9 +47,7 @@ public class PromregatorApplicationSimulatorTest {
 	public void testSingleInstance() {
 		@Null
 		List<Instance> actual = this.cfDiscoverer.discover(appId -> appId.equals(CFAccessorSimulator.APP_UUID_PREFIX+"100"), 
-				instance -> {
-					return (CFAccessorSimulator.APP_UUID_PREFIX+"100:1").equals(instance.getInstanceId());
-				});
+				instance -> (CFAccessorSimulator.APP_UUID_PREFIX+"100:1").equals(instance.getInstanceId()));
 		Assert.assertEquals(1, actual.size());
 	}
 

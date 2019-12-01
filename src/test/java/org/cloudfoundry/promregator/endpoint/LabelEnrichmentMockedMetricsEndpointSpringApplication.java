@@ -53,7 +53,7 @@ import io.prometheus.client.CollectorRegistry;
 })
 @Import({ PromregatorConfiguration.class })
 public class LabelEnrichmentMockedMetricsEndpointSpringApplication {
-	public final static UUID currentPromregatorInstanceIdentifier = UUID.randomUUID();
+	public static final UUID currentPromregatorInstanceIdentifier = UUID.randomUUID();
 	
 	@Bean
 	public AppInstanceScanner appInstanceScanner() {
@@ -126,7 +126,7 @@ public class LabelEnrichmentMockedMetricsEndpointSpringApplication {
 	@Bean
 	public AuthenticationEnricher authenticationEnricher() {
 		return new NullEnricher();
-	};
+	}
 
 	@Bean
 	public UUID promregatorInstanceIdentifier() {

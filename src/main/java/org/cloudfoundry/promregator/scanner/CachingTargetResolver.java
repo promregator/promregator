@@ -39,9 +39,9 @@ public class CachingTargetResolver implements TargetResolver {
 
 	@Override
 	public List<ResolvedTarget> resolveTargets(List<Target> configTargets) {
-		LinkedList<Target> toBeLoaded = new LinkedList<Target>();
+		LinkedList<Target> toBeLoaded = new LinkedList<>();
 		
-		LinkedList<ResolvedTarget> result = new LinkedList<ResolvedTarget>();
+		LinkedList<ResolvedTarget> result = new LinkedList<>();
 		
 		for (Target configTarget : configTargets) {
 			List<ResolvedTarget> cached = this.targetResolutionCache.get(configTarget);

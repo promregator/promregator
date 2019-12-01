@@ -20,12 +20,12 @@ public abstract class AbstractMetricFamilySamplesEnricher {
 			return null;
 		}
 		
-		HashMap<String, Collector.MetricFamilySamples> newMap = new HashMap<String, Collector.MetricFamilySamples>();
+		HashMap<String, Collector.MetricFamilySamples> newMap = new HashMap<>();
 		
 		for (Entry<String, MetricFamilySamples> entry : emfs.entrySet()) {
 			MetricFamilySamples mfs = entry.getValue();
 			
-			List<Collector.MetricFamilySamples.Sample> newSamples = new LinkedList<Collector.MetricFamilySamples.Sample>();
+			List<Collector.MetricFamilySamples.Sample> newSamples = new LinkedList<>();
 			for (Collector.MetricFamilySamples.Sample sample : mfs.samples) {
 				Collector.MetricFamilySamples.Sample newSample = new Collector.MetricFamilySamples.Sample(
 						sample.name,

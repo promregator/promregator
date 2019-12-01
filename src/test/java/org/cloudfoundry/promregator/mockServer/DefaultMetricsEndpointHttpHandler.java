@@ -3,8 +3,6 @@ package org.cloudfoundry.promregator.mockServer;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.junit.Assert;
 
@@ -21,9 +19,7 @@ public class DefaultMetricsEndpointHttpHandler implements HttpHandler {
 	
 	@Override
 	public void handle(HttpExchange he) throws IOException {
-		Map<String, Object> parameters = new HashMap<String, Object>();
 		URI requestedUri = he.getRequestURI();
-		String query = requestedUri.getRawQuery();
 		this.headers = he.getRequestHeaders();
 		
 		Assert.assertEquals("/metrics", requestedUri.getPath());

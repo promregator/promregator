@@ -44,14 +44,87 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	private static final Locale LOCALE_OF_LOWER_CASE_CONVERSION_FOR_IDENTIFIER_COMPARISON = Locale.ENGLISH;
 
 	private static class OSAVector {
-		public ResolvedTarget target;
+		private ResolvedTarget target;
 		
-		public String orgId;
-		public String spaceId;
-		public String applicationId;
+		private String orgId;
+		private String spaceId;
+		private String applicationId;
 		
-		public String accessURL;
-		public int numberOfInstances;
+		private String accessURL;
+		private int numberOfInstances;
+		/**
+		 * @return the target
+		 */
+		public ResolvedTarget getTarget() {
+			return target;
+		}
+		/**
+		 * @param target the target to set
+		 */
+		public void setTarget(ResolvedTarget target) {
+			this.target = target;
+		}
+		/**
+		 * @return the orgId
+		 */
+		public String getOrgId() {
+			return orgId;
+		}
+		/**
+		 * @param orgId the orgId to set
+		 */
+		public void setOrgId(String orgId) {
+			this.orgId = orgId;
+		}
+		/**
+		 * @return the spaceId
+		 */
+		public String getSpaceId() {
+			return spaceId;
+		}
+		/**
+		 * @param spaceId the spaceId to set
+		 */
+		public void setSpaceId(String spaceId) {
+			this.spaceId = spaceId;
+		}
+		/**
+		 * @return the applicationId
+		 */
+		public String getApplicationId() {
+			return applicationId;
+		}
+		/**
+		 * @param applicationId the applicationId to set
+		 */
+		public void setApplicationId(String applicationId) {
+			this.applicationId = applicationId;
+		}
+		/**
+		 * @return the accessURL
+		 */
+		public String getAccessURL() {
+			return accessURL;
+		}
+		/**
+		 * @param accessURL the accessURL to set
+		 */
+		public void setAccessURL(String accessURL) {
+			this.accessURL = accessURL;
+		}
+		/**
+		 * @return the numberOfInstances
+		 */
+		public int getNumberOfInstances() {
+			return numberOfInstances;
+		}
+		/**
+		 * @param numberOfInstances the numberOfInstances to set
+		 */
+		public void setNumberOfInstances(int numberOfInstances) {
+			this.numberOfInstances = numberOfInstances;
+		}
+		
 	}
 	
 	@Autowired
@@ -63,34 +136,34 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		
 		Flux<OSAVector> initialOSAVectorFlux = targetsFlux.map(target -> {
 			OSAVector v = new OSAVector();
-			v.target = target;
+			v.setTarget(target);
 			
 			return v;
 		});
 		
-		Flux<String> orgIdFlux = initialOSAVectorFlux.flatMapSequential(v -> this.getOrgId(v.target.getOrgName()));
+		Flux<String> orgIdFlux = initialOSAVectorFlux.flatMapSequential(v -> this.getOrgId(v.getTarget().getOrgName()));
 		Flux<OSAVector> OSAVectorOrgFlux = Flux.zip(initialOSAVectorFlux, orgIdFlux).flatMap(tuple -> {
 			OSAVector v = tuple.getT1();
 			if (INVALID_ORG_ID.equals(tuple.getT2())) {
 				// NB: This drops the current target!
 				return Mono.empty();
 			}
-			v.orgId = tuple.getT2();
+			v.setOrgId(tuple.getT2());
 			return Mono.just(v);
 		});
 		
-		Flux<String> spaceIdFlux = OSAVectorOrgFlux.flatMapSequential(v -> this.getSpaceId(v.orgId, v.target.getSpaceName()));
+		Flux<String> spaceIdFlux = OSAVectorOrgFlux.flatMapSequential(v -> this.getSpaceId(v.getOrgId(), v.getTarget().getSpaceName()));
 		Flux<OSAVector> OSAVectorSpaceFlux = Flux.zip(OSAVectorOrgFlux, spaceIdFlux).flatMap(tuple -> {
 			OSAVector v = tuple.getT1();
 			if (INVALID_SPACE_ID.equals(tuple.getT2())) {
 				// NB: This drops the current target!
 				return Mono.empty();
 			}
-			v.spaceId = tuple.getT2();
+			v.setSpaceId(tuple.getT2());
 			return Mono.just(v);
 		});
 		
-		Flux<Map<String, SpaceApplicationSummary>> spaceSummaryFlux = OSAVectorSpaceFlux.flatMapSequential(v -> this.getSpaceSummary(v.spaceId));
+		Flux<Map<String, SpaceApplicationSummary>> spaceSummaryFlux = OSAVectorSpaceFlux.flatMapSequential(v -> this.getSpaceSummary(v.getSpaceId()));
 		Flux<OSAVector> OSAVectorApplicationFlux = Flux.zip(OSAVectorSpaceFlux, spaceSummaryFlux).flatMap(tuple -> {
 			OSAVector v = tuple.getT1();
 			
@@ -100,34 +173,34 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			}
 			
 			Map<String, SpaceApplicationSummary> spaceSummaryMap = tuple.getT2();
-			SpaceApplicationSummary sas = spaceSummaryMap.get(v.target.getApplicationName().toLowerCase(LOCALE_OF_LOWER_CASE_CONVERSION_FOR_IDENTIFIER_COMPARISON));
+			SpaceApplicationSummary sas = spaceSummaryMap.get(v.getTarget().getApplicationName().toLowerCase(LOCALE_OF_LOWER_CASE_CONVERSION_FOR_IDENTIFIER_COMPARISON));
 			
 			if (sas == null) {
 				// NB: This drops the current target!
 				return Mono.empty();
 			}
 			
-			v.applicationId = sas.getId();
+			v.setApplicationId(sas.getId());
 			
 			List<String> urls = sas.getUrls();
 			if (urls != null && !urls.isEmpty()) {
-				v.accessURL = this.determineAccessURL(v.target.getProtocol(), urls, v.target.getOriginalTarget().getPreferredRouteRegexPatterns(), v.target.getPath());
+				v.setAccessURL(this.determineAccessURL(v.getTarget().getProtocol(), urls, v.getTarget().getOriginalTarget().getPreferredRouteRegexPatterns(), v.getTarget().getPath()));
 			}
 			
-			v.numberOfInstances = sas.getInstances();
+			v.setNumberOfInstances(sas.getInstances());
 			
 			return Mono.just(v);
 		});
 		
 		// perform pre-filtering, if available
 		if (applicationIdFilter != null) {
-			OSAVectorApplicationFlux = OSAVectorApplicationFlux.filter(v -> applicationIdFilter.test(v.applicationId));
+			OSAVectorApplicationFlux = OSAVectorApplicationFlux.filter(v -> applicationIdFilter.test(v.getApplicationId()));
 		}
 		
 		Flux<Instance> instancesFlux = OSAVectorApplicationFlux.flatMapSequential(v -> {
-			List<Instance> instances = new ArrayList<>(v.numberOfInstances);
+			List<Instance> instances = new ArrayList<>(v.getNumberOfInstances());
 			for (int i = 0; i<v.numberOfInstances; i++) {
-				Instance inst = new Instance(v.target, String.format("%s:%d", v.applicationId, i), v.accessURL);
+				Instance inst = new Instance(v.getTarget(), String.format("%s:%d", v.getApplicationId(), i), v.getAccessURL());
 				instances.add(inst);
 			}
 			

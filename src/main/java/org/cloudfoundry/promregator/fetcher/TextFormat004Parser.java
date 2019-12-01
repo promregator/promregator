@@ -28,21 +28,21 @@ public class TextFormat004Parser {
 	
 	private HashMap<String, Collector.MetricFamilySamples> mapMFS = new HashMap<>();
 	
-	private final static Pattern PATTERN_HELP = Pattern.compile("^#[ \t]+HELP[ \t]+");
-	private final static Pattern PATTERN_TYPE = Pattern.compile("^#[ \t]+TYPE[ \t]+");
-	private final static Pattern PATTERN_COMMENT = Pattern.compile("^#");
-	private final static Pattern PATTERN_EMPTYLINE = Pattern.compile("^[ \t]*$");
+	private static final Pattern PATTERN_HELP = Pattern.compile("^#[ \t]+HELP[ \t]+");
+	private static final Pattern PATTERN_TYPE = Pattern.compile("^#[ \t]+TYPE[ \t]+");
+	private static final Pattern PATTERN_COMMENT = Pattern.compile("^#");
+	private static final Pattern PATTERN_EMPTYLINE = Pattern.compile("^[ \t]*$");
 	
-	private final static Pattern PATTERN_PARSE_HELP = Pattern.compile("^#[ \t]+HELP[ \t]+([a-zA-Z0-9:_\\\"]+)[ \\t]+(.*)$");
-	private final static Pattern PATTERN_PARSE_TYPE = Pattern.compile("^#[ \t]+TYPE[ \t]+([a-zA-Z0-9:_\\\"]+)[ \\t]+([a-zA-Z]*)$");
+	private static final Pattern PATTERN_PARSE_HELP = Pattern.compile("^#[ \t]+HELP[ \t]+([a-zA-Z0-9:_\\\"]+)[ \\t]+(.*)$");
+	private static final Pattern PATTERN_PARSE_TYPE = Pattern.compile("^#[ \t]+TYPE[ \t]+([a-zA-Z0-9:_\\\"]+)[ \\t]+([a-zA-Z]*)$");
 	
-	private final static Pattern PATTERN_TOKEN_WITH_SPACE_SEPARATOR = Pattern.compile("^([a-zA-Z0-9:_\\\"]+)");
-	private final static Pattern PATTERN_SKIP_SPACES = Pattern.compile("[ \\\\t]*");
-	private final static Pattern PATTERN_PARSE_LABELBLOCK = Pattern.compile("^\\{(.+)\\}");
-	private final static Pattern PATTERN_PARSE_VALUE = Pattern.compile("^([-+]?[0-9]*\\.?[0-9]+[eE]?[-+]?[0-9]*)[ \\\\t]*");
-	private final static Pattern PATTERN_PARSE_VALUETEXT = Pattern.compile("^(NaN|Nan|\\+Inf|-Inf)[ \\\\t]*");
+	private static final Pattern PATTERN_TOKEN_WITH_SPACE_SEPARATOR = Pattern.compile("^([a-zA-Z0-9:_\\\"]+)");
+	private static final Pattern PATTERN_SKIP_SPACES = Pattern.compile("[ \\\\t]*");
+	private static final Pattern PATTERN_PARSE_LABELBLOCK = Pattern.compile("^\\{(.+)\\}");
+	private static final Pattern PATTERN_PARSE_VALUE = Pattern.compile("^([-+]?[0-9]*\\.?[0-9]+[eE]?[-+]?[0-9]*)[ \\\\t]*");
+	private static final Pattern PATTERN_PARSE_VALUETEXT = Pattern.compile("^(NaN|Nan|\\+Inf|-Inf)[ \\\\t]*");
 
-	private final static Pattern PATTERN_LABEL_WITH_STARTING_QUOTES = Pattern.compile("([a-zA-Z0-9:_\\\"]+)=\"");
+	private static final Pattern PATTERN_LABEL_WITH_STARTING_QUOTES = Pattern.compile("([a-zA-Z0-9:_\\\"]+)=\"");
 
 	
 	public TextFormat004Parser(String textFormat004data) {
@@ -153,8 +153,8 @@ public class TextFormat004Parser {
 			log.info(String.format("Definition of metric %s without type information (assuming untyped)", metricName));
 		}
 
-		List<String> labelNames = labels == null ? new LinkedList<String>() : labels.getNames();
-		List<String> labelValues = labels == null ? new LinkedList<String>() : labels.getValues();
+		List<String> labelNames = labels == null ? new LinkedList<>() : labels.getNames();
+		List<String> labelValues = labels == null ? new LinkedList<>() : labels.getValues();
 		
 		Sample sample = new Sample(metricName, labelNames, labelValues, value);
 
@@ -165,7 +165,7 @@ public class TextFormat004Parser {
 				mfsStored.samples.add(sample);
 			} else {
 				// there is no such MFS entry yet; we have to create one
-				List<Sample> samples = new LinkedList<Sample>();
+				List<Sample> samples = new LinkedList<>();
 				samples.add(sample);
 
 				String docString = this.mapHelps.get(metricName);
@@ -265,8 +265,8 @@ public class TextFormat004Parser {
 	}
 	
 	private static class Labels {
-		private List<String> names = new LinkedList<String>();
-		private List<String> values = new LinkedList<String>();
+		private List<String> names = new LinkedList<>();
+		private List<String> values = new LinkedList<>();
 		
 		public Labels() {
 			super();

@@ -13,10 +13,10 @@ import org.springframework.context.annotation.Configuration;
 public class MockedCachingTargetResolverSpringApplication {
 	
 	public static class MockedTargetResolver implements TargetResolver {
-		public final static Target target1 = new Target();
-		public final static Target target2 = new Target();
-		public final static Target targetAllInSpace = new Target();
-		public final static Target targetRegex = new Target();
+		public static final Target target1 = new Target();
+		public static final Target target2 = new Target();
+		public static final Target targetAllInSpace = new Target();
+		public static final Target targetRegex = new Target();
 		
 		public static ResolvedTarget rTarget1;
 		public static ResolvedTarget rTarget2;

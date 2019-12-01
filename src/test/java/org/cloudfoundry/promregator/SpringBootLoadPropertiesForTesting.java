@@ -25,7 +25,7 @@ import static org.hamcrest.Matchers.not;
 public class SpringBootLoadPropertiesForTesting {
 
 	@ClassRule
-	public final static EnvironmentVariables environmentVariables = new EnvironmentVariables().set("ENCRYPT_KEY", "mySecretKey");
+	public static final EnvironmentVariables environmentVariables = new EnvironmentVariables().set("ENCRYPT_KEY", "mySecretKey");
 
 
 	@Autowired

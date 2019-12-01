@@ -70,10 +70,18 @@ public abstract class AbstractMetricsEndpoint {
 	@Autowired
 	private AuthenticatorController authenticatorController;
 
+	/**
+	 * The hostname of the HTTP proxy based on the deprecated configuration option <pre>cf.proxyHost</pre>.
+	 * @deprecated use <pre>proxyHost</pre> instead.
+	 */
 	@Value("${cf.proxyHost:@null}")
 	@Deprecated
 	private String proxyHostDeprecated;
 	
+	/**
+	 * The port of the HTTP proxy based on the deprecated configuration option <pre>cf.proxyPort</pre>.
+	 * @deprecated use <pre>proxyPort</pre> instead.
+	 */
 	@Value("${cf.proxyPort:0}")
 	@Deprecated
 	private int proxyPortDeprecated;
@@ -84,11 +92,13 @@ public abstract class AbstractMetricsEndpoint {
 	@Value("${promregator.scraping.proxy.port:0}")
 	private int proxyPort;
 
+	/**
+	 * The maximal processing time permitted for Scraping (in milliseconds).
+	 * The value is deprecated as it originates from the deprecated configuration option <pre>promregator.endpoint.maxProcessingTime</pre>.
+	 * Use maxProcessingTime instead.
+	 */
 	@Value("${promregator.endpoint.maxProcessingTime:#{null}}")
 	@Deprecated
-	/**
-	 * use maxProcessingTime instead
-	 */
 	private Optional<Integer> maxProcessingTimeOld;
 
 	@Value("${promregator.scraping.maxProcessingTime:5000}")
@@ -243,26 +253,28 @@ public abstract class AbstractMetricsEndpoint {
 		for (Future<HashMap<String, MetricFamilySamples>> future : futures) {
 			long maxWaitTime = starttime + this.getMaxProcessingTime() - System.currentTimeMillis();
 			
+			if (maxWaitTime < 0 && !future.isDone()) {
+				// only process those, which are already completed
+				continue;
+			}
+			
 			try {
-				if (maxWaitTime < 0 && !future.isDone()) {
-					// only process those, which are already completed
-					continue;
-				}
 				HashMap<String, MetricFamilySamples> emfs = future.get(maxWaitTime, TimeUnit.MILLISECONDS);
 				
 				if (emfs != null) {
 					mmfs.merge(emfs);
 				}
 			} catch (InterruptedException e) {
-				continue;
+				log.warn("Interrupted unexpectedly", e);
+				Thread.currentThread().interrupt();
 			} catch (ExecutionException e) {
 				log.warn("Exception thrown while fetching Metrics data from target", e);
-				continue;
+				// continue not necessary here
 			} catch (TimeoutException e) {
 				log.info("Not all targets could be scraped within the current promregator.scraping.maxProcessingTime. "
 						+ "Consider increasing promregator.scraping.maxProcessingTime or promregator.scraping.threads, "
 						+ "but mind the implications. See also https://github.com/promregator/promregator/wiki/Handling-Timeouts-on-Scraping");
-				continue; // process the other's as well!
+				// continue not necessary here - other's shall and are still processed
 			}
 			
 		}
@@ -363,22 +375,22 @@ public abstract class AbstractMetricsEndpoint {
 	}
 	
 	private void provideProxyConfiguration(CFMetricsFetcherConfig cfmfConfig) {
-		String proxyHost;
-		int proxyPort;
+		String effectiveProxyHost;
+		int effectiveProxyPort;
 		
 		if (this.proxyHost != null && this.proxyPort != 0) {
 			// using the new way
-			proxyHost = this.proxyHost;
-			proxyPort = this.proxyPort;
+			effectiveProxyHost = this.proxyHost;
+			effectiveProxyPort = this.proxyPort;
 		} else {
 			// possibly still using the old way
-			proxyHost = this.proxyHostDeprecated;
-			proxyPort = this.proxyPortDeprecated;
+			effectiveProxyHost = this.proxyHostDeprecated;
+			effectiveProxyPort = this.proxyPortDeprecated;
 		}
 		
-		if (proxyHost != null && proxyPort != 0) {
-			cfmfConfig.setProxyHost(proxyHost);
-			cfmfConfig.setProxyPort(proxyPort);
+		if (effectiveProxyHost != null && effectiveProxyPort != 0) {
+			cfmfConfig.setProxyHost(effectiveProxyHost);
+			cfmfConfig.setProxyPort(effectiveProxyPort);
 		}
 	}
 	
@@ -391,7 +403,7 @@ public abstract class AbstractMetricsEndpoint {
 	 */
 	public boolean isLoopbackRequest() {
 		if (this.httpServletRequest == null) {
-			log.warn("Missing HTTP Servlet request reference; unable to verify whether this is a lookback request or not");
+			log.warn("Missing HTTP Servlet request reference; unable to verify whether this is a loopback request or not");
 			return false;
 		}
 		
@@ -404,7 +416,7 @@ public abstract class AbstractMetricsEndpoint {
 		boolean loopback = this.promregatorInstanceIdentifier.toString().equals(headerValue);
 		
 		if (loopback) {
-			log.error("Errornous loopback request detected. One of your targets is improperly pointing back to Promregator itself. Please revise your configuration!");
+			log.error("Erroneous loopback request detected. One of your targets is improperly pointing back to Promregator itself. Please revise your configuration!");
 		}
 		
 		return loopback;

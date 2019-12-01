@@ -12,11 +12,10 @@ import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.cfaccessor.AccessorCacheType;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorCache;
-import org.cloudfoundry.promregator.cfaccessor.CFAccessorCacheClassic;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorCacheCaffeine;
+import org.cloudfoundry.promregator.cfaccessor.CFAccessorCacheClassic;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorSimulator;
 import org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl;
-import org.cloudfoundry.promregator.config.ConfigurationException;
 import org.cloudfoundry.promregator.config.ConfigurationValidations;
 import org.cloudfoundry.promregator.discovery.CFMultiDiscoverer;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
@@ -88,7 +87,7 @@ public class PromregatorApplication {
 	}
 	
 	@Bean
-	public CFAccessor mainCFAccessor() throws ConfigurationException {
+	public CFAccessor mainCFAccessor() {
 		CFAccessor mainAccessor = null;
 		
 		if (this.simulationMode) {
@@ -165,12 +164,15 @@ public class PromregatorApplication {
 	public InternalMetrics internalMetrics() {
 		return new InternalMetrics();
 	}
-	
+
+	/**
+	 * The number of threads of the scraping thread pool.
+	 * The value is coming from the deprecated configuration option <pre>promregator.endpoint.threads</pre>.
+	 * Use threadPoolSize instead
+	 * @deprecated
+	 */
 	@Value("${promregator.endpoint.threads:#{null}}")
 	@Deprecated
-	/**
-	 * use threadPoolSize instead
-	 */
 	private Optional<Integer> threadPoolSizeOld;
 
 	@Value("${promregator.scraping.threads:5}")
@@ -190,7 +192,7 @@ public class PromregatorApplication {
 		return Executors.newFixedThreadPool(this.threadPoolSize);
 	}
 	
-	private Object getThreadPoolSize() {
+	private int getThreadPoolSize() {
 		if (this.threadPoolSize != 5) {
 			// different value than the default, so someone must have set it explicitly.
 			return this.threadPoolSize;
@@ -215,9 +217,10 @@ public class PromregatorApplication {
 	/**
 	 * a unique identifier for the currently running instance of Promregator
 	 * esp. required for detecting loopbacking scraping requests
+	 * @return the unique identifier of the currently running instance
 	 */
 	@Bean
-	public UUID promregatorInstanceIdentifer() {
+	public UUID promregatorInstanceIdentifier() {
 		return UUID.randomUUID();
 	}
 	

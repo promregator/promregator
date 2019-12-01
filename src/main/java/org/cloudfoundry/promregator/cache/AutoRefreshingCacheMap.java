@@ -66,11 +66,11 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 		
 	}
 	
-	private Map<K, EntryProperties> entryPropertiesMap = Collections.synchronizedMap(new HashMap<K, EntryProperties>());
+	private Map<K, EntryProperties> entryPropertiesMap = Collections.synchronizedMap(new HashMap<>());
 	private String name;
 	
 	public AutoRefreshingCacheMap(String cacheMapName, InternalMetrics internalMetrics, Duration expiryDuration, Duration refreshInterval, Function<K, V> loaderFunction) {
-		super(Collections.synchronizedMap(new HashMap<K, V>()));
+		super(Collections.synchronizedMap(new HashMap<>()));
 		this.refreshInterval = refreshInterval;
 		this.internalMetrics = internalMetrics;
 		this.expiryDuration = expiryDuration;
@@ -78,7 +78,7 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 		this.name = cacheMapName;
 		
 		/*
-		 * Warning! Due to spring bootstraping, this constructor can be called multiple times,
+		 * Warning! Due to spring bootstrapping, this constructor can be called multiple times,
 		 * which then may create "empty" instances.
 		 * To prevent our statistics to be obfuscated across the instances, 
 		 * we start the refresherThread only lazily: Upon the first record to be arriving at the map...
@@ -88,7 +88,7 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 
 	private synchronized void ensureRefresherThreadIsRunning() {
 		if (this.refresherThread == null) {
-			this.refresherThread = new RefresherThread<K, V>(this);
+			this.refresherThread = new RefresherThread<>(this);
 			this.refresherThread.start();
 		}
 	}
@@ -147,12 +147,12 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 			value = this.loaderFunction.apply((K) key);
 			if (value != null) {
 				this.put((K) key, value);
-				ep = this.entryPropertiesMap.get(key);
-				if (ep == null) {
-					ep = new EntryProperties();
-					this.entryPropertiesMap.put((K) key, ep);
-				}
-				ep.justUsed();
+				
+				this.entryPropertiesMap.computeIfAbsent((K) key, k -> {
+					EntryProperties epnew = new EntryProperties();
+					epnew.justUsed();
+					return epnew;
+				});
 			}
 		}
 		
@@ -239,7 +239,7 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 				try {
 					this.refreshMap();
 				} catch (Exception e) {
-					log.warn(String.format("Unexpected exception was raised in Refresher Thread for AutoRefreshingCacheMap"), e);
+					log.warn("Unexpected exception was raised in Refresher Thread for AutoRefreshingCacheMap", e);
 					// fall-through is expected!
 				}
 				
@@ -247,7 +247,8 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 					Thread.sleep(500);
 				} catch (InterruptedException e) {
 					// received signal; check if something has to be done
-					continue;
+					log.info("Stopping RefresherThread");
+					Thread.currentThread().interrupt();
 				}
 			}
 			log.debug("Refresher Thread for this AutoRefreshingCacheMap has shut down");
@@ -263,8 +264,8 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 				this.map.internalMetrics.setAutoRefreshingCacheMapSize(this.map.getName(), this.map.size());
 			}
 			
-			List<K> deleteList = new LinkedList<K>();
-			List<K> refreshList = new LinkedList<K>();
+			List<K> deleteList = new LinkedList<>();
+			List<K> refreshList = new LinkedList<>();
 			
 			synchronized (this.map.entryPropertiesMap) {
 				for (Entry<K, EntryProperties> entry : this.map.entryPropertiesMap.entrySet()) {

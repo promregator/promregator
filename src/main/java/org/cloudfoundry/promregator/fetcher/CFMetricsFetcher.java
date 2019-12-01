@@ -49,7 +49,7 @@ public class CFMetricsFetcher implements MetricsFetcher {
 	
 	private AbstractMetricFamilySamplesEnricher mfse;
 
-	final static CloseableHttpClient httpclient = HttpClients.createDefault();
+	static final CloseableHttpClient httpclient = HttpClients.createDefault();
 
 	private MetricsFetcherMetrics mfm;
 
@@ -60,8 +60,8 @@ public class CFMetricsFetcher implements MetricsFetcher {
 	 * of the instance, which shall be queried. 
 	 * Additional configuration options can be provided using the CFMetricsFetcherConfig reference.
 	 * @param endpointUrl the endpoint URL, which shall be used to query the CF app for the Prometheus metrics.
-	 * @param instanceId the instance Id in format <i><app guid>:<instance number></i>, which identifies the instance uniquely.
-	 * @param config additional configurations specifing additional properties for retrieving data.
+	 * @param instanceId the instance Id in format <i>[app guid]:[instance number]</i>, which identifies the instance uniquely.
+	 * @param config additional configurations specifying additional properties for retrieving data.
 	 */
 	public CFMetricsFetcher(String endpointUrl, String instanceId, CFMetricsFetcherConfig config) {
 		this.endpointUrl = endpointUrl;

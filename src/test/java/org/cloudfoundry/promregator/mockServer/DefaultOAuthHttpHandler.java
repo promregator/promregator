@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,8 +27,7 @@ public class DefaultOAuthHttpHandler implements HttpHandler {
 	public void handle(HttpExchange he) throws IOException {
 		log.debug("Request was received at handler");
 		this.counterCalled++;
-		
-		Map<String, Object> parameters = new HashMap<String, Object>();
+
 		URI requestedUri = he.getRequestURI();
 
 		Assert.assertEquals("/oauth/token", requestedUri.getPath());
@@ -35,7 +35,7 @@ public class DefaultOAuthHttpHandler implements HttpHandler {
 		Assert.assertEquals("POST", he.getRequestMethod());
 
 		// check the body
-		InputStreamReader isr = new InputStreamReader(he.getRequestBody(), "utf-8");
+		InputStreamReader isr = new InputStreamReader(he.getRequestBody(), StandardCharsets.UTF_8);
 		BufferedReader br = new BufferedReader(isr);
 		String query = br.readLine();
 
