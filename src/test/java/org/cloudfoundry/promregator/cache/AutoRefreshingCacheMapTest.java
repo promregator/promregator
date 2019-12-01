@@ -133,6 +133,7 @@ public class AutoRefreshingCacheMapTest {
 				Assert.assertEquals("labolg", value);
 			} catch (InterruptedException e) {
 				Assert.fail("Thread was interrupted");
+				Thread.currentThread().interrupt();
 			}
 			
 			this.terminatedProperly = true;
@@ -200,6 +201,7 @@ public class AutoRefreshingCacheMapTest {
 				Thread.sleep(200);
 			} catch (InterruptedException e) {
 				Assert.fail("Interrupted");
+				Thread.currentThread().interrupt();
 			}
 			return Mono.just(key+"*");
 		});
@@ -308,6 +310,7 @@ public class AutoRefreshingCacheMapTest {
 				Thread.sleep(200);
 			} catch (InterruptedException e) {
 				Assert.fail("Interrupted");
+				Thread.currentThread().interrupt();
 			}
 			return Mono.just(key.getA() + key.getB() +"*");
 		});

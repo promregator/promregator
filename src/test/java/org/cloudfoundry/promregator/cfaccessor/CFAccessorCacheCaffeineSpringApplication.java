@@ -56,8 +56,7 @@ public class CFAccessorCacheCaffeineSpringApplication {
 	
 	@Bean
 	public CFAccessor parentMock() {
-		CFAccessor spy = Mockito.spy(new ParentMock());
-		return spy;
+		return Mockito.spy(new ParentMock());
 	}
 	
 	@Bean

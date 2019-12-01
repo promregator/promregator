@@ -29,6 +29,7 @@ public class DefaultMetricsEndpointHttpHandler implements HttpHandler {
 				Thread.sleep(this.delayInMillis);
 			} catch (InterruptedException e) {
 				Assert.fail("Unexpected interruption of mocking environment");
+				Thread.currentThread().interrupt();
 			}
 		}
 		
