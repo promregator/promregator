@@ -54,13 +54,15 @@ public class CacheKeySpace {
 		if (orgId == null) {
 			if (other.orgId != null)
 				return false;
-		} else if (!orgId.equals(other.orgId))
+		} else if (!orgId.equals(other.orgId)) {
 			return false;
+		}
 		if (spaceName == null) {
 			if (other.spaceName != null)
 				return false;
-		} else if (!spaceName.equals(other.spaceName))
+		} else if (!spaceName.equals(other.spaceName)) {
 			return false;
+		}
 		return true;
 	}
 

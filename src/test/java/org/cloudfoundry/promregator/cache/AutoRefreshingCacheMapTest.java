@@ -9,6 +9,9 @@ import org.junit.Test;
 
 import reactor.core.publisher.Mono;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.awaitility.Awaitility.await;
+
 public class AutoRefreshingCacheMapTest {
 	private static final Logger log = Logger.getLogger(AutoRefreshingCacheMapTest.class);
 
@@ -62,37 +65,38 @@ public class AutoRefreshingCacheMapTest {
 	}
 	
 	private static class Counter {
-		private int counter;
+		private int ctr;
 		
 		public void increase() {
-			this.counter++;
+			this.ctr++;
 		}
 		public int getCounter() {
-			return this.counter;
+			return this.ctr;
 		}
 	}
-	
+
 	@Test
-	public void testAutoRefresh() throws InterruptedException {
+	public void testAutoRefresh() {
 		final Counter counter = new Counter();
-		
+		final String testKey = "key";
 		AutoRefreshingCacheMap<String, String> subject = new AutoRefreshingCacheMap<>("test", null, Duration.ofSeconds(10), Duration.ofMillis(500), key -> {
 			counter.increase();
 			return "refreshed";
 		});
-		
-		subject.put("key", "initial");
-		String value = subject.get("key");
-		Assert.assertEquals("initial", value);
+
+		subject.setRefresherThreadWithIncreasedPriority(true);
+		// Note that this also start the refresher thread immediately.
+		// It helps keeping this unit test to stay stable.
+
+		subject.put(testKey, "initial");
+
+		Assert.assertTrue(subject.containsKey(testKey));
+		Assert.assertEquals("initial", subject.get(testKey));
 		
 		// we have to wait until the thread had a chance to refresh
-		Thread.sleep(1000);
-		
-		boolean exists = subject.containsKey("key");
-		Assert.assertTrue(exists);
-		
-		Assert.assertEquals("refreshed", subject.get("key"));
-		Assert.assertEquals(1, counter.getCounter());
+		await().atMost(3, SECONDS).untilAsserted(() -> Assert.assertEquals(1, counter.getCounter()));
+		Assert.assertTrue(subject.containsKey(testKey));
+		Assert.assertEquals("refreshed", subject.get(testKey));
 	}
 	
 	private static class MassOperationTestThread extends Thread {
@@ -265,13 +269,15 @@ public class AutoRefreshingCacheMapTest {
 			if (a == null) {
 				if (other.a != null)
 					return false;
-			} else if (!a.equals(other.a))
+			} else if (!a.equals(other.a)) {
 				return false;
+			}
 			if (b == null) {
 				if (other.b != null)
 					return false;
-			} else if (!b.equals(other.b))
+			} else if (!b.equals(other.b)) {
 				return false;
+			}
 			return true;
 		}
 	}

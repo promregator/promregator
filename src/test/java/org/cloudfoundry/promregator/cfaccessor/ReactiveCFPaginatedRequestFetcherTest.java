@@ -56,7 +56,7 @@ public class ReactiveCFPaginatedRequestFetcherTest {
 		Assert.assertEquals(1, subjectResponse.getTotalPages().intValue());
 		Assert.assertEquals(0, subjectResponse.getTotalResults().intValue());
 		Assert.assertNotNull(subjectResponse.getResources());
-		Assert.assertTrue (0 == subjectResponse.getResources().size());
+		Assert.assertTrue (subjectResponse.getResources().isEmpty());
 	}
 	
 	@Test
