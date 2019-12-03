@@ -50,7 +50,7 @@ public class TextFormat004Parser {
 		this.textFormat004data = textFormat004data;
 	}
 	
-	public Map<String, MetricFamilySamples> parse() {
+	public Map<String, Collector.MetricFamilySamples> parse() {
 		this.reset();
 		
 		StringTokenizer lines = new StringTokenizer(this.textFormat004data, "\n");

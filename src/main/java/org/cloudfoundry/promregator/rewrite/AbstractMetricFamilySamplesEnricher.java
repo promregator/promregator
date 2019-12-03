@@ -15,7 +15,7 @@ public abstract class AbstractMetricFamilySamplesEnricher {
 		super();
 	}
 
-	public Map<String, MetricFamilySamples> determineEnumerationOfMetricFamilySamples(Map<String, Collector.MetricFamilySamples> emfs) {
+	public Map<String, Collector.MetricFamilySamples> determineEnumerationOfMetricFamilySamples(Map<String, Collector.MetricFamilySamples> emfs) {
 		
 		if (emfs == null) {
 			return null;
