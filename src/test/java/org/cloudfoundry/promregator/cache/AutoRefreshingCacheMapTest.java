@@ -132,7 +132,7 @@ public class AutoRefreshingCacheMapTest {
 				value = subject.get("global");
 				Assert.assertEquals("labolg", value);
 			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
+                Thread.currentThread().interrupt();
                 Assert.fail("Thread was interrupted");
 			}
 			
