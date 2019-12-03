@@ -10,7 +10,7 @@ Major bug fixes and/or new features require unit test coverage. Pull requests, w
 
 * We are using Java Code Conventions.
 * The newline mode is "Unix" (character of newlines in source code files is "LF"). Special files (i.e. if a standard enforces a different newline) may have a deviating newline format. 
-* When using the "`equals()` and `hashcode()` generator of Eclipse, make sure that
+* When using the `equals()` and `hashcode()` generator of Eclipse ("Source"->"Generate hashcode() and equals()"), make sure that
   * you have set "generate method comments",
   * you have not set "use 'instanceof' to compare types", and
   * you have set "use blocks in 'if' statements" (required for [SonarQube compatibility](https://github.com/promregator/promregator/pull/129#discussion_r352373057)).
