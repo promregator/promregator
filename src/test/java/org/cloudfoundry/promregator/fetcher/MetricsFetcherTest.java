@@ -83,7 +83,7 @@ public class MetricsFetcherTest {
 		CFMetricsFetcher subject = new CFMetricsFetcher("http://localhost:9002/metrics", instanceId, config);
 		
 		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
-
+		
 		HashMap<String, MetricFamilySamples> response = subject.call();
 		
 		TextFormat004ParserTest.compareEMFS(this.expectedResult, Collections.enumeration(response.values()));
