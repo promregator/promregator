@@ -132,6 +132,7 @@ public class AutoRefreshingCacheMapTest {
 				value = subject.get("global");
 				Assert.assertEquals("labolg", value);
 			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
 				Assert.fail("Thread was interrupted");
 			}
 			
@@ -199,6 +200,7 @@ public class AutoRefreshingCacheMapTest {
 			try {
 				Thread.sleep(200);
 			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
 				Assert.fail("Interrupted");
 			}
 			return Mono.just(key+"*");
@@ -307,6 +309,7 @@ public class AutoRefreshingCacheMapTest {
 			try {
 				Thread.sleep(200);
 			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
 				Assert.fail("Interrupted");
 			}
 			return Mono.just(key.getA() + key.getB() +"*");

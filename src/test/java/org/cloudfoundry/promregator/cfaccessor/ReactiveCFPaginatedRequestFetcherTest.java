@@ -22,20 +22,20 @@ public class ReactiveCFPaginatedRequestFetcherTest {
 	private static PaginatedResponseGeneratorFunction<OrganizationResource, ListOrganizationsResponse> responseGenerator;
 	
 	static {
-		requestGenerator = (orderDirection, resultsPerPage, pageNumber) -> {
-			return ListOrganizationsRequest.builder()
+		requestGenerator = (orderDirection, resultsPerPage, pageNumber) ->
+				ListOrganizationsRequest.builder()
 				.orderDirection(orderDirection)
 				.resultsPerPage(resultsPerPage)
 				.page(pageNumber)
 				.build();
-		};
-		responseGenerator = (data, numberOfPages) -> {
-			return ListOrganizationsResponse.builder()
+
+		responseGenerator = (data, numberOfPages) ->
+				ListOrganizationsResponse.builder()
 				.resources(data)
 				.totalPages(numberOfPages)
 				.totalResults(data.size())
 				.build();
-		};
+
 	}
 	
 	@Test
@@ -144,15 +144,14 @@ public class ReactiveCFPaginatedRequestFetcherTest {
 	public void testWithContentTimeoutOnFirstPage() {
 		ReactiveCFPaginatedRequestFetcher subject = new ReactiveCFPaginatedRequestFetcher(this.internalMetricsMocked);
 		
-		Mono<ListOrganizationsResponse> subjectResponseMono = subject.performGenericPagedRetrieval("unittest", "unittest", "nokey", requestGenerator, request -> {
-			return Mono.error(new TimeoutException());
-		}, 100, responseGenerator);
+		Mono<ListOrganizationsResponse> subjectResponseMono = subject.performGenericPagedRetrieval("unittest", "unittest", "nokey", requestGenerator, request ->
+				Mono.error(new TimeoutException()), 100, responseGenerator);
 		
 		ListOrganizationsResponse fallback = ListOrganizationsResponse.builder().build();
 		
-		ListOrganizationsResponse subjectResponse = subjectResponseMono.doOnError(e -> {
-			Assert.assertTrue(Exceptions.unwrap(e) instanceof TimeoutException);
-		}).onErrorReturn(fallback).block();
+		ListOrganizationsResponse subjectResponse = subjectResponseMono.doOnError(e ->
+			Assert.assertTrue(Exceptions.unwrap(e) instanceof TimeoutException)
+		).onErrorReturn(fallback).block();
 		Assert.assertEquals(fallback, subjectResponse);
 	}
 	
@@ -184,9 +183,9 @@ public class ReactiveCFPaginatedRequestFetcherTest {
 		
 		ListOrganizationsResponse fallback = ListOrganizationsResponse.builder().build();
 		
-		ListOrganizationsResponse subjectResponse = subjectResponseMono.doOnError(e -> {
-			Assert.assertTrue(Exceptions.unwrap(e) instanceof TimeoutException);
-		}).onErrorReturn(fallback).block();
+		ListOrganizationsResponse subjectResponse = subjectResponseMono.doOnError(e ->
+			Assert.assertTrue(Exceptions.unwrap(e) instanceof TimeoutException)
+		).onErrorReturn(fallback).block();
 		Assert.assertEquals(fallback, subjectResponse);
 	}
 
@@ -194,15 +193,14 @@ public class ReactiveCFPaginatedRequestFetcherTest {
 	public void testWithContentGeneralException() {
 		ReactiveCFPaginatedRequestFetcher subject = new ReactiveCFPaginatedRequestFetcher(this.internalMetricsMocked);
 		
-		Mono<ListOrganizationsResponse> subjectResponseMono = subject.performGenericPagedRetrieval("unittest", "unittest", "nokey", requestGenerator, request -> {
-			return Mono.error(new Exception());
-		}, 100, responseGenerator);
+		Mono<ListOrganizationsResponse> subjectResponseMono = subject.performGenericPagedRetrieval("unittest", "unittest", "nokey", requestGenerator, request ->
+			Mono.error(new Exception()), 100, responseGenerator);
 		
 		ListOrganizationsResponse fallback = ListOrganizationsResponse.builder().build();
 		
-		ListOrganizationsResponse subjectResponse = subjectResponseMono.doOnError(e -> {
-			Assert.assertTrue(Exceptions.unwrap(e) instanceof Exception);
-		}).onErrorReturn(fallback).block();
+		ListOrganizationsResponse subjectResponse = subjectResponseMono.doOnError(e ->
+			Assert.assertTrue(Exceptions.unwrap(e) instanceof Exception)
+		).onErrorReturn(fallback).block();
 		Assert.assertEquals(fallback, subjectResponse);
 	}
 }
