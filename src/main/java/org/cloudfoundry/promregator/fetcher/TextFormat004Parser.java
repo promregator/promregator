@@ -27,7 +27,7 @@ public class TextFormat004Parser {
 	private Map<String, String> mapHelps = new HashMap<>();
 	private Map<String, Collector.Type> mapTypes = new HashMap<>();
 	
-	private Map<String, Collector.MetricFamilySamples> mapMFS = new HashMap<>();
+	private HashMap<String, Collector.MetricFamilySamples> mapMFS = new HashMap<>();
 	
 	private static final Pattern PATTERN_HELP = Pattern.compile("^#[ \t]+HELP[ \t]+");
 	private static final Pattern PATTERN_TYPE = Pattern.compile("^#[ \t]+TYPE[ \t]+");
@@ -50,7 +50,7 @@ public class TextFormat004Parser {
 		this.textFormat004data = textFormat004data;
 	}
 	
-	public Map<String, Collector.MetricFamilySamples> parse() {
+	public HashMap<String, Collector.MetricFamilySamples> parse() {
 		this.reset();
 		
 		StringTokenizer lines = new StringTokenizer(this.textFormat004data, "\n");

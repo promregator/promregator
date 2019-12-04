@@ -1,6 +1,7 @@
 package org.cloudfoundry.promregator.fetcher;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +51,7 @@ public class MetricsFetcherTestTLSPKIX {
 		}
 
 		@Override
-		public Map<String, MetricFamilySamples> determineEnumerationOfMetricFamilySamples(Map<String, MetricFamilySamples> mfs) {
+		public HashMap<String, MetricFamilySamples> determineEnumerationOfMetricFamilySamples(HashMap<String, MetricFamilySamples> mfs) {
 			return mfs;
 		}
 	}

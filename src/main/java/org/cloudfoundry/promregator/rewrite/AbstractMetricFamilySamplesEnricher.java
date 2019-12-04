@@ -3,7 +3,6 @@ package org.cloudfoundry.promregator.rewrite;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import io.prometheus.client.Collector;
@@ -15,13 +14,13 @@ public abstract class AbstractMetricFamilySamplesEnricher {
 		super();
 	}
 
-	public Map<String, Collector.MetricFamilySamples> determineEnumerationOfMetricFamilySamples(Map<String, Collector.MetricFamilySamples> emfs) {
+	public HashMap<String, Collector.MetricFamilySamples> determineEnumerationOfMetricFamilySamples(HashMap<String, Collector.MetricFamilySamples> emfs) {
 		
 		if (emfs == null) {
 			return null;
 		}
 		
-		Map<String, Collector.MetricFamilySamples> newMap = new HashMap<>();
+		HashMap<String, Collector.MetricFamilySamples> newMap = new HashMap<>();
 		
 		for (Entry<String, MetricFamilySamples> entry : emfs.entrySet()) {
 			MetricFamilySamples mfs = entry.getValue();

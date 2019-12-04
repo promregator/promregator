@@ -77,10 +77,10 @@ public class MetricFamilySamplesEnricherTest {
 		
 		MetricFamilySamples mfs = new MetricFamilySamples("dummyname", Type.GAUGE, "dummyHelp", samples);
 		
-		Map<String, MetricFamilySamples> map = new HashMap<>();
+		HashMap<String, MetricFamilySamples> map = new HashMap<>();
 		map.put("metricName", mfs);
 		
-		Map<String, MetricFamilySamples> result = subject.determineEnumerationOfMetricFamilySamples(map);
+		HashMap<String, MetricFamilySamples> result = subject.determineEnumerationOfMetricFamilySamples(map);
 		
 		Assert.assertEquals(1, result.size());
 		

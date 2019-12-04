@@ -21,14 +21,14 @@ public class MergableMetricFamilySamples {
 	
 	private static final Logger log = Logger.getLogger(MergableMetricFamilySamples.class);
 	
-	private Map<String, MetricFamilySamples> map = new HashMap<>();
+	private HashMap<String, MetricFamilySamples> map = new HashMap<>();
 	
 	public MergableMetricFamilySamples() {
 		super();
 	}
 	
 	public void merge (Enumeration<MetricFamilySamples> emfs) {
-		Map<String, MetricFamilySamples> others = MFSUtils.convertToEMFSToHashMap(emfs);
+		HashMap<String, MetricFamilySamples> others = MFSUtils.convertToEMFSToHashMap(emfs);
 		
 		this.merge(others);
 	}

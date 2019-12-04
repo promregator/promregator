@@ -3,7 +3,6 @@ package org.cloudfoundry.promregator.endpoint;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.cloudfoundry.promregator.fetcher.MetricsFetcher;
 import org.cloudfoundry.promregator.scanner.Instance;
@@ -20,8 +19,8 @@ public class MockedMetricsFetcher implements MetricsFetcher {
 	}
 
 	@Override
-	public Map<String, MetricFamilySamples> call() throws Exception {
-		Map<String, MetricFamilySamples> result = new HashMap<>();
+	public HashMap<String, MetricFamilySamples> call() throws Exception {
+		HashMap<String, MetricFamilySamples> result = new HashMap<>();
 		
 		String metricName = "metric_"+this.instance.getTarget().getApplicationName();
 		
