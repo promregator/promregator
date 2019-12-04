@@ -140,9 +140,9 @@
 		</dependency>
 
 		<!-- omitted here, as implicitly provided by cloudfoundry-client-reactor -->
-        <!--		<dependency>-->
-        <!--			<groupId>io.projectreactor.ipc</groupId>-->
-        <!--			<artifactId>reactor-netty</artifactId>-->
+		<!--		<dependency>-->
+		<!--			<groupId>io.projectreactor.ipc</groupId>-->
+		<!--			<artifactId>reactor-netty</artifactId>-->
 		<!--		</dependency>-->
 
 		<!-- https://mvnrepository.com/artifact/io.projectreactor/reactor-core -->
