@@ -1,7 +1,6 @@
 package org.cloudfoundry.promregator.endpoint;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
