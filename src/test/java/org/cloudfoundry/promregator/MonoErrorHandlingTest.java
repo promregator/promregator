@@ -19,6 +19,7 @@ public class MonoErrorHandlingTest {
 					Thread.sleep(200);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
+					Thread.currentThread().interrupt();
 				}
 				System.err.println("returning " + Instant.now());
 				return v;

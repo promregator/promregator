@@ -116,7 +116,7 @@ public class CaffeineAsyncLoadingTest {
 		}
 	}
 	@Test
-	public void testFailureOnAsynchronous() throws InterruptedException {
+	public void testFailureOnAsynchronous() {
 		FakeTicker ticker = new FakeTicker();
 		
 		AsyncLoadingCache<String, Integer> subject = Caffeine.newBuilder()
