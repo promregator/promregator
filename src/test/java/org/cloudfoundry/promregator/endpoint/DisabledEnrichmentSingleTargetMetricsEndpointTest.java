@@ -1,7 +1,7 @@
 package org.cloudfoundry.promregator.endpoint;
 
 import java.io.IOException;
-import java.util.Map;
+import java.util.HashMap;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.fetcher.TextFormat004Parser;
@@ -63,7 +63,7 @@ public class DisabledEnrichmentSingleTargetMetricsEndpointTest {
 		Assert.assertNotEquals("", response);
 		
 		TextFormat004Parser parser = new TextFormat004Parser(response);
-		Map<String, MetricFamilySamples> mapMFS = parser.parse();
+		HashMap<String, MetricFamilySamples> mapMFS = parser.parse();
 		
 		MetricFamilySamples dummyMFS = mapMFS.get("dummy");
 		Assert.assertNotNull(dummyMFS);
