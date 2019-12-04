@@ -33,7 +33,7 @@ public class MergableMetricFamilySamples {
 		this.merge(others);
 	}
 	
-	public void merge(Map<String,MetricFamilySamples> others) {
+	public void merge(HashMap<String,MetricFamilySamples> others) {
 		for (Entry<String, MetricFamilySamples> entry : others.entrySet()) {
 			String metricName = entry.getKey();
 			MetricFamilySamples otherMFS = entry.getValue();
@@ -68,7 +68,7 @@ public class MergableMetricFamilySamples {
 		return Collections.enumeration(coll);
 	}
 	
-	public Map<String,MetricFamilySamples> getEnumerationMetricFamilySamplesInHashMap() {
+	public HashMap<String,MetricFamilySamples> getEnumerationMetricFamilySamplesInHashMap() {
 		return new HashMap<>(this.map);
 		// NB: This is not a deep clone, but only a shallow one!
 	}
