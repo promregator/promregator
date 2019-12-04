@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
@@ -37,8 +36,12 @@ public class MergableMetricFamilySamples {
 		for (Entry<String, MetricFamilySamples> entry : others.entrySet()) {
 			String metricName = entry.getKey();
 			MetricFamilySamples otherMFS = entry.getValue();
-			
-			MetricFamilySamples mfs = this.map.computeIfAbsent(metricName,k-> otherMFS);
+
+			MetricFamilySamples mfs = this.map.get(metricName);
+			if (mfs == null) {
+				this.map.put(metricName, otherMFS);
+				continue;
+			}
 			
 			if (otherMFS.type != mfs.type) {
 				final String logmsg = String.format("Scraping resulted in a collision of metric types for metric with name %s. "
