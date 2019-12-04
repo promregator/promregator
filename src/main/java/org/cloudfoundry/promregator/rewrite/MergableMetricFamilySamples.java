@@ -36,7 +36,7 @@ public class MergableMetricFamilySamples {
 		for (Entry<String, MetricFamilySamples> entry : others.entrySet()) {
 			String metricName = entry.getKey();
 			MetricFamilySamples otherMFS = entry.getValue();
-
+			
 			MetricFamilySamples mfs = this.map.get(metricName);
 			if (mfs == null) {
 				this.map.put(metricName, otherMFS);
