@@ -77,7 +77,7 @@ public class MetricsFetcherTestTLSPKIX {
 		
 		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
 		
-		Map<String, MetricFamilySamples> response = subject.call();
+		HashMap<String, MetricFamilySamples> response = subject.call();
 		
 		Assert.assertNull(response);
 	}

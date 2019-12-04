@@ -34,7 +34,7 @@ public class MetricFamilySamplesEnricherTest {
 		HashMap<String, MetricFamilySamples> map = new HashMap<>();
 		map.put("metricName", mfs);
 		
-		Map<String, MetricFamilySamples> result = subject.determineEnumerationOfMetricFamilySamples(map);
+		HashMap<String, MetricFamilySamples> result = subject.determineEnumerationOfMetricFamilySamples(map);
 		
 		Assert.assertEquals(1, result.size());
 		

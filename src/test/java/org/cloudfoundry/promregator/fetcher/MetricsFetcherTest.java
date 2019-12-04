@@ -85,7 +85,7 @@ public class MetricsFetcherTest {
 		
 		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
 
-		Map<String, MetricFamilySamples> response = subject.call();
+		HashMap<String, MetricFamilySamples> response = subject.call();
 		
 		TextFormat004ParserTest.compareEMFS(this.expectedResult, Collections.enumeration(response.values()));
 		Assert.assertEquals(instanceId, this.mems.getMetricsEndpointHandler().getHeaders().getFirst("X-CF-APP-INSTANCE"));
@@ -132,7 +132,7 @@ public class MetricsFetcherTest {
 		
 		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
 		
-		Map<String, MetricFamilySamples> response = subject.call();
+		HashMap<String, MetricFamilySamples> response = subject.call();
 		
 		Assert.assertTrue(ae.isCalled());
 		
@@ -163,7 +163,7 @@ public class MetricsFetcherTest {
 		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
 		this.mems.getMetricsEndpointHandler().setDelayInMillis(500);
 		
-		Map<String, MetricFamilySamples> response = subject.call();
+		HashMap<String, MetricFamilySamples> response = subject.call();
 		
 		Assert.assertNull(response);
 	}
@@ -190,7 +190,7 @@ public class MetricsFetcherTest {
 		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
 		this.mems.getMetricsEndpointHandler().setDelayInMillis(500);
 		
-		Map<String, MetricFamilySamples> response = subject.call();
+		HashMap<String, MetricFamilySamples> response = subject.call();
 		
 		Assert.assertNull(response);
 	}

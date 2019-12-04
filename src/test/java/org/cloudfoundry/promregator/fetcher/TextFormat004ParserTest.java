@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -29,8 +30,8 @@ public class TextFormat004ParserTest {
 	}
 
 	public static void compareEMFS(Enumeration<MetricFamilySamples> expected, Enumeration<MetricFamilySamples> actual) {
-		Map<String, MetricFamilySamples> expectedMap = MFSUtils.convertToEMFSToHashMap(expected);
-		Map<String, MetricFamilySamples> actualMap = MFSUtils.convertToEMFSToHashMap(actual);
+		HashMap<String, MetricFamilySamples> expectedMap = MFSUtils.convertToEMFSToHashMap(expected);
+		HashMap<String, MetricFamilySamples> actualMap = MFSUtils.convertToEMFSToHashMap(actual);
 		
 		Assert.assertTrue(EqualsBuilder.reflectionEquals(actualMap.keySet(), expectedMap.keySet(), false));
 		

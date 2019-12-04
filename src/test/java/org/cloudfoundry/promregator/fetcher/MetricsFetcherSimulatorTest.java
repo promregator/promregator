@@ -1,7 +1,7 @@
 package org.cloudfoundry.promregator.fetcher;
 
+import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.auth.NullEnricher;
@@ -33,7 +33,7 @@ public class MetricsFetcherSimulatorTest {
 				new NullEnricher(), mfse , 
 				Mockito.mock(MetricsFetcherMetrics.class), upChild);
 		
-		Map<String, MetricFamilySamples> result = subject.call();
+		HashMap<String, MetricFamilySamples> result = subject.call();
 		
 		Assert.assertEquals(3, result.size());
 	}
