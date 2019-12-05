@@ -29,7 +29,7 @@ public class PreferredRouteRegexMustBeCompilableTest {
 		PromregatorConfiguration promregatorConfiguration = new PromregatorConfiguration();
 		List<Target> targets = new LinkedList<>();
 		Target target = new Target();
-		LinkedList<String> preferredRouteRegex = new LinkedList<>();
+		List<String> preferredRouteRegex = new LinkedList<>();
 		preferredRouteRegex.add("dummy");
 		target.setPreferredRouteRegex(preferredRouteRegex);
 		targets.add(target);
@@ -44,7 +44,7 @@ public class PreferredRouteRegexMustBeCompilableTest {
 		PromregatorConfiguration promregatorConfiguration = new PromregatorConfiguration();
 		List<Target> targets = new LinkedList<>();
 		Target target = new Target();
-		LinkedList<String> preferredRouteRegex = new LinkedList<>();
+		List<String> preferredRouteRegex = new LinkedList<>();
 		preferredRouteRegex.add("[");
 		target.setPreferredRouteRegex(preferredRouteRegex);
 		targets.add(target);

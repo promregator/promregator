@@ -42,7 +42,7 @@ public class CFAllLabelsMetricFamilySamplesEnricher extends AbstractMetricFamily
 	
 	@Override
 	protected List<String> getEnrichedLabelNames(List<String> original) {
-		LinkedList<String> clone = new LinkedList<>(original);
+		List<String> clone = new LinkedList<>(original);
 		
 		for (int i = 0;i< labelNames.length; i++) {
 			clone.add(labelNames[i]);
@@ -53,7 +53,7 @@ public class CFAllLabelsMetricFamilySamplesEnricher extends AbstractMetricFamily
 	
 	@Override
 	public List<String> getEnrichedLabelValues(List<String> original) {
-		LinkedList<String> clone = new LinkedList<>(original);
+		List<String> clone = new LinkedList<>(original);
 		
 		clone.add(this.orgName);
 		clone.add(this.spaceName);
