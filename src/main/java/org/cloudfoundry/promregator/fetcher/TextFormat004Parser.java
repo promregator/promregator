@@ -109,11 +109,11 @@ public class TextFormat004Parser {
 		double value = 0.0f;
 		String valueString = null;
 		Matcher mValueText = PATTERN_PARSE_VALUETEXT.matcher(rest);
-		int end = 0;
+		// int end = 0;
 		if (mValueText.find()) {
 			valueString = mValueText.group(1);
 			value = this.parseGoDouble(valueString); // NB: an exception cannot be thrown here (and the exception in fact is an Error)
-			end = mValueText.end();
+			// end = mValueText.end();
 		} else {
 			Matcher mValue = PATTERN_PARSE_VALUE.matcher(rest);
 			if (!mValue.find()) {
@@ -128,8 +128,10 @@ public class TextFormat004Parser {
 				log.warn(String.format("Unable to parse value in metrics line properly: %s", line), nfe);
 				return;
 			}
-			end = mValue.end();
+			// end = mValue.end();
 		}
+		
+		// rest = rest.substring(end);
 
 		/*
 		 * currently not supported in java simpleclient!
