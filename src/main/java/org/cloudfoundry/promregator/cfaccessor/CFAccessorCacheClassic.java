@@ -114,11 +114,11 @@ public class CFAccessorCacheClassic implements CFAccessorCache {
 					 */
 					
 					this.orgCache.remove(orgName);
-				}
-				
-				// Notify metrics of this case
-				if (this.internalMetrics != null) {
-					this.internalMetrics.countAutoRefreshingCacheMapErroneousEntriesDisplaced(this.orgCache.getName());
+					
+					// Notify metrics of this case
+					if (this.internalMetrics != null) {
+						this.internalMetrics.countAutoRefreshingCacheMapErroneousEntriesDisplaced(this.orgCache.getName());
+					}
 				}
 			}
 		});
