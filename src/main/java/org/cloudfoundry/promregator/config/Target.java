@@ -7,7 +7,7 @@ import java.util.regex.PatternSyntaxException;
 
 import org.apache.log4j.Logger;
 
-public class Target implements Cloneable {
+public class Target {
 	private static final Logger log = Logger.getLogger(Target.class);
 	
 	private String orgName;
@@ -56,15 +56,6 @@ public class Target implements Cloneable {
 			this.preferredRouteRegex = new ArrayList<>(source.preferredRouteRegex);
 		}
 	}
-	
-	/* (non-Javadoc)
-	 * @see java.lang.Object#clone()
-	 */
-	@Override
-	protected Object clone() throws CloneNotSupportedException {
-		return new Target(this);
-	}
-
 	
 	public String getOrgName() {
 		return orgName;
