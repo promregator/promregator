@@ -25,7 +25,6 @@ import com.github.benmanes.caffeine.cache.Scheduler;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-// TODO Unit tests still missing!
 public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	private static final Logger log = Logger.getLogger(CFAccessorCacheCaffeine.class);
 
