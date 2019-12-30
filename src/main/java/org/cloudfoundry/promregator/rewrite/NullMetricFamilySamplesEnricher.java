@@ -14,6 +14,9 @@ public class NullMetricFamilySamplesEnricher extends AbstractMetricFamilySamples
 	}
 	
 	public NullMetricFamilySamplesEnricher() {
+		/* 
+		 * This block is left blank intentionally, as nothing needs to be done 
+		 */
 	}
 	
 	@Override
