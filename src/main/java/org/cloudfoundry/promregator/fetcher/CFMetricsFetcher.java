@@ -91,6 +91,28 @@ public class CFMetricsFetcher implements MetricsFetcher {
 	public HashMap<String, MetricFamilySamples> call() throws Exception {
 		log.debug(String.format("Reading metrics from %s for instance %s", this.endpointUrl, this.instanceId));
 		
+		HttpGet httpget = setupRequest();
+
+		String result = performRequest(httpget);
+		if (result == null) {
+			return null;
+		}
+		
+		log.debug(String.format("Successfully received metrics from %s for instance %s", this.endpointUrl, this.instanceId));
+		
+		if (this.mfm.getRequestSize() != null) {
+			this.mfm.getRequestSize().observe(result.length());
+		}
+		
+		TextFormat004Parser parser = new TextFormat004Parser(result);
+		HashMap<String, MetricFamilySamples> emfs = parser.parse();
+		
+		emfs = this.mfse.determineEnumerationOfMetricFamilySamples(emfs);
+		
+		return emfs;
+	}
+
+	private HttpGet setupRequest() {
 		HttpGet httpget = new HttpGet(this.endpointUrl);
 		
 		if (this.config != null) {
@@ -106,55 +128,39 @@ public class CFMetricsFetcher implements MetricsFetcher {
 		if (this.ae != null) {
 			this.ae.enrichWithAuthentication(httpget);
 		}
-
+		return httpget;
+	}
+	
+	private String performRequest(HttpGet httpget) {
 		CloseableHttpResponse response = null;
+		
+		Timer timer = null;
+		if (this.mfm.getLatencyRequest() != null) {
+			timer = this.mfm.getLatencyRequest().startTimer();
+		}
+		
 		boolean available = false;
+		
+		String result = null;
 		try {
-			Timer timer = null;
-			if (this.mfm.getLatencyRequest() != null) {
-				timer = this.mfm.getLatencyRequest().startTimer();
-			}
-			
-			String result = null;
-			try {
-				response = httpclient.execute(httpget);
+			response = httpclient.execute(httpget);
 
-				if (response.getStatusLine().getStatusCode() != 200) {
-					log.warn(String.format("Target server at '%s' and instance '%s' responded with a non-200 status code: %d", this.endpointUrl, this.instanceId, response.getStatusLine().getStatusCode()));
-					return null;
-				}
-				
-				result = EntityUtils.toString(response.getEntity());
-			} catch (HttpHostConnectException hhce) {
-				log.warn(String.format("Unable to connect to server trying to fetch metrics from %s, instance %s", this.endpointUrl, this.instanceId), hhce);
+			if (response.getStatusLine().getStatusCode() != 200) {
+				log.warn(String.format("Target server at '%s' and instance '%s' responded with a non-200 status code: %d", this.endpointUrl, this.instanceId, response.getStatusLine().getStatusCode()));
 				return null;
-			} catch (SocketTimeoutException ste) {
-				log.warn(String.format("Read timeout for data from socket while trying to fetch metrics from %s, instance %s", this.endpointUrl, this.instanceId), ste);
-				return null;
-			} catch (ConnectTimeoutException cte) {
-				log.warn(String.format("Timeout while trying to connect to %s, instance %s for fetching metrics", this.endpointUrl, this.instanceId), cte);
-				return null;
-			} finally {
-				if (timer != null) {
-					timer.observeDuration();
-				}
 			}
 			
-			log.debug(String.format("Successfully received metrics from %s for instance %s", this.endpointUrl, this.instanceId));
-			
-			if (this.mfm.getRequestSize() != null) {
-				this.mfm.getRequestSize().observe(result.length());
-			}
-			
-			TextFormat004Parser parser = new TextFormat004Parser(result);
-			HashMap<String, MetricFamilySamples> emfs = parser.parse();
-
-			// we got a proper response
+			result = EntityUtils.toString(response.getEntity());
 			available = true;
-			
-			emfs = this.mfse.determineEnumerationOfMetricFamilySamples(emfs);
-			
-			return emfs;
+		} catch (HttpHostConnectException hhce) {
+			log.warn(String.format("Unable to connect to server trying to fetch metrics from %s, instance %s", this.endpointUrl, this.instanceId), hhce);
+			return null;
+		} catch (SocketTimeoutException ste) {
+			log.warn(String.format("Read timeout for data from socket while trying to fetch metrics from %s, instance %s", this.endpointUrl, this.instanceId), ste);
+			return null;
+		} catch (ConnectTimeoutException cte) {
+			log.warn(String.format("Timeout while trying to connect to %s, instance %s for fetching metrics", this.endpointUrl, this.instanceId), cte);
+			return null;
 		} catch (ClientProtocolException e) {
 			log.warn("Client communication error while fetching metrics from target server", e);
 			return null;
@@ -162,6 +168,10 @@ public class CFMetricsFetcher implements MetricsFetcher {
 			log.warn("IO Exception while fetching metrics from target server", e);
 			return null;
 		} finally {
+			if (timer != null) {
+				timer.observeDuration();
+			}
+
 			if (response != null) {
 				try {
 					response.close();
@@ -182,5 +192,7 @@ public class CFMetricsFetcher implements MetricsFetcher {
 				}
 			}
 		}
+		
+		return result;
 	}
 }
