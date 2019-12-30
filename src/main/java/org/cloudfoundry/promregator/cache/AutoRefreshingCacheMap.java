@@ -278,16 +278,12 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 				}
 			}
 
-			// delete what is expired
-			for (K key : deleteList) {
-				if (this.map.internalMetrics != null) {
-					this.map.internalMetrics.countAutoRefreshingCacheMapExpiry(this.map.getName());
-				}
-				log.debug(String.format("Deleting expired value for key %s", key));
-				this.map.remove(key);
-			}
+			deleteEntries(deleteList);
 			
-			// refresh entries which need to be refreshed
+			refreshEntries(refreshList);
+		}
+
+		private void refreshEntries(List<K> refreshList) {
 			for (K key : refreshList) {
 				log.debug(String.format("Refreshing key %s", key.toString()));
 				V value = this.map.loaderFunction.apply(key);
@@ -302,6 +298,16 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 						this.map.internalMetrics.countAutoRefreshingCacheMapRefreshFailure(this.map.getName());
 					}
 				}
+			}
+		}
+
+		private void deleteEntries(List<K> deleteList) {
+			for (K key : deleteList) {
+				if (this.map.internalMetrics != null) {
+					this.map.internalMetrics.countAutoRefreshingCacheMapExpiry(this.map.getName());
+				}
+				log.debug(String.format("Deleting expired value for key %s", key));
+				this.map.remove(key);
 			}
 		}
 
