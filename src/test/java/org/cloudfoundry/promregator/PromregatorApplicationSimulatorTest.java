@@ -31,6 +31,7 @@ public class PromregatorApplicationSimulatorTest {
 
 	@Test
 	public void contextLoads() {
+		Assert.assertNotNull(this.cfDiscoverer); // Trivial test
 	}
 	
 	@Autowired

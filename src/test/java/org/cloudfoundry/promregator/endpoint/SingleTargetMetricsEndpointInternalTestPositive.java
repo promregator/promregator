@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.junit.Assert;
 import org.junit.Test;
+import org.springframework.http.ResponseEntity;
 
 public class SingleTargetMetricsEndpointInternalTestPositive extends SingleTargetMetricsEndpoint {
 
@@ -20,7 +21,8 @@ public class SingleTargetMetricsEndpointInternalTestPositive extends SingleTarge
 
 	@Test
 	public void testfilterInstanceListPositive() {
-		this.getMetrics("129856d2-c53b-4971-b100-4ce371b78070", "42");
+		ResponseEntity<String> result = this.getMetrics("129856d2-c53b-4971-b100-4ce371b78070", "42");  // real test: no exception is raised
+		Assert.assertNotNull(result); // trivial assertion to ensure that unit test is providing an assertion
 	}
 
 }

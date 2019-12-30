@@ -1,9 +1,12 @@
 package org.cloudfoundry.promregator;
 
+import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.endpoint.TestableMetricsEndpoint;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigurationExcludeFilter;
 import org.springframework.boot.context.TypeExcludeFilter;
 import org.springframework.boot.test.context.SpringBootTestContextBootstrapper;
@@ -27,8 +30,12 @@ import org.springframework.test.context.junit4.SpringRunner;
 @DirtiesContext(classMode=ClassMode.AFTER_CLASS)
 public class PromregatorApplicationTest {
 
+	@Autowired
+	private CFAccessor cfAccessor;
+	
 	@Test
 	public void contextLoads() {
+		Assert.assertNotNull(cfAccessor); // Trivial test to ensure that the Unit test has at least some assertion
 	}
 
 	@AfterClass

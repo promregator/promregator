@@ -13,6 +13,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
@@ -96,6 +97,8 @@ public class MetricsEndpointTest {
 		Mockito.when(MockedMetricsEndpointSpringApplication.mockedHttpServletRequest.getHeader(EndpointConstants.HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER))
 		.thenReturn(UUID.randomUUID().toString());
 		
-		subject.getMetrics();
+		ResponseEntity<String> result = subject.getMetrics(); // real test: no exception is raised
+		
+		Assert.assertNotNull(result); // trivial assertion to ensure that unit test is providing an assertion
 	}
 }
