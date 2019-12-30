@@ -109,6 +109,23 @@ If not specified otherwise, the default of netty-reactor is taken. If specified,
 *WARNING!*
 Do not exaggerate this value by going beyond the number of cores available! Otherwise your system may become unresponsive. In many cases the number of threads in the I/O pool is not the limiting factor. More often the connection pool is responsible for that (see also `cf.connectionPool.size`).
 
+### Option "cf.cache.type" (optional)
+This option became available starting with version 0.7.1.
+
+Promregator highly relies on caching the metadata provided by the Cloud Controller of Cloud Foundry. In versions before 0.7.1 there was only the "classical" cache available, which is a custom implementation. Starting with 0.7.1 (and later) the open source library [Caffeine](https://github.com/ben-manes/caffeine) gets used.
+
+Possible values for this option are:
+
+| Value         | Meaning |
+|---------------|---------|
+| CLASSIC       | The classical cache (used before 0.7.x) is being used (default) |
+| CAFFEINE      | The Caffeine-based cache is being used |
+
+The default value of this option is `CLASSIC`.
+
+The caches have differences in their behavior. For more details refer to the [page "Cache Types"](cache-types.md).
+
+
 ### Option "cf.cache.timeout.org" (optional)
 For performance reasons the metadata of the Cloud Foundry environment (organization, space, applications, routes) is cached locally in Promregator.
 

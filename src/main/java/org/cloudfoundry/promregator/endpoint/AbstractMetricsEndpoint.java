@@ -184,7 +184,7 @@ public abstract class AbstractMetricsEndpoint {
 		
 		List<MetricsFetcher> callablesPrep = this.createMetricsFetchers(instanceList);
 		
-		LinkedList<Future<HashMap<String, MetricFamilySamples>>> futures = this.startMetricsFetchers(callablesPrep);
+		List<Future<HashMap<String, MetricFamilySamples>>> futures = this.startMetricsFetchers(callablesPrep);
 		log.debug(String.format("Fetching metrics from %d distinct endpoints", futures.size()));
 		
 		MergableMetricFamilySamples mmfs = waitForMetricsFetchers(futures);
@@ -245,7 +245,7 @@ public abstract class AbstractMetricsEndpoint {
 		return this.labelEnrichment;
 	}
 
-	private MergableMetricFamilySamples waitForMetricsFetchers(LinkedList<Future<HashMap<String, MetricFamilySamples>>> futures) {
+	private MergableMetricFamilySamples waitForMetricsFetchers(List<Future<HashMap<String, MetricFamilySamples>>> futures) {
 		long starttime = System.currentTimeMillis();
 		
 		MergableMetricFamilySamples mmfs = new MergableMetricFamilySamples();
@@ -295,8 +295,8 @@ public abstract class AbstractMetricsEndpoint {
 		return this.maxProcessingTime; // must have been the value 4000
 	}
 
-	private LinkedList<Future<HashMap<String, MetricFamilySamples>>> startMetricsFetchers(List<MetricsFetcher> callablesPrep) {
-		LinkedList<Future<HashMap<String,MetricFamilySamples>>> futures = new LinkedList<>();
+	private List<Future<HashMap<String, MetricFamilySamples>>> startMetricsFetchers(List<MetricsFetcher> callablesPrep) {
+		List<Future<HashMap<String,MetricFamilySamples>>> futures = new LinkedList<>();
 		
 		for (MetricsFetcher mf : callablesPrep) {
 			Future<HashMap<String, MetricFamilySamples>> future = this.metricsFetcherPool.submit(mf);
