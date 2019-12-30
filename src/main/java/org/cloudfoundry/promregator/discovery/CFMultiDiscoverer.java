@@ -3,6 +3,7 @@ package org.cloudfoundry.promregator.discovery;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -62,14 +63,14 @@ public class CFMultiDiscoverer implements CFDiscoverer {
 		List<ResolvedTarget> resolvedTargets = this.targetResolver.resolveTargets(this.promregatorConfiguration.getTargets());
 		if (resolvedTargets == null) {
 			log.warn("Target resolved was unable to resolve configured targets");
-			return null;
+			return Collections.emptyList();
 		}
 		log.debug(String.format("Raw list contains %d resolved targets", resolvedTargets.size()));
 		
 		List<Instance> instanceList = this.appInstanceScanner.determineInstancesFromTargets(resolvedTargets, applicationIdFilter, instanceFilter);
 		if (instanceList == null) {
 			log.warn("Instance Scanner unable to determine instances from provided targets");
-			return null;
+			return Collections.emptyList();
 		}
 		log.debug(String.format("Raw list contains %d instances", instanceList.size()));
 

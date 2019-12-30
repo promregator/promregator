@@ -120,7 +120,7 @@ public class DiscoveryEndpoint {
 	public ResponseEntity<DiscoveryResponse[]> getDiscovery(HttpServletRequest request) {
 		
 		List<Instance> instances = this.cfDiscoverer.discover(null, null);
-		if (instances == null) {
+		if (instances == null || instances.isEmpty()) {
 			return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
 		}
 		
