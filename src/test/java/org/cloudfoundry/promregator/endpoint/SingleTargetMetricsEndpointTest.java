@@ -6,7 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
-import org.cloudfoundry.promregator.fetcher.TextFormat004Parser;
+import org.cloudfoundry.promregator.textformat004.TextFormat004Parser;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;

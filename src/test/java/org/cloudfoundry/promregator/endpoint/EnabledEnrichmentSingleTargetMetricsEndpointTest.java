@@ -4,10 +4,10 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
-import org.cloudfoundry.promregator.fetcher.TextFormat004Parser;
 import org.cloudfoundry.promregator.mockServer.DefaultMetricsEndpointHttpHandler;
 import org.cloudfoundry.promregator.mockServer.MetricsEndpointMockServer;
 import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
+import org.cloudfoundry.promregator.textformat004.TextFormat004Parser;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;

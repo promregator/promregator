@@ -11,6 +11,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
+import org.cloudfoundry.promregator.textformat004.TextFormat004Parser;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Gauge;

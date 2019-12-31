@@ -1,4 +1,4 @@
-package org.cloudfoundry.promregator.fetcher;
+package org.cloudfoundry.promregator.textformat004;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -13,6 +13,7 @@ import java.util.List;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.rewrite.MFSUtils;
+import org.cloudfoundry.promregator.textformat004.TextFormat004Parser;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;

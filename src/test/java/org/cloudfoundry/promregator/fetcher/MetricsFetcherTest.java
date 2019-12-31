@@ -14,6 +14,8 @@ import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.endpoint.EndpointConstants;
 import org.cloudfoundry.promregator.mockServer.MetricsEndpointMockServer;
 import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
+import org.cloudfoundry.promregator.textformat004.TextFormat004Parser;
+import org.cloudfoundry.promregator.textformat004.TextFormat004ParserTest;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;

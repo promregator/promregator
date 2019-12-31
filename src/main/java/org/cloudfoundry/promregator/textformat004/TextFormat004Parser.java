@@ -1,4 +1,4 @@
-package org.cloudfoundry.promregator.fetcher;
+package org.cloudfoundry.promregator.textformat004;
 
 import java.util.HashMap;
 import java.util.LinkedList;
