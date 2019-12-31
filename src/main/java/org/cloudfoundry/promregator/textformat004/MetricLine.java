@@ -21,127 +21,86 @@ public class MetricLine {
 	private static final Pattern PATTERN_LABEL_WITH_STARTING_QUOTES = Pattern.compile("([a-zA-Z0-9:_\\\"]+)=\"");
 
 	private String line;
+	private String rest;
 
 	public MetricLine(String line) {
 		this.line = line;
-		
 	}
 
+	private static class ParseException extends Exception {
+
+		private static final long serialVersionUID = 291766462453425092L;
+
+		public ParseException(String s) {
+			super(s);
+		}
+
+		public ParseException(String message, Throwable cause) {
+			super(message, cause);
+		}
+		
+	}
+	
 	public Sample parse() {
-		Matcher mMetricName = PATTERN_TOKEN_WITH_SPACE_SEPARATOR.matcher(line);
-		if (!mMetricName.find()) {
-			log.warn("Detected metric line without proper metric name: "+line);
+		this.rest = line;
+
+		try {
+			final String metricName = this.parseMetricName();
+			this.skipSpacesIfThereAre();
+			
+			// check if the metric has an optional block of labels
+			final Labels labels = this.parseLabels();
+			
+			final double value = this.parseValue();
+			/*
+			 * The timestamp is optional.
+			 * Note that timestamps for metrics are currently not supported by the java Simpleclient!
+			 * Yet it is defined the official protocol specification. 
+			 */
+			final double timestamp = this.parseTimestamp();
+			
+			final List<String> labelNames = labels == null ? new LinkedList<>() : labels.getNames();
+			final List<String> labelValues = labels == null ? new LinkedList<>() : labels.getValues();
+			
+			Sample sample = new Sample(metricName, labelNames, labelValues, value);
+			return sample;
+		} catch (ParseException e) {
 			return null;
 		}
-		String metricName = mMetricName.group(1);
-		
-		String rest = line.substring(mMetricName.end());
-		
-		// skip spaces if there...
-		Matcher mSkipSpaces = PATTERN_SKIP_SPACES.matcher(rest);
-		if (mSkipSpaces.find()) {
-			rest = rest.substring(mSkipSpaces.end());
+	}
+	
+	private String parseMetricName() throws ParseException {
+		Matcher mMetricName = PATTERN_TOKEN_WITH_SPACE_SEPARATOR.matcher(this.rest);
+		if (!mMetricName.find()) {
+			String errorMsg = "Detected metric line without proper metric name: "+this.rest;
+			log.warn(errorMsg);
+			throw new ParseException(errorMsg);
 		}
+		final String metricName = mMetricName.group(1);
 		
-		// check if the metric has an optional block of labels
-		Matcher mLabelBlock = PATTERN_PARSE_LABELBLOCK.matcher(rest);
+		this.rest = this.rest.substring(mMetricName.end());
+		return metricName;
+	}
+
+	private void skipSpacesIfThereAre() {
+		final Matcher mSkipSpaces = PATTERN_SKIP_SPACES.matcher(this.rest);
+		if (mSkipSpaces.find()) {
+			this.rest = this.rest.substring(mSkipSpaces.end());
+		}
+	}
+
+	
+	private Labels parseLabels() {
+		Matcher mLabelBlock = PATTERN_PARSE_LABELBLOCK.matcher(this.rest);
 		Labels labels = null;
 		if (mLabelBlock.find()) {
 			labels = this.parseLabelBlock(mLabelBlock.group(1));
-			rest = rest.substring(mLabelBlock.end());
+			this.rest = this.rest.substring(mLabelBlock.end());
 			
-			mSkipSpaces = PATTERN_SKIP_SPACES.matcher(rest);
-			if (mSkipSpaces.find()) {
-				rest = rest.substring(mSkipSpaces.end());
-			}
+			this.skipSpacesIfThereAre();
 		}
 		
-		double value = 0.0f;
-		String valueString = null;
-		Matcher mValueText = PATTERN_PARSE_VALUETEXT.matcher(rest);
-		// int end = 0;
-		if (mValueText.find()) {
-			valueString = mValueText.group(1);
-			value = this.parseGoDouble(valueString); // NB: an exception cannot be thrown here (and the exception in fact is an Error)
-			// end = mValueText.end();
-		} else {
-			Matcher mValue = PATTERN_PARSE_VALUE.matcher(rest);
-			if (!mValue.find()) {
-				log.warn(String.format("Unable to parse value in metric line: %s", line));
-				return null;
-			}
-			valueString = mValue.group(1);
-			
-			try {
-				value = this.parseGoDouble(valueString);
-			} catch (NumberFormatException nfe) {
-				log.warn(String.format("Unable to parse value in metrics line properly: %s", line), nfe);
-				return null;
-			}
-			// end = mValue.end();
-		}
-		
-		// rest = rest.substring(end);
-
-		/*
-		 * currently not supported in java simpleclient!
-		 */
-		// optional timestamp
-		/*
-		double timestamp = 0.0;
-		if (!"".equals(rest)) {
-			try {
-				timestamp = this.parseGoDouble(rest);
-			} catch (NumberFormatException nfe) {
-				log.warn("Unable to parse timestamp in metrics line properly: "+line, nfe);
-				return;
-			}
-		}*/
-		
-		List<String> labelNames = labels == null ? new LinkedList<>() : labels.getNames();
-		List<String> labelValues = labels == null ? new LinkedList<>() : labels.getValues();
-		
-		Sample sample = new Sample(metricName, labelNames, labelValues, value);
-		return sample;
-	}
-	
-	private double parseGoDouble(String goDouble) {
-		double value = 0.0;
-		if (goDouble.startsWith("Nan")) {
-			value = Double.NaN;
-		} else if (goDouble.startsWith("NaN")) {
-			value = Double.NaN;
-		} else if (goDouble.startsWith("+Inf")) {
-			value = Double.POSITIVE_INFINITY;
-		} else if (goDouble.startsWith("-Inf")) {
-			value = Double.NEGATIVE_INFINITY;
-		} else {
-			// Let's try to parse it
-			value = Double.parseDouble(goDouble);
-		}
-		return value;
-	}
-
-	private static class Labels {
-		private List<String> names = new LinkedList<>();
-		private List<String> values = new LinkedList<>();
-		
-		public Labels() {
-			super();
-		}
-
-		public List<String> getNames() {
-			return names;
-		}
-
-		public List<String> getValues() {
-			return values;
-		}
-		
-		public void addNameValuePair(String name, String value) {
-			this.names.add(name);
-			this.values.add(value);
-		}
+		return labels;
 	}
 	
 	private Labels parseLabelBlock(String block) {
@@ -175,6 +134,93 @@ public class MetricLine {
 		}
 		
 		return l;
+	}
+	
+	private static class Labels {
+		private List<String> names = new LinkedList<>();
+		private List<String> values = new LinkedList<>();
+		
+		public Labels() {
+			super();
+		}
+
+		public List<String> getNames() {
+			return names;
+		}
+
+		public List<String> getValues() {
+			return values;
+		}
+		
+		public void addNameValuePair(String name, String value) {
+			this.names.add(name);
+			this.values.add(value);
+		}
+	}
+	
+	private double parseValue() throws ParseException {
+		double value = 0.0f;
+		String valueString = null;
+		Matcher mValueText = PATTERN_PARSE_VALUETEXT.matcher(rest);
+		int end = 0;
+		if (mValueText.find()) {
+			valueString = mValueText.group(1);
+			value = this.parseGoDouble(valueString); // NB: an exception cannot be thrown here (and the exception in fact is an Error)
+			end = mValueText.end();
+		} else {
+			Matcher mValue = PATTERN_PARSE_VALUE.matcher(rest);
+			if (!mValue.find()) {
+				final String errorMsg = String.format("Unable to parse value in metric line: %s", line);
+				log.warn(errorMsg);
+				throw new ParseException(errorMsg);
+			}
+			valueString = mValue.group(1);
+			
+			try {
+				value = this.parseGoDouble(valueString);
+			} catch (NumberFormatException nfe) {
+				final String errorMsg = String.format("Unable to parse value in metrics line properly: %s", line);
+				log.warn(errorMsg, nfe);
+				throw new ParseException(errorMsg, nfe);
+			}
+			end = mValue.end();
+		}
+		
+		this.rest = this.rest.substring(end);
+		
+		return value;
+	}
+	
+	private double parseGoDouble(String goDouble) {
+		double value = 0.0;
+		if (goDouble.startsWith("Nan")) {
+			value = Double.NaN;
+		} else if (goDouble.startsWith("NaN")) {
+			value = Double.NaN;
+		} else if (goDouble.startsWith("+Inf")) {
+			value = Double.POSITIVE_INFINITY;
+		} else if (goDouble.startsWith("-Inf")) {
+			value = Double.NEGATIVE_INFINITY;
+		} else {
+			// Let's try to parse it
+			value = Double.parseDouble(goDouble);
+		}
+		return value;
+	}
+
+	private double parseTimestamp() throws ParseException {
+		double timestamp = 0.0;
+		if (!"".equals(rest)) {
+			try {
+				timestamp = this.parseGoDouble(rest);
+			} catch (NumberFormatException nfe) {
+				final String errorMsg = String.format("Unable to parse timestamp in metrics line properly: %s", line);
+				log.warn(errorMsg, nfe);
+				throw new ParseException(errorMsg, nfe);
+			}
+		}
+		
+		return timestamp;
 	}
 	
 	private static int indexEndOfValue(String buffer) {
