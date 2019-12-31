@@ -62,8 +62,7 @@ public class MetricLine {
 			final List<String> labelNames = labels == null ? new LinkedList<>() : labels.getNames();
 			final List<String> labelValues = labels == null ? new LinkedList<>() : labels.getValues();
 			
-			Sample sample = new Sample(metricName, labelNames, labelValues, value);
-			return sample;
+			return new Sample(metricName, labelNames, labelValues, value);
 		} catch (ParseException e) {
 			return null;
 		}
@@ -159,7 +158,7 @@ public class MetricLine {
 	}
 	
 	private double parseValue() throws ParseException {
-		double value = 0.0f;
+		double value;
 		String valueString = null;
 		Matcher mValueText = PATTERN_PARSE_VALUETEXT.matcher(rest);
 		int end = 0;
@@ -192,7 +191,7 @@ public class MetricLine {
 	}
 	
 	private double parseGoDouble(String goDouble) {
-		double value = 0.0;
+		double value;
 		if (goDouble.startsWith("Nan")) {
 			value = Double.NaN;
 		} else if (goDouble.startsWith("NaN")) {
