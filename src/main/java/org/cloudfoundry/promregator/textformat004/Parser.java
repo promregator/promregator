@@ -36,15 +36,6 @@ public class Parser {
 	private static final Pattern PATTERN_PARSE_HELP = Pattern.compile("^#[ \t]+HELP[ \t]+([a-zA-Z0-9:_\\\"]+)[ \\t]+(.*)$");
 	private static final Pattern PATTERN_PARSE_TYPE = Pattern.compile("^#[ \t]+TYPE[ \t]+([a-zA-Z0-9:_\\\"]+)[ \\t]+([a-zA-Z]*)$");
 	
-	private static final Pattern PATTERN_TOKEN_WITH_SPACE_SEPARATOR = Pattern.compile("^([a-zA-Z0-9:_\\\"]+)");
-	private static final Pattern PATTERN_SKIP_SPACES = Pattern.compile("[ \\\\t]*");
-	private static final Pattern PATTERN_PARSE_LABELBLOCK = Pattern.compile("^\\{(.+)\\}");
-	private static final Pattern PATTERN_PARSE_VALUE = Pattern.compile("^([-+]?[0-9]*\\.?[0-9]+[eE]?[-+]?[0-9]*)[ \\\\t]*");
-	private static final Pattern PATTERN_PARSE_VALUETEXT = Pattern.compile("^(NaN|Nan|\\+Inf|-Inf)[ \\\\t]*");
-
-	private static final Pattern PATTERN_LABEL_WITH_STARTING_QUOTES = Pattern.compile("([a-zA-Z0-9:_\\\"]+)=\"");
-
-	
 	public Parser(String textFormat004data) {
 		this.textFormat004data = textFormat004data;
 	}
@@ -78,157 +69,72 @@ public class Parser {
 	}
 	
 	private void parseMetric(String line) {
-		Matcher mMetricName = PATTERN_TOKEN_WITH_SPACE_SEPARATOR.matcher(line);
-		if (!mMetricName.find()) {
-			log.warn("Detected metric line without proper metric name: "+line);
-			return;
-		}
-		String metricName = mMetricName.group(1);
+		final MetricLine ml = new MetricLine(line);
+		Sample sample = ml.parse();
 		
-		String rest = line.substring(mMetricName.end());
-		
-		// skip spaces if there...
-		Matcher mSkipSpaces = PATTERN_SKIP_SPACES.matcher(rest);
-		if (mSkipSpaces.find()) {
-			rest = rest.substring(mSkipSpaces.end());
-		}
-		
-		// check if the metric has an optional block of labels
-		Matcher mLabelBlock = PATTERN_PARSE_LABELBLOCK.matcher(rest);
-		Labels labels = null;
-		if (mLabelBlock.find()) {
-			labels = this.parseLabelBlock(mLabelBlock.group(1));
-			rest = rest.substring(mLabelBlock.end());
-			
-			mSkipSpaces = PATTERN_SKIP_SPACES.matcher(rest);
-			if (mSkipSpaces.find()) {
-				rest = rest.substring(mSkipSpaces.end());
-			}
-		}
-		
-		double value = 0.0f;
-		String valueString = null;
-		Matcher mValueText = PATTERN_PARSE_VALUETEXT.matcher(rest);
-		// int end = 0;
-		if (mValueText.find()) {
-			valueString = mValueText.group(1);
-			value = this.parseGoDouble(valueString); // NB: an exception cannot be thrown here (and the exception in fact is an Error)
-			// end = mValueText.end();
-		} else {
-			Matcher mValue = PATTERN_PARSE_VALUE.matcher(rest);
-			if (!mValue.find()) {
-				log.warn(String.format("Unable to parse value in metric line: %s", line));
-				return;
-			}
-			valueString = mValue.group(1);
-			
-			try {
-				value = this.parseGoDouble(valueString);
-			} catch (NumberFormatException nfe) {
-				log.warn(String.format("Unable to parse value in metrics line properly: %s", line), nfe);
-				return;
-			}
-			// end = mValue.end();
-		}
-		
-		// rest = rest.substring(end);
-
-		/*
-		 * currently not supported in java simpleclient!
-		 */
-		// optional timestamp
-		/*
-		double timestamp = 0.0;
-		if (!"".equals(rest)) {
-			try {
-				timestamp = this.parseGoDouble(rest);
-			} catch (NumberFormatException nfe) {
-				log.warn("Unable to parse timestamp in metrics line properly: "+line, nfe);
-				return;
-			}
-		}*/
+		final String metricName = sample.name;
 		
 		Collector.Type type = determineType(metricName);
 		if (type == Type.UNTYPED) {
 			log.info(String.format("Definition of metric %s without type information (assuming untyped)", metricName));
 		}
-
-		List<String> labelNames = labels == null ? new LinkedList<>() : labels.getNames();
-		List<String> labelValues = labels == null ? new LinkedList<>() : labels.getValues();
 		
-		Sample sample = new Sample(metricName, labelNames, labelValues, value);
-
 		if (type.equals(Collector.Type.COUNTER) || type.equals(Collector.Type.GAUGE) || type.equals(Collector.Type.UNTYPED)) {
-			MetricFamilySamples mfsStored = this.mapMFS.get(metricName);
-			if (mfsStored != null) {
-				// we already have created a metric for this line; we just have to add the sample
-				mfsStored.samples.add(sample);
-			} else {
-				// there is no such MFS entry yet; we have to create one
-				List<Sample> samples = new LinkedList<>();
-				samples.add(sample);
-
-				String docString = this.mapHelps.get(metricName);
-				/*
-				 * mfs.help must not be empty - see also  https://github.com/promregator/promregator/issues/73
-				 */
-				if (docString == null) {
-					docString = "";
-				}
-
-				Collector.MetricFamilySamples mfs = new Collector.MetricFamilySamples(metricName, type, docString, samples);
-				this.mapMFS.put(metricName, mfs);
-			}
-		} else if (type.equals(Collector.Type.HISTOGRAM)) {
-			String baseMetricName = determineBaseMetricName(metricName);
-			
-			// is this already in our Map?
-			Collector.MetricFamilySamples mfs = this.mapMFS.get(baseMetricName);
-			if (mfs == null) {
-				// no, we have to create a new one
-
-				String docString = this.mapHelps.get(baseMetricName);
-				/*
-				 * mfs.help must not be empty - see also  https://github.com/promregator/promregator/issues/73
-				 */
-				if (docString == null) {
-					docString = "";
-				}
-				
-				mfs = new Collector.MetricFamilySamples(baseMetricName, type, docString, new LinkedList<>());
-				this.mapMFS.put(baseMetricName, mfs);
-			}
-			
-			mfs.samples.add(sample);
-			
-		} else if (type.equals(Collector.Type.SUMMARY)) {
-			String baseMetricName = determineBaseMetricName(metricName);
-			
-
-			// is this already in our Map?
-			Collector.MetricFamilySamples mfs = this.mapMFS.get(baseMetricName);
-			if (mfs == null) {
-				// no, we have to create a new one
-				
-				String docString = this.mapHelps.get(baseMetricName);
-				/*
-				 * mfs.help must not be empty - see also  https://github.com/promregator/promregator/issues/73
-				 */
-				if (docString == null) {
-					docString = "";
-				}
-				
-				mfs = new Collector.MetricFamilySamples(baseMetricName, type, docString, new LinkedList<>());
-				this.mapMFS.put(baseMetricName, mfs);
-			}
-			
-			mfs.samples.add(sample);
+			this.storeSimpleType(sample, metricName, type);
+		} else if (type.equals(Collector.Type.HISTOGRAM) || type.equals(Collector.Type.SUMMARY)) {
+			this.storeComplexType(sample, metricName, type);
 		} else {
 			log.warn(String.format("Unknown type %s; unclear how to handle this; skipping", type.toString()));
 			return;
 		}
 	}
 
+	private void storeSimpleType(Sample sample, final String metricName, Collector.Type type) {
+		MetricFamilySamples mfsStored = this.mapMFS.get(metricName);
+		if (mfsStored != null) {
+			// we already have created a metric for this line; we just have to add the sample
+			mfsStored.samples.add(sample);
+		} else {
+			// there is no such MFS entry yet; we have to create one
+			List<Sample> samples = new LinkedList<>();
+			samples.add(sample);
+
+			String docString = this.mapHelps.get(metricName);
+			/*
+			 * mfs.help must not be empty - see also  https://github.com/promregator/promregator/issues/73
+			 */
+			if (docString == null) {
+				docString = "";
+			}
+
+			Collector.MetricFamilySamples mfs = new Collector.MetricFamilySamples(metricName, type, docString, samples);
+			this.mapMFS.put(metricName, mfs);
+		}
+	}
+
+	private void storeComplexType(Sample sample, final String metricName, Collector.Type type) {
+		String baseMetricName = determineBaseMetricName(metricName);
+
+		// is this already in our Map?
+		Collector.MetricFamilySamples mfs = this.mapMFS.get(baseMetricName);
+		if (mfs == null) {
+			// no, we have to create a new one
+			
+			String docString = this.mapHelps.get(baseMetricName);
+			/*
+			 * mfs.help must not be empty - see also  https://github.com/promregator/promregator/issues/73
+			 */
+			if (docString == null) {
+				docString = "";
+			}
+			
+			mfs = new Collector.MetricFamilySamples(baseMetricName, type, docString, new LinkedList<>());
+			this.mapMFS.put(baseMetricName, mfs);
+		}
+		
+		mfs.samples.add(sample);
+	}
+	
 	private Type determineType(String metricName) {
 		Collector.Type type = null;
 		// first check if the metric is typed natively.
@@ -264,105 +170,6 @@ public class Parser {
 		return metricName;
 	}
 	
-	private static class Labels {
-		private List<String> names = new LinkedList<>();
-		private List<String> values = new LinkedList<>();
-		
-		public Labels() {
-			super();
-		}
-
-		public List<String> getNames() {
-			return names;
-		}
-
-		public List<String> getValues() {
-			return values;
-		}
-		
-		public void addNameValuePair(String name, String value) {
-			this.names.add(name);
-			this.values.add(value);
-		}
-	}
-	
-	private Labels parseLabelBlock(String block) {
-		String buffer = block;
-		
-		Labels l = new Labels();
-		
-		Matcher mLabelName = PATTERN_LABEL_WITH_STARTING_QUOTES.matcher(buffer);
-		while (mLabelName.find()) {
-			String labelName = unescapeToken(mLabelName.group(1));
-			
-			buffer = buffer.substring(mLabelName.end());
-			int endOfValue = indexEndOfValue(buffer);
-			if (endOfValue == -1) {
-				log.warn("Missing termination of value in label block: "+ block);
-				return l;
-			}
-			
-			String labelValue = buffer.substring(0, endOfValue-1);
-			
-			buffer = buffer.substring(endOfValue);
-
-			labelValue = unescapeToken(labelValue);
-			l.addNameValuePair(labelName, labelValue);
-			
-			while (buffer.startsWith(",")) {
-				buffer = buffer.substring(1);
-			}
-			
-			mLabelName = PATTERN_LABEL_WITH_STARTING_QUOTES.matcher(buffer);
-		}
-		
-		return l;
-	}
-
-	private static int indexEndOfValue(String buffer) {
-		boolean escaped = false;
-		
-		for (int i = 0; i< buffer.length(); i++) {
-			char c = buffer.charAt(i);
-			if (c == '\\') {
-				escaped = !escaped;
-			} else if (c == '\"') {
-				if (escaped) {
-					// that's a double-quote which we need to ignore
-					escaped = false;
-					continue;
-				} else {
-					// we found the end of the string
-					return i + 1; // skip the terminating quote
-				}
-			}
-			
-			if (c != '\\' && escaped) {
-				escaped = false;
-			}
-		}
-		
-		// missing termination of the value!
-		return -1;
-	}
-
-	private double parseGoDouble(String goDouble) {
-		double value = 0.0;
-		if (goDouble.startsWith("Nan")) {
-			value = Double.NaN;
-		} else if (goDouble.startsWith("NaN")) {
-			value = Double.NaN;
-		} else if (goDouble.startsWith("+Inf")) {
-			value = Double.POSITIVE_INFINITY;
-		} else if (goDouble.startsWith("-Inf")) {
-			value = Double.NEGATIVE_INFINITY;
-		} else {
-			// Let's try to parse it
-			value = Double.parseDouble(goDouble);
-		}
-		return value;
-	}
-	
 	private void parseTypeLine(String line) {
 		Matcher m = PATTERN_PARSE_TYPE.matcher(line);
 		if (!m.matches()) {
@@ -370,7 +177,7 @@ public class Parser {
 			return;
 		}
 		
-		String metricName = unescapeToken(m.group(1));
+		String metricName = Utils.unescapeToken(m.group(1));
 		String typeString = m.group(2);
 		
 		Collector.Type type = null;
@@ -399,7 +206,7 @@ public class Parser {
 			return;
 		}
 		
-		String metricName = unescapeToken(m.group(1));
+		String metricName = Utils.unescapeToken(m.group(1));
 		String docString = unescapeDocString(m.group(2));
 		
 		this.mapHelps.put(metricName, docString);
@@ -426,17 +233,6 @@ public class Parser {
 			return null;
 		
 		String sTemp = s.replace("\\\\", "\\");
-		sTemp = sTemp.replace("\\n", "\n");
-		
-		return sTemp;
-	}
-	
-	private String unescapeToken(String s) {
-		if (s == null)
-			return null;
-		
-		String sTemp = s.replace("\\\\", "\\");
-		sTemp = sTemp.replace("\\\"", "\"");
 		sTemp = sTemp.replace("\\n", "\n");
 		
 		return sTemp;
