@@ -18,8 +18,8 @@ import io.prometheus.client.Collector.Type;
  * So, we have to do this ourselves.
  * Details of the format are described at https://prometheus.io/docs/instrumenting/exposition_formats/
  */
-public class TextFormat004Parser {
-	private static final Logger log = Logger.getLogger(TextFormat004Parser.class);
+public class Parser {
+	private static final Logger log = Logger.getLogger(Parser.class);
 	
 	private String textFormat004data;
 	
@@ -45,7 +45,7 @@ public class TextFormat004Parser {
 	private static final Pattern PATTERN_LABEL_WITH_STARTING_QUOTES = Pattern.compile("([a-zA-Z0-9:_\\\"]+)=\"");
 
 	
-	public TextFormat004Parser(String textFormat004data) {
+	public Parser(String textFormat004data) {
 		this.textFormat004data = textFormat004data;
 	}
 	

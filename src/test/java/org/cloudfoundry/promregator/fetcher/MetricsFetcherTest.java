@@ -14,8 +14,8 @@ import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.endpoint.EndpointConstants;
 import org.cloudfoundry.promregator.mockServer.MetricsEndpointMockServer;
 import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
-import org.cloudfoundry.promregator.textformat004.TextFormat004Parser;
-import org.cloudfoundry.promregator.textformat004.TextFormat004ParserTest;
+import org.cloudfoundry.promregator.textformat004.Parser;
+import org.cloudfoundry.promregator.textformat004.ParserTest;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -34,7 +34,7 @@ public class MetricsFetcherTest {
 	private Enumeration<MetricFamilySamples> expectedResult;
 	
 	public MetricsFetcherTest() {
-		this.expectedResult = Collections.enumeration(new TextFormat004Parser(DUMMY_METRICS_LIST).parse().values());
+		this.expectedResult = Collections.enumeration(new Parser(DUMMY_METRICS_LIST).parse().values());
 	}
 	
 	@Before
@@ -88,7 +88,7 @@ public class MetricsFetcherTest {
 		
 		HashMap<String, MetricFamilySamples> response = subject.call();
 		
-		TextFormat004ParserTest.compareEMFS(this.expectedResult, Collections.enumeration(response.values()));
+		ParserTest.compareEMFS(this.expectedResult, Collections.enumeration(response.values()));
 		Assert.assertEquals(instanceId, this.mems.getMetricsEndpointHandler().getHeaders().getFirst("X-CF-APP-INSTANCE"));
 		Assert.assertEquals(currentUUID.toString(), this.mems.getMetricsEndpointHandler().getHeaders().getFirst(EndpointConstants.HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER));
 	}
@@ -137,7 +137,7 @@ public class MetricsFetcherTest {
 		
 		Assert.assertTrue(ae.isCalled());
 		
-		TextFormat004ParserTest.compareEMFS(this.expectedResult, Collections.enumeration(response.values()));
+		ParserTest.compareEMFS(this.expectedResult, Collections.enumeration(response.values()));
 		Assert.assertEquals(instanceId, this.mems.getMetricsEndpointHandler().getHeaders().getFirst("X-CF-APP-INSTANCE"));
 		Assert.assertEquals("Bearer abc", this.mems.getMetricsEndpointHandler().getHeaders().getFirst("Authentication"));
 	}

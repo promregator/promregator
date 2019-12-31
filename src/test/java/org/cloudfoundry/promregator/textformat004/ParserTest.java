@@ -13,7 +13,7 @@ import java.util.List;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.rewrite.MFSUtils;
-import org.cloudfoundry.promregator.textformat004.TextFormat004Parser;
+import org.cloudfoundry.promregator.textformat004.Parser;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
@@ -23,7 +23,7 @@ import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Collector.MetricFamilySamples.Sample;
 import io.prometheus.client.Collector.Type;
 
-public class TextFormat004ParserTest {
+public class ParserTest {
 	@AfterClass
 	public static void cleanupEnvironment() {
 		JUnitTestUtils.cleanUpAll();
@@ -48,7 +48,7 @@ public class TextFormat004ParserTest {
 		String textToParse = "# Minimalistic line:\n" + 
 				"metric_without_timestamp_and_labels 12.47\n";
 		
-		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
+		Parser subject = new Parser(textToParse);
 		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 		
@@ -74,7 +74,7 @@ public class TextFormat004ParserTest {
 				"\n"+
 				"metric_without_labels 12.47 123456789012345600\n";
 		
-		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
+		Parser subject = new Parser(textToParse);
 		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
@@ -100,7 +100,7 @@ public class TextFormat004ParserTest {
 				"\n"+
 				"metric_without_labels 1.7560473e+07\n";
 		
-		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
+		Parser subject = new Parser(textToParse);
 		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
@@ -126,7 +126,7 @@ public class TextFormat004ParserTest {
 				"\n"+
 				"metric_without_labels +Inf 123456789012345600\n";
 		
-		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
+		Parser subject = new Parser(textToParse);
 		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
@@ -152,7 +152,7 @@ public class TextFormat004ParserTest {
 				"\n"+
 				"metric_without_labels -Inf 123456789012345600\n";
 		
-		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
+		Parser subject = new Parser(textToParse);
 		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
@@ -178,7 +178,7 @@ public class TextFormat004ParserTest {
 				"\n"+
 				"metric_without_labels NaN 123456789012345600\n";
 		
-		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
+		Parser subject = new Parser(textToParse);
 		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
@@ -202,7 +202,7 @@ public class TextFormat004ParserTest {
 				"\n"+
 				"metric_without_labels Nan 123456789012345600\n";
 		
-		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
+		Parser subject = new Parser(textToParse);
 		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
@@ -227,7 +227,7 @@ public class TextFormat004ParserTest {
 				"\n"+
 				"metric_without_labels 12.47 123456789012345600\n";
 		
-		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
+		Parser subject = new Parser(textToParse);
 		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
@@ -254,7 +254,7 @@ public class TextFormat004ParserTest {
 				"\n"+
 				"metric_without_labels 12.47 123456789012345600\n";
 		
-		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
+		Parser subject = new Parser(textToParse);
 		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
@@ -281,7 +281,7 @@ public class TextFormat004ParserTest {
 				"# HELP metric_without_labels this is my help text\n" + 
 				"metric_without_labels 12.47 123456789012345600\n";
 		
-		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
+		Parser subject = new Parser(textToParse);
 		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
@@ -308,7 +308,7 @@ public class TextFormat004ParserTest {
 				"# HELP metric_without_labels this is my help text with \\\\ backslashes escaped \\\\ and escaped newline \\n\n" + 
 				"metric_without_labels 12.47 123456789012345600\n";
 		
-		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
+		Parser subject = new Parser(textToParse);
 		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
@@ -333,7 +333,7 @@ public class TextFormat004ParserTest {
 		String textToParse = "# TYPE metric_with_label gauge\n" + 
 				"metric_with_label{name=\"value\"} 12.47\n";
 		
-		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
+		Parser subject = new Parser(textToParse);
 		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
@@ -364,7 +364,7 @@ public class TextFormat004ParserTest {
 		String textToParse = "# TYPE metric_with_label gauge\n" + 
 				"metric_with_label{name=\"value\",second=\"somevalue\",third=\"next value\",} 12.47\n";
 		
-		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
+		Parser subject = new Parser(textToParse);
 		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
@@ -399,7 +399,7 @@ public class TextFormat004ParserTest {
 		String textToParse = "# TYPE metric_with_label gauge\n" + 
 				"metric_with_label{name=\"containing \\\" and \\\\ and \\n\"} 12.47\n";
 		
-		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
+		Parser subject = new Parser(textToParse);
 		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
@@ -430,7 +430,7 @@ public class TextFormat004ParserTest {
 		String textToParse = "# Escaping in label values:\n" + 
 				"msdos_file_access_time_seconds{path=\"C:\\\\DIR\\\\FILE.TXT\",error=\"Cannot find file:\\n\\\"FILE.TXT\\\"\"} 1.458255915e9";
 		
-		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
+		Parser subject = new Parser(textToParse);
 		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
@@ -472,7 +472,7 @@ public class TextFormat004ParserTest {
 				"http_request_duration_seconds_sum 53423\n" + 
 				"http_request_duration_seconds_count 144320";
 		
-		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
+		Parser subject = new Parser(textToParse);
 		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
@@ -513,7 +513,7 @@ public class TextFormat004ParserTest {
 				"http_request_duration_seconds_sum 53423\n" + 
 				"http_request_duration_seconds_count 144320";
 		
-		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
+		Parser subject = new Parser(textToParse);
 		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
@@ -565,7 +565,7 @@ public class TextFormat004ParserTest {
 				"rpc_duration_seconds_sum 1.7560473e+07\n" + 
 				"rpc_duration_seconds_count 2693";
 		
-		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
+		Parser subject = new Parser(textToParse);
 		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
@@ -604,7 +604,7 @@ public class TextFormat004ParserTest {
 				"rpc_duration_seconds_sum 1.7560473e+07\n" + 
 				"rpc_duration_seconds_count 2693";
 		
-		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
+		Parser subject = new Parser(textToParse);
 		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
@@ -655,7 +655,7 @@ public class TextFormat004ParserTest {
 				"http_request_duration_seconds_sum 53423\n" + 
 				"http_request_duration_seconds_count 144320";
 		
-		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
+		Parser subject = new Parser(textToParse);
 		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
@@ -719,7 +719,7 @@ public class TextFormat004ParserTest {
 				"rpc_duration_seconds_sum 1.7560473e+07\n" +
 				"rpc_duration_seconds_count 2693";
 
-		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
+		Parser subject = new Parser(textToParse);
 		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
@@ -751,7 +751,7 @@ public class TextFormat004ParserTest {
 		String textToParse = "# Finally a summary, which has a complex representation, too:\n" +
 				"rpc_duration_seconds{name=\"val/{ue}\",quantile=\"0.01\",} 3102\n";
 
-		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
+		Parser subject = new Parser(textToParse);
 		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
 
@@ -804,7 +804,7 @@ public class TextFormat004ParserTest {
 	public void testVariant1() throws IOException, URISyntaxException {
 		String textToParse = new String(Files.readAllBytes(Paths.get(getClass().getResource("text004-variant1.txt").toURI())));
 		
-		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
+		Parser subject = new Parser(textToParse);
 		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		
 		// ensure that all metrics are understood
@@ -818,7 +818,7 @@ public class TextFormat004ParserTest {
 	public void testLogbackWithMultipleLabelValues() throws IOException, URISyntaxException {
 		String textToParse = new String(Files.readAllBytes(Paths.get(getClass().getResource("text004-logback.txt").toURI())));
 		
-		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
+		Parser subject = new Parser(textToParse);
 		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		
 		Assert.assertEquals(1, resultMap.keySet().size());
@@ -834,7 +834,7 @@ public class TextFormat004ParserTest {
 	public void testIssue104() throws IOException, URISyntaxException {
 		String textToParse = new String(Files.readAllBytes(Paths.get(getClass().getResource("issue104.txt").toURI())));
 		
-		TextFormat004Parser subject = new TextFormat004Parser(textToParse);
+		Parser subject = new Parser(textToParse);
 		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		
 		Assert.assertEquals(1, resultMap.keySet().size());

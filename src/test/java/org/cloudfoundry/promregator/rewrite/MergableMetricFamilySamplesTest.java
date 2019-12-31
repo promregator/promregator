@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Vector;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
-import org.cloudfoundry.promregator.textformat004.TextFormat004Parser;
+import org.cloudfoundry.promregator.textformat004.Parser;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
@@ -108,14 +108,14 @@ public class MergableMetricFamilySamplesTest {
 	public void testIssue104() throws IOException, URISyntaxException {
 		String textToParse = new String(Files.readAllBytes(Paths.get(getClass().getResource("issue104-instance0.text004").toURI())));
 		
-		TextFormat004Parser source0 = new TextFormat004Parser(textToParse);
+		Parser source0 = new Parser(textToParse);
 		HashMap<String, Collector.MetricFamilySamples> map0 = source0.parse();
 		Assert.assertEquals(50, map0.size());
 		
 		
 		textToParse = new String(Files.readAllBytes(Paths.get(getClass().getResource("issue104-instance1.text004").toURI())));
 		
-		TextFormat004Parser source1 = new TextFormat004Parser(textToParse);
+		Parser source1 = new Parser(textToParse);
 		HashMap<String, Collector.MetricFamilySamples> map1 = source1.parse();
 		Assert.assertEquals(50, map1.size());
 		

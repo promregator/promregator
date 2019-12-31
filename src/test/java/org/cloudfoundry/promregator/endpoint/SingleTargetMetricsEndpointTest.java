@@ -6,7 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
-import org.cloudfoundry.promregator.textformat004.TextFormat004Parser;
+import org.cloudfoundry.promregator.textformat004.Parser;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -52,7 +52,7 @@ public class SingleTargetMetricsEndpointTest {
 		Assert.assertNotNull(response);
 		Assert.assertNotEquals("", response);
 		
-		TextFormat004Parser parser = new TextFormat004Parser(response);
+		Parser parser = new Parser(response);
 		HashMap<String, MetricFamilySamples> mapMFS = parser.parse();
 		
 		Assert.assertNotNull(mapMFS.get("metric_unittestapp"));
@@ -68,7 +68,7 @@ public class SingleTargetMetricsEndpointTest {
 		Assert.assertNotNull(response);
 		Assert.assertNotEquals("", response);
 		
-		TextFormat004Parser parser = new TextFormat004Parser(response);
+		Parser parser = new Parser(response);
 		HashMap<String, MetricFamilySamples> mapMFS = parser.parse();
 		
 		Assert.assertNotNull(mapMFS.get("metric_unittestapp"));

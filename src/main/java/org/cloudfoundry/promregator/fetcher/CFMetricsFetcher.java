@@ -20,7 +20,7 @@ import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.endpoint.EndpointConstants;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
-import org.cloudfoundry.promregator.textformat004.TextFormat004Parser;
+import org.cloudfoundry.promregator.textformat004.Parser;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Gauge;
@@ -105,7 +105,7 @@ public class CFMetricsFetcher implements MetricsFetcher {
 			this.mfm.getRequestSize().observe(result.length());
 		}
 		
-		TextFormat004Parser parser = new TextFormat004Parser(result);
+		Parser parser = new Parser(result);
 		HashMap<String, MetricFamilySamples> emfs = parser.parse();
 		
 		emfs = this.mfse.determineEnumerationOfMetricFamilySamples(emfs);

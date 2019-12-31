@@ -11,7 +11,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
-import org.cloudfoundry.promregator.textformat004.TextFormat004Parser;
+import org.cloudfoundry.promregator.textformat004.Parser;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Gauge;
@@ -86,7 +86,7 @@ public class MetricsFetcherSimulator implements MetricsFetcher {
 		
 		String result = SIM_TEXT004;
 		
-		TextFormat004Parser parser = new TextFormat004Parser(result);
+		Parser parser = new Parser(result);
 		HashMap<String, MetricFamilySamples> emfs = parser.parse();
 		
 		emfs = this.mfse.determineEnumerationOfMetricFamilySamples(emfs);
