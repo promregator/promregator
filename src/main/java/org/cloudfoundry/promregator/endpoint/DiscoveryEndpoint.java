@@ -47,13 +47,13 @@ public class DiscoveryEndpoint {
 		private String __meta_promregator_target_instanceNumber;
 		private String __meta_promregator_target_instanceId;
 
-		public DiscoveryLabel(String __meta_promregator_target_path) {
+		public DiscoveryLabel(String path) {
 			super();
-			this.__meta_promregator_target_path = __meta_promregator_target_path;
+			this.__meta_promregator_target_path = path;
 		}
 		
-		public DiscoveryLabel(String __meta_promregator_target_path, Instance instance) {
-			this(__meta_promregator_target_path);
+		public DiscoveryLabel(String path, Instance instance) {
+			this(path);
 			
 			this.__meta_promregator_target_orgName = instance.getTarget().getOrgName();
 			this.__meta_promregator_target_spaceName = instance.getTarget().getSpaceName();
@@ -91,7 +91,7 @@ public class DiscoveryEndpoint {
 			return __meta_promregator_target_instanceId;
 		}
 		
-		public String get__metrics_path__() {
+		public String get__metrics_path() {
 			return this.__meta_promregator_target_path;
 		}
 	}
