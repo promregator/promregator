@@ -1,5 +1,6 @@
 package org.cloudfoundry.promregator.rewrite;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -43,10 +44,7 @@ public class CFAllLabelsMetricFamilySamplesEnricher extends AbstractMetricFamily
 	@Override
 	protected List<String> getEnrichedLabelNames(List<String> original) {
 		List<String> clone = new LinkedList<>(original);
-		
-		for (int i = 0;i< labelNames.length; i++) {
-			clone.add(labelNames[i]);
-		}
+		Collections.addAll(clone, labelNames);
 		
 		return clone;
 	}
