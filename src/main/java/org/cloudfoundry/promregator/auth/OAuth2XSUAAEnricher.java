@@ -85,11 +85,13 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
 		httpPost.setConfig(config);
 		
 		if (this.config.getClient_id().contains(":")) {
-			throw new Error("Security: jwtClient_id contains colon");
+			log.error("Security: jwtClient_id contains colon");
+			return null;
 		}
 
 		if (this.config.getClient_secret().contains(":")) {
-			throw new Error("Security: jwtClient_id contains colon");
+			log.error("Security: jwtClient_id contains colon");
+			return null;
 		}
 		
 		String b64encoding = String.format("%s:%s", this.config.getClient_id(), this.config.getClient_secret());
