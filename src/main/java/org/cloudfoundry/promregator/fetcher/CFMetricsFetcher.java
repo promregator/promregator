@@ -182,18 +182,19 @@ public class CFMetricsFetcher implements MetricsFetcher {
 				}
 			}
 			
-			if (this.up != null) {
-				if (available) {
-					this.up.set(1.0);
-				} else {
-					if (this.mfm.getFailedRequests() != null)
-						this.mfm.getFailedRequests().inc();
-					
-					this.up.set(0.0);
-				}
-			}
+			countSuccessOrFailure(available);
 		}
 		
 		return result;
+	}
+
+	private void countSuccessOrFailure(boolean available) {
+		if (this.up != null) {
+			this.up.set(available ? 1.0 : 0.0);
+		}
+		
+		if (!available && this.mfm.getFailedRequests() != null) {
+			this.mfm.getFailedRequests().inc();
+		}
 	}
 }
