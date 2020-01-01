@@ -43,6 +43,9 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	 */
 	private static final Locale LOCALE_OF_LOWER_CASE_CONVERSION_FOR_IDENTIFIER_COMPARISON = Locale.ENGLISH;
 
+	/**
+	 * OSA stands for Org-Space-Application
+	 */
 	private static class OSAVector {
 		private ResolvedTarget target;
 		
@@ -142,7 +145,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		});
 		
 		Flux<String> orgIdFlux = initialOSAVectorFlux.flatMapSequential(v -> this.getOrgId(v.getTarget().getOrgName()));
-		Flux<OSAVector> OSAVectorOrgFlux = Flux.zip(initialOSAVectorFlux, orgIdFlux).flatMap(tuple -> {
+		Flux<OSAVector> osaVectorOrgFlux = Flux.zip(initialOSAVectorFlux, orgIdFlux).flatMap(tuple -> {
 			OSAVector v = tuple.getT1();
 			if (INVALID_ORG_ID.equals(tuple.getT2())) {
 				// NB: This drops the current target!
@@ -152,8 +155,8 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			return Mono.just(v);
 		});
 		
-		Flux<String> spaceIdFlux = OSAVectorOrgFlux.flatMapSequential(v -> this.getSpaceId(v.getOrgId(), v.getTarget().getSpaceName()));
-		Flux<OSAVector> OSAVectorSpaceFlux = Flux.zip(OSAVectorOrgFlux, spaceIdFlux).flatMap(tuple -> {
+		Flux<String> spaceIdFlux = osaVectorOrgFlux.flatMapSequential(v -> this.getSpaceId(v.getOrgId(), v.getTarget().getSpaceName()));
+		Flux<OSAVector> osaVectorSpaceFlux = Flux.zip(osaVectorOrgFlux, spaceIdFlux).flatMap(tuple -> {
 			OSAVector v = tuple.getT1();
 			if (INVALID_SPACE_ID.equals(tuple.getT2())) {
 				// NB: This drops the current target!
@@ -163,8 +166,8 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			return Mono.just(v);
 		});
 		
-		Flux<Map<String, SpaceApplicationSummary>> spaceSummaryFlux = OSAVectorSpaceFlux.flatMapSequential(v -> this.getSpaceSummary(v.getSpaceId()));
-		Flux<OSAVector> OSAVectorApplicationFlux = Flux.zip(OSAVectorSpaceFlux, spaceSummaryFlux).flatMap(tuple -> {
+		Flux<Map<String, SpaceApplicationSummary>> spaceSummaryFlux = osaVectorSpaceFlux.flatMapSequential(v -> this.getSpaceSummary(v.getSpaceId()));
+		Flux<OSAVector> osaVectorApplicationFlux = Flux.zip(osaVectorSpaceFlux, spaceSummaryFlux).flatMap(tuple -> {
 			OSAVector v = tuple.getT1();
 			
 			if (INVALID_SUMMARY == tuple.getT2()) {
@@ -194,10 +197,10 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		
 		// perform pre-filtering, if available
 		if (applicationIdFilter != null) {
-			OSAVectorApplicationFlux = OSAVectorApplicationFlux.filter(v -> applicationIdFilter.test(v.getApplicationId()));
+			osaVectorApplicationFlux = osaVectorApplicationFlux.filter(v -> applicationIdFilter.test(v.getApplicationId()));
 		}
 		
-		Flux<Instance> instancesFlux = OSAVectorApplicationFlux.flatMapSequential(v -> {
+		Flux<Instance> instancesFlux = osaVectorApplicationFlux.flatMapSequential(v -> {
 			List<Instance> instances = new ArrayList<>(v.getNumberOfInstances());
 			for (int i = 0; i<v.numberOfInstances; i++) {
 				Instance inst = new Instance(v.getTarget(), String.format("%s:%d", v.getApplicationId(), i), v.getAccessURL());
