@@ -83,10 +83,10 @@ public class MetricsEndpoint extends AbstractMetricsEndpoint {
 		 * See also the description of "promregator_scrape_duration_seconds" in
 		 * https://github.com/promregator/promregator/blob/4b2ca289b624328e7e0b3838112e31a908a55c58/docs/enrichment.md
 		 */
-		Gauge scrape_duration = Gauge.build("promregator_scrape_duration_seconds", "Duration in seconds indicating how long scraping of all metrics took")
+		Gauge scrapeDuration = Gauge.build("promregator_scrape_duration_seconds", "Duration in seconds indicating how long scraping of all metrics took")
 				.register(requestRegistry);
 		
-		scrape_duration.set(duration.toMillis() / 1000.0);
+		scrapeDuration.set(duration.toMillis() / 1000.0);
 	}
 
 }
