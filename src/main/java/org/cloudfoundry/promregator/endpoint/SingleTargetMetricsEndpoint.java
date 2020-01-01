@@ -13,7 +13,6 @@ import org.cloudfoundry.promregator.scanner.ResolvedTarget;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,7 +39,7 @@ public class SingleTargetMetricsEndpoint extends AbstractMetricsEndpoint {
 			) {
 		
 		if (this.isLoopbackRequest()) {
-			throw new HttpMessageNotReadableException("Erroneous Loopback Scraping request detected");
+			throw new LoopbackScrapingDetectedException("Erroneous Loopback Scraping request detected");
 		}
 		
 		String instanceId = String.format("%s:%s", applicationId, instanceNumber);
