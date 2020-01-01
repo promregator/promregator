@@ -106,7 +106,15 @@ public class PromregatorApplication {
 		} else if (this.cacheType == AccessorCacheType.CAFFEINE) {
 			return new CFAccessorCacheCaffeine(mainCFAccessor);
 		} else {
-			throw new Error("Unknown CF Accessor Cache selected: "+this.cacheType);
+			throw new UnknownCacheTypeError("Unknown CF Accessor Cache selected: "+this.cacheType);
+		}
+	}
+	
+	private class UnknownCacheTypeError extends Error {
+		private static final long serialVersionUID = 6158818763963263064L;
+
+		public UnknownCacheTypeError(String message) {
+			super(message);
 		}
 	}
 	
