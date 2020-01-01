@@ -85,7 +85,7 @@ public class Parser {
 			this.storeComplexType(sample, metricName, type);
 		} else {
 			log.warn(String.format("Unknown type %s; unclear how to handle this; skipping", type.toString()));
-			return;
+			// return; can be skipped here
 		}
 	}
 
