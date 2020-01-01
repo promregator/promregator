@@ -128,7 +128,7 @@ public class Target {
 		if ("http".equals(protocol) || "https".equals(protocol)) {
 			this.protocol = protocol;
 		} else {
-			throw new Error(String.format("Invalid configuration: Target attempted to be configured with non-http(s) protocol: %s", protocol));
+			throw new InvalidTargetProtocolSpecifiedError(String.format("Invalid configuration: Target attempted to be configured with non-http(s) protocol: %s", protocol));
 		}
 	}
 
