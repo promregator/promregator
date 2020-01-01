@@ -69,6 +69,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	// and
 	// https://stackoverflow.com/questions/46999940/spring-boot-passwordencoder-error
 	@Bean
+	@Override
 	public UserDetailsService userDetailsService() {
 		InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
 
@@ -147,7 +148,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		web = this.determineWebSecurityForEndpoint(web, EndpointConstants.ENDPOINT_PATH_SINGLE_ENDPOINT_SCRAPING, this.endpointAuth);
 		web = this.determineWebSecurityForEndpoint(web, EndpointConstants.ENDPOINT_PATH_SINGLE_TARGET_SCRAPING+"/**", this.endpointAuth);
 		web = this.determineWebSecurityForEndpoint(web, EndpointConstants.ENDPOINT_PATH_PROMREGATOR_METRICS, this.promregatorMetricsAuth);
-		web = this.determineWebSecurityForEndpoint(web, EndpointConstants.ENDPOINT_PATH_CACHE_INVALIDATION, this.cacheInvalidateAuth);
+		this.determineWebSecurityForEndpoint(web, EndpointConstants.ENDPOINT_PATH_CACHE_INVALIDATION, this.cacheInvalidateAuth);
 
 	}
 
