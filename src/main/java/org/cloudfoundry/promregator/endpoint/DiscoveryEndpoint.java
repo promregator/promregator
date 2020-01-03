@@ -91,7 +91,7 @@ public class DiscoveryEndpoint {
 			return __meta_promregator_target_instanceId;
 		}
 		
-		public String get__metrics_path() {
+		public String get__metrics_path__() {
 			return this.__meta_promregator_target_path;
 		}
 	}
