@@ -29,7 +29,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	private static final Logger log = Logger.getLogger(CFAccessorCacheCaffeine.class);
 
 	private AsyncLoadingCache<String, ListOrganizationsResponse> orgCache;
-	private AsyncLoadingCache<Void, ListOrganizationsResponse> allOrgIdCache;
+	private AsyncLoadingCache<String, ListOrganizationsResponse> allOrgIdCache;
 	private AsyncLoadingCache<CacheKeySpace, ListSpacesResponse> spaceCache;
 	private AsyncLoadingCache<String, ListSpacesResponse> spaceIdInOrgCache;
 	private AsyncLoadingCache<CacheKeyAppsInSpace, ListApplicationsResponse> appsInSpaceCache;
@@ -101,10 +101,10 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 				.refreshAfterWrite(this.refreshCacheOrgLevelInSeconds, TimeUnit.SECONDS)
 				.recordStats()
 				.scheduler(caffeineScheduler)
-				.buildAsync(new AsyncCacheLoader<Void, ListOrganizationsResponse>() {
+				.buildAsync(new AsyncCacheLoader<String, ListOrganizationsResponse>() {
 
 					@Override
-					public @NonNull CompletableFuture<ListOrganizationsResponse> asyncLoad(@NonNull Void key,
+					public @NonNull CompletableFuture<ListOrganizationsResponse> asyncLoad(@NonNull String key,
 							@NonNull Executor executor) {
 						
 						Mono<ListOrganizationsResponse> mono = parent.retrieveAllOrgIds()
@@ -221,7 +221,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	
 	@Override
 	public Mono<ListOrganizationsResponse> retrieveAllOrgIds() {
-		return Mono.fromFuture(this.allOrgIdCache.get(null));
+		return Mono.fromFuture(this.allOrgIdCache.get("all"));
 	}
 	
 	@Override
