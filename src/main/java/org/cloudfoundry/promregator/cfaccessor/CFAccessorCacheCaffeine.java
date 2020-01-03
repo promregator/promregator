@@ -30,12 +30,12 @@ import reactor.core.scheduler.Schedulers;
 public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	private static final Logger log = LoggerFactory.getLogger(CFAccessorCacheCaffeine.class);
 
-	private AsyncLoadingCache<String, ListOrganizationsResponse> orgCache;
-	private AsyncLoadingCache<Void, ListOrganizationsResponse> allOrgIdCache;
-	private AsyncLoadingCache<CacheKeySpace, ListSpacesResponse> spaceCache;
-	private AsyncLoadingCache<String, ListSpacesResponse> spaceIdInOrgCache;
-	private AsyncLoadingCache<CacheKeyAppsInSpace, ListApplicationsResponse> appsInSpaceCache;
-	private AsyncLoadingCache<String, GetSpaceSummaryResponse> spaceSummaryCache;
+	private @NonNull AsyncLoadingCache<String, ListOrganizationsResponse> orgCache;
+	private @NonNull AsyncLoadingCache<String, ListOrganizationsResponse> allOrgIdCache;
+	private @NonNull AsyncLoadingCache<CacheKeySpace, ListSpacesResponse> spaceCache;
+	private @NonNull AsyncLoadingCache<String, ListSpacesResponse> spaceIdInOrgCache;
+	private @NonNull AsyncLoadingCache<CacheKeyAppsInSpace, ListApplicationsResponse> appsInSpaceCache;
+	private @NonNull AsyncLoadingCache<String, GetSpaceSummaryResponse> spaceSummaryCache;
 	
 	@Value("${cf.cache.timeout.org:3600}")
 	private int refreshCacheOrgLevelInSeconds;
@@ -78,9 +78,9 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 		}
 	}
 	
-	private class AllOrgIdCacheLoader implements  AsyncCacheLoader<Void, ListOrganizationsResponse> {
+	private class AllOrgIdCacheLoader implements  AsyncCacheLoader<String, ListOrganizationsResponse> {
 		@Override
-		public @NonNull CompletableFuture<ListOrganizationsResponse> asyncLoad(@NonNull Void key,
+		public @NonNull CompletableFuture<ListOrganizationsResponse> asyncLoad(@NonNull String key,
 				@NonNull Executor executor) {
 			
 			Mono<ListOrganizationsResponse> mono = parent.retrieveAllOrgIds()
@@ -227,7 +227,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	
 	@Override
 	public Mono<ListOrganizationsResponse> retrieveAllOrgIds() {
-		return Mono.fromFuture(this.allOrgIdCache.get(null));
+		return Mono.fromFuture(this.allOrgIdCache.get("all"));
 	}
 	
 	@Override
