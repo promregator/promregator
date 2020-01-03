@@ -19,10 +19,11 @@ public class TrivialTargetResolver implements TargetResolver {
 			rt.setOrgName(configTarget.getOrgName());
 			rt.setSpaceName(configTarget.getSpaceName());
 			rt.setApplicationName(configTarget.getApplicationName());
+			rt.setId(configTarget.getApplicationId());
 			rt.setPath(configTarget.getPath());
 			rt.setProtocol(configTarget.getProtocol());
 			rt.setOriginalTarget(emptyTarget);
-			
+
 			result.add(rt);
 		}
 		

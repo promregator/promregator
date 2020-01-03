@@ -141,6 +141,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		Flux<OSAVector> initialOSAVectorFlux = targetsFlux.map(target -> {
 			OSAVector v = new OSAVector();
 			v.setTarget(target);
+			v.setApplicationId(target.getId());
 			
 			return v;
 		});
@@ -178,14 +179,16 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			
 			Map<String, SpaceApplicationSummary> spaceSummaryMap = tuple.getT2();
 			SpaceApplicationSummary sas = spaceSummaryMap.get(v.getTarget().getApplicationName().toLowerCase(LOCALE_OF_LOWER_CASE_CONVERSION_FOR_IDENTIFIER_COMPARISON));
+			/*
+			 * Due to https://github.com/cloudfoundry/cloud_controller_ng/issues/1523,
+			 * we cannot rely on sas.getId() (i.e. it may contain wrong information)
+			 */
 			
 			if (sas == null) {
 				// NB: This drops the current target!
 				return Mono.empty();
 			}
-			
-			v.setApplicationId(sas.getId());
-			
+
 			List<String> urls = sas.getUrls();
 			if (urls != null && !urls.isEmpty()) {
 				v.setAccessURL(this.determineAccessURL(v.getTarget().getProtocol(), urls, v.getTarget().getOriginalTarget().getPreferredRouteRegexPatterns(), v.getTarget().getPath()));

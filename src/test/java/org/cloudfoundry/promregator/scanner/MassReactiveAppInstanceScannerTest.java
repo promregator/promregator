@@ -17,6 +17,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import static org.cloudfoundry.promregator.cfaccessor.CFAccessorMassMock.UNITTEST_APP_UUID_PREFIX;
+
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = MockedMassReactiveAppInstanceScannerSpringApplication.class)
 @TestPropertySource(locations="default.properties")
@@ -119,6 +121,7 @@ public class MassReactiveAppInstanceScannerTest {
 			t.setApplicationName("testapp"+i);
 			t.setPath("/testpath");
 			t.setProtocol("http");
+			t.setId(UNITTEST_APP_UUID_PREFIX+i);
 			t.setOriginalTarget(emptyTarget);
 			targets.add(t);
 		}
@@ -127,7 +130,7 @@ public class MassReactiveAppInstanceScannerTest {
 		
 		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, applicationId -> {
 			// filters out all applications,except for one
-			if (applicationId.equals(CFAccessorMassMock.UNITTEST_APP_UUID_PREFIX+"0"))
+			if (applicationId.equals(UNITTEST_APP_UUID_PREFIX+"0"))
 				return true;
 			
 			return false;
