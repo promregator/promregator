@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcher;
 import org.cloudfoundry.promregator.scanner.Instance;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +29,9 @@ import io.prometheus.client.exporter.common.TextFormat;
 @RequestMapping(EndpointConstants.ENDPOINT_PATH_SINGLE_ENDPOINT_SCRAPING)
 public class MetricsEndpoint extends AbstractMetricsEndpoint {
 	private static final Logger log = Logger.getLogger(MetricsEndpoint.class);
+
+	@Value("${promregator.single.endpoint.max:-1}")
+	private int maxAllowedForSingleEndpoint;
 
 	@GetMapping(produces=TextFormat.CONTENT_TYPE_004)
 	public ResponseEntity<String> getMetrics() {
@@ -63,6 +67,10 @@ public class MetricsEndpoint extends AbstractMetricsEndpoint {
 	 */
 	@Override
 	protected List<MetricsFetcher> createMetricsFetchers(List<Instance> instanceList) {
+		if(maxAllowedForSingleEndpoint != -1 && instanceList.size() > maxAllowedForSingleEndpoint) {
+			throw new RuntimeException("promregator.single.endpoint.max is configured to only allow "+maxAllowedForSingleEndpoint+" instances but there were "+ instanceList.size());
+		}
+
 		if (instanceList.size() > 20) {
 			log.warn(String.format("You are using Single Endpoint Scraping with %d (>20) active targets; to improve scalability it is recommended to switch to Single Target Scraping", instanceList.size()));
 		}
