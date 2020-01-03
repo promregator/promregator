@@ -54,40 +54,40 @@ public class DiscoveryEndpointTest {
 		DiscoveryLabel label = null;
 		
 		label = response[0].getLabels();
-		Assert.assertEquals("faedbb0a-2273-4cb4-a659-bd31331f7daf", label.get__meta_promregator_target_applicationId());
-		Assert.assertEquals("unittestapp", label.get__meta_promregator_target_applicationName());
-		Assert.assertEquals("faedbb0a-2273-4cb4-a659-bd31331f7daf:0", label.get__meta_promregator_target_instanceId());
-		Assert.assertEquals("0", label.get__meta_promregator_target_instanceNumber());
-		Assert.assertEquals("unittestorg", label.get__meta_promregator_target_orgName());
-		Assert.assertEquals("unittestspace", label.get__meta_promregator_target_spaceName());
-		Assert.assertEquals(EndpointConstants.ENDPOINT_PATH_SINGLE_TARGET_SCRAPING+"/faedbb0a-2273-4cb4-a659-bd31331f7daf/0", label.get__meta_promregator_target_path());
+		Assert.assertEquals("faedbb0a-2273-4cb4-a659-bd31331f7daf", label.getApplicationId());
+		Assert.assertEquals("unittestapp", label.getApplicationName());
+		Assert.assertEquals("faedbb0a-2273-4cb4-a659-bd31331f7daf:0", label.getInstanceId());
+		Assert.assertEquals("0", label.getInstanceNumber());
+		Assert.assertEquals("unittestorg", label.getOrgName());
+		Assert.assertEquals("unittestspace", label.getSpaceName());
+		Assert.assertEquals(EndpointConstants.ENDPOINT_PATH_SINGLE_TARGET_SCRAPING+"/faedbb0a-2273-4cb4-a659-bd31331f7daf/0", label.getTargetPath());
 
 		label = response[1].getLabels();
-		Assert.assertEquals("faedbb0a-2273-4cb4-a659-bd31331f7daf", label.get__meta_promregator_target_applicationId());
-		Assert.assertEquals("unittestapp", label.get__meta_promregator_target_applicationName());
-		Assert.assertEquals("faedbb0a-2273-4cb4-a659-bd31331f7daf:1", label.get__meta_promregator_target_instanceId());
-		Assert.assertEquals("1", label.get__meta_promregator_target_instanceNumber());
-		Assert.assertEquals("unittestorg", label.get__meta_promregator_target_orgName());
-		Assert.assertEquals("unittestspace", label.get__meta_promregator_target_spaceName());
-		Assert.assertEquals(EndpointConstants.ENDPOINT_PATH_SINGLE_TARGET_SCRAPING+"/faedbb0a-2273-4cb4-a659-bd31331f7daf/1", label.get__meta_promregator_target_path());
+		Assert.assertEquals("faedbb0a-2273-4cb4-a659-bd31331f7daf", label.getApplicationId());
+		Assert.assertEquals("unittestapp", label.getApplicationName());
+		Assert.assertEquals("faedbb0a-2273-4cb4-a659-bd31331f7daf:1", label.getInstanceId());
+		Assert.assertEquals("1", label.getInstanceNumber());
+		Assert.assertEquals("unittestorg", label.getOrgName());
+		Assert.assertEquals("unittestspace", label.getSpaceName());
+		Assert.assertEquals(EndpointConstants.ENDPOINT_PATH_SINGLE_TARGET_SCRAPING+"/faedbb0a-2273-4cb4-a659-bd31331f7daf/1", label.getTargetPath());
 
 		label = response[2].getLabels();
-		Assert.assertEquals("1142a717-e27d-4028-89d8-b42a0c973300", label.get__meta_promregator_target_applicationId());
-		Assert.assertEquals("unittestapp2", label.get__meta_promregator_target_applicationName());
-		Assert.assertEquals("1142a717-e27d-4028-89d8-b42a0c973300:0", label.get__meta_promregator_target_instanceId());
-		Assert.assertEquals("0", label.get__meta_promregator_target_instanceNumber());
-		Assert.assertEquals("unittestorg", label.get__meta_promregator_target_orgName());
-		Assert.assertEquals("unittestspace", label.get__meta_promregator_target_spaceName());
-		Assert.assertEquals(EndpointConstants.ENDPOINT_PATH_SINGLE_TARGET_SCRAPING+"/1142a717-e27d-4028-89d8-b42a0c973300/0", label.get__meta_promregator_target_path());
+		Assert.assertEquals("1142a717-e27d-4028-89d8-b42a0c973300", label.getApplicationId());
+		Assert.assertEquals("unittestapp2", label.getApplicationName());
+		Assert.assertEquals("1142a717-e27d-4028-89d8-b42a0c973300:0", label.getInstanceId());
+		Assert.assertEquals("0", label.getInstanceNumber());
+		Assert.assertEquals("unittestorg", label.getOrgName());
+		Assert.assertEquals("unittestspace", label.getSpaceName());
+		Assert.assertEquals(EndpointConstants.ENDPOINT_PATH_SINGLE_TARGET_SCRAPING+"/1142a717-e27d-4028-89d8-b42a0c973300/0", label.getTargetPath());
 
 		label = response[3].getLabels();
-		Assert.assertEquals(null, label.get__meta_promregator_target_applicationId());
-		Assert.assertEquals(null, label.get__meta_promregator_target_applicationName());
-		Assert.assertEquals(null, label.get__meta_promregator_target_instanceId());
-		Assert.assertEquals(null, label.get__meta_promregator_target_instanceNumber());
-		Assert.assertEquals(null, label.get__meta_promregator_target_orgName());
-		Assert.assertEquals(null, label.get__meta_promregator_target_spaceName());
-		Assert.assertEquals(EndpointConstants.ENDPOINT_PATH_PROMREGATOR_METRICS, label.get__meta_promregator_target_path());
+		Assert.assertEquals(null, label.getApplicationId());
+		Assert.assertEquals(null, label.getApplicationName());
+		Assert.assertEquals(null, label.getInstanceId());
+		Assert.assertEquals(null, label.getInstanceNumber());
+		Assert.assertEquals(null, label.getOrgName());
+		Assert.assertEquals(null, label.getSpaceName());
+		Assert.assertEquals(EndpointConstants.ENDPOINT_PATH_PROMREGATOR_METRICS, label.getTargetPath());
 		
 	}
 

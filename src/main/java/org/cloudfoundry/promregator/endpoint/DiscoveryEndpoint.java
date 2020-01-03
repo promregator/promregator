@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.WebApplicationContext;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+
 @RestController
 @RequestMapping(EndpointConstants.ENDPOINT_PATH_DISCOVERY)
 @Scope(value=WebApplicationContext.SCOPE_REQUEST)
@@ -39,60 +41,68 @@ public class DiscoveryEndpoint {
 	private boolean promregatorMetricsEndpoint;
 	
 	public static class DiscoveryLabel {
-		private String __meta_promregator_target_path;
-		private String __meta_promregator_target_orgName;
-		private String __meta_promregator_target_spaceName;
-		private String __meta_promregator_target_applicationName;
-		private String __meta_promregator_target_applicationId;
-		private String __meta_promregator_target_instanceNumber;
-		private String __meta_promregator_target_instanceId;
+		private String targetPath;
+		private String orgName;
+		private String spaceName;
+		private String applicationName;
+		private String applicationId;
+		private String instanceNumber;
+		private String instanceId;
 
 		public DiscoveryLabel(String path) {
 			super();
-			this.__meta_promregator_target_path = path;
+			this.targetPath = path;
 		}
 		
 		public DiscoveryLabel(String path, Instance instance) {
 			this(path);
 			
-			this.__meta_promregator_target_orgName = instance.getTarget().getOrgName();
-			this.__meta_promregator_target_spaceName = instance.getTarget().getSpaceName();
-			this.__meta_promregator_target_applicationName = instance.getTarget().getApplicationName();
-			this.__meta_promregator_target_applicationId = instance.getApplicationId();
-			this.__meta_promregator_target_instanceNumber = instance.getInstanceNumber();
-			this.__meta_promregator_target_instanceId = instance.getInstanceId();
+			this.orgName = instance.getTarget().getOrgName();
+			this.spaceName = instance.getTarget().getSpaceName();
+			this.applicationName = instance.getTarget().getApplicationName();
+			this.applicationId = instance.getApplicationId();
+			this.instanceNumber = instance.getInstanceNumber();
+			this.instanceId = instance.getInstanceId();
 		}
 		
-		public String get__meta_promregator_target_path() {
-			return __meta_promregator_target_path;
+		@JsonGetter("__meta_promregator_target_path")
+		public String getTargetPath() {
+			return targetPath;
 		}
 
-		public String get__meta_promregator_target_orgName() {
-			return __meta_promregator_target_orgName;
+		@JsonGetter("__meta_promregator_target_orgName")
+		public String getOrgName() {
+			return orgName;
 		}
 
-		public String get__meta_promregator_target_spaceName() {
-			return __meta_promregator_target_spaceName;
+		@JsonGetter("__meta_promregator_target_spaceName")
+		public String getSpaceName() {
+			return spaceName;
 		}
 
-		public String get__meta_promregator_target_applicationName() {
-			return __meta_promregator_target_applicationName;
+		@JsonGetter("__meta_promregator_target_applicationName")
+		public String getApplicationName() {
+			return applicationName;
 		}
 
-		public String get__meta_promregator_target_applicationId() {
-			return __meta_promregator_target_applicationId;
+		@JsonGetter("__meta_promregator_target_applicationId")
+		public String getApplicationId() {
+			return applicationId;
 		}
 
-		public String get__meta_promregator_target_instanceNumber() {
-			return __meta_promregator_target_instanceNumber;
+		@JsonGetter("__meta_promregator_target_instanceNumber")
+		public String getInstanceNumber() {
+			return instanceNumber;
 		}
 
-		public String get__meta_promregator_target_instanceId() {
-			return __meta_promregator_target_instanceId;
+		@JsonGetter("__meta_promregator_target_instanceId")
+		public String getInstanceId() {
+			return instanceId;
 		}
 		
-		public String get__metrics_path__() {
-			return this.__meta_promregator_target_path;
+		@JsonGetter("__metrics_path__")
+		public String getMetricsPath() {
+			return this.targetPath;
 		}
 	}
 	
