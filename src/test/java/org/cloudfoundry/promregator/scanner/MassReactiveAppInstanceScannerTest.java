@@ -6,7 +6,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
-import org.cloudfoundry.promregator.cfaccessor.CFAccessorMassMock;
 import org.cloudfoundry.promregator.config.Target;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -121,7 +120,7 @@ public class MassReactiveAppInstanceScannerTest {
 			t.setApplicationName("testapp"+i);
 			t.setPath("/testpath");
 			t.setProtocol("http");
-			t.setId(UNITTEST_APP_UUID_PREFIX+i);
+			t.setApplicationId(UNITTEST_APP_UUID_PREFIX+i);
 			t.setOriginalTarget(emptyTarget);
 			targets.add(t);
 		}

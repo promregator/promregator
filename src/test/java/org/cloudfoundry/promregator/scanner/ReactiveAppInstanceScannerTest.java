@@ -5,10 +5,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
-import org.cloudfoundry.promregator.cfaccessor.CFAccessorMock;
 import org.cloudfoundry.promregator.config.Target;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +41,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp");
 		t.setPath("/testpath1");
 		t.setProtocol("http");
-		t.setId(UNITTEST_APP1_UUID);
+		t.setApplicationId(UNITTEST_APP1_UUID);
 		final Target emptyTarget = new Target();
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
@@ -54,7 +52,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp2");
 		t.setPath("/testpath2");
 		t.setProtocol("https");
-		t.setId(UNITTEST_APP2_UUID);
+		t.setApplicationId(UNITTEST_APP2_UUID);
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
@@ -80,7 +78,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp");
 		t.setPath("/testpath1");
 		t.setProtocol("http");
-		t.setId(UNITTEST_APP1_UUID);
+		t.setApplicationId(UNITTEST_APP1_UUID);
 		final Target emptyTarget = new Target();
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
@@ -91,7 +89,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp2");
 		t.setPath("/testpath2");
 		t.setProtocol("https");
-		t.setId(UNITTEST_APP2_UUID);
+		t.setApplicationId(UNITTEST_APP2_UUID);
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
@@ -120,7 +118,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp");
 		t.setPath("/testpath1");
 		t.setProtocol("http");
-		t.setId(UNITTEST_APP1_UUID);
+		t.setApplicationId(UNITTEST_APP1_UUID);
 		final Target emptyTarget = new Target();
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
@@ -131,7 +129,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testApp2");
 		t.setPath("/testpath2");
 		t.setProtocol("https");
-		t.setId(UNITTEST_APP2_UUID);
+		t.setApplicationId(UNITTEST_APP2_UUID);
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
@@ -157,7 +155,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp");
 		t.setPath("/testpath1");
 		t.setProtocol("http");
-		t.setId(UNITTEST_APP1_UUID);
+		t.setApplicationId(UNITTEST_APP1_UUID);
 		final Target emptyTarget = new Target();
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
@@ -177,7 +175,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp2");
 		t.setPath("/testpath2");
 		t.setProtocol("https");
-		t.setId(UNITTEST_APP2_UUID);
+		t.setApplicationId(UNITTEST_APP2_UUID);
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
@@ -203,7 +201,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp");
 		t.setPath("/testpath1");
 		t.setProtocol("http");
-		t.setId(UNITTEST_APP1_UUID);
+		t.setApplicationId(UNITTEST_APP1_UUID);
 		final Target emptyTarget = new Target();
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
@@ -223,7 +221,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp2");
 		t.setPath("/testpath2");
 		t.setProtocol("https");
-		t.setId(UNITTEST_APP2_UUID);
+		t.setApplicationId(UNITTEST_APP2_UUID);
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
@@ -250,7 +248,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp");
 		t.setPath("/testpath1");
 		t.setProtocol("http");
-		t.setId(UNITTEST_APP1_UUID);
+		t.setApplicationId(UNITTEST_APP1_UUID);
 		final Target emptyTarget = new Target();
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
@@ -270,7 +268,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp2");
 		t.setPath("/testpath2");
 		t.setProtocol("https");
-		t.setId(UNITTEST_APP2_UUID);
+		t.setApplicationId(UNITTEST_APP2_UUID);
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
@@ -297,7 +295,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp");
 		t.setPath("/testpath1");
 		t.setProtocol("http");
-		t.setId(UNITTEST_APP1_UUID);
+		t.setApplicationId(UNITTEST_APP1_UUID);
 		final Target emptyTarget = new Target();
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
@@ -317,7 +315,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp2");
 		t.setPath("/testpath2");
 		t.setProtocol("https");
-		t.setId(UNITTEST_APP2_UUID);
+		t.setApplicationId(UNITTEST_APP2_UUID);
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
@@ -343,7 +341,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp");
 		t.setPath("/testpath1");
 		t.setProtocol("http");
-		t.setId(UNITTEST_APP1_UUID);
+		t.setApplicationId(UNITTEST_APP1_UUID);
 		final Target emptyTarget = new Target();
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
@@ -363,7 +361,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp2");
 		t.setPath("/testpath2");
 		t.setProtocol("https");
-		t.setId(UNITTEST_APP2_UUID);
+		t.setApplicationId(UNITTEST_APP2_UUID);
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
@@ -391,7 +389,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp");
 		t.setPath("/testpath1");
 		t.setProtocol("http");
-		t.setId(UNITTEST_APP1_UUID);
+		t.setApplicationId(UNITTEST_APP1_UUID);
 		final Target emptyTarget = new Target();
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
@@ -411,7 +409,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp2");
 		t.setPath("/testpath2");
 		t.setProtocol("https");
-		t.setId(UNITTEST_APP2_UUID);
+		t.setApplicationId(UNITTEST_APP2_UUID);
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
@@ -437,7 +435,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp");
 		t.setPath("/testpath1");
 		t.setProtocol("http");
-		t.setId(UNITTEST_APP1_UUID);
+		t.setApplicationId(UNITTEST_APP1_UUID);
 		final Target emptyTarget = new Target();
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
@@ -457,7 +455,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp2");
 		t.setPath("/testpath2");
 		t.setProtocol("https");
-		t.setId(UNITTEST_APP2_UUID);
+		t.setApplicationId(UNITTEST_APP2_UUID);
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
@@ -483,7 +481,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp");
 		t.setPath("/testpath1");
 		t.setProtocol("http");
-		t.setId(UNITTEST_APP1_UUID);
+		t.setApplicationId(UNITTEST_APP1_UUID);
 		final Target emptyTarget = new Target();
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
@@ -503,7 +501,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp2");
 		t.setPath("/testpath2");
 		t.setProtocol("https");
-		t.setId(UNITTEST_APP2_UUID);
+		t.setApplicationId(UNITTEST_APP2_UUID);
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
@@ -529,7 +527,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp");
 		t.setPath("/testpath1");
 		t.setProtocol("http");
-		t.setId(UNITTEST_APP1_UUID);
+		t.setApplicationId(UNITTEST_APP1_UUID);
 		final Target emptyTarget = new Target();
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
@@ -540,7 +538,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp2");
 		t.setPath("/testpath2");
 		t.setProtocol("https");
-		t.setId(UNITTEST_APP2_UUID);
+		t.setApplicationId(UNITTEST_APP2_UUID);
 		
 		Target origTarget = new Target();
 		String[] preferredRouteRegex = { ".*additionalSubdomain.*" };
@@ -571,7 +569,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp");
 		t.setPath("/testpath1");
 		t.setProtocol("http");
-		t.setId(UNITTEST_APP1_UUID);
+		t.setApplicationId(UNITTEST_APP1_UUID);
 		final Target emptyTarget = new Target();
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
@@ -582,7 +580,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("testapp2");
 		t.setPath("/testpath2");
 		t.setProtocol("https");
-		t.setId(UNITTEST_APP2_UUID);
+		t.setApplicationId(UNITTEST_APP2_UUID);
 		
 		Target origTarget = new Target();
 		String[] preferredRouteRegex = { ".*notMatched.*" };

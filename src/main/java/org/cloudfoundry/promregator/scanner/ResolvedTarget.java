@@ -16,7 +16,7 @@ public class ResolvedTarget {
 	
 	private String protocol;
 
-	private String id;
+	private String applicationId;
 	
 	public ResolvedTarget() {
 		super();
@@ -89,12 +89,12 @@ public class ResolvedTarget {
 		this.originalTarget = originalTarget;
 	}
 
-	public String getId() {
-		return id;
+	public String getApplicationId() {
+		return applicationId;
 	}
 
-	public void setId(String id) {
-		this.id = id;
+	public void setApplicationId(String applicationId) {
+		this.applicationId = applicationId;
 	}
 
 	/* (non-Javadoc)
@@ -109,7 +109,7 @@ public class ResolvedTarget {
 		result = prime * result + ((path == null) ? 0 : path.hashCode());
 		result = prime * result + ((protocol == null) ? 0 : protocol.hashCode());
 		result = prime * result + ((spaceName == null) ? 0 : spaceName.hashCode());
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + ((applicationId == null) ? 0 : applicationId.hashCode());
 		return result;
 	}
 
@@ -135,11 +135,11 @@ public class ResolvedTarget {
 		} else if (!applicationName.equals(other.applicationName)) {
 			return false;
 		}
-		if (id == null) {
-			if (other.id != null) {
+		if (applicationId == null) {
+			if (other.applicationId != null) {
 				return false;
 			}
-		} else if (!id.equals(other.id)) {
+		} else if (!applicationId.equals(other.applicationId)) {
 			return false;
 		}
 		if (orgName == null) {
@@ -185,8 +185,8 @@ public class ResolvedTarget {
 		builder.append(spaceName);
 		builder.append(", applicationName=");
 		builder.append(applicationName);
-		builder.append(", id=");
-		builder.append(id);
+		builder.append(", applicationId=");
+		builder.append(applicationId);
 		builder.append(", path=");
 		builder.append(path);
 		builder.append(", protocol=");

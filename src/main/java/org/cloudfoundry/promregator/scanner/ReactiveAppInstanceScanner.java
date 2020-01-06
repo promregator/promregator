@@ -141,7 +141,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		Flux<OSAVector> initialOSAVectorFlux = targetsFlux.map(target -> {
 			OSAVector v = new OSAVector();
 			v.setTarget(target);
-			v.setApplicationId(target.getId());
+			v.setApplicationId(target.getApplicationId());
 			
 			return v;
 		});
