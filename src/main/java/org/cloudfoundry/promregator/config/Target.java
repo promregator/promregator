@@ -1,6 +1,7 @@
 package org.cloudfoundry.promregator.config;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -9,32 +10,32 @@ import org.apache.log4j.Logger;
 
 public class Target {
 	private static final Logger log = Logger.getLogger(Target.class);
-	
+
 	private String orgName;
-	
+
 	private String orgRegex;
-	
+
 	private String spaceName;
-	
+
 	private String spaceRegex;
-	
+
 	private String applicationName;
-	
+
 	private String applicationRegex;
 
 	private String path;
-	
+
 	private String protocol;
-	
+
 	private String authenticatorId;
-	
+
 	private List<String> preferredRouteRegex;
 	private List<Pattern> cachedPreferredRouteRegexPattern;
-	
+
 	public Target() {
 		super();
 	}
-	
+
 	/**
 	 * creates a copy of an existing Target
 	 * @param source the template which shall be used for copying
@@ -49,14 +50,14 @@ public class Target {
 		this.path = source.path;
 		this.protocol = source.protocol;
 		this.authenticatorId = source.authenticatorId;
-		
+
 		if (source.preferredRouteRegex == null) {
 			this.preferredRouteRegex = new ArrayList<>(0);
 		} else {
 			this.preferredRouteRegex = new ArrayList<>(source.preferredRouteRegex);
 		}
 	}
-	
+
 	public String getOrgName() {
 		return orgName;
 	}
@@ -64,7 +65,7 @@ public class Target {
 	public void setOrgName(String orgName) {
 		this.orgName = orgName;
 	}
-	
+
 
 	public String getOrgRegex() {
 		return orgRegex;
@@ -101,15 +102,15 @@ public class Target {
 	public String getApplicationRegex() {
 		return applicationRegex;
 	}
-	
+
 	public void setApplicationRegex(String applicationRegex) {
 		this.applicationRegex = applicationRegex;
 	}
-	
+
 	public String getPath() {
-		if (this.path == null)
+		if (this.path == null) {
 			return "/metrics";
-		
+		}
 		return path;
 	}
 
@@ -118,9 +119,9 @@ public class Target {
 	}
 
 	public String getProtocol() {
-		if (this.protocol == null)
+		if (this.protocol == null) {
 			return "https";
-		
+		}
 		return protocol;
 	}
 
@@ -145,7 +146,7 @@ public class Target {
 	 */
 	public List<String> getPreferredRouteRegex() {
 		if (this.preferredRouteRegex == null) {
-			return null;
+			return Collections.emptyList();
 		}
 		
 		return new ArrayList<>(preferredRouteRegex);
@@ -165,9 +166,6 @@ public class Target {
 		}
 		
 		List<String> regexStringList = this.getPreferredRouteRegex();
-		if (regexStringList == null) {
-			return null;
-		}
 		
 		List<Pattern> patterns = new ArrayList<>(regexStringList.size());
 		for (String routeRegex : regexStringList) {
@@ -215,6 +213,4 @@ public class Target {
 		return builder.toString();
 	}
 
-
-	
 }
