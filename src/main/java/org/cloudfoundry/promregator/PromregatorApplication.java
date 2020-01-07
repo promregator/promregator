@@ -15,6 +15,7 @@ import org.cloudfoundry.promregator.cfaccessor.CFAccessorSimulator;
 import org.cloudfoundry.promregator.cfaccessor.CFWatchdog;
 import org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl;
 import org.cloudfoundry.promregator.config.ConfigurationValidations;
+import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.discovery.CFMultiDiscoverer;
 import org.cloudfoundry.promregator.endpoint.InstanceCache;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
@@ -34,6 +35,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
@@ -137,6 +139,7 @@ public class PromregatorApplication {
 	}
 	
 	@Bean
+	@ConditionalOnProperty(value = "promregator.lifecycle.enabled", matchIfMissing = true)
 	public InstanceLifecycleHandler instanceLifecycleHandler() {
 		return new InstanceLifecycleHandler();
 	}
@@ -156,8 +159,7 @@ public class PromregatorApplication {
 	}
 	
 	@Bean
-	@DependsOn("promregatorConfiguration")
-	public ConfigurationValidations configurationValidations() {
+	public ConfigurationValidations configurationValidations(PromregatorConfiguration promregatorConfiguration) {
 		return new ConfigurationValidations();
 	}
 	
