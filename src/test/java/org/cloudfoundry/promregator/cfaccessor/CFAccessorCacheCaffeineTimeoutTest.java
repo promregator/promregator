@@ -5,22 +5,27 @@ import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.promregator.JUnitTestUtils;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import reactor.core.publisher.Mono;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+import java.util.concurrent.TimeoutException;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = CFAccessorCacheCaffeineTimeoutSpringApplication.class)
 @TestPropertySource(locations= { "../default.properties" })
 @DirtiesContext(classMode=ClassMode.AFTER_CLASS)
@@ -31,15 +36,29 @@ public class CFAccessorCacheCaffeineTimeoutTest {
 	
 	@Autowired
 	private CFAccessorCacheCaffeine subject;
-	
-	@Before
-	public void invalidateCaches() {
+
+	@BeforeEach
+	public void setup() {
+		Mockito.reset(this.parentMock);
+		Mockito.when(this.parentMock.retrieveOrgId("dummy")).then(new TimeoutMonoAnswer());
+		Mockito.when(this.parentMock.retrieveSpaceId("dummy1", "dummy2")).then(new TimeoutMonoAnswer());
+		Mockito.when(this.parentMock.retrieveAllApplicationIdsInSpace("dummy1", "dummy2")).then(new TimeoutMonoAnswer());
+		Mockito.when(this.parentMock.retrieveSpaceSummary("dummy")).then(new TimeoutMonoAnswer());
+
 		this.subject.invalidateCacheApplications();
 		this.subject.invalidateCacheSpace();
 		this.subject.invalidateCacheOrg();
 	}
-	
-	@AfterClass
+
+	public static class TimeoutMonoAnswer implements Answer<Mono<?>> {
+		@Override
+		public Mono<?> answer(InvocationOnMock invocation) throws Throwable {
+			return Mono.error(new TimeoutException("Unit test timeout raised"));
+		}
+	}
+
+
+	@AfterAll
 	public static void runCleanup() {
 		JUnitTestUtils.cleanUpAll();
 	}
@@ -55,7 +74,7 @@ public class CFAccessorCacheCaffeineTimeoutTest {
 		
 		Mono<ListOrganizationsResponse> response2 = subject.retrieveOrgId("dummy");
 		response2.subscribe();
-		Assert.assertNotEquals(response1, response2);
+		assertThat(response1).isNotEqualTo(response2);
 		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveOrgId("dummy");
 	}
 
@@ -71,8 +90,8 @@ public class CFAccessorCacheCaffeineTimeoutTest {
 		
 		Mono<ListSpacesResponse> response2 = subject.retrieveSpaceId("dummy1", "dummy2");
 		response2.subscribe();
-		Assert.assertNotEquals(response1, response2);
-		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveOrgId("dummy");
+		assertThat(response1).isNotEqualTo(response2);
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveSpaceId("dummy1", "dummy2");
 	}
 
 	@Test
@@ -86,7 +105,7 @@ public class CFAccessorCacheCaffeineTimeoutTest {
 		
 		Mono<ListApplicationsResponse> response2 = subject.retrieveAllApplicationIdsInSpace("dummy1", "dummy2");
 		response2.subscribe();
-		Assert.assertNotEquals(response1, response2);
+		assertThat(response1).isNotEqualTo(response2);
 		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveAllApplicationIdsInSpace("dummy1", "dummy2");
 	}
 
@@ -101,7 +120,7 @@ public class CFAccessorCacheCaffeineTimeoutTest {
 		
 		Mono<GetSpaceSummaryResponse> response2 = subject.retrieveSpaceSummary("dummy");
 		response2.subscribe();
-		Assert.assertNotEquals(response1, response2);
+		assertThat(response1).isNotEqualTo(response2);
 		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveSpaceSummary("dummy");
 	}
 

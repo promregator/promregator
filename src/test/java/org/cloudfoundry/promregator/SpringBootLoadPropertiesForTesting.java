@@ -1,37 +1,31 @@
 package org.cloudfoundry.promregator;
 
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.contrib.java.lang.system.EnvironmentVariables;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.ConfigFileApplicationContextInitializer;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
+import static org.assertj.core.api.Assertions.assertThat;
+
 
 @SpringBootTest(classes = { SpringBootLoadPropertiesForTestingSpringApplication.class })
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(initializers = { ConfigFileApplicationContextInitializer.class })
 @ActiveProfiles(profiles= {"springBootLoadPropertiesForTesting"})
+@TestPropertySource(properties = "encrypt.key=mySecretKey")
 public class SpringBootLoadPropertiesForTesting {
-
-	@ClassRule
-	public static final EnvironmentVariables environmentVariables = new EnvironmentVariables().set("ENCRYPT_KEY", "mySecretKey");
-
 
 	@Autowired
 	private SpringBootLoadPropertiesForTestingSpringApplication springBootLoadPropertiesForTestingSpringApplication;
 
-	@AfterClass
+	@AfterAll
 	public static void cleanupEnvironment() {
 		JUnitTestUtils.cleanUpAll();
 	}
@@ -39,18 +33,18 @@ public class SpringBootLoadPropertiesForTesting {
 	@Test
 	public void testContextLoads() {
 		springBootLoadPropertiesForTestingSpringApplication.check();
-		Assert.assertTrue(true);
+		assertThat(true).as("context loads").isTrue();
 	}
 
 	@Test
 	public void testContextLoadsWithEncryptedValue() {
 		String secretValue = springBootLoadPropertiesForTestingSpringApplication.getSecretValue();
-		assertThat("passwords do not match but should", secretValue, is("mysecret"));
+		assertThat(secretValue).as("passwords do not match but should").isEqualTo("mysecret");
 	}
 
 	@Test
 	public void testContextLoadsWithEncryptedValueNotMatching() {
 		String secretValue = springBootLoadPropertiesForTestingSpringApplication.getSecretValue();
-		assertThat("passwords do match but shouldn't", secretValue, not("notMySecret"));
+		assertThat(secretValue).as("passwords do match but shouldn't\"").isNotEqualTo("notMySecret");
 	}
 }

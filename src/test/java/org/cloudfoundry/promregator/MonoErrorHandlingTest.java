@@ -3,16 +3,16 @@ package org.cloudfoundry.promregator;
 import java.time.Duration;
 import java.time.Instant;
 
-import org.junit.Assert;
-import org.junit.Test;
 
+import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
+
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class MonoErrorHandlingTest {
 	@Test
 	public void test() {
-		boolean raised = false;
-		try {
+		assertThatThrownBy(() ->{
 			Mono.just(1).map(v -> {
 				System.err.println("Waiting " + Instant.now());
 				try {
@@ -27,9 +27,7 @@ public class MonoErrorHandlingTest {
 				System.err.println("Exception Handling " + Instant.now());
 				x.printStackTrace(System.err);
 			}).block();
-		} catch (RuntimeException re) {
-			raised = true;
-		}
-		Assert.assertTrue(raised);
+		});
+
 	}
 }

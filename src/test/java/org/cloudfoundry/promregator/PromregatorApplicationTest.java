@@ -2,10 +2,9 @@ package org.cloudfoundry.promregator;
 
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.endpoint.TestableMetricsEndpoint;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigurationExcludeFilter;
 import org.springframework.boot.context.TypeExcludeFilter;
@@ -17,9 +16,12 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.BootstrapWith;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.junit4.SpringRunner;
 
-@RunWith(SpringRunner.class)
+import static org.assertj.core.api.Assertions.assertThat;
+
+@ExtendWith(SpringExtension.class)
 @BootstrapWith(value=SpringBootTestContextBootstrapper.class)
 @ComponentScan(excludeFilters = { @Filter(type = FilterType.CUSTOM, classes = { TypeExcludeFilter.class }),
 		@Filter(type = FilterType.CUSTOM, classes = { AutoConfigurationExcludeFilter.class }),
@@ -35,10 +37,10 @@ public class PromregatorApplicationTest {
 	
 	@Test
 	public void contextLoads() {
-		Assert.assertNotNull(cfAccessor); // Trivial test to ensure that the Unit test has at least some assertion
+		assertThat(cfAccessor).isNotNull(); // Trivial test to ensure that the Unit test has at least some assertion
 	}
 
-	@AfterClass
+	@AfterAll
 	public static void cleanUp() {
 		JUnitTestUtils.cleanUpAll();
 	}

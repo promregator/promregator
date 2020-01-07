@@ -8,13 +8,13 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.junit.Assert;
-import org.junit.Test;
 
 import com.github.benmanes.caffeine.cache.AsyncCacheLoader;
 import com.github.benmanes.caffeine.cache.AsyncLoadingCache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.testing.FakeTicker;
 
+import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
