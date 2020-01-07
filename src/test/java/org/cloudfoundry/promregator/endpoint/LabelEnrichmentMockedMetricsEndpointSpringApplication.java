@@ -21,7 +21,6 @@ import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
 import org.cloudfoundry.promregator.scanner.TargetResolver;
-import org.cloudfoundry.promregator.scanner.TrivialTargetResolver;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.AutoConfigurationExcludeFilter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -100,7 +99,7 @@ public class LabelEnrichmentMockedMetricsEndpointSpringApplication {
 	
 	@Bean
 	public TargetResolver targetResolver() {
-		return new TrivialTargetResolver();
+		return Mockito.mock(TargetResolver.class);
 	}
 	
 	@Bean

@@ -25,8 +25,6 @@ public class Target {
 
 	private String applicationRegex;
 
-	private String applicationId;
-
 	private String path;
 
 	private String protocol;
@@ -51,7 +49,6 @@ public class Target {
 		this.spaceRegex = source.spaceRegex;
 		this.applicationName = source.applicationName;
 		this.applicationRegex = source.applicationRegex;
-		this.applicationId = source.applicationId;
 		this.path = source.path;
 		this.protocol = source.protocol;
 		this.authenticatorId = source.authenticatorId;
@@ -111,14 +108,6 @@ public class Target {
 
 	public void setApplicationRegex(String applicationRegex) {
 		this.applicationRegex = applicationRegex;
-	}
-
-	public String getApplicationId() {
-		return applicationId;
-	}
-
-	public void setApplicationId(String applicationId) {
-		this.applicationId = applicationId;
 	}
 
 	public String getPath() {
@@ -220,8 +209,6 @@ public class Target {
 		builder.append(applicationName);
 		builder.append(", applicationRegex=");
 		builder.append(applicationRegex);
-		builder.append(", applicationId=");
-		builder.append(applicationId);
 		builder.append(", path=");
 		builder.append(path);
 		builder.append(", protocol=");

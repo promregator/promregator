@@ -251,7 +251,6 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			log.error(String.format("retrieving Org Id for org Name '%s' resulted in an exception", orgNameString), e);
 			return Mono.just(INVALID_ORG_ID);
 		}).cache();
-
 	}
 
 	private Mono<String> getSpaceId(String orgIdString, String spaceNameString) {
