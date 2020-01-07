@@ -7,6 +7,8 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.apache.log4j.Logger;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class Target {
 	private static final Logger log = Logger.getLogger(Target.class);
@@ -143,8 +145,9 @@ public class Target {
 
 	/**
 	 * @return the preferredRouteRegex
+	 * This will never return a null value
 	 */
-	public List<String> getPreferredRouteRegex() {
+	public @NonNull List<String> getPreferredRouteRegex() {
 		if (this.preferredRouteRegex == null) {
 			return Collections.emptyList();
 		}
@@ -160,7 +163,11 @@ public class Target {
 		this.cachedPreferredRouteRegexPattern = null; // reset cache
 	}
 
-	public List<Pattern> getPreferredRouteRegexPatterns() {
+	/**
+	 * @return the list of preferred Route Regex Patterns
+	  * This will never return a null value
+	 */
+	public @NonNull List<Pattern> getPreferredRouteRegexPatterns() {
 		if (this.cachedPreferredRouteRegexPattern != null) {
 			return this.cachedPreferredRouteRegexPattern;
 		}

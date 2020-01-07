@@ -20,6 +20,7 @@ import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
+import org.springframework.util.CollectionUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -319,7 +320,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			return null;
 		}
 
-		if (patterns == null || patterns.isEmpty()) {
+		if (CollectionUtils.isEmpty(patterns)) {
 			log.debug("No Preferred Route URL (Regex) provided; taking first Application Route in the list provided");
 			return urls.get(0);
 		}
