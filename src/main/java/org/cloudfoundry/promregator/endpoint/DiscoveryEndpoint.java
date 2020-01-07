@@ -5,9 +5,10 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.discovery.CFMultiDiscoverer;
 import org.cloudfoundry.promregator.scanner.Instance;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
@@ -26,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 @Scope(value=WebApplicationContext.SCOPE_REQUEST)
 public class DiscoveryEndpoint {
 
-	private static final Logger log = Logger.getLogger(DiscoveryEndpoint.class);
+	private static final Logger log = LoggerFactory.getLogger(DiscoveryEndpoint.class);
 	
 	@Autowired
 	private CFMultiDiscoverer cfDiscoverer;

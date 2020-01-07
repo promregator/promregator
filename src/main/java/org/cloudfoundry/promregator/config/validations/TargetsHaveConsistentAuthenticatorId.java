@@ -2,10 +2,11 @@ package org.cloudfoundry.promregator.config.validations;
 
 import java.util.HashSet;
 
-import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.config.Target;
 import org.cloudfoundry.promregator.config.TargetAuthenticatorConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * All targets must have an authenticatorId (if specified), which is specified
@@ -13,7 +14,7 @@ import org.cloudfoundry.promregator.config.TargetAuthenticatorConfiguration;
  *
  */
 public class TargetsHaveConsistentAuthenticatorId implements ConfigurationValidation {
-	private static final Logger log = Logger.getLogger(TargetsHaveConsistentAuthenticatorId.class);
+	private static final Logger log = LoggerFactory.getLogger(TargetsHaveConsistentAuthenticatorId.class);
 
 	@Override
 	public String validate(PromregatorConfiguration promregatorConfiguration) {
@@ -34,7 +35,7 @@ public class TargetsHaveConsistentAuthenticatorId implements ConfigurationValida
 			}
 
 			if (!authenticatorIds.contains(target.getAuthenticatorId())) {
-				log.fatal(String.format(
+				log.error(String.format(
 						"Configuration error: Target %s refers to authenticator with identifier %s, but the latter does not exist",
 						target.toString(), target.getAuthenticatorId()));
 				broken = true;

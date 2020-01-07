@@ -6,7 +6,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
-import org.apache.log4j.Logger;
 import org.cloudfoundry.client.v2.Metadata;
 import org.cloudfoundry.client.v2.applications.ApplicationEntity;
 import org.cloudfoundry.client.v2.applications.ApplicationResource;
@@ -20,6 +19,8 @@ import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v2.spaces.SpaceEntity;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
 public class CFAccessorSimulator implements CFAccessor {
@@ -29,7 +30,7 @@ public class CFAccessorSimulator implements CFAccessor {
 	public static final String APP_HOST_PREFIX = "hostapp";
 	public static final String SHARED_DOMAIN = "shared.domain.example.org";
 	
-	private static final Logger log = Logger.getLogger(CFAccessorSimulator.class);
+	private static final Logger log = LoggerFactory.getLogger(CFAccessorSimulator.class);
 	
 	public static final String CREATED_AT_TIMESTAMP = "2014-11-24T19:32:49+00:00";
 	public static final String UPDATED_AT_TIMESTAMP = "2014-11-24T19:32:49+00:00";

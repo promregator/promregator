@@ -16,7 +16,6 @@ import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.endpoint.EndpointConstants;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
@@ -25,6 +24,8 @@ import org.cloudfoundry.promregator.textformat004.Parser;
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.Histogram.Timer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A MetricsFetcher is a class which retrieves Prometheus metrics at an endpoint URL, which is run
@@ -39,7 +40,7 @@ public class CFMetricsFetcher implements MetricsFetcher {
 	
 	private static final String HTTP_HEADER_CF_APP_INSTANCE = "X-CF-APP-INSTANCE";
 
-	private static final Logger log = Logger.getLogger(CFMetricsFetcher.class);
+	private static final Logger log = LoggerFactory.getLogger(CFMetricsFetcher.class);
 	
 	private String endpointUrl;
 	private String instanceId;

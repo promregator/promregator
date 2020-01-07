@@ -6,7 +6,6 @@ import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
 import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
@@ -15,13 +14,15 @@ import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.config.Target;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class ReactiveTargetResolver implements TargetResolver {
-	private static final Logger log = Logger.getLogger(ReactiveTargetResolver.class);
+	private static final Logger log = LoggerFactory.getLogger(ReactiveTargetResolver.class);
 	
 	@Autowired
 	private CFAccessor cfAccessor;

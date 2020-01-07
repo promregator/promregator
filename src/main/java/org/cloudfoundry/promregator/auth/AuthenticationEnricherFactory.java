@@ -1,10 +1,11 @@
 package org.cloudfoundry.promregator.auth;
 
-import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.config.AuthenticatorConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AuthenticationEnricherFactory {
-	private static final Logger log = Logger.getLogger(AuthenticationEnricherFactory.class);
+	private static final Logger log = LoggerFactory.getLogger(AuthenticationEnricherFactory.class);
 	
 	private AuthenticationEnricherFactory() {
 		// left blank intentionally

@@ -8,7 +8,6 @@ import java.util.concurrent.Executors;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.cfaccessor.AccessorCacheType;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorCache;
@@ -30,6 +29,8 @@ import org.cloudfoundry.promregator.springconfig.BasicAuthenticationSpringConfig
 import org.cloudfoundry.promregator.springconfig.ErrorSpringConfiguration;
 import org.cloudfoundry.promregator.springconfig.JMSSpringConfiguration;
 import org.cloudfoundry.promregator.websecurity.SecurityConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -52,7 +53,7 @@ import reactor.core.publisher.Hooks;
 @Import({ BasicAuthenticationSpringConfiguration.class, SecurityConfig.class, ErrorSpringConfiguration.class, JMSSpringConfiguration.class, AuthenticatorSpringConfiguration.class })
 @EnableAsync
 public class PromregatorApplication {
-	private static final Logger log = Logger.getLogger(PromregatorApplication.class);
+	private static final Logger log = LoggerFactory.getLogger(PromregatorApplication.class);
 	
 	@Value("${promregator.simulation.enabled:false}")
 	private boolean simulationMode;

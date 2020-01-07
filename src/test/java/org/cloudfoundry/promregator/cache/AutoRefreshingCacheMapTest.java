@@ -3,17 +3,18 @@ package org.cloudfoundry.promregator.cache;
 
 import java.time.Duration;
 
-import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 
 public class AutoRefreshingCacheMapTest {
-	private static final Logger log = Logger.getLogger(AutoRefreshingCacheMapTest.class);
+	private static final Logger log = LoggerFactory.getLogger(AutoRefreshingCacheMapTest.class);
 
 	@Test
 	public void testPutAndGet() {

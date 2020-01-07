@@ -5,20 +5,21 @@ import java.util.concurrent.TimeoutException;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.log4j.Logger;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.promregator.cache.AutoRefreshingCacheMap;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import reactor.core.publisher.Mono;
 
 public class CFAccessorCacheClassic implements CFAccessorCache {
-	private static final Logger log = Logger.getLogger(CFAccessorCacheClassic.class);
+	private static final Logger log = LoggerFactory.getLogger(CFAccessorCacheClassic.class);
 
 	private AutoRefreshingCacheMap<String, Mono<ListOrganizationsResponse>> orgCache;
 	private AutoRefreshingCacheMap<CacheKeySpace, Mono<ListSpacesResponse>> spaceCache;

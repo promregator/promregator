@@ -11,12 +11,13 @@ import java.util.regex.Pattern;
 
 import javax.validation.constraints.Null;
 
-import org.apache.log4j.Logger;
 import org.cloudfoundry.client.v2.organizations.OrganizationResource;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -26,7 +27,7 @@ import reactor.core.publisher.Mono;
 
 public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	
-	private static final Logger log = Logger.getLogger(ReactiveAppInstanceScanner.class);
+	private static final Logger log = LoggerFactory.getLogger(ReactiveAppInstanceScanner.class);
 	private static final String INVALID_ORG_ID = "***invalid***";
 	private static final String INVALID_SPACE_ID = "***invalid***";
 	private static final Map<String, SpaceApplicationSummary> INVALID_SUMMARY = new HashMap<>();

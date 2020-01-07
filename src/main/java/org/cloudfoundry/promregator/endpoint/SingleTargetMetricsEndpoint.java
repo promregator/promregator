@@ -4,12 +4,13 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.NullMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +29,7 @@ import io.prometheus.client.exporter.common.TextFormat;
 @RequestMapping(EndpointConstants.ENDPOINT_PATH_SINGLE_TARGET_SCRAPING+"/{applicationId}/{instanceNumber}")
 public class SingleTargetMetricsEndpoint extends AbstractMetricsEndpoint {
 	
-	private static final Logger log = Logger.getLogger(SingleTargetMetricsEndpoint.class);
+	private static final Logger log = LoggerFactory.getLogger(SingleTargetMetricsEndpoint.class);
 
 	private Instance instance;
 	

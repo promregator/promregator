@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.Random;
 
 import org.apache.http.client.methods.HttpGet;
-import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.textformat004.Parser;
@@ -16,9 +15,11 @@ import org.cloudfoundry.promregator.textformat004.Parser;
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.Histogram.Timer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MetricsFetcherSimulator implements MetricsFetcher {
-	private static final Logger log = Logger.getLogger(MetricsFetcherSimulator.class);
+	private static final Logger log = LoggerFactory.getLogger(MetricsFetcherSimulator.class);
 	
 	private String accessURL;
 	private AuthenticationEnricher ae;

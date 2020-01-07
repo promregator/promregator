@@ -3,17 +3,18 @@ package org.cloudfoundry.promregator.lifecycle;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcherMetrics;
 import org.cloudfoundry.promregator.messagebus.MessageBusDestination;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.springconfig.JMSSpringConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jms.annotation.JmsListener;
 
 public class InstanceLifecycleHandler {
-	private static final Logger log = Logger.getLogger(InstanceLifecycleHandler.class);
+	private static final Logger log = LoggerFactory.getLogger(InstanceLifecycleHandler.class);
 	
 	@JmsListener(destination=MessageBusDestination.DISCOVERER_INSTANCE_REMOVED, containerFactory=JMSSpringConfiguration.BEAN_NAME_JMS_LISTENER_CONTAINER_FACTORY)
 	public void receiver(Instance instance) {

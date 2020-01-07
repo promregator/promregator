@@ -10,15 +10,15 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
-import org.apache.log4j.Logger;
-
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Collector.Type;
 import io.prometheus.client.exporter.common.TextFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MergableMetricFamilySamples {
 	
-	private static final Logger log = Logger.getLogger(MergableMetricFamilySamples.class);
+	private static final Logger log = LoggerFactory.getLogger(MergableMetricFamilySamples.class);
 	
 	private HashMap<String, MetricFamilySamples> map = new HashMap<>();
 	

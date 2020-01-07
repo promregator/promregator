@@ -5,12 +5,12 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
-
 import io.prometheus.client.Collector.MetricFamilySamples.Sample;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MetricLine {
-	private static final Logger log = Logger.getLogger(MetricLine.class);
+	private static final Logger log = LoggerFactory.getLogger(MetricLine.class);
 	
 	private static final Pattern PATTERN_TOKEN_WITH_SPACE_SEPARATOR = Pattern.compile("^([a-zA-Z0-9:_\\\"]+)");
 	private static final Pattern PATTERN_SKIP_SPACES = Pattern.compile("[ \\\\t]*");
