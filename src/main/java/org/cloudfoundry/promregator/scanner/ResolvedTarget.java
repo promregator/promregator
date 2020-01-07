@@ -1,5 +1,6 @@
 package org.cloudfoundry.promregator.scanner;
 
+import org.cloudfoundry.promregator.config.InvalidTargetProtocolSpecifiedError;
 import org.cloudfoundry.promregator.config.Target;
 
 public class ResolvedTarget {
@@ -53,9 +54,9 @@ public class ResolvedTarget {
 	}
 
 	public String getPath() {
-		if (this.path == null)
+		if (this.path == null) {
 			return "/metrics";
-		
+		}
 		return path;
 	}
 
@@ -64,9 +65,9 @@ public class ResolvedTarget {
 	}
 
 	public String getProtocol() {
-		if (this.protocol == null)
+		if (this.protocol == null) {
 			return "https";
-		
+		}
 		return protocol;
 	}
 
@@ -74,7 +75,7 @@ public class ResolvedTarget {
 		if ("http".equals(protocol) || "https".equals(protocol)) {
 			this.protocol = protocol;
 		} else {
-			throw new Error(String.format("Invalid configuration: Target attempted to be configured with non-http(s) protocol: %s", protocol));
+			throw new InvalidTargetProtocolSpecifiedError(String.format("Invalid configuration: Target attempted to be configured with non-http(s) protocol: %s", protocol));
 		}
 	}
 
