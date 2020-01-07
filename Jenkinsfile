@@ -39,6 +39,7 @@ def runWithGPG(Closure job) {
 
 timestamps {
 	node("slave") {
+		def checkoutBranchName = env.BRANCH_NAME // see also https://stackoverflow.com/a/36332154
 	
 		dir("build") {
 			checkout scm
@@ -50,14 +51,23 @@ timestamps {
 				try {
 					boolean withSigning = !currentVersion.endsWith("-SNAPSHOT")
 				
-					withCredentials([string(credentialsId: 'promregator_sonarcloud', variable: 'sonarlogin')]) {
+					if (checkoutBranchName.equals("master")) {
+						withCredentials([string(credentialsId: 'promregator_sonarcloud', variable: 'sonarlogin')]) {
+							sh """#!/bin/bash -xe
+								export CF_PASSWORD=dummypassword
+								mvn -U -B -PwithTests -Prelease '-Dsonar.login=${sonarlogin}' \
+									clean verify sonar:sonar
+		
+							"""
+						}
+					} else {
 						sh """#!/bin/bash -xe
 							export CF_PASSWORD=dummypassword
-							mvn -U -B -PwithTests -Prelease '-Dsonar.login=${sonarlogin}' \
-								clean verify sonar:sonar
-	
+							mvn -U -B -PwithTests -Prelease clean verify
 						"""
 					}
+
+
 				} finally {
 					junit 'target/surefire-reports/*.xml'
 				}
