@@ -3,15 +3,16 @@ package org.cloudfoundry.promregator.auth;
 import org.apache.http.client.methods.HttpGet;
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.config.BasicAuthenticationConfiguration;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 public class BasicAuthenticationEnricherTest {
 
-	@AfterClass
+	@AfterAll
 	public static void cleanupEnvironment() {
 		JUnitTestUtils.cleanUpAll();
 	}
@@ -32,10 +33,10 @@ public class BasicAuthenticationEnricherTest {
 		ArgumentCaptor<String> valueCaptor = ArgumentCaptor.forClass(String.class);
 		Mockito.verify(mockGet).setHeader(keyCaptor.capture(), valueCaptor.capture());
 		String value = valueCaptor.getValue();
-		Assert.assertEquals("Basic ZHVtbXl1c2VyOnVuaXR0ZXN0cGFzc3dvcmQ=", value);
+		assertThat("Basic ZHVtbXl1c2VyOnVuaXR0ZXN0cGFzc3dvcmQ=").isEqualTo(value);
 		
 		String key = keyCaptor.getValue();
-		Assert.assertEquals("Authorization", key);
+		assertThat("Authorization").isEqualTo(key);
 
 	}
 

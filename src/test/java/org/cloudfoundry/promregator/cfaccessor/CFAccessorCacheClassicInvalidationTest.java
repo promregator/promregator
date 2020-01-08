@@ -1,19 +1,19 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = CFAccessorCacheClassicSpringApplication.class)
 @TestPropertySource(locations="../default.properties")
 @DirtiesContext(classMode=ClassMode.AFTER_CLASS)
@@ -32,14 +32,14 @@ public class CFAccessorCacheClassicInvalidationTest {
 	@Autowired
 	private CFAccessorCacheClassic subject;
 	
-	@Before
+	@BeforeEach
 	public void invalidateCaches() {
 		this.subject.invalidateCacheApplications();
 		this.subject.invalidateCacheSpace();
 		this.subject.invalidateCacheOrg();
 	}
 	
-	@AfterClass
+	@AfterAll
 	public static void runCleanup() {
 		JUnitTestUtils.cleanUpAll();
 	}
