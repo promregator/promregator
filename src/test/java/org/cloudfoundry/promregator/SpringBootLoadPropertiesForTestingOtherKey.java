@@ -18,9 +18,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(classes = { SpringBootLoadPropertiesForTestingSpringApplication.class })
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(initializers = { ConfigFileApplicationContextInitializer.class })
-@ActiveProfiles(profiles= {"springBootLoadPropertiesForTesting"})
-@TestPropertySource(properties = "encrypt.key=mySecretKey")
-public class SpringBootLoadPropertiesForTesting {
+@ActiveProfiles(profiles= {"springBootLoadPropertiesForTestingOtherKey"})
+@TestPropertySource(properties = "encrypt.key=someotherkey")
+public class SpringBootLoadPropertiesForTestingOtherKey {
 
 	@Autowired
 	private SpringBootLoadPropertiesForTestingSpringApplication springBootLoadPropertiesForTestingSpringApplication;
@@ -39,6 +39,6 @@ public class SpringBootLoadPropertiesForTesting {
 	@Test
 	public void testContextLoadsWithEncryptedValue() {
 		String secretValue = springBootLoadPropertiesForTestingSpringApplication.getSecretValue();
-		assertThat(secretValue).as("passwords do not match but should").isEqualTo("mysecret");
+		assertThat(secretValue).as("passwords do not match but should").isEqualTo("myothersecret");
 	}
 }
