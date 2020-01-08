@@ -15,6 +15,8 @@ public class ResolvedTarget {
 	private String path;
 	
 	private String protocol;
+
+	private String applicationId;
 	
 	public ResolvedTarget() {
 		super();
@@ -86,7 +88,15 @@ public class ResolvedTarget {
 	public void setOriginalTarget(Target originalTarget) {
 		this.originalTarget = originalTarget;
 	}
-	
+
+	public String getApplicationId() {
+		return applicationId;
+	}
+
+	public void setApplicationId(String applicationId) {
+		this.applicationId = applicationId;
+	}
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
@@ -99,6 +109,7 @@ public class ResolvedTarget {
 		result = prime * result + ((path == null) ? 0 : path.hashCode());
 		result = prime * result + ((protocol == null) ? 0 : protocol.hashCode());
 		result = prime * result + ((spaceName == null) ? 0 : spaceName.hashCode());
+		result = prime * result + ((applicationId == null) ? 0 : applicationId.hashCode());
 		return result;
 	}
 
@@ -122,6 +133,13 @@ public class ResolvedTarget {
 				return false;
 			}
 		} else if (!applicationName.equals(other.applicationName)) {
+			return false;
+		}
+		if (applicationId == null) {
+			if (other.applicationId != null) {
+				return false;
+			}
+		} else if (!applicationId.equals(other.applicationId)) {
 			return false;
 		}
 		if (orgName == null) {
@@ -167,6 +185,8 @@ public class ResolvedTarget {
 		builder.append(spaceName);
 		builder.append(", applicationName=");
 		builder.append(applicationName);
+		builder.append(", applicationId=");
+		builder.append(applicationId);
 		builder.append(", path=");
 		builder.append(path);
 		builder.append(", protocol=");

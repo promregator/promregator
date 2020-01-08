@@ -2,13 +2,17 @@ package org.cloudfoundry.promregator.discovery;
 
 import java.time.Clock;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorMock;
+import org.cloudfoundry.promregator.config.Target;
 import org.cloudfoundry.promregator.messagebus.MessageBusDestination;
 import org.cloudfoundry.promregator.scanner.Instance;
+import org.cloudfoundry.promregator.scanner.ResolvedTarget;
+import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.cloudfoundry.promregator.springconfig.JMSSpringConfiguration;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -19,6 +23,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = CFDiscovererTestSpringApplication.class)
@@ -32,7 +39,10 @@ public class CFMultiDiscovererTest {
 	
 	@Autowired
 	private CFMultiDiscoverer cfDiscoverer;
-	
+
+	@Autowired
+	private TargetResolver targetResolver;
+
 	@Autowired
 	private Clock clock;
 	
@@ -45,6 +55,18 @@ public class CFMultiDiscovererTest {
 	
 	@Test
 	public void testDiscoverWithCleanup() throws InterruptedException {
+		List<ResolvedTarget> resolvedTargets = new ArrayList<>();
+		ResolvedTarget aTarget = new ResolvedTarget();
+		aTarget.setOrgName("unittestorg");
+		aTarget.setSpaceName("unittestspace");
+		aTarget.setApplicationName("testapp");
+		aTarget.setApplicationId(CFAccessorMock.UNITTEST_APP1_UUID);
+		aTarget.setProtocol("https");
+		aTarget.setPath("/metrics");
+		aTarget.setOriginalTarget(new Target());
+		resolvedTargets.add(aTarget);
+		when(targetResolver.resolveTargets(any())).thenReturn(resolvedTargets);
+
 		List<Instance> result = this.cfDiscoverer.discover(null, null);
 		
 		Assert.assertEquals(2, result.size());

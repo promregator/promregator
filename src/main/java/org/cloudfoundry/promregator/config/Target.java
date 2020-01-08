@@ -53,6 +53,7 @@ public class Target {
 		this.protocol = source.protocol;
 		this.authenticatorId = source.authenticatorId;
 
+		
 		if (source.preferredRouteRegex == null) {
 			this.preferredRouteRegex = new ArrayList<>(0);
 		} else {

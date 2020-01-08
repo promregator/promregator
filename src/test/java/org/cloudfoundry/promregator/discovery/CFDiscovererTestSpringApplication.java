@@ -11,8 +11,8 @@ import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.ReactiveAppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.TargetResolver;
-import org.cloudfoundry.promregator.scanner.TrivialTargetResolver;
 import org.cloudfoundry.promregator.springconfig.JMSSpringConfiguration;
+import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
@@ -23,7 +23,7 @@ public class CFDiscovererTestSpringApplication {
 	
 	@Bean
 	public TargetResolver targetResolver() {
-		return new TrivialTargetResolver();
+		return Mockito.mock(TargetResolver.class);
 	}
 
 	
