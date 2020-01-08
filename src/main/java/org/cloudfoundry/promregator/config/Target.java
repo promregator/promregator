@@ -8,7 +8,6 @@ import java.util.regex.PatternSyntaxException;
 
 import org.apache.log4j.Logger;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class Target {
 	private static final Logger log = Logger.getLogger(Target.class);
