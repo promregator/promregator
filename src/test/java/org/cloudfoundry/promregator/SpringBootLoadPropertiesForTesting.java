@@ -41,10 +41,4 @@ public class SpringBootLoadPropertiesForTesting {
 		String secretValue = springBootLoadPropertiesForTestingSpringApplication.getSecretValue();
 		assertThat(secretValue).as("passwords do not match but should").isEqualTo("mysecret");
 	}
-
-	@Test
-	public void testContextLoadsWithEncryptedValueNotMatching() {
-		String secretValue = springBootLoadPropertiesForTestingSpringApplication.getSecretValue();
-		assertThat(secretValue).as("passwords do match but shouldn't\"").isNotEqualTo("notMySecret");
-	}
 }
