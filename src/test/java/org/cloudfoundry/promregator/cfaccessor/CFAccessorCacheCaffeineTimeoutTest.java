@@ -38,16 +38,19 @@ public class CFAccessorCacheCaffeineTimeoutTest {
 	private CFAccessorCacheCaffeine subject;
 
 	@BeforeEach
-	public void setup() {
+	public void clearCaches() {
+		this.subject.invalidateCacheApplications();
+		this.subject.invalidateCacheSpace();
+		this.subject.invalidateCacheOrg();
+	}
+	
+	@BeforeEach
+	public void setupMocks() {
 		Mockito.reset(this.parentMock);
 		Mockito.when(this.parentMock.retrieveOrgId("dummy")).then(new TimeoutMonoAnswer());
 		Mockito.when(this.parentMock.retrieveSpaceId("dummy1", "dummy2")).then(new TimeoutMonoAnswer());
 		Mockito.when(this.parentMock.retrieveAllApplicationIdsInSpace("dummy1", "dummy2")).then(new TimeoutMonoAnswer());
 		Mockito.when(this.parentMock.retrieveSpaceSummary("dummy")).then(new TimeoutMonoAnswer());
-
-		this.subject.invalidateCacheApplications();
-		this.subject.invalidateCacheSpace();
-		this.subject.invalidateCacheOrg();
 	}
 
 	public static class TimeoutMonoAnswer implements Answer<Mono<?>> {
