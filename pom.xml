@@ -138,11 +138,10 @@
 			<version>${cloudfoundry.client.version}</version>
 		</dependency>
 
-		<!-- omitted here, as implicitly provided by cloudfoundry-client-reactor -->
-		<!--		<dependency>-->
-		<!--			<groupId>io.projectreactor.ipc</groupId>-->
-		<!--			<artifactId>reactor-netty</artifactId>-->
-		<!--		</dependency>-->
+		<dependency>
+			<groupId>io.projectreactor.netty</groupId>
+			<artifactId>reactor-netty</artifactId>
+		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/io.projectreactor/reactor-core -->
 		<dependency>
@@ -157,7 +156,8 @@
 			<version>4.4</version>
 		</dependency>
 
-		<!--  see also https://github.com/google/guava/issues/2350#issuecomment-169097253 and https://stackoverflow.com/a/52345191 -->
+		<!-- see also https://github.com/google/guava/issues/2350#issuecomment-169097253 
+			and https://stackoverflow.com/a/52345191 -->
 		<dependency>
 			<groupId>com.github.ben-manes.caffeine</groupId>
 			<artifactId>caffeine</artifactId>
@@ -232,7 +232,7 @@
 			<version>3.0.1</version>
 		</dependency>
 
-		<!--  see also https://github.com/owasp/json-sanitizer - Apache 2.0 license -->
+		<!-- see also https://github.com/owasp/json-sanitizer - Apache 2.0 license -->
 		<dependency>
 			<groupId>com.mikesamuel</groupId>
 			<artifactId>json-sanitizer</artifactId>
