@@ -7,19 +7,19 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
-
 import io.prometheus.client.Collector;
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Collector.MetricFamilySamples.Sample;
 import io.prometheus.client.Collector.Type;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /* Unfortunately, there is nothing provided for this by Prometheus.io :-(
  * So, we have to do this ourselves.
  * Details of the format are described at https://prometheus.io/docs/instrumenting/exposition_formats/
  */
 public class Parser {
-	private static final Logger log = Logger.getLogger(Parser.class);
+	private static final Logger log = LoggerFactory.getLogger(Parser.class);
 	
 	private String textFormat004data;
 	

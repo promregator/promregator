@@ -10,9 +10,10 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.apache.commons.collections4.map.AbstractMapDecorator;
-import org.apache.log4j.Logger;
-import org.apache.log4j.MDC;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 	private Duration refreshInterval;
@@ -216,7 +217,7 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 	}
 
 	private static class RefresherThread<K, V> extends Thread {
-		private static final Logger log = Logger.getLogger(RefresherThread.class);
+		private static final Logger log = LoggerFactory.getLogger(RefresherThread.class);
 		
 		private AutoRefreshingCacheMap<K, V> map;
 		

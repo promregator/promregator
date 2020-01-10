@@ -5,7 +5,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.log4j.Logger;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.junit.Assert;
 
@@ -15,11 +14,13 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.testing.FakeTicker;
 
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 public class CaffeineAsyncLoadingTest {
-	private static final Logger log = Logger.getLogger(CaffeineAsyncLoadingTest.class);
+	private static final Logger log = LoggerFactory.getLogger(CaffeineAsyncLoadingTest.class);
 
 	private final class AsyncCacheLoaderTimingImplementation implements AsyncCacheLoader<String, Integer> {
 		private int executionNumber = 0;

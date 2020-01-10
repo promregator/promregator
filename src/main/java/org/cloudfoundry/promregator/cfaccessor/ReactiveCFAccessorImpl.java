@@ -8,7 +8,6 @@ import java.util.regex.Pattern;
 import javax.annotation.PostConstruct;
 
 import org.apache.http.conn.util.InetAddressUtils;
-import org.apache.log4j.Logger;
 import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.client.v2.applications.ListApplicationsRequest;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
@@ -31,6 +30,8 @@ import org.cloudfoundry.reactor.ProxyConfiguration;
 import org.cloudfoundry.reactor.TokenProvider;
 import org.cloudfoundry.reactor.client.ReactorCloudFoundryClient;
 import org.cloudfoundry.reactor.tokenprovider.PasswordGrantTokenProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -39,7 +40,7 @@ import reactor.core.publisher.Mono;
 
 public class ReactiveCFAccessorImpl implements CFAccessor {
 
-	private static final Logger log = Logger.getLogger(ReactiveCFAccessorImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(ReactiveCFAccessorImpl.class);
 	
 	@Value("${cf.api_host}")
 	private String apiHost;

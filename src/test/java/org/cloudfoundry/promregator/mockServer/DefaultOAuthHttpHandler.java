@@ -7,11 +7,12 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
-import org.apache.log4j.Logger;
 import org.junit.Assert;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DefaultOAuthHttpHandler implements HttpHandler {
 	private int counterCalled = 0;
@@ -19,7 +20,7 @@ public class DefaultOAuthHttpHandler implements HttpHandler {
 	private String response = "";
 
 	
-	private static final Logger log = Logger.getLogger(DefaultOAuthHttpHandler.class);
+	private static final Logger log = LoggerFactory.getLogger(DefaultOAuthHttpHandler.class);
 	
 	@Override
 	public void handle(HttpExchange he) throws IOException {

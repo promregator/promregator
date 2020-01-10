@@ -23,15 +23,16 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
-import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.config.OAuth2XSUAAAuthenticationConfiguration;
 
 import com.google.gson.Gson;
 import com.google.json.JsonSanitizer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
 	
-	private static final Logger log = Logger.getLogger(OAuth2XSUAAEnricher.class);
+	private static final Logger log = LoggerFactory.getLogger(OAuth2XSUAAEnricher.class);
 	
 	static final CloseableHttpClient httpclient = HttpClients.createDefault();
 

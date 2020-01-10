@@ -3,9 +3,10 @@ package org.cloudfoundry.promregator.endpoint;
 import java.time.Duration;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcher;
 import org.cloudfoundry.promregator.scanner.Instance;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +28,7 @@ import io.prometheus.client.exporter.common.TextFormat;
 @Scope(value=WebApplicationContext.SCOPE_REQUEST) // see also https://github.com/promregator/promregator/issues/51
 @RequestMapping(EndpointConstants.ENDPOINT_PATH_SINGLE_ENDPOINT_SCRAPING)
 public class MetricsEndpoint extends AbstractMetricsEndpoint {
-	private static final Logger log = Logger.getLogger(MetricsEndpoint.class);
+	private static final Logger log = LoggerFactory.getLogger(MetricsEndpoint.class);
 
 	@GetMapping(produces=TextFormat.CONTENT_TYPE_004)
 	public ResponseEntity<String> getMetrics() {

@@ -7,18 +7,19 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import java.util.logging.Level;
 
-import org.apache.log4j.Logger;
 import org.cloudfoundry.client.v2.OrderDirection;
 import org.cloudfoundry.client.v2.PaginatedRequest;
 import org.cloudfoundry.client.v2.PaginatedResponse;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 class ReactiveCFPaginatedRequestFetcher {
-	private static final Logger log = Logger.getLogger(ReactiveCFPaginatedRequestFetcher.class);
+	private static final Logger log = LoggerFactory.getLogger(ReactiveCFPaginatedRequestFetcher.class);
 
 	private static final int MAX_SUPPORTED_RESULTS_PER_PAGE = 100;
 	private static final int RESULTS_PER_PAGE = MAX_SUPPORTED_RESULTS_PER_PAGE;

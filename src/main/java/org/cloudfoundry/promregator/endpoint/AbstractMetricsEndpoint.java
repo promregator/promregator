@@ -18,7 +18,6 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Null;
 
-import org.apache.log4j.Logger;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.auth.AuthenticatorController;
 import org.cloudfoundry.promregator.discovery.CFMultiDiscoverer;
@@ -34,6 +33,8 @@ import org.cloudfoundry.promregator.rewrite.MergableMetricFamilySamples;
 import org.cloudfoundry.promregator.rewrite.NullMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -53,7 +54,7 @@ import io.prometheus.client.Gauge.Builder;
 // being ignored by the Framework. Workaround: Annotate the implementing class instead
 public abstract class AbstractMetricsEndpoint {
 	
-	private static final Logger log = Logger.getLogger(AbstractMetricsEndpoint.class);
+	private static final Logger log = LoggerFactory.getLogger(AbstractMetricsEndpoint.class);
 	
 	@Value("${promregator.simulation.enabled:false}")
 	private boolean simulationMode;
