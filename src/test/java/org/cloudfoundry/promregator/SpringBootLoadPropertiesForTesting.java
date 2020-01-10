@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(classes = { SpringBootLoadPropertiesForTestingSpringApplication.class })
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(initializers = { ConfigFileApplicationContextInitializer.class })
-@ActiveProfiles(profiles= {"springBootLoadPropertiesForTesting"})
+@ActiveProfiles(profiles= {"springBootLoadPropertiesForTesting", "springBootLoadPropertiesForEncryptionTesting"})
 @TestPropertySource(properties = "encrypt.key=mySecretKey")
 public class SpringBootLoadPropertiesForTesting {
 
