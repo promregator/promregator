@@ -35,6 +35,7 @@ public class CFMetricsFetcherNetty implements MetricsFetcher {
 
 	@Override
 	public HashMap<String, MetricFamilySamples> call() throws Exception {
+		// see also https://projectreactor.io/docs/netty/release/reference/index.html#_connect
 		ByteBufFlux response = HttpClient.create()
 			.compress(true)
 			.followRedirect(true)
@@ -61,7 +62,7 @@ public class CFMetricsFetcherNetty implements MetricsFetcher {
 			return this.mfse.determineEnumerationOfMetricFamilySamples(emfsRaw);
 		});
 		
-		// TODO: Handling up still missing!
+		// TODO: Handling of metric "up" still missing!
 		
 		// TODO MetricsFetcherMetrics still missing!
 		
