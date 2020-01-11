@@ -97,12 +97,10 @@ public class MetricsFetcherTest {
 		private boolean called = false;
 		
 		@Override
-		public void enrichWithAuthentication(HttpGet httpget) {
+		public String enrichWithAuthentication() {
 			this.called = true;
 			
-			Assert.assertEquals("/metrics", httpget.getURI().getPath());
-			
-			httpget.addHeader("Authentication", "Bearer abc");
+			return "Bearer abc";
 		}
 
 		public boolean isCalled() {

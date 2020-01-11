@@ -3,7 +3,6 @@ package org.cloudfoundry.promregator.auth;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-import org.apache.http.client.methods.HttpGet;
 import org.cloudfoundry.promregator.config.BasicAuthenticationConfiguration;
 
 public class BasicAuthenticationEnricher implements AuthenticationEnricher {
@@ -24,10 +23,10 @@ public class BasicAuthenticationEnricher implements AuthenticationEnricher {
 	}
 	
 	@Override
-	public void enrichWithAuthentication(HttpGet httpget) {
-		String b64usernamepassword = this.getBase64EncodedUsernamePassword();
+	public String enrichWithAuthentication() {
+		final String b64usernamepassword = this.getBase64EncodedUsernamePassword();
 		
-		httpget.setHeader("Authorization", String.format("Basic %s", b64usernamepassword));
+		return String.format("Basic %s", b64usernamepassword);
 	}
 
 }

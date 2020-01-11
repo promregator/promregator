@@ -17,18 +17,17 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.cloudfoundry.promregator.config.OAuth2XSUAAAuthenticationConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.json.JsonSanitizer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
 	
@@ -44,31 +43,41 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
 	}
 
 	@Override
-	public void enrichWithAuthentication(HttpGet httpget) {
-		final RequestConfig requestConfig = httpget.getConfig();
-		
-		final String jwt = getBufferedJWT(requestConfig);
+	public String enrichWithAuthentication() {
+		final String jwt = getBufferedJWT();
 		if (jwt == null) {
 			log.error("Unable to enrich request with JWT");
-			return;
+			return null;
 		}
 		
-		httpget.setHeader("Authorization", String.format("Bearer %s", jwt));
+		return String.format("Bearer %s", jwt);
 	}
 
 	private String bufferedJwt = null;
 	private Instant validUntil = null;
 	
-	private synchronized String getBufferedJWT(RequestConfig config) {
+	private synchronized String getBufferedJWT() {
 		if (this.bufferedJwt == null || Instant.now().isAfter(this.validUntil)) {
 			// JWT is not available or expired
-			this.bufferedJwt = getJWT(config);
+			this.bufferedJwt = getJWT();
 		}
 		
 		return bufferedJwt;
 	}
+	
+	private RequestConfig getRequestConfig() {
+		RequestConfig requestConfig = RequestConfig.custom()
+				.setRedirectsEnabled(true)
+				.setCircularRedirectsAllowed(false)
+				.setMaxRedirects(10)
+				.build();
 
-	private String getJWT(RequestConfig config) {
+		// TODO Proxy support needed here? If yes, additional attributes required in this.config
+		// TODO Proxy may deviate for getting the authentication?
+		return requestConfig;
+	}
+
+	private String getJWT() {
 		log.info("Fetching new JWT token");
 		
 		String url = String.format("%s?grant_type=client_credentials", this.config.getTokenServiceURL());
@@ -83,7 +92,7 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
 		}
 		
 		HttpPost httpPost = new HttpPost(url);
-		httpPost.setConfig(config);
+		httpPost.setConfig(this.getRequestConfig());
 		
 		if (this.config.getClient_id().contains(":")) {
 			log.error("Security: jwtClient_id contains colon");
