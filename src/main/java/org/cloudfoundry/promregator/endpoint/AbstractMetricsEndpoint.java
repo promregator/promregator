@@ -21,8 +21,8 @@ import javax.validation.constraints.Null;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.auth.AuthenticatorController;
 import org.cloudfoundry.promregator.discovery.CFMultiDiscoverer;
-import org.cloudfoundry.promregator.fetcher.CFMetricsFetcher;
 import org.cloudfoundry.promregator.fetcher.CFMetricsFetcherConfig;
+import org.cloudfoundry.promregator.fetcher.CFMetricsFetcherNetty;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcher;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcherMetrics;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcherSimulator;
@@ -360,7 +360,7 @@ public abstract class AbstractMetricsEndpoint {
 				cfmfConfig.setSocketReadTimeoutInMillis(this.fetcherSocketReadTimeout);
 				this.provideProxyConfiguration(cfmfConfig);
 				
-				mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), cfmfConfig);
+				mf = new CFMetricsFetcherNetty(accessURL, instance.getInstanceId(), cfmfConfig);
 			}
 			callablesList.add(mf);
 		}

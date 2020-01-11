@@ -56,7 +56,8 @@ public class CFMetricsFetcherNetty implements MetricsFetcher {
 			HashMap<String, MetricFamilySamples> emfsRaw = p.parse();
 			
 			return this.mfse.determineEnumerationOfMetricFamilySamples(emfsRaw);
-		});
+		})
+		.checkpoint("Text004Parser");
 		
 		return emfs.block();
 	}
@@ -98,8 +99,9 @@ public class CFMetricsFetcherNetty implements MetricsFetcher {
 				}
 				
 				log.warn(String.format("Target server at '%s' and instance '%s' responded with a non-200 status code: %d", this.endpointUrl, this.instanceId, headers.status().code()));
-				throw new InvalidStatusCodeFromClient(String.format("Invalid HTTP Status code from %s: %d", this.instanceId, headers.status().code()));
+				throw new InvalidStatusCodeFromClient(String.format("Invalid HTTP Status code from %s: %d", this.endpointUrl, headers.status().code()));
 			})
+			.checkpoint(String.format("CFMetricsFetcher for %s on instance %s", this.endpointUrl, this.instanceId))
 			.doOnError(err -> {
 				log.warn(String.format("Unable to retrieve metrics from %s, instance %s",  this.endpointUrl, this.instanceId), err);
 				
