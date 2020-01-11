@@ -3,6 +3,7 @@ package org.cloudfoundry.promregator.fetcher;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
+import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.endpoint.EndpointConstants;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.textformat004.Parser;
@@ -10,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.netty.channel.ChannelOption;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.prometheus.client.Collector.MetricFamilySamples;
@@ -140,7 +142,13 @@ public class CFMetricsFetcherNetty implements MetricsFetcher {
 		// provided for recursive scraping / loopback detection
 		headers.set(EndpointConstants.HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER, this.config.getPromregatorInstanceIdentifier().toString());
 		
-		// TODO AE is still missing here!
+		final AuthenticationEnricher ae = this.config.getAuthenticationEnricher();
+		if (ae != null) {
+			final String authentication = ae.enrichWithAuthentication();
+			if (authentication != null) {
+				headers.set(HttpHeaderNames.AUTHORIZATION, authentication);
+			}
+		}
 		
 		return headers;
 	}
