@@ -10,9 +10,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.netty.channel.ChannelOption;
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Gauge;
+import io.prometheus.client.Histogram.Timer;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.tcp.ProxyProvider;
@@ -23,7 +25,6 @@ public class CFMetricsFetcherNetty implements MetricsFetcher {
 	private static final String HTTP_HEADER_CF_APP_INSTANCE = "X-CF-APP-INSTANCE";
 
 	private static final Logger log = LoggerFactory.getLogger(CFMetricsFetcherNetty.class);
-
 	
 	private String endpointUrl;
 	private String instanceId;
@@ -31,6 +32,7 @@ public class CFMetricsFetcherNetty implements MetricsFetcher {
 
 	private Gauge.Child up;
 	private MetricsFetcherMetrics mfm;
+	private Timer requestTimer;
 	
 	private AbstractMetricFamilySamplesEnricher mfse;
 
@@ -56,10 +58,6 @@ public class CFMetricsFetcherNetty implements MetricsFetcher {
 			return this.mfse.determineEnumerationOfMetricFamilySamples(emfsRaw);
 		});
 		
-		// TODO: Handling of metric "up" still missing!
-		
-		// TODO MetricsFetcherMetrics still missing!
-		
 		return emfs.block();
 	}
 
@@ -76,18 +74,21 @@ public class CFMetricsFetcherNetty implements MetricsFetcher {
 	private Mono<String> createNettyRequest() {
 		// see also https://projectreactor.io/docs/netty/release/reference/index.html#_connect
 		log.debug(String.format("Reading metrics from %s for instance %s", this.endpointUrl, this.instanceId));
+		
 		Mono<String> response = HttpClient.create()
 			.compress(true)
 			.followRedirect(true)
 			.tcpConfiguration(this::getTCPConfiguration)
-			.headers(headers -> {
-				// see also https://docs.cloudfoundry.org/concepts/http-routing.html
-				headers.set(HTTP_HEADER_CF_APP_INSTANCE, this.instanceId);
-				
-				// provided for recursive scraping / loopback detection
-				headers.set(EndpointConstants.HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER, this.config.getPromregatorInstanceIdentifier().toString());
-				
-				// TODO AE is still missing here!
+			.headers(this::getRequestHeaders)
+			.doAfterRequest((req, conn) -> {
+				if (this.mfm.getLatencyRequest() != null) {
+					this.requestTimer = this.mfm.getLatencyRequest().startTimer();
+				}
+			})
+			.doAfterResponse((res, conn) -> {
+				if (this.requestTimer != null) {
+					this.requestTimer.observeDuration();
+				}
 			})
 			.get()
 			.uri(this.endpointUrl)
@@ -96,7 +97,6 @@ public class CFMetricsFetcherNetty implements MetricsFetcher {
 					return content.asString(StandardCharsets.UTF_8);
 				}
 				
-				// the request failed with a non-200 HTTP status code
 				log.warn(String.format("Target server at '%s' and instance '%s' responded with a non-200 status code: %d", this.endpointUrl, this.instanceId, headers.status().code()));
 				throw new InvalidStatusCodeFromClient(String.format("Invalid HTTP Status code from %s: %d", this.instanceId, headers.status().code()));
 			})
@@ -105,10 +105,14 @@ public class CFMetricsFetcherNetty implements MetricsFetcher {
 				
 				this.countSuccessOrFailure(false);
 			})
-			.doOnNext(content -> {
+			.doOnNext(text004String -> {
+				log.debug(String.format("Successfully received metrics from %s for instance %s", this.endpointUrl, this.instanceId));
+				
 				this.countSuccessOrFailure(true);
 				
-				log.debug(String.format("Successfully received metrics from %s for instance %s", this.endpointUrl, this.instanceId));
+				if (this.mfm.getRequestSize() != null) {
+					this.mfm.getRequestSize().observe(text004String.length());
+				}
 			});
 		
 		return response;
@@ -127,6 +131,18 @@ public class CFMetricsFetcherNetty implements MetricsFetcher {
 
 	}
 	
+	private HttpHeaders getRequestHeaders(HttpHeaders headers) {
+		// see also https://docs.cloudfoundry.org/concepts/http-routing.html
+		headers.set(HTTP_HEADER_CF_APP_INSTANCE, this.instanceId);
+		
+		// provided for recursive scraping / loopback detection
+		headers.set(EndpointConstants.HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER, this.config.getPromregatorInstanceIdentifier().toString());
+		
+		// TODO AE is still missing here!
+		
+		return headers;
+	}
+
 	private void countSuccessOrFailure(boolean available) {
 		if (this.up != null) {
 			this.up.set(available ? 1.0 : 0.0);
@@ -136,7 +152,5 @@ public class CFMetricsFetcherNetty implements MetricsFetcher {
 			this.mfm.getFailedRequests().inc();
 		}
 	}
-
-
 
 }
