@@ -1,6 +1,7 @@
 package org.cloudfoundry.promregator.fetcher;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.HashMap;
 
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
@@ -104,6 +105,7 @@ public class CFMetricsFetcherNetty implements MetricsFetcher {
 				throw new InvalidStatusCodeFromClient(String.format("Invalid HTTP Status code from %s: %d", this.endpointUrl, headers.status().code()));
 			})
 			.checkpoint(String.format("CFMetricsFetcher for %s on instance %s", this.endpointUrl, this.instanceId))
+			.timeout(Duration.ofMillis(2000)) /* TODO Maximal Scraping duration - make this configurable! */
 			.doOnError(err -> {
 				log.warn(String.format("Unable to retrieve metrics from %s, instance %s",  this.endpointUrl, this.instanceId), err);
 				
