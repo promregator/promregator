@@ -30,6 +30,10 @@ import com.google.gson.Gson;
 import com.google.json.JsonSanitizer;
 
 public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
+	/*
+	 * TODO - Align with state of old branch "nettyFetcher"
+	 */
+
 	
 	private static final Logger log = LoggerFactory.getLogger(OAuth2XSUAAEnricher.class);
 	

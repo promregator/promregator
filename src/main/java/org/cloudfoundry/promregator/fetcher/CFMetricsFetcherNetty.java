@@ -25,6 +25,10 @@ import reactor.netty.tcp.TcpClient;
 
 public class CFMetricsFetcherNetty implements MetricsFetcher {
 	
+	/*
+	 * TODO - Align with state of old branch "nettyFetcher"
+	 */
+	
 	private static final String HTTP_HEADER_CF_APP_INSTANCE = "X-CF-APP-INSTANCE";
 
 	private static final Logger log = LoggerFactory.getLogger(CFMetricsFetcherNetty.class);
