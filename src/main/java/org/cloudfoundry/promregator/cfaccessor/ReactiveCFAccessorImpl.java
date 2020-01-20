@@ -212,13 +212,24 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	private static final GetInfoRequest DUMMY_GET_INFO_REQUEST = GetInfoRequest.builder().build();
 	private static final GetInfoResponse ERRONEOUS_GET_INFO_RESPONSE = GetInfoResponse.builder().apiVersion("FAILED").build();
 	
+
+	@Value("${cf.watchdog.enabled:false}")
+	private boolean watchdogEnabled = false;
+
+	@Value("${cf.watchdog.timeout:2500}")
+	private int watchdogTimeoutInMS = 2500;
+	
 	@Scheduled(fixedRate=1*60*1000, initialDelay=60*1000)
 	@SuppressWarnings("unused")
 	private void connectionWatchdog() {
 		// see also https://github.com/promregator/promregator/issues/83
 		
+		if (!this.watchdogEnabled) {
+			return;
+		}
+		
 		this.cloudFoundryClient.info().get(DUMMY_GET_INFO_REQUEST)
-			.timeout(Duration.ofMillis(2500))
+			.timeout(Duration.ofMillis(this.watchdogTimeoutInMS))
 			.doOnError(e -> {
 				log.warn("Woof woof! It appears that the connection to the Cloud Controller is gone. Trying to restart Cloud Foundry Client", e);
 				/* 

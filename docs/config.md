@@ -69,14 +69,24 @@ Caused by: sun.security.validator.ValidatorException: PKIX path building failed:
 Enabling this option (and thus *disabling* the validation) may make you vulnerable to [man-in-the-middle attacks](https://en.wikipedia.org/wiki/Man-in-the-middle_attack). Thus, this option should never be enabled in a productive environment, but may only be used for testing purpose in a properly controlled environment.
 
 
-### Option "cf.watchdog" (optional)
-This option became available starting with version 0.5.5.
+### Option "cf.watchdog.enabled" (optional)
+This option became available starting with version 0.8.0.
 
 Allows to enable a periodic check of the connection to the Cloud Foundry Cloud Controller if set to `true`. If the check fails, a warning message is logged by the logger `org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl` (the exact name of the logger is subject to possible future change) and an attempt to re-establishing the connection is made. 
 
 The default of this option is `false`.
 
 Refer to [issue #83](https://github.com/promregator/promregator/issues/83) to see a scenario where this might be helpful.
+
+### Option "cf.watchdog.timeout" (optional)
+This option became available starting with version 0.8.0.
+
+Specifies the timeout in milliseconds after which the watchdog shall consider a connection test to the Cloud Foundry Cloud Controller to be considered failing. 
+
+The default value is 2500 (milliseconds).
+
+Refer to [issue #83](https://github.com/promregator/promregator/issues/83) to see a scenario where this might be helpful.
+
 
 ### Option "cf.connectionPool.size" (optional)
 This option became available starting with version 0.6.0.
