@@ -1,4 +1,7 @@
-<div style="font-size:large">Promregator is looking for <a href="https://github.com/promregator/promregator/wiki/Supporters-Wanted!">contributors/supporters</a>!</div>
+<p style="font-size:large">Promregator is looking for <a href="https://github.com/promregator/promregator/wiki/Supporters-Wanted!">contributors/supporters</a>!</p>
+
+<p style="font-size:large"><b>Attention Users of Promregator!</b> Influence development of Promregator by answering our <a href="https://github.com/promregator/promregator/labels/Polls">polls</a>!</p>
+
 
 # Status
 
