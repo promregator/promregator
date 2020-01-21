@@ -304,4 +304,14 @@
 		</packageUrl>
 		<cve>CVE-2018-8909</cve>
 	</suppress>
+
+	<suppress>
+		<notes><![CDATA[
+   file name: tomcat-embed-core-9.0.29.jar
+   No FORM-based authentication possible here
+   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-core@.*$
+		</packageUrl>
+		<cve>CVE-2019-17563</cve>
+	</suppress>
 </suppressions>
