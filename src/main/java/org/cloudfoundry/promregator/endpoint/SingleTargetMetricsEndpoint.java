@@ -2,7 +2,6 @@ package org.cloudfoundry.promregator.endpoint;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -12,15 +11,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.function.Predicate;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.constraints.Null;
 
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.auth.AuthenticatorController;
-import org.cloudfoundry.promregator.discovery.CFMultiDiscoverer;
 import org.cloudfoundry.promregator.fetcher.CFMetricsFetcher;
 import org.cloudfoundry.promregator.fetcher.CFMetricsFetcherConfig;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcher;
@@ -54,7 +50,6 @@ import io.prometheus.client.exporter.common.TextFormat;
 
 @RestController
 @Scope(value=WebApplicationContext.SCOPE_REQUEST) // see also https://github.com/promregator/promregator/issues/51
-@RequestMapping(EndpointConstants.ENDPOINT_PATH_SINGLE_TARGET_SCRAPING+"/{applicationId}/{instanceNumber}")
 public class SingleTargetMetricsEndpoint {
 	
 	private static final Logger log = LoggerFactory.getLogger(SingleTargetMetricsEndpoint.class);
@@ -65,9 +60,6 @@ public class SingleTargetMetricsEndpoint {
 	@Autowired
 	private ExecutorService metricsFetcherPool;
 	
-	@Autowired
-	private CFMultiDiscoverer cfDiscoverer;
-
 	@Autowired
 	private AuthenticatorController authenticatorController;
 
@@ -83,9 +75,6 @@ public class SingleTargetMetricsEndpoint {
 	@Value("${promregator.metrics.requestLatency:false}")
 	private boolean recordRequestLatency;
 	
-	@Value("${promregator.scraping.labelEnrichment:true}")
-	private boolean labelEnrichment;
-
 	@Value("${promregator.scraping.connectionTimeout:5000}")
 	private int fetcherConnectionTimeout;
 
@@ -98,8 +87,11 @@ public class SingleTargetMetricsEndpoint {
 	@Autowired
 	private HttpServletRequest httpServletRequest;
 	
-	private GenericMetricFamilySamplesPrefixRewriter gmfspr = new GenericMetricFamilySamplesPrefixRewriter("promregator");
+	@Autowired
+	private InstanceCache instanceCache;
 	
+	private GenericMetricFamilySamplesPrefixRewriter gmfspr = new GenericMetricFamilySamplesPrefixRewriter("promregator");
+
 	/* own metrics --- specific to this (scraping) request */
 	private CollectorRegistry requestRegistry;
 	
@@ -112,11 +104,7 @@ public class SingleTargetMetricsEndpoint {
 		
 		Builder builder = Gauge.build("promregator_up", "Indicator, whether the target of promregator is available");
 		
-		if (this.labelEnrichment) {
-			builder = builder.labelNames(CFAllLabelsMetricFamilySamplesEnricher.getEnrichingLabelNames());
-		} else {
-			builder = builder.labelNames(NullMetricFamilySamplesEnricher.getEnrichingLabelNames());
-		}
+		builder = builder.labelNames(NullMetricFamilySamplesEnricher.getEnrichingLabelNames());
 		
 		this.up = builder.register(this.requestRegistry);
 	}
@@ -138,147 +126,143 @@ public class SingleTargetMetricsEndpoint {
 		}
 	}
 	
-	public String handleRequest(@Null Predicate<? super String> applicationIdFilter, @Null Predicate<? super Instance> instanceFilter) throws ScrapingException {
-		log.debug("Received request to a metrics endpoint");
+	@RequestMapping(EndpointConstants.ENDPOINT_PATH_SINGLE_TARGET_SCRAPING+"/{hash}")
+	@GetMapping(produces=TextFormat.CONTENT_TYPE_004)
+	public ResponseEntity<String> getMetrics(
+			@PathVariable String hash 
+			) {
+		
+		if (this.isLoopbackRequest()) {
+			throw new LoopbackScrapingDetectedException("Erroneous Loopback Scraping request detected");
+		}
+		
+		final Instance instance = this.instanceCache.getCachedInstance(hash);
+		
+		if (instance == null) {
+			return new ResponseEntity<>("Invalid hash value provided; no instance detected", HttpStatus.NOT_FOUND);
+		}
+		
+		String response = null;
+		try {
+			response = this.handleRequest(instance);
+		} catch (ScrapingException e) {
+			return new ResponseEntity<>(e.toString(), HttpStatus.NOT_FOUND);
+		}
+		
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+	
+	public String handleRequest(Instance instance) throws ScrapingException {
+		log.debug("Received request to metrics endpoint");
 		Instant start = Instant.now();
 		
 		this.up.clear();
 		
-		List<Instance> instanceList = this.cfDiscoverer.discover(applicationIdFilter, instanceFilter);
-		
-		if (instanceList == null || instanceList.isEmpty()) {
-			throw new ScrapingException("Unable to determine any instance to scrape");
+		MetricsFetcher mf = this.createMetricsFetcher(instance);
+		if (mf == null) {
+			throw new ScrapingException("No MetricFetcher could be determined");
 		}
 		
-		List<MetricsFetcher> callablesPrep = this.createMetricsFetchers(instanceList);
+		Future<HashMap<String, MetricFamilySamples>> future = this.startMetricsFetchers(mf);
 		
-		List<Future<HashMap<String, MetricFamilySamples>>> futures = this.startMetricsFetchers(callablesPrep);
-		log.debug(String.format("Fetching metrics from %d distinct endpoints", futures.size()));
-		
-		MergableMetricFamilySamples mmfs = waitForMetricsFetchers(futures);
+		MergableMetricFamilySamples mmfs = waitForMetricsFetcher(future);
 		
 		Instant stop = Instant.now();
 		Duration duration = Duration.between(start, stop);
-		this.handleScrapeDuration(this.requestRegistry, duration);
 		
+		Gauge scrapeDuration = Gauge.build("promregator_scrape_duration_seconds", "Duration in seconds indicating how long scraping of all metrics took")
+				.register(this.requestRegistry);
 		
+		scrapeDuration.set(duration.toMillis() / 1000.0);
+
 		// add also our own request-specific metrics
 		mmfs.merge(this.gmfspr.determineEnumerationOfMetricFamilySamples(this.requestRegistry));
 		
 		return mmfs.toType004String();
 	}
 
-	private MergableMetricFamilySamples waitForMetricsFetchers(List<Future<HashMap<String, MetricFamilySamples>>> futures) {
-		long starttime = System.currentTimeMillis();
-		
+	private MergableMetricFamilySamples waitForMetricsFetcher(Future<HashMap<String, MetricFamilySamples>> future) {
 		MergableMetricFamilySamples mmfs = new MergableMetricFamilySamples();
 		
-		for (Future<HashMap<String, MetricFamilySamples>> future : futures) {
-			long maxWaitTime = starttime + this.maxProcessingTime - System.currentTimeMillis();
+		try {
+			HashMap<String, MetricFamilySamples> emfs = future.get(this.maxProcessingTime, TimeUnit.MILLISECONDS);
 			
-			if (maxWaitTime < 0 && !future.isDone()) {
-				// only process those, which are already completed
-				continue;
+			if (emfs != null) {
+				mmfs.merge(emfs);
 			}
-
-			try {
-				HashMap<String, MetricFamilySamples> emfs = future.get(maxWaitTime, TimeUnit.MILLISECONDS);
-				
-				if (emfs != null) {
-					mmfs.merge(emfs);
-				}
-			} catch (InterruptedException e) {
-				log.warn("Interrupted unexpectedly", e);
-				Thread.currentThread().interrupt();
-			} catch (ExecutionException e) {
-				log.warn("Exception thrown while fetching Metrics data from target", e);
-				// continue not necessary here
-			} catch (TimeoutException e) {
-				log.info("Not all targets could be scraped within the current promregator.scraping.maxProcessingTime. "
-						+ "Consider increasing promregator.scraping.maxProcessingTime or promregator.scraping.threads, "
-						+ "but mind the implications. See also https://github.com/promregator/promregator/wiki/Handling-Timeouts-on-Scraping");
-				// continue not necessary here - other's shall and are still processed
-			}
-			
+		} catch (InterruptedException e) {
+			log.warn("Interrupted unexpectedly", e);
+			Thread.currentThread().interrupt();
+		} catch (ExecutionException e) {
+			log.warn("Exception thrown while fetching Metrics data from target", e);
+			// continue not necessary here
+		} catch (TimeoutException e) {
+			log.info("Data could be scraped within the current promregator.scraping.maxProcessingTime. "
+					+ "Consider increasing promregator.scraping.maxProcessingTime.");
 		}
+		
 		return mmfs;
 	}
 
-	private List<Future<HashMap<String, MetricFamilySamples>>> startMetricsFetchers(List<MetricsFetcher> callablesPrep) {
-		List<Future<HashMap<String,MetricFamilySamples>>> futures = new LinkedList<>();
-		
-		for (MetricsFetcher mf : callablesPrep) {
-			Future<HashMap<String, MetricFamilySamples>> future = this.metricsFetcherPool.submit(mf);
-			
-			futures.add(future);
-		}
-		return futures;
+	private Future<HashMap<String, MetricFamilySamples>> startMetricsFetchers(MetricsFetcher mf) {
+		Future<HashMap<String, MetricFamilySamples>> future = this.metricsFetcherPool.submit(mf);
+		return future;
 	}
 
-	protected List<MetricsFetcher> createMetricsFetchers(List<Instance> instanceList) {
+	protected MetricsFetcher createMetricsFetcher(Instance instance) {
 		
-		List<MetricsFetcher> callablesList = new LinkedList<>();
-		for (Instance instance : instanceList) {
-			log.debug(String.format("Creating Metrics Fetcher for instance %s", instance.getInstanceId()));
-			
-			ResolvedTarget target = instance.getTarget();
-			String orgName = target.getOrgName();
-			String spaceName = target.getSpaceName();
-			String appName = target.getApplicationName();
-			
-			String accessURL = instance.getAccessUrl();
-			
-			if (accessURL == null) {
-				log.warn(String.format("Unable to retrieve hostname for %s/%s/%s; skipping", orgName, spaceName, appName));
-				continue;
-			}
-			
-			String[] ownTelemetryLabelValues = this.determineOwnTelemetryLabelValues(orgName, spaceName, appName, instance.getInstanceId());
-			MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, this.recordRequestLatency);
-			
-			final boolean labelEnrichmentEnabled = this.labelEnrichment;
-			
-			/*
-			 * Warning! the gauge "up" is a very special beast!
-			 * As it is always transferred along the other metrics (it's not a promregator-own metric!), it must always
-			 * follow the same labels as the other metrics which are scraped
-			 */
-			Gauge.Child upChild = null;
-			AbstractMetricFamilySamplesEnricher mfse = null;
-			if (labelEnrichmentEnabled) {
-				mfse = new CFAllLabelsMetricFamilySamplesEnricher(orgName, spaceName, appName, instance.getInstanceId());
-			} else {
-				mfse = new NullMetricFamilySamplesEnricher();
-			}
-			upChild = this.up.labels(mfse.getEnrichedLabelValues(new LinkedList<>()).toArray(new String[0]));
-			
-			AuthenticationEnricher ae = this.authenticatorController.getAuthenticationEnricherByTarget(instance.getTarget().getOriginalTarget());
-			
-			MetricsFetcher mf = null;
-			if (this.simulationMode) {
-				mf = new MetricsFetcherSimulator(accessURL, ae, mfse, mfm, upChild);
-			} else {
-				CFMetricsFetcherConfig cfmfConfig = new CFMetricsFetcherConfig();
-				cfmfConfig.setAuthenticationEnricher(ae);
-				cfmfConfig.setMetricFamilySamplesEnricher(mfse);
-				cfmfConfig.setMetricsFetcherMetrics(mfm);
-				cfmfConfig.setUpChild(upChild);
-				cfmfConfig.setPromregatorInstanceIdentifier(this.promregatorInstanceIdentifier);
-				cfmfConfig.setConnectionTimeoutInMillis(this.fetcherConnectionTimeout);
-				cfmfConfig.setSocketReadTimeoutInMillis(this.fetcherSocketReadTimeout);
-				
-				if (this.proxyHost != null && this.proxyPort != 0) {
-					// using the new way
-					cfmfConfig.setProxyHost(this.proxyHost);
-					cfmfConfig.setProxyPort(this.proxyPort);
-				}
-				
-				mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), cfmfConfig);
-			}
-			callablesList.add(mf);
+		log.debug(String.format("Creating Metrics Fetcher for instance %s", instance.getInstanceId()));
+		
+		ResolvedTarget target = instance.getTarget();
+		String orgName = target.getOrgName();
+		String spaceName = target.getSpaceName();
+		String appName = target.getApplicationName();
+		
+		String accessURL = instance.getAccessUrl();
+		
+		if (accessURL == null) {
+			log.warn(String.format("Unable to retrieve hostname for %s/%s/%s; skipping", orgName, spaceName, appName));
+			return null;
 		}
 		
-		return callablesList;
+		String[] ownTelemetryLabelValues = this.determineOwnTelemetryLabelValues(orgName, spaceName, appName, instance.getInstanceId());
+		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, this.recordRequestLatency);
+		
+		
+		/*
+		 * Warning! the gauge "up" is a very special beast!
+		 * As it is always transferred along the other metrics (it's not a promregator-own metric!), it must always
+		 * follow the same labels as the other metrics which are scraped
+		 */
+		Gauge.Child upChild = null;
+		AbstractMetricFamilySamplesEnricher mfse = new NullMetricFamilySamplesEnricher();
+		upChild = this.up.labels(mfse.getEnrichedLabelValues(new LinkedList<>()).toArray(new String[0]));
+		
+		AuthenticationEnricher ae = this.authenticatorController.getAuthenticationEnricherByTarget(instance.getTarget().getOriginalTarget());
+		
+		MetricsFetcher mf = null;
+		if (this.simulationMode) {
+			mf = new MetricsFetcherSimulator(accessURL, ae, mfse, mfm, upChild);
+		} else {
+			CFMetricsFetcherConfig cfmfConfig = new CFMetricsFetcherConfig();
+			cfmfConfig.setAuthenticationEnricher(ae);
+			cfmfConfig.setMetricFamilySamplesEnricher(mfse);
+			cfmfConfig.setMetricsFetcherMetrics(mfm);
+			cfmfConfig.setUpChild(upChild);
+			cfmfConfig.setPromregatorInstanceIdentifier(this.promregatorInstanceIdentifier);
+			cfmfConfig.setConnectionTimeoutInMillis(this.fetcherConnectionTimeout);
+			cfmfConfig.setSocketReadTimeoutInMillis(this.fetcherSocketReadTimeout);
+			
+			if (this.proxyHost != null && this.proxyPort != 0) {
+				// using the new way
+				cfmfConfig.setProxyHost(this.proxyHost);
+				cfmfConfig.setProxyPort(this.proxyPort);
+			}
+			
+			mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), cfmfConfig);
+		}
+		
+		return mf;
 	}
 	
 	private String[] determineOwnTelemetryLabelValues(String orgName, String spaceName, String appName, String instanceId) {
@@ -316,79 +300,4 @@ public class SingleTargetMetricsEndpoint {
 		return loopback;
 	}
 
-	
-	private Instance instance;
-	
-	@GetMapping(produces=TextFormat.CONTENT_TYPE_004)
-	public ResponseEntity<String> getMetrics(
-			@PathVariable String applicationId, 
-			@PathVariable String instanceNumber
-			) {
-		
-		if (this.isLoopbackRequest()) {
-			throw new LoopbackScrapingDetectedException("Erroneous Loopback Scraping request detected");
-		}
-		
-		String instanceId = String.format("%s:%s", applicationId, instanceNumber);
-		
-		String response = null;
-		try {
-			response = this.handleRequest( discoveredApplicationId -> applicationId.equals(discoveredApplicationId)
-			, requestInstance -> {
-				if (requestInstance.getInstanceId().equals(instanceId)) {
-					this.instance = requestInstance;
-					return true;
-				}
-				
-				return false;
-			});
-		} catch (ScrapingException e) {
-			return new ResponseEntity<>(e.toString(), HttpStatus.NOT_FOUND);
-		}
-		
-		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
-	
-	/**
-	 * called when scraping has been finished; contains the overall duration of the scraping request.
-	 * 
-	 * The implementing class is suggested to write the duration into an own sample for the corresponding
-	 * metric.
-	 * @param requestRegistry the registry to which the metric shall be / is registered.
-	 * @param duration the duration of the just completed scrape request.
-	 */
-	protected void handleScrapeDuration(CollectorRegistry requestRegistry, Duration duration) {
-		/*
-		 * Note: The scrape_duration_seconds metric is being passed on to Prometheus with
-		 * the normal scraping request.
-		 * If the configuration option promregator.scraping.labelEnrichment is disabled, then 
-		 * the metric must also comply to this approach. Otherwise there might arise issues
-		 * with rewriting in Prometheus.
-		 */
-		
-		AbstractMetricFamilySamplesEnricher enricher = null;
-		String[] ownTelemetryLabels = null;
-		if (this.labelEnrichment) {
-			if (this.instance == null) {
-				log.warn("Internal inconsistency: Single Target Metrics Endpoint triggered, even though instance could not be detected; skipping scrape_duration");
-				return;
-			}
-			
-			ResolvedTarget t = this.instance.getTarget();
-			ownTelemetryLabels = CFAllLabelsMetricFamilySamplesEnricher.getEnrichingLabelNames();
-			enricher = new CFAllLabelsMetricFamilySamplesEnricher(t.getOrgName(), t.getSpaceName(), t.getApplicationName(), this.instance.getInstanceId());
-		} else {
-			ownTelemetryLabels = NullMetricFamilySamplesEnricher.getEnrichingLabelNames();
-			enricher = new NullMetricFamilySamplesEnricher();
-		}
-		
-		Gauge scrapeDuration = Gauge.build("promregator_scrape_duration_seconds", "Duration in seconds indicating how long scraping of all metrics took")
-				.labelNames(ownTelemetryLabels)
-				.register(requestRegistry);
-		
-		List<String> labelValues = enricher.getEnrichedLabelValues(new ArrayList<>(0));
-		scrapeDuration.labels(labelValues.toArray(new String[0])).set(duration.toMillis() / 1000.0);
-	}
-
-	
 }

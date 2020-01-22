@@ -15,6 +15,7 @@ import org.cloudfoundry.promregator.cfaccessor.CFAccessorSimulator;
 import org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl;
 import org.cloudfoundry.promregator.config.ConfigurationValidations;
 import org.cloudfoundry.promregator.discovery.CFMultiDiscoverer;
+import org.cloudfoundry.promregator.endpoint.InstanceCache;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.cloudfoundry.promregator.lifecycle.InstanceLifecycleHandler;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
@@ -132,6 +133,11 @@ public class PromregatorApplication {
 	@Bean
 	public InstanceLifecycleHandler instanceLifecycleHandler() {
 		return new InstanceLifecycleHandler();
+	}
+	
+	@Bean
+	public InstanceCache instanceCache() {
+		return new InstanceCache();
 	}
 	
 	@Bean

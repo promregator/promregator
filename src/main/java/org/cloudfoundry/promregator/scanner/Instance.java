@@ -1,5 +1,7 @@
 package org.cloudfoundry.promregator.scanner;
 
+import org.apache.commons.codec.digest.DigestUtils;
+
 /**
  * An instance provides a mapping from a target (provided by configuration)
  * to an exact descriptor consisting of the Access URL and the instance identifier, 
@@ -131,6 +133,11 @@ public class Instance {
 		builder.append(accessUrl);
 		builder.append("]");
 		return builder.toString();
+	}
+	
+	public String getHash() {
+		// TODO: It's unclear if this isn't a little too much that gets hashed here...
+		return DigestUtils.sha1Hex(this.toString());
 	}
 	
 }
