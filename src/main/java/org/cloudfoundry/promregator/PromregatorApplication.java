@@ -8,11 +8,9 @@ import java.util.concurrent.Executors;
 
 import javax.annotation.PostConstruct;
 
-import org.cloudfoundry.promregator.cfaccessor.AccessorCacheType;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorCache;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorCacheCaffeine;
-import org.cloudfoundry.promregator.cfaccessor.CFAccessorCacheClassic;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorSimulator;
 import org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl;
 import org.cloudfoundry.promregator.config.ConfigurationValidations;
@@ -67,10 +65,6 @@ public class PromregatorApplication {
 	@Value("${promregator.workaround.dnscache.timeout:-1}")
 	private int javaDnsCacheWorkaroundTimeout;
 
-	@Value("${cf.cache.type:CLASSIC}")
-	// NB: Spring supports configuration values for enums to be both upper- and lowercased
-	private AccessorCacheType cacheType;
-	
 	public static void main(String[] args) {
 		SpringApplication.run(PromregatorApplication.class, args);
 	}
@@ -102,21 +96,7 @@ public class PromregatorApplication {
 	
 	@Bean
 	public CFAccessorCache cfAccessorCache(CFAccessor mainCFAccessor) {
-		if (this.cacheType == AccessorCacheType.CLASSIC) {
-			return new CFAccessorCacheClassic(mainCFAccessor);
-		} else if (this.cacheType == AccessorCacheType.CAFFEINE) {
-			return new CFAccessorCacheCaffeine(mainCFAccessor);
-		} else {
-			throw new UnknownCacheTypeError("Unknown CF Accessor Cache selected: "+this.cacheType);
-		}
-	}
-	
-	private class UnknownCacheTypeError extends Error {
-		private static final long serialVersionUID = 6158818763963263064L;
-
-		public UnknownCacheTypeError(String message) {
-			super(message);
-		}
+		return new CFAccessorCacheCaffeine(mainCFAccessor);
 	}
 	
 	@Bean

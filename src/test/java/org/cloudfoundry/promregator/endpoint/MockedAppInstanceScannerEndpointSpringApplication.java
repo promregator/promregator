@@ -7,7 +7,7 @@ import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.auth.AuthenticatorController;
 import org.cloudfoundry.promregator.auth.NullEnricher;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
-import org.cloudfoundry.promregator.cfaccessor.CFAccessorCacheClassic;
+import org.cloudfoundry.promregator.cfaccessor.CFAccessorCacheCaffeine;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
@@ -41,7 +41,7 @@ import io.prometheus.client.CollectorRegistry;
 @TestPropertySource(locations="../default.properties")
 public class MockedAppInstanceScannerEndpointSpringApplication {
 	
-	public class MockedCFAccessorCache extends CFAccessorCacheClassic {
+	public class MockedCFAccessorCache extends CFAccessorCacheCaffeine {
 		public MockedCFAccessorCache() {
 			super(null);
 		}
@@ -101,8 +101,8 @@ public class MockedAppInstanceScannerEndpointSpringApplication {
 	}
 	
 	@Bean
-	public CFAccessorCacheClassic cfAccessorCache(@Qualifier("cfAccessor") CFAccessor cfAccessor) {
-		return (CFAccessorCacheClassic) cfAccessor;
+	public CFAccessorCacheCaffeine cfAccessorCache(@Qualifier("cfAccessor") CFAccessor cfAccessor) {
+		return (CFAccessorCacheCaffeine) cfAccessor;
 	}
 	
 	@Bean
