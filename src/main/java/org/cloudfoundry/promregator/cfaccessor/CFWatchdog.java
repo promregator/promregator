@@ -54,7 +54,7 @@ public class CFWatchdog {
 				 */
 				this.internalMetrics.countConnectionWatchdogReconnect();
 				
-				if (this.watchdogRestartCount != null && this.watchdogRestartCount.isPresent()) {
+				if (this.watchdogRestartCount.isPresent()) {
 					final int restartCount = this.watchdogRestartCount.get();
 					
 					if (this.internalMetrics.getCountConnectionWatchdogReconnect() > restartCount) {
