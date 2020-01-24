@@ -44,8 +44,14 @@ while [ "$RUNNING" == "true" ]; do
 	$JAVACMD $JAVA_MEM_OPTS $JAVA_OPTS -Dspring.config.name=promregator -jar /opt/promregator/promregator.jar
 	
 	ret=$?
-	if [ "$ret" == "126" ]; then
-		echo "Restart requested by Promregator"
+	if [ "$ret" == "161" ]; then
+		echo "Restart requested by Promregator (triggered by CF Watchdog)"
+		continue
+	elif [ "$ret" == "162" ]; then
+		echo "Restart requested by Promregator (triggered due to OutOfMemoryError identified by Promregator)"
+		continue
+	elif [ "$ret" == "127" ]; then
+		echo "Restart requested by Promregator (triggered due to OutOfMemoryError identified by JVM)"
 		continue
 	else
 		RUNNING=false
