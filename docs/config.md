@@ -87,6 +87,30 @@ The default value is 2500 (milliseconds).
 
 Refer to [issue #83](https://github.com/promregator/promregator/issues/83) to see a scenario where this might be helpful.
 
+### Option "cf.watchdog.rate" (optional)
+This option became available starting with version 0.8.0.
+
+This option requires that you have `cf.watchdog.enabled` set to `true`.
+
+Allows to specify how often the periodic check of the connection to the Cloud Foundry Cloud Controller shall be performed. A higher value indicates less frequent checking.
+The unit of this value is in seconds. 
+
+The default value is 60 (seconds).
+
+Refer to [issue #83](https://github.com/promregator/promregator/issues/83) to see a scenario where this might be helpful.
+
+### Option "cf.watchdog.initialDelay" (optional)
+This option became available starting with version 0.8.0.
+
+This option requires that you have `cf.watchdog.enabled` set to `true`.
+
+Allows to specify an initial delay (after Promregator has started) before the periodic check of the connection to the Cloud Foundry Cloud Controller is started. 
+The unit of this value is in seconds. 
+
+The default value is 60 (seconds).
+
+Refer to [issue #83](https://github.com/promregator/promregator/issues/83) to see a scenario where this might be helpful.
+
 
 ### Option "cf.connectionPool.size" (optional)
 This option became available starting with version 0.6.0.
