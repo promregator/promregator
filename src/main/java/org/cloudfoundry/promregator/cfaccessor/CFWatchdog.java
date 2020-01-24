@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 public class CFWatchdog {
 	private static final Logger log = LoggerFactory.getLogger(CFWatchdog.class);
 	
@@ -70,6 +72,7 @@ public class CFWatchdog {
 			});
 	}
 	
+	@SuppressFBWarnings(value = "DM_EXIT", justification="Restart of JVM is done intentionally here!")
 	private void triggerApplicationRestartIfRequested() {
 		log.warn("Number of failed reset attempts has exceeded the threshold. Enforcing restart of application!");
 		System.exit(ExitCodes.FAILED_WATCHDOG);
