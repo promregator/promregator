@@ -110,6 +110,14 @@ public class PromregatorApplication {
 		return new CFWatchdog();
 	}
 	
+	private static class UnknownCacheTypeError extends Error {
+		private static final long serialVersionUID = 6158818763963263064L;
+
+		public UnknownCacheTypeError(String message) {
+			super(message);
+		}
+		}
+	
 	@Bean
 	public CFAccessorCache cfAccessorCache(@Value("${cf.cache.timeout.org:3600}") int refreshCacheOrgLevelInSeconds,
 										   @Value("${cf.cache.timeout.space:3600}") int refreshCacheSpaceLevelInSeconds,
