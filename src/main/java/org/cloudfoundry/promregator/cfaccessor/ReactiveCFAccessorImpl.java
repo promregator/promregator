@@ -2,8 +2,6 @@ package org.cloudfoundry.promregator.cfaccessor;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.time.Duration;
-import java.util.Optional;
 import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
@@ -35,7 +33,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 
 import reactor.core.publisher.Mono;
 
@@ -191,7 +188,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	@PostConstruct
 	@SuppressWarnings("unused")
 	private void constructCloudFoundryClient() throws ConfigurationException {
-		this.resetCloudFoundryClient();
+		this.reset();
 		
 		if (this.performPrecheckOfAPIVersion) {
 			GetInfoRequest request = GetInfoRequest.builder().build();
@@ -201,87 +198,30 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		}
 	}
 
-	private void resetCloudFoundryClient() throws ConfigurationException {
-		ProxyConfiguration proxyConfiguration = this.proxyConfiguration();
-		DefaultConnectionContext connectionContext = this.connectionContext(proxyConfiguration);
-		PasswordGrantTokenProvider tokenProvider = this.tokenProvider();
-		
-		this.cloudFoundryClient = this.cloudFoundryClient(connectionContext, tokenProvider);
-	}
-
-	
-	private static final GetInfoRequest DUMMY_GET_INFO_REQUEST = GetInfoRequest.builder().build();
-	private static final GetInfoResponse ERRONEOUS_GET_INFO_RESPONSE = GetInfoResponse.builder().apiVersion("FAILED").build();
-	
-
-	@Value("${cf.watchdog.enabled:false}")
-	private boolean watchdogEnabled = false;
-
-	@Value("${cf.watchdog.timeout:2500}")
-	private int watchdogTimeoutInMS = 2500;
-	
-	@Value("${cf.watchdog.restartCount}")
-	private Optional<Integer> watchdogRestartCount;
-	
-	@Scheduled(fixedRateString = "${cf.watchdog.rate:60}000", initialDelayString = "${cf.watchdog.initialDelay:60}000")
-	@SuppressWarnings("unused")
-	private void connectionWatchdog() {
-		// see also https://github.com/promregator/promregator/issues/83
-		
-		if (!this.watchdogEnabled) {
-			return;
+	@Override
+	public void reset() {
+		try {
+			ProxyConfiguration proxyConfiguration = this.proxyConfiguration();
+			DefaultConnectionContext connectionContext = this.connectionContext(proxyConfiguration);
+			PasswordGrantTokenProvider tokenProvider = this.tokenProvider();
+			
+			this.cloudFoundryClient = this.cloudFoundryClient(connectionContext, tokenProvider);
+		} catch (ConfigurationException e) {
+			log.error("Restarting Cloud Foundry Client failed due to Configuration Exception raised", e);
 		}
-		
-		this.cloudFoundryClient.info().get(DUMMY_GET_INFO_REQUEST)
-			.timeout(Duration.ofMillis(this.watchdogTimeoutInMS))
-			.doOnError(e -> {
-				log.warn("Woof woof! It appears that the connection to the Cloud Controller is gone. Trying to restart Cloud Foundry Client", e);
-				/* 
-				 * We might want to call further reactor commands with "block()" included.
-				 * However, we can't do so in a doOnError() method. That is why we have to signal an error
-				 * via a special return value and do so in a consumer.
-				 */
-				this.internalMetrics.countConnectionWatchdogReconnect();
-				
-				if (this.watchdogRestartCount != null && this.watchdogRestartCount.isPresent()) {
-					final int restartCount = this.watchdogRestartCount.get();
-					
-					if (this.internalMetrics.getCountConnectionWatchdogReconnect() > restartCount) {
-						this.triggerApplicationRestartIfRequested();
-					}
-					
-				}
-			})
-			.onErrorReturn(ERRONEOUS_GET_INFO_RESPONSE)
-			.subscribe(response -> {
-				if (response == ERRONEOUS_GET_INFO_RESPONSE) {
-					try {
-						// Note that there is no method at this.cloudFoundryClient, which would permit closing the old client
-						this.resetCloudFoundryClient();
-					} catch (ConfigurationException ce) {
-						log.warn("Unable to reconstruct connection to CF CC", ce);
-					}
-				}
-			});
-	}
-	
-	/* 
-	 * Note: Exit codes 1-127 are reserved by JVM
-	 * Exit codes 128-160 are reserved by JVM to return codes based on OS signals (see "kill")
-	 * See also https://stackoverflow.com/a/21201431
-	 * 161 seems to be the first free exit code...
-	 */
-	private static final int EXITCODE_FAILED_WATCHDOG = 161;
-	
-	private void triggerApplicationRestartIfRequested() {
-		log.warn("Number of failed reset attempts has exceeded the threshold. Enforcing restart of application!");
-		System.exit(EXITCODE_FAILED_WATCHDOG);
 	}
 
 	@PostConstruct
 	@SuppressWarnings("unused")
 	private void setupPaginatedRequestFetcher() {
 		this.paginatedRequestFetcher = new ReactiveCFPaginatedRequestFetcher(this.internalMetrics);
+	}
+	
+	private static final GetInfoRequest DUMMY_GET_INFO_REQUEST = GetInfoRequest.builder().build();
+	
+	@Override
+	public Mono<GetInfoResponse> getInfo() {
+		return this.cloudFoundryClient.info().get(DUMMY_GET_INFO_REQUEST);
 	}
 	
 	/* (non-Javadoc)

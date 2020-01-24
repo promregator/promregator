@@ -6,6 +6,7 @@ import java.util.concurrent.TimeoutException;
 import javax.annotation.PostConstruct;
 
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
+import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
@@ -323,6 +324,11 @@ public class CFAccessorCacheClassic implements CFAccessorCache {
 		
 		return mono;
 	}
+
+	@Override
+	public Mono<GetInfoResponse> getInfo() {
+		return this.parent.getInfo();
+	}
 	
 	@Override
 	public Mono<ListOrganizationsResponse> retrieveOrgId(String orgName) {
@@ -386,6 +392,11 @@ public class CFAccessorCacheClassic implements CFAccessorCache {
 	public void invalidateCacheOrg() {
 		log.info("Invalidating org cache");
 		this.orgCache.clear();
+	}
+	
+	@Override
+	public void reset() {
+		this.parent.reset();
 	}
 
 }
