@@ -12,6 +12,7 @@ import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorCache;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorCacheCaffeine;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorSimulator;
+import org.cloudfoundry.promregator.cfaccessor.CFWatchdog;
 import org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl;
 import org.cloudfoundry.promregator.config.ConfigurationValidations;
 import org.cloudfoundry.promregator.discovery.CFMultiDiscoverer;
@@ -93,6 +94,11 @@ public class PromregatorApplication {
 		}
 		
 		return mainAccessor;
+	}
+	
+	@Bean
+	public CFWatchdog cfWatchdog() {
+		return new CFWatchdog();
 	}
 	
 	@Bean
