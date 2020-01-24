@@ -15,6 +15,8 @@ import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -93,8 +95,7 @@ class ReactiveCFPaginatedRequestFetcher {
 							
 							if (System.getenv("VCAP_APPLICATION") != null) {
 								// we assume that we are running on a Cloud Foundry container
-								System.err.println("Out of Memory situation detected on talking to the Cloud Foundry Controller; restarting application");
-								System.exit(ExitCodes.CF_ACCESSOR_OUT_OF_MEMORY);
+								this.triggerOutOfMemoryRestart();
 							}
 							
 						} else {
@@ -112,6 +113,12 @@ class ReactiveCFPaginatedRequestFetcher {
 		}
 	}
 
+	@SuppressFBWarnings(value = "DM_EXIT", justification="Restart of JVM is done intentionally here!")
+	private void triggerOutOfMemoryRestart() {
+		System.err.println("Out of Memory situation detected on talking to the Cloud Foundry Controller; restarting application");
+		System.exit(ExitCodes.CF_ACCESSOR_OUT_OF_MEMORY);
+	}
+	
 	/**
 	 * performs a retrieval from the CF Cloud Controller fetching all pages
 	 * available.
