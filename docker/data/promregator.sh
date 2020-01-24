@@ -39,5 +39,15 @@ if [ "$ENCRYPT_KEY_FILE" != "" ]; then
 fi
 set -x
 
-$JAVACMD $JAVA_MEM_OPTS $JAVA_OPTS -Dspring.config.name=promregator -jar /opt/promregator/promregator.jar
-
+RUNNING=true
+while [ "$RUNNING" == "true" ]; do
+	$JAVACMD $JAVA_MEM_OPTS $JAVA_OPTS -Dspring.config.name=promregator -jar /opt/promregator/promregator.jar
+	
+	ret=$?
+	if [ "$ret" == "126" ]; then
+		echo "Restart requested by Promregator"
+		continue
+	else
+		RUNNING=false
+	fi
+done

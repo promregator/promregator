@@ -3,6 +3,7 @@ package org.cloudfoundry.promregator.cfaccessor;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Duration;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
@@ -219,6 +220,9 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	@Value("${cf.watchdog.timeout:2500}")
 	private int watchdogTimeoutInMS = 2500;
 	
+	@Value("${cf.watchdog.restartCount}")
+	private Optional<Integer> watchdogRestartCount;
+	
 	@Scheduled(fixedRateString = "${cf.watchdog.rate:60}000", initialDelayString = "${cf.watchdog.initialDelay:60}000")
 	@SuppressWarnings("unused")
 	private void connectionWatchdog() {
@@ -238,6 +242,15 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 				 * via a special return value and do so in a consumer.
 				 */
 				this.internalMetrics.countConnectionWatchdogReconnect();
+				
+				if (this.watchdogRestartCount != null && this.watchdogRestartCount.isPresent()) {
+					final int restartCount = this.watchdogRestartCount.get();
+					
+					if (this.internalMetrics.getCountConnectionWatchdogReconnect() > restartCount) {
+						this.triggerApplicationRestartIfRequested();
+					}
+					
+				}
 			})
 			.onErrorReturn(ERRONEOUS_GET_INFO_RESPONSE)
 			.subscribe(response -> {
@@ -252,6 +265,19 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 			});
 	}
 	
+	/* 
+	 * Note: Exit codes 1-127 are reserved by JVM
+	 * Exit codes 128-160 are reserved by JVM to return codes based on OS signals (see "kill")
+	 * See also https://stackoverflow.com/a/21201431
+	 * 161 seems to be the first free exit code...
+	 */
+	private static final int EXITCODE_FAILED_WATCHDOG = 161;
+	
+	private void triggerApplicationRestartIfRequested() {
+		log.warn("Number of failed reset attempts has exceeded the threshold. Enforcing restart of application!");
+		System.exit(EXITCODE_FAILED_WATCHDOG);
+	}
+
 	@PostConstruct
 	@SuppressWarnings("unused")
 	private void setupPaginatedRequestFetcher() {

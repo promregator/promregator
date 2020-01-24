@@ -111,6 +111,17 @@ The default value is 60 (seconds).
 
 Refer to [issue #83](https://github.com/promregator/promregator/issues/83) to see a scenario where this might be helpful.
 
+### Option "cf.watchdog.restartCount" (optional)
+This option became available starting with version 0.8.0.
+
+This option requires that you have `cf.watchdog.enabled` set to `true`.
+
+Allows to specify the number of reconnection attempts to the Cloud Foundry Cloud Controller until Promregator is terminating with exit code 161. The idea is to restart Promregator in this case. 
+
+By default no value is specified, which disables this option., i.e. no restart is triggered.
+
+Refer to [issue #83](https://github.com/promregator/promregator/issues/83) to see a scenario where this might be helpful.
+
 
 ### Option "cf.connectionPool.size" (optional)
 This option became available starting with version 0.6.0.
