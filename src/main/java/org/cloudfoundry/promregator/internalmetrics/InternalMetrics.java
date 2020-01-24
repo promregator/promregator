@@ -118,6 +118,10 @@ public class InternalMetrics {
 		this.connectionWatchdogReconnects.inc();
 	}
 	
+	public int getCountConnectionWatchdogReconnect() {
+		return (int) this.connectionWatchdogReconnects.get();
+	}
+	
 	public void addCaffeineCache(String cacheName, AsyncLoadingCache<?, ?> cache) {
 		if (!this.enabled)
 			return;
