@@ -219,7 +219,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	@Value("${cf.watchdog.timeout:2500}")
 	private int watchdogTimeoutInMS = 2500;
 	
-	@Scheduled(fixedRate=1*60*1000, initialDelay=60*1000)
+	@Scheduled(fixedRateString = "${cf.watchdog.rate:60}000", initialDelayString = "${cf.watchdog.initialDelay:60}000")
 	@SuppressWarnings("unused")
 	private void connectionWatchdog() {
 		// see also https://github.com/promregator/promregator/issues/83
