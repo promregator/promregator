@@ -1,7 +1,10 @@
 package org.cloudfoundry.promregator;
 
 public final class ExitCodes {
-
+	private ExitCodes() {
+		throw new IllegalStateException("Should never be called");
+	}
+	
 	/* 
 	 * Note: Exit codes 1-127 are reserved by JVM
 	 * Exit codes 128-160 are reserved by JVM to return codes based on OS signals (see "kill")

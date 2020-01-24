@@ -1,6 +1,10 @@
 package org.cloudfoundry.promregator.endpoint;
 
 public final class EndpointConstants {
+	private EndpointConstants() {
+		throw new IllegalStateException("Should never be called");
+	}
+	
 	public static final String ENDPOINT_PATH_DISCOVERY = "/discovery";
 	public static final String ENDPOINT_PATH_SINGLE_ENDPOINT_SCRAPING = "/metrics";
 	public static final String ENDPOINT_PATH_SINGLE_TARGET_SCRAPING = "/singleTargetMetrics";
