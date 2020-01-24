@@ -10,6 +10,7 @@ import java.util.logging.Level;
 import org.cloudfoundry.client.v2.OrderDirection;
 import org.cloudfoundry.client.v2.PaginatedRequest;
 import org.cloudfoundry.client.v2.PaginatedResponse;
+import org.cloudfoundry.promregator.ExitCodes;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 
 import org.slf4j.Logger;
@@ -86,6 +87,16 @@ class ReactiveCFPaginatedRequestFetcher {
 							log.error(String.format(
 									"Async retrieval of %s with key %s caused a timeout after %dms even though we tried three times",
 									logName, key, timeoutInMS));
+						} else if (unwrappedThrowable instanceof OutOfMemoryError){
+							// This may be an direct memory or a heap error!
+							// Using String.format and/or log.error here is a bad idea - it takes memory!
+							
+							if (System.getenv("VCAP_APPLICATION") != null) {
+								// we assume that we are running on a Cloud Foundry container
+								System.err.println("Out of Memory situation detected on talking to the Cloud Foundry Controller; restarting application");
+								System.exit(ExitCodes.CF_ACCESSOR_OUT_OF_MEMORY);
+							}
+							
 						} else {
 							log.error(String.format("Async retrieval of %s with key %s raised a reactor error", logName,
 									key), unwrappedThrowable);
