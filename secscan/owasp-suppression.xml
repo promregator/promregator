@@ -314,4 +314,24 @@
 		</packageUrl>
 		<cve>CVE-2019-17563</cve>
 	</suppress>
+
+	<suppress>
+		<notes><![CDATA[
+   file name: tomcat-embed-websocket-9.0.29.jar
+   No FORM-based authentication possible here
+   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-websocket@.*$
+		</packageUrl>
+		<cve>CVE-2019-17563</cve>
+	</suppress>
+
+	<suppress>
+		<notes><![CDATA[
+   file name: spring-core-5.2.2.RELEASE.jar
+   Promregator does not make use of CSRF tokens in general
+   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.springframework/spring\-core@.*$
+		</packageUrl>
+		<cve>CVE-2020-5397</cve>
+	</suppress>
 </suppressions>
