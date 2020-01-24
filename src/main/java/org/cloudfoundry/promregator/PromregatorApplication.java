@@ -106,6 +106,11 @@ public class PromregatorApplication {
 	}
 	
 	@Bean
+	public CFWatchdog cfWatchdog() {
+		return new CFWatchdog();
+	}
+	
+	@Bean
 	public CFAccessorCache cfAccessorCache(@Value("${cf.cache.timeout.org:3600}") int refreshCacheOrgLevelInSeconds,
 										   @Value("${cf.cache.timeout.space:3600}") int refreshCacheSpaceLevelInSeconds,
 										   @Value("${cf.cache.timeout.application:300}") int refreshCacheApplicationLevelInSeconds,
