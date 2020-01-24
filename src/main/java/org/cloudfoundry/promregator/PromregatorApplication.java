@@ -117,7 +117,7 @@ public class PromregatorApplication {
 		}
 	}
 	
-	private class UnknownCacheTypeError extends Error {
+	private static class UnknownCacheTypeError extends Error {
 		private static final long serialVersionUID = 6158818763963263064L;
 
 		public UnknownCacheTypeError(String message) {
