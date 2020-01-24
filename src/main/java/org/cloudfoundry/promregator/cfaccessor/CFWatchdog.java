@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.util.Optional;
 
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
+import org.cloudfoundry.promregator.ExitCodes;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,17 +70,9 @@ public class CFWatchdog {
 			});
 	}
 	
-	/* 
-	 * Note: Exit codes 1-127 are reserved by JVM
-	 * Exit codes 128-160 are reserved by JVM to return codes based on OS signals (see "kill")
-	 * See also https://stackoverflow.com/a/21201431
-	 * 161 seems to be the first free exit code...
-	 */
-	private static final int EXITCODE_FAILED_WATCHDOG = 161;
-	
 	private void triggerApplicationRestartIfRequested() {
 		log.warn("Number of failed reset attempts has exceeded the threshold. Enforcing restart of application!");
-		System.exit(EXITCODE_FAILED_WATCHDOG);
+		System.exit(ExitCodes.FAILED_WATCHDOG);
 	}
 
 }
