@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 public class ReactiveTargetResolver implements TargetResolver {
 	private static final Logger log = LoggerFactory.getLogger(ReactiveTargetResolver.class);
@@ -49,8 +50,37 @@ public class ReactiveTargetResolver implements TargetResolver {
 			this.resolvedApplicationName = source.resolvedApplicationName;
 			this.resolvedApplicationId = source.resolvedApplicationId;
 		}
-		
+
+		public IntermediateTarget(Target target) {
+			this.configTarget = target;
+		}
+
 		public ResolvedTarget toResolvedTarget() {
+			if (getResolvedOrgId() == null) {
+				log.error(String.format("Target '%s' created a ResolvedTarget without resolved org id", getConfigTarget()));
+			}
+
+			if (getResolvedSpaceId() == null) {
+				log.error(String.format("Target '%s' created a ResolvedTarget without resolved space id", getConfigTarget()));
+			}
+
+			if (getResolvedApplicationId() == null) {
+				log.error(String.format("Target '%s' created a ResolvedTarget without resolved application id", getConfigTarget()));
+			}
+
+			if (getResolvedOrgName() == null) {
+				log.error(String.format("Target '%s' created a ResolvedTarget without resolved org name", getConfigTarget()));
+			}
+
+			if (getResolvedSpaceName() == null) {
+				log.error(String.format("Target '%s' created a ResolvedTarget without resolved space name", getConfigTarget()));
+			}
+
+			if (getResolvedApplicationName() == null) {
+				log.error(String.format("Target '%s' created a ResolvedTarget without resolved application name", getConfigTarget()));
+			}
+
+
 			ResolvedTarget rt = new ResolvedTarget();
 
 			rt.setOriginalTarget(this.configTarget);
@@ -174,57 +204,26 @@ public class ReactiveTargetResolver implements TargetResolver {
 		
 		
 	}
-	
+
 	@Override
 	public List<ResolvedTarget> resolveTargets(List<Target> configTargets) {
-		
-		Flux<IntermediateTarget> initialFlux = Flux.fromIterable(configTargets)
-				.map(configTarget -> {
-					IntermediateTarget it = new IntermediateTarget();
-					it.setConfigTarget(configTarget);
-					
-					return it;
-				});
-		
-		Flux<IntermediateTarget> orgResolvedFlux = initialFlux.flatMap(this::resolveOrg).log(log.getName()+".resolveOrg");
-		Flux<IntermediateTarget> spaceResolvedFlux = orgResolvedFlux.flatMap(this::resolveSpace).log(log.getName()+".resolveSpace");
-		Flux<IntermediateTarget> applicationResolvedFlux = spaceResolvedFlux.flatMap(this::resolveApplication).log(log.getName()+".resolveApplication")
-				.doOnNext(it -> {
-					if (it.getResolvedOrgId() == null) {
-						log.error(String.format("Target '%s' created a ResolvedTarget without resolved org id", it.getConfigTarget()));
-					}
-					
-					if (it.getResolvedSpaceId() == null) {
-						log.error(String.format("Target '%s' created a ResolvedTarget without resolved space id", it.getConfigTarget()));
-					}
-					
-					if (it.getResolvedApplicationId() == null) {
-						log.error(String.format("Target '%s' created a ResolvedTarget without resolved application id", it.getConfigTarget()));
-					}
-					
-					if (it.getResolvedOrgName() == null) {
-						log.error(String.format("Target '%s' created a ResolvedTarget without resolved org name", it.getConfigTarget()));
-					}
-					
-					if (it.getResolvedSpaceName() == null) {
-						log.error(String.format("Target '%s' created a ResolvedTarget without resolved space name", it.getConfigTarget()));
-					}
-					
-					if (it.getResolvedApplicationName() == null) {
-						log.error(String.format("Target '%s' created a ResolvedTarget without resolved application name", it.getConfigTarget()));
-					}
-				});
-		
-		Flux<ResolvedTarget> resultFlux = applicationResolvedFlux.map(IntermediateTarget::toResolvedTarget);
-		
-		List<ResolvedTarget> resultList = resultFlux.distinct().collectList().block();
-		if (log.isDebugEnabled()) {
-			log.debug(String.format("Successfully resolved %d configuration targets to %d resolved targets", configTargets.size(), resultList.size()));
-		}
-		
-		return resultList;
+		return Flux.fromIterable(configTargets)
+				.parallel()
+				.runOn(Schedulers.parallel())
+				.map(IntermediateTarget::new)
+				.flatMap(this::resolveOrg)
+				.log(log.getName() + ".resolveOrg")
+				.flatMap(this::resolveSpace)
+				.log(log.getName() + ".resolveSpace")
+				.flatMap (this::resolveApplication)
+				.log(log.getName() + ".resolveApplication")
+				.map(IntermediateTarget::toResolvedTarget)
+				.sequential()
+				.distinct().collectList()
+				.doOnNext(it -> log.debug("Successfully resolved {} configuration targets to {} resolved targets", configTargets.size(), it.size()))
+				.block();
 	}
-	
+
 	private Flux<IntermediateTarget> resolveOrg(IntermediateTarget it) {
 		/* NB: Now we have to consider three cases:
 		 * Case 1: both orgName and orgRegex is empty => select all orgs
