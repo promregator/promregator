@@ -50,7 +50,7 @@ public class CFAccessorSimulator implements CFAccessor {
 	}
 	
 	@Override
-	public Mono<ListOrganizationsResponse> retrieveOrgId(String orgName) {
+	public Mono<ListOrganizationsResponse> retrieveOrgId(String api, String orgName) {
 		
 		if ("simorg".equals(orgName)) {
 			
@@ -73,7 +73,7 @@ public class CFAccessorSimulator implements CFAccessor {
 	}
 
 	@Override
-	public Mono<ListSpacesResponse> retrieveSpaceId(String orgId, String spaceName) {
+	public Mono<ListSpacesResponse> retrieveSpaceId(String api, String orgId, String spaceName) {
 		if ("simspace".equals(spaceName) && orgId.equals(ORG_UUID)) {
 			
 			SpaceResource sr = SpaceResource.builder().entity(
@@ -93,7 +93,7 @@ public class CFAccessorSimulator implements CFAccessor {
 	}
 
 	@Override
-	public Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String orgId, String spaceId) {
+	public Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String api, String orgId, String spaceId) {
 		if (orgId.equals(ORG_UUID) && spaceId.equals(SPACE_UUID)) {
 			List<ApplicationResource> list = new LinkedList<>();
 
@@ -120,20 +120,20 @@ public class CFAccessorSimulator implements CFAccessor {
 	 * @see org.cloudfoundry.promregator.cfaccessor.CFAccessor#retrieveAllOrgIds()
 	 */
 	@Override
-	public Mono<ListOrganizationsResponse> retrieveAllOrgIds() {
-		return this.retrieveOrgId("simorg");
+	public Mono<ListOrganizationsResponse> retrieveAllOrgIds(String api) {
+		return this.retrieveOrgId(api, "simorg");
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.cloudfoundry.promregator.cfaccessor.CFAccessor#retrieveSpaceIdsInOrg(java.lang.String)
 	 */
 	@Override
-	public Mono<ListSpacesResponse> retrieveSpaceIdsInOrg(String orgId) {
-		return this.retrieveSpaceId(ORG_UUID, "simspace");
+	public Mono<ListSpacesResponse> retrieveSpaceIdsInOrg(String api, String orgId) {
+		return this.retrieveSpaceId(api, ORG_UUID, "simspace");
 	}
 	
 	@Override
-	public Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId) {
+	public Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String api, String spaceId) {
 		if (spaceId.equals(SPACE_UUID)) {
 			List<SpaceApplicationSummary> list = new LinkedList<>();
 			
@@ -159,7 +159,7 @@ public class CFAccessorSimulator implements CFAccessor {
 	}
 
 	@Override
-	public Mono<GetInfoResponse> getInfo() {
+	public Mono<GetInfoResponse> getInfo(String api) {
 		GetInfoResponse data = GetInfoResponse.builder()
 				.description("CFSimulator")
 				.name("CFSimulator")
@@ -170,7 +170,7 @@ public class CFAccessorSimulator implements CFAccessor {
 	}
 	
 	@Override
-	public void reset() {
+	public void reset(String api) {
 		// nothing to do
 	}
 

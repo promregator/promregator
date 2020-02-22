@@ -57,6 +57,12 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		
 		private String accessURL;
 		private int numberOfInstances;
+
+		public OSAVector(ResolvedTarget target) {
+			this.target = target;
+			this.applicationId = target.getApplicationId();
+		}
+
 		/**
 		 * @return the target
 		 */
@@ -129,158 +135,118 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		public void setNumberOfInstances(int numberOfInstances) {
 			this.numberOfInstances = numberOfInstances;
 		}
-		
 	}
 	
 	@Override
-	public List<Instance> determineInstancesFromTargets(List<ResolvedTarget> targets, @Null Predicate<? super String> applicationIdFilter, @Null Predicate<? super Instance> instanceFilter) {
-		Flux<ResolvedTarget> targetsFlux = Flux.fromIterable(targets);
-		
-		Flux<OSAVector> initialOSAVectorFlux = targetsFlux.map(target -> {
-			OSAVector v = new OSAVector();
-			v.setTarget(target);
-			v.setApplicationId(target.getApplicationId());
-			
-			return v;
-		});
-		
-		Flux<String> orgIdFlux = initialOSAVectorFlux.flatMapSequential(v -> this.getOrgId(v.getTarget().getOrgName()));
-		Flux<OSAVector> osaVectorOrgFlux = Flux.zip(initialOSAVectorFlux, orgIdFlux).flatMap(tuple -> {
-			OSAVector v = tuple.getT1();
-			if (INVALID_ORG_ID.equals(tuple.getT2())) {
-				// NB: This drops the current target!
-				return Mono.empty();
-			}
-			v.setOrgId(tuple.getT2());
-			return Mono.just(v);
-		});
-		
-		Flux<String> spaceIdFlux = osaVectorOrgFlux.flatMapSequential(v -> this.getSpaceId(v.getOrgId(), v.getTarget().getSpaceName()));
-		Flux<OSAVector> osaVectorSpaceFlux = Flux.zip(osaVectorOrgFlux, spaceIdFlux).flatMap(tuple -> {
-			OSAVector v = tuple.getT1();
-			if (INVALID_SPACE_ID.equals(tuple.getT2())) {
-				// NB: This drops the current target!
-				return Mono.empty();
-			}
-			v.setSpaceId(tuple.getT2());
-			return Mono.just(v);
-		});
-		
-		Flux<Map<String, SpaceApplicationSummary>> spaceSummaryFlux = osaVectorSpaceFlux.flatMapSequential(v -> this.getSpaceSummary(v.getSpaceId()));
-		Flux<OSAVector> osaVectorApplicationFlux = Flux.zip(osaVectorSpaceFlux, spaceSummaryFlux).flatMap(tuple -> {
-			OSAVector v = tuple.getT1();
-			
-			if (INVALID_SUMMARY == tuple.getT2()) {
-				// NB: This drops the current target!
-				return Mono.empty();
-			}
-			
-			Map<String, SpaceApplicationSummary> spaceSummaryMap = tuple.getT2();
-			SpaceApplicationSummary sas = spaceSummaryMap.get(v.getTarget().getApplicationName().toLowerCase(LOCALE_OF_LOWER_CASE_CONVERSION_FOR_IDENTIFIER_COMPARISON));
-			/*
-			 * Due to https://github.com/cloudfoundry/cloud_controller_ng/issues/1523,
-			 * we cannot rely on sas.getId() (i.e. it may contain wrong information)
-			 */
-			
-			if (sas == null) {
-				// NB: This drops the current target!
-				return Mono.empty();
-			}
+	public Mono<List<Instance>> determineInstancesFromTargets(List<ResolvedTarget> targets, @Null Predicate<? super String> applicationIdFilter, @Null Predicate<? super Instance> instanceFilter) {
+		return Flux.fromIterable(targets)
+				.map(OSAVector::new)
+				//Look up org info
+				.flatMap( v -> getOrgId(v.target.getOriginalTarget().getApi(), v.target.getOrgName()).map(orgId -> {
+					v.setOrgId(orgId);
+					return v;
+				}))
 
-			List<String> urls = sas.getUrls();
-			if (urls != null && !urls.isEmpty()) {
-				v.setAccessURL(this.determineAccessURL(v.getTarget().getProtocol(), urls, v.getTarget().getOriginalTarget().getPreferredRouteRegexPatterns(), v.getTarget().getPath()));
-			}
-			
-			v.setNumberOfInstances(sas.getInstances());
-			
-			return Mono.just(v);
-		});
-		
-		// perform pre-filtering, if available
-		if (applicationIdFilter != null) {
-			osaVectorApplicationFlux = osaVectorApplicationFlux.filter(v -> applicationIdFilter.test(v.getApplicationId()));
-		}
-		
-		Flux<Instance> instancesFlux = osaVectorApplicationFlux.flatMapSequential(v -> {
-			List<Instance> instances = new ArrayList<>(v.getNumberOfInstances());
-			for (int i = 0; i<v.numberOfInstances; i++) {
-				Instance inst = new Instance(v.getTarget(), String.format("%s:%d", v.getApplicationId(), i), v.getAccessURL());
-				instances.add(inst);
-			}
-			
-			return Flux.fromIterable(instances);
-		});
-		
-		// perform pre-filtering, if available
-		if (instanceFilter != null) {
-			instancesFlux = instancesFlux.filter(instanceFilter);
-		}
-		
-		
-		Mono<List<Instance>> listInstancesMono = instancesFlux.collectList();
-		
-		List<Instance> result = null;
-		try {
-			result = listInstancesMono.block();
-		} catch (RuntimeException e) {
-			log.error("Error during retrieving the instances of a list of targets", e);
-			result = null;
-		}
-		
-		return result;
+				// Look up space info
+				.flatMap(v -> {
+					String orgId = v.getOrgId();
+					if(orgId == null) {
+						return Mono.empty();
+					}
+					return getSpaceId(v.target.getOriginalTarget().getApi(), orgId, v.target.getSpaceName()).map( spaceId -> {
+						v.setSpaceId(spaceId);
+						return v;
+					});
+				})
+
+				//Look up applicationId, accessUrl, and instance count
+				.flatMap(v -> {
+					String spaceId = v.getSpaceId();
+					if(spaceId == null ) {
+						return Mono.empty();
+					}
+					return getSpaceSummary(v.target.getOriginalTarget().getApi(), spaceId).flatMap(spaceSummaryMap -> {
+						SpaceApplicationSummary sas = spaceSummaryMap.get(v.target.getApplicationName().toLowerCase(LOCALE_OF_LOWER_CASE_CONVERSION_FOR_IDENTIFIER_COMPARISON));
+						if (sas == null) {
+							return Mono.empty();
+						}
+						List<String> urls = sas.getUrls();
+						if (urls != null && !urls.isEmpty()) {
+							v.accessURL = determineAccessURL(v.target.getProtocol(), urls, v.target.getOriginalTarget().getPreferredRouteRegexPatterns(), v.target.getPath());
+						}
+						v.numberOfInstances = sas.getInstances();
+						return Mono.just(v);
+					});
+				})
+
+				// perform pre-filtering, if available
+				.filter(v -> applicationIdFilter == null || applicationIdFilter.test(v.getApplicationId()))
+
+				//convert to instances
+				.flatMap(v -> {
+					List<Instance> instances = new ArrayList<>(v.getNumberOfInstances());
+					for (int i = 0; i<v.numberOfInstances; i++) {
+						Instance inst = new Instance(v.getTarget(), String.format("%s:%d", v.getApplicationId(), i), v.getAccessURL());
+						instances.add(inst);
+					}
+
+					return Flux.fromIterable(instances);
+				})
+
+				.filter(i -> instanceFilter == null || instanceFilter.test(i))
+				.collectList();
 	}
 	
-	private Mono<String> getOrgId(String orgNameString) {
-		return this.cfAccessor.retrieveOrgId(orgNameString).flatMap(response -> {
+	private Mono<String> getOrgId(String api, String orgNameString) {
+		return this.cfAccessor.retrieveOrgId(api, orgNameString).flatMap(response -> {
 			List<OrganizationResource> resources = response.getResources();
 			if (resources == null) {
-				return Mono.just(INVALID_ORG_ID);
+				return Mono.empty();
 			}
 			
 			if (resources.isEmpty()) {
 				log.warn(String.format("Received empty result on requesting org %s", orgNameString));
-				return Mono.just(INVALID_ORG_ID);
+				return Mono.empty();
 			}
 			
 			OrganizationResource organizationResource = resources.get(0);
 			return Mono.just(organizationResource.getMetadata().getId());
 		}).onErrorResume(e -> {
 			log.error(String.format("retrieving Org Id for org Name '%s' resulted in an exception", orgNameString), e);
-			return Mono.just(INVALID_ORG_ID);
+			return Mono.empty();
 		}).cache();
 	}
 
-	private Mono<String> getSpaceId(String orgIdString, String spaceNameString) {
+	private Mono<String> getSpaceId(String api, String orgIdString, String spaceNameString) {
 
-		Mono<ListSpacesResponse> listSpacesResponse = this.cfAccessor.retrieveSpaceId(orgIdString, spaceNameString);
+		Mono<ListSpacesResponse> listSpacesResponse = this.cfAccessor.retrieveSpaceId(api, orgIdString, spaceNameString);
 
 		return listSpacesResponse.flatMap(response -> {
 			List<SpaceResource> resources = response.getResources();
 			if (resources == null) {
-				return Mono.just(INVALID_SPACE_ID);
+				return Mono.empty();
 			}
 			
 			if (resources.isEmpty()) {
 				log.warn(String.format("Received empty result on requesting space %s", spaceNameString));
-				return Mono.just(INVALID_SPACE_ID);
+				return Mono.empty();
 			}
 			
 			SpaceResource spaceResource = resources.get(0);
 			return Mono.just(spaceResource.getMetadata().getId());
 		}).onErrorResume(e -> {
 			log.error(String.format("retrieving space id for org id '%s' and space name '%s' resulted in an exception", orgIdString, spaceNameString), e);
-			return Mono.just(INVALID_SPACE_ID);
+			return Mono.empty();
 		}).cache();
 
 	}
 	
-	private Mono<Map<String, SpaceApplicationSummary>> getSpaceSummary(String spaceIdString) {
-		return this.cfAccessor.retrieveSpaceSummary(spaceIdString)
+	private Mono<Map<String, SpaceApplicationSummary>> getSpaceSummary(String api, String spaceIdString) {
+		return this.cfAccessor.retrieveSpaceSummary(api, spaceIdString)
 			.flatMap(response -> {
 				List<SpaceApplicationSummary> applications = response.getApplications();
 				if (applications == null) {
-					return Mono.just(INVALID_SUMMARY);
+					return Mono.empty();
 				}
 				
 				Map<String, SpaceApplicationSummary> map = new HashMap<>(applications.size());
@@ -291,7 +257,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				return Mono.just(map);
 			}).onErrorResume(e -> {
 				log.error(String.format("retrieving summary for space id '%s' resulted in an exception", spaceIdString), e);
-				return Mono.just(INVALID_SUMMARY);
+				return Mono.empty();
 			});
 	}
 	

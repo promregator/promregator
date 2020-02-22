@@ -53,7 +53,7 @@ public class MassReactiveAppInstanceScannerTest {
 		
 		Instant start = Instant.now();
 		
-		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, null, null);
+		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, null, null).block();
 		
 		Instant stop = Instant.now();
 		
@@ -93,7 +93,7 @@ public class MassReactiveAppInstanceScannerTest {
 				return true;
 			
 			return false;
-		});
+		}).block();
 		
 		Instant stop = Instant.now();
 		
@@ -140,7 +140,7 @@ public class MassReactiveAppInstanceScannerTest {
 				return true;
 			
 			return false;
-		});
+		}).block();
 		
 		Instant stop = Instant.now();
 		
@@ -173,7 +173,7 @@ public class MassReactiveAppInstanceScannerTest {
 			targets.add(t);
 		}
 		
-		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, null, null);
+		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, null, null).block();
 		
 		Assert.assertEquals(numberOfApps*10, result.size());
 

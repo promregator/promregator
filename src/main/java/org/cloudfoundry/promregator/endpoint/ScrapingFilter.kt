@@ -20,8 +20,6 @@ class ScrapingFilter : OncePerRequestFilter(), MeterFilter {
         if(req.requestURI.startsWith("/singleTargetMetrics")){
             val (root, path, app) = req.requestURI.split("/")
             additionalTags.set(Tags.of("app", app))
-        } else {
-            additionalTags.set(Tags.of("app", "none"))
         }
         chain.doFilter(req, resp)
         additionalTags.remove()
@@ -29,7 +27,7 @@ class ScrapingFilter : OncePerRequestFilter(), MeterFilter {
 
     override fun map(id: Meter.Id): Meter.Id {
         return if (id.name == "http.server.requests") {
-            val moreTags = additionalTags.get()
+            val moreTags = additionalTags.get() ?: Tags.of("app", "none")
             id.withTags(moreTags)
         } else id
     }

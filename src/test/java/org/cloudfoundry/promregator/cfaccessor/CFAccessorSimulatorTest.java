@@ -11,12 +11,14 @@ import org.junit.Test;
 
 import reactor.core.publisher.Mono;
 
+import static org.cloudfoundry.promregator.config.CloudFoundryConfiguration.DEFAULT_API;
+
 public class CFAccessorSimulatorTest {
 
 	@Test
 	public void testRetrieveOrgId() {
 		CFAccessorSimulator subject = new CFAccessorSimulator(2);
-		Mono<ListOrganizationsResponse> mono = subject.retrieveOrgId("simorg");
+		Mono<ListOrganizationsResponse> mono = subject.retrieveOrgId(DEFAULT_API, "simorg");
 		ListOrganizationsResponse result = mono.block();
 		Assert.assertEquals(CFAccessorSimulator.ORG_UUID, result.getResources().get(0).getMetadata().getId());
 	}
@@ -24,7 +26,7 @@ public class CFAccessorSimulatorTest {
 	@Test
 	public void testRetrieveSpaceId() {
 		CFAccessorSimulator subject = new CFAccessorSimulator(2);
-		Mono<ListSpacesResponse> mono = subject.retrieveSpaceId(CFAccessorSimulator.ORG_UUID, "simspace");
+		Mono<ListSpacesResponse> mono = subject.retrieveSpaceId(DEFAULT_API, CFAccessorSimulator.ORG_UUID, "simspace");
 		ListSpacesResponse result = mono.block();
 		Assert.assertEquals(CFAccessorSimulator.SPACE_UUID, result.getResources().get(0).getMetadata().getId());
 	}
@@ -33,7 +35,7 @@ public class CFAccessorSimulatorTest {
 	public void testRetrieveSpaceSummary() {
 		CFAccessorSimulator subject = new CFAccessorSimulator(2);
 		
-		Mono<GetSpaceSummaryResponse> mono = subject.retrieveSpaceSummary(CFAccessorSimulator.SPACE_UUID);
+		Mono<GetSpaceSummaryResponse> mono = subject.retrieveSpaceSummary(DEFAULT_API, CFAccessorSimulator.SPACE_UUID);
 		GetSpaceSummaryResponse result = mono.block();
 		
 		Assert.assertNotNull(result);

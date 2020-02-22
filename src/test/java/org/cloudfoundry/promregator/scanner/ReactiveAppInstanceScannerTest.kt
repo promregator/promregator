@@ -41,7 +41,7 @@ class ReactiveAppInstanceScannerTest {
         t.applicationId = CFAccessorMock.UNITTEST_APP2_UUID
         t.originalTarget = emptyTarget
         targets.add(t)
-        val result = appInstanceScanner!!.determineInstancesFromTargets(targets, null, null)
+        val result = appInstanceScanner.determineInstancesFromTargets(targets, null, null).block()
         assertThat(result).filteredOn { instance: Instance -> instance.instanceId == CFAccessorMock.UNITTEST_APP1_UUID + ":0" }
                 .extracting("accessUrl").containsOnly("http://hostapp1.shared.domain.example.org/testpath1")
         assertThat(result).filteredOn { instance: Instance -> instance.instanceId == CFAccessorMock.UNITTEST_APP1_UUID + ":1" }
@@ -72,9 +72,9 @@ class ReactiveAppInstanceScannerTest {
         t.applicationId = CFAccessorMock.UNITTEST_APP2_UUID
         t.originalTarget = emptyTarget
         targets.add(t)
-        val result = appInstanceScanner!!.determineInstancesFromTargets(targets, null, Predicate { instance: Instance ->
+        val result = appInstanceScanner.determineInstancesFromTargets(targets, null, Predicate { instance: Instance ->
             !instance.instanceId.startsWith(CFAccessorMock.UNITTEST_APP1_UUID) // the instances of app1 are being filtered away
-        })
+        }).block()
         assertThat(result).`as`("should have been filtered").extracting("instanceId").doesNotContain(CFAccessorMock.UNITTEST_APP1_UUID + ":0")
         assertThat(result).`as`("should have been filtered").extracting("instanceId").doesNotContain(CFAccessorMock.UNITTEST_APP1_UUID + ":1")
         assertThat(result).filteredOn { instance: Instance -> instance.instanceId == CFAccessorMock.UNITTEST_APP2_UUID + ":0" }
@@ -103,7 +103,7 @@ class ReactiveAppInstanceScannerTest {
         t.applicationId = CFAccessorMock.UNITTEST_APP2_UUID
         t.originalTarget = emptyTarget
         targets.add(t)
-        val result = appInstanceScanner!!.determineInstancesFromTargets(targets, null, null)
+        val result = appInstanceScanner.determineInstancesFromTargets(targets, null, null).block()
         assertThat(result).filteredOn { instance: Instance -> instance.instanceId == CFAccessorMock.UNITTEST_APP1_UUID + ":0" }
                 .extracting("accessUrl").containsOnly("http://hostapp1.shared.domain.example.org/testpath1")
         assertThat(result).filteredOn { instance: Instance -> instance.instanceId == CFAccessorMock.UNITTEST_APP1_UUID + ":1" }
@@ -142,7 +142,7 @@ class ReactiveAppInstanceScannerTest {
         t.applicationId = CFAccessorMock.UNITTEST_APP2_UUID
         t.originalTarget = emptyTarget
         targets.add(t)
-        val result = appInstanceScanner!!.determineInstancesFromTargets(targets, null, null)
+        val result = appInstanceScanner.determineInstancesFromTargets(targets, null, null).block()
         assertThat(result).filteredOn { instance: Instance -> instance.instanceId == CFAccessorMock.UNITTEST_APP1_UUID + ":0" }
                 .extracting("accessUrl").containsOnly("http://hostapp1.shared.domain.example.org/testpath1")
         assertThat(result).filteredOn { instance: Instance -> instance.instanceId == CFAccessorMock.UNITTEST_APP1_UUID + ":1" }
@@ -181,7 +181,7 @@ class ReactiveAppInstanceScannerTest {
         t.applicationId = CFAccessorMock.UNITTEST_APP2_UUID
         t.originalTarget = emptyTarget
         targets.add(t)
-        val result = appInstanceScanner!!.determineInstancesFromTargets(targets, null, null)
+        val result = appInstanceScanner.determineInstancesFromTargets(targets, null, null).block()
         assertThat(result).filteredOn { instance: Instance -> instance.instanceId == CFAccessorMock.UNITTEST_APP1_UUID + ":0" }
                 .extracting("accessUrl").containsOnly("http://hostapp1.shared.domain.example.org/testpath1")
         assertThat(result).filteredOn { instance: Instance -> instance.instanceId == CFAccessorMock.UNITTEST_APP1_UUID + ":1" }
@@ -220,7 +220,7 @@ class ReactiveAppInstanceScannerTest {
         t.applicationId = CFAccessorMock.UNITTEST_APP2_UUID
         t.originalTarget = emptyTarget
         targets.add(t)
-        val result = appInstanceScanner!!.determineInstancesFromTargets(targets, null, null)
+        val result = appInstanceScanner.determineInstancesFromTargets(targets, null, null).block()
         assertThat(result).filteredOn { instance: Instance -> instance.instanceId == CFAccessorMock.UNITTEST_APP1_UUID + ":0" }
                 .extracting("accessUrl").containsOnly("http://hostapp1.shared.domain.example.org/testpath1")
         assertThat(result).filteredOn { instance: Instance -> instance.instanceId == CFAccessorMock.UNITTEST_APP1_UUID + ":1" }
@@ -259,7 +259,7 @@ class ReactiveAppInstanceScannerTest {
         t.applicationId = CFAccessorMock.UNITTEST_APP2_UUID
         t.originalTarget = emptyTarget
         targets.add(t)
-        val result = appInstanceScanner!!.determineInstancesFromTargets(targets, null, null)
+        val result = appInstanceScanner.determineInstancesFromTargets(targets, null, null).block()
         assertThat(result).filteredOn { instance: Instance -> instance.instanceId == CFAccessorMock.UNITTEST_APP1_UUID + ":0" }
                 .extracting("accessUrl").containsOnly("http://hostapp1.shared.domain.example.org/testpath1")
         assertThat(result).filteredOn { instance: Instance -> instance.instanceId == CFAccessorMock.UNITTEST_APP1_UUID + ":1" }
@@ -298,7 +298,7 @@ class ReactiveAppInstanceScannerTest {
         t.applicationId = CFAccessorMock.UNITTEST_APP2_UUID
         t.originalTarget = emptyTarget
         targets.add(t)
-        val result = appInstanceScanner!!.determineInstancesFromTargets(targets, null, null)
+        val result = appInstanceScanner.determineInstancesFromTargets(targets, null, null).block()
         assertThat(result).`as`("targets with exceptions are ignored").extracting("target.applicationName").doesNotContain("shouldneverbeused")
         assertThat(result).filteredOn { instance: Instance -> instance.instanceId == CFAccessorMock.UNITTEST_APP1_UUID + ":0" }
                 .extracting("accessUrl").containsOnly("http://hostapp1.shared.domain.example.org/testpath1")
@@ -338,7 +338,7 @@ class ReactiveAppInstanceScannerTest {
         t.applicationId = CFAccessorMock.UNITTEST_APP2_UUID
         t.originalTarget = emptyTarget
         targets.add(t)
-        val result = appInstanceScanner!!.determineInstancesFromTargets(targets, null, null)
+        val result = appInstanceScanner.determineInstancesFromTargets(targets, null, null).block()
         assertThat(result).filteredOn { instance: Instance -> instance.instanceId == CFAccessorMock.UNITTEST_APP1_UUID + ":0" }
                 .extracting("accessUrl").containsOnly("http://hostapp1.shared.domain.example.org/testpath1")
         assertThat(result).filteredOn { instance: Instance -> instance.instanceId == CFAccessorMock.UNITTEST_APP1_UUID + ":1" }
@@ -377,7 +377,7 @@ class ReactiveAppInstanceScannerTest {
         t.applicationId = CFAccessorMock.UNITTEST_APP2_UUID
         t.originalTarget = emptyTarget
         targets.add(t)
-        val result = appInstanceScanner!!.determineInstancesFromTargets(targets, null, null)
+        val result = appInstanceScanner.determineInstancesFromTargets(targets, null, null).block()
         assertThat(result).filteredOn { instance: Instance -> instance.instanceId == CFAccessorMock.UNITTEST_APP1_UUID + ":0" }
                 .extracting("accessUrl").containsOnly("http://hostapp1.shared.domain.example.org/testpath1")
         assertThat(result).filteredOn { instance: Instance -> instance.instanceId == CFAccessorMock.UNITTEST_APP1_UUID + ":1" }
@@ -416,7 +416,7 @@ class ReactiveAppInstanceScannerTest {
         t.applicationId = CFAccessorMock.UNITTEST_APP2_UUID
         t.originalTarget = emptyTarget
         targets.add(t)
-        val result = appInstanceScanner!!.determineInstancesFromTargets(targets, null, null)
+        val result = appInstanceScanner.determineInstancesFromTargets(targets, null, null).block()
         assertThat(result).filteredOn { instance: Instance -> instance.instanceId == CFAccessorMock.UNITTEST_APP1_UUID + ":0" }
                 .extracting("accessUrl").containsOnly("http://hostapp1.shared.domain.example.org/testpath1")
         assertThat(result).filteredOn { instance: Instance -> instance.instanceId == CFAccessorMock.UNITTEST_APP1_UUID + ":1" }
@@ -448,7 +448,7 @@ class ReactiveAppInstanceScannerTest {
         val origTarget = Target(preferredRouteRegex = listOf(".*additionalSubdomain.*"))
         t.originalTarget = origTarget
         targets.add(t)
-        val result = appInstanceScanner!!.determineInstancesFromTargets(targets, null, null)
+        val result = appInstanceScanner.determineInstancesFromTargets(targets, null, null).block()
         assertThat(result).filteredOn { instance: Instance -> instance.instanceId == CFAccessorMock.UNITTEST_APP1_UUID + ":0" }
                 .extracting("accessUrl").containsOnly("http://hostapp1.shared.domain.example.org/testpath1")
         assertThat(result).filteredOn { instance: Instance -> instance.instanceId == CFAccessorMock.UNITTEST_APP1_UUID + ":1" }
@@ -480,7 +480,7 @@ class ReactiveAppInstanceScannerTest {
                 }
         )
 
-        val result = appInstanceScanner.determineInstancesFromTargets(targets, null, null)
+        val result = appInstanceScanner.determineInstancesFromTargets(targets, null, null).block()
 
         assertThat(result.filter { it.instanceId == CFAccessorMock.UNITTEST_APP1_UUID + ":0" }.map { it.accessUrl })
                 .containsOnly("http://hostapp1.shared.domain.example.org/testpath1")

@@ -4,12 +4,14 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.fail
 import org.cloudfoundry.promregator.JUnitTestUtils
 import org.cloudfoundry.promregator.config.Target
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import reactor.kotlin.core.publisher.toMono
 import java.util.*
 
 class CachingTargetResolverTest {
@@ -32,9 +34,9 @@ class CachingTargetResolverTest {
 
     @Test
     fun `resolveTargets should pass through to parent resolver and be cached`() {
-        every { targetResolver.resolveTargets(any())} returns listOf(rTarget1, rTarget2)
+        every { targetResolver.resolveTargets(any())} returns listOf(rTarget1, rTarget2).toMono()
 
-        val actualList = cachingTargetResolver.resolveTargets(listOf(target1, target2))
+        val actualList = cachingTargetResolver.resolveTargets(listOf(target1, target2)).block()
 
         assertThat(actualList).hasSize(2)
 
@@ -51,11 +53,11 @@ class CachingTargetResolverTest {
     fun `repeated calls only make requests for targets that are missing in the cache `() {
         val list= listOf(target1)
 
-        every { targetResolver.resolveTargets(listOf(target1))} returns listOf(rTarget1)
-        every { targetResolver.resolveTargets(listOf(target2))} returns listOf(rTarget2)
+        every { targetResolver.resolveTargets(listOf(target1))} returns listOf(rTarget1).toMono()
+        every { targetResolver.resolveTargets(listOf(target2))} returns listOf(rTarget2).toMono()
 
         // fill the cache
-        val actualList = cachingTargetResolver.resolveTargets(list)
+        val actualList = cachingTargetResolver.resolveTargets(list).block()
         assertThat(actualList).containsExactly(rTarget1)
         verify(exactly = 1) { targetResolver.resolveTargets(listOf(target1))}
         verify(exactly = 0) { targetResolver.resolveTargets(listOf(target2))} //Target 2 hasn't been called
@@ -67,10 +69,10 @@ class CachingTargetResolverTest {
 
     @Test
     fun `when duplicate targets are returned we only return the distinct ones`() {
-        every { targetResolver.resolveTargets(any())} returns listOf(rTarget1, rTarget1, rTarget2)
+        every { targetResolver.resolveTargets(any())} returns listOf(rTarget1, rTarget1, rTarget2).toMono()
 
         val list = listOf(target1, targetRegex)
-        val actualList = cachingTargetResolver.resolveTargets(list)
+        val actualList = cachingTargetResolver.resolveTargets(list).block() ?: fail("Expected list")
         assertThat(actualList).hasSize(2)
 
         assertThat(actualList.filter { it == rTarget1 }).hasSize(1)
