@@ -12,6 +12,6 @@ public final class ExitCodes {
 	 * 161 seems to be the first free exit code...
 	 */
 	
-	public int FAILED_WATCHDOG = 161;
-	public int CF_ACCESSOR_OUT_OF_MEMORY = 162;
+	public static int FAILED_WATCHDOG = 161;
+	public static int CF_ACCESSOR_OUT_OF_MEMORY = 162;
 }

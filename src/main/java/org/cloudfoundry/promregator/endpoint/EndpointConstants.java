@@ -11,5 +11,5 @@ public final class EndpointConstants {
 	public static final String ENDPOINT_PATH_PROMREGATOR_METRICS = "/promregatorMetrics";
 	public static final String ENDPOINT_PATH_CACHE_INVALIDATION = "/cache/invalidate";
 	
-	String HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER = "X-Promregator-Instance";
+	public static final String HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER = "X-Promregator-Instance";
 }
