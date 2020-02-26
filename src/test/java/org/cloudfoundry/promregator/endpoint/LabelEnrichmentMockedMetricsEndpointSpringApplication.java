@@ -38,7 +38,6 @@ import io.prometheus.client.CollectorRegistry;
 @EnableAutoConfiguration
 @ComponentScan(excludeFilters = { @Filter(type = FilterType.CUSTOM, classes = { TypeExcludeFilter.class }),
 		@Filter(type = FilterType.CUSTOM, classes = { AutoConfigurationExcludeFilter.class }),
-		@Filter(type = FilterType.ASSIGNABLE_TYPE, value = TestableMetricsEndpoint.class ),
 		/* NB: We want to have a the real MetricsEndpoint and not the TestableMetricsEndpoint here! 
 		 * That's why TestableMetricsEndpoint is excluded, but MetricsEndpoint is not (which is the opposite of a
 		 * very similar test)!
@@ -132,6 +131,11 @@ public class LabelEnrichmentMockedMetricsEndpointSpringApplication {
 		return currentPromregatorInstanceIdentifier;
 	}
 
+	@Bean
+	public InstanceCache instanceCache() {
+		return new InstanceCache();
+	}
+	
 	public static HttpServletRequest mockedHttpServletRequest = Mockito.mock(HttpServletRequest.class);
 	
 	@Bean

@@ -6,6 +6,8 @@ import java.util.HashMap;
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.mockServer.DefaultMetricsEndpointHttpHandler;
 import org.cloudfoundry.promregator.mockServer.MetricsEndpointMockServer;
+import org.cloudfoundry.promregator.scanner.Instance;
+import org.cloudfoundry.promregator.scanner.ResolvedTarget;
 import org.cloudfoundry.promregator.textformat004.Parser;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -57,7 +59,12 @@ public class DisabledEnrichmentSingleTargetMetricsEndpointTest {
 	public void testGetMetricsLabelsAreCorrectIfLabelEnrichmentIsDisabled() {
 		Assert.assertNotNull(subject);
 		
-		String response = subject.getMetrics("faedbb0a-2273-4cb4-a659-bd31331f7daf", "0").getBody();
+		ResolvedTarget rt = new ResolvedTarget();
+		rt.setApplicationId("faedbb0a-2273-4cb4-a659-bd31331f7daf");
+		
+		Instance dummyInstance = new Instance(rt, "0", "http://localhost/dummy");
+		
+		String response = subject.getMetrics(dummyInstance.getHash()).getBody();
 		
 		Assert.assertNotNull(response);
 		Assert.assertNotEquals("", response);

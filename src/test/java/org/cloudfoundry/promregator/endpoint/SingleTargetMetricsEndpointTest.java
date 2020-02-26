@@ -6,6 +6,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
+import org.cloudfoundry.promregator.scanner.Instance;
+import org.cloudfoundry.promregator.scanner.ResolvedTarget;
 import org.cloudfoundry.promregator.textformat004.Parser;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -46,7 +48,12 @@ public class SingleTargetMetricsEndpointTest {
 	public void testGetMetrics() {
 		Assert.assertNotNull(subject);
 		
-		String response = subject.getMetrics("faedbb0a-2273-4cb4-a659-bd31331f7daf", "0").getBody();
+		ResolvedTarget rt = new ResolvedTarget();
+		rt.setApplicationId("faedbb0a-2273-4cb4-a659-bd31331f7daf");
+		
+		Instance dummyInstance = new Instance(rt, "0", "http://localhost/dummy");
+		
+		String response = subject.getMetrics(dummyInstance.getHash()).getBody();
 		
 		Assert.assertNotNull(response);
 		Assert.assertNotEquals("", response);
@@ -62,7 +69,13 @@ public class SingleTargetMetricsEndpointTest {
 	public void testIssue52() {
 		Assert.assertNotNull(subject);
 		
-		String response = subject.getMetrics("faedbb0a-2273-4cb4-a659-bd31331f7daf", "0").getBody();
+		ResolvedTarget rt = new ResolvedTarget();
+		rt.setApplicationId("faedbb0a-2273-4cb4-a659-bd31331f7daf");
+		
+		Instance dummyInstance = new Instance(rt, "0", "http://localhost/dummy");
+		
+		String response = subject.getMetrics(dummyInstance.getHash()).getBody();
+
 		
 		Assert.assertNotNull(response);
 		Assert.assertNotEquals("", response);
@@ -86,7 +99,12 @@ public class SingleTargetMetricsEndpointTest {
 	public void testIssue51() {
 		Assert.assertNotNull(subject);
 		
-		String response = subject.getMetrics("faedbb0a-2273-4cb4-a659-bd31331f7daf", "0").getBody();
+		ResolvedTarget rt = new ResolvedTarget();
+		rt.setApplicationId("faedbb0a-2273-4cb4-a659-bd31331f7daf");
+		
+		Instance dummyInstance = new Instance(rt, "0", "http://localhost/dummy");
+		
+		String response = subject.getMetrics(dummyInstance.getHash()).getBody();
 		
 		Assert.assertNotNull(response);
 		Assert.assertNotEquals("", response);
@@ -108,7 +126,12 @@ public class SingleTargetMetricsEndpointTest {
 		Mockito.when(MockedMetricsEndpointSpringApplication.mockedHttpServletRequest.getHeader(EndpointConstants.HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER))
 		.thenReturn(MockedMetricsEndpointSpringApplication.currentPromregatorInstanceIdentifier.toString());
 		
-		subject.getMetrics("faedbb0a-2273-4cb4-a659-bd31331f7daf", "0");
+		ResolvedTarget rt = new ResolvedTarget();
+		rt.setApplicationId("faedbb0a-2273-4cb4-a659-bd31331f7daf");
+		
+		Instance dummyInstance = new Instance(rt, "0", "http://localhost/dummy");
+		
+		subject.getMetrics(dummyInstance.getHash());
 	}
 	
 	@Test
@@ -116,7 +139,12 @@ public class SingleTargetMetricsEndpointTest {
 		Mockito.when(MockedMetricsEndpointSpringApplication.mockedHttpServletRequest.getHeader(EndpointConstants.HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER))
 		.thenReturn(UUID.randomUUID().toString());
 		
-		ResponseEntity<String> result = subject.getMetrics("faedbb0a-2273-4cb4-a659-bd31331f7daf", "0"); // real test: no exception is raised
+		ResolvedTarget rt = new ResolvedTarget();
+		rt.setApplicationId("faedbb0a-2273-4cb4-a659-bd31331f7daf");
+		
+		Instance dummyInstance = new Instance(rt, "0", "http://localhost/dummy");
+		
+		ResponseEntity<String> result = subject.getMetrics(dummyInstance.getHash()); // real test: no exception is raised
 		
 		Assert.assertNotNull(result); // trivial assertion to ensure that unit test is providing an assertion
 	}

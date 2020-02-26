@@ -136,6 +136,11 @@ public class MockedMetricsEndpointSpringApplication {
 		return currentPromregatorInstanceIdentifier;
 	}
 
+	@Bean
+	public InstanceCache instanceCache() {
+		return new InstanceCache();
+	}
+	
 	public static HttpServletRequest mockedHttpServletRequest = Mockito.mock(HttpServletRequest.class);
 	
 	@Bean
