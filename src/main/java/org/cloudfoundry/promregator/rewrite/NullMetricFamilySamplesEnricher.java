@@ -29,4 +29,7 @@ public class NullMetricFamilySamplesEnricher extends AbstractMetricFamilySamples
 		return new LinkedList<>(original);
 	}
 
+	@Override
+	protected void removeDuplicateLabels(List<String> original){ }
+
 }

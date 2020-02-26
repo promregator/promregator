@@ -1,8 +1,10 @@
 package org.cloudfoundry.promregator.rewrite;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A MetricFamilySamplesEnricher which enriches the labels of metrics by 
@@ -24,42 +26,38 @@ public class CFAllLabelsMetricFamilySamplesEnricher extends AbstractMetricFamily
 	public static final String LABELNAME_INSTANCE_NUMBER = "cf_instance_number";
 	
 	private static String[] labelNames = new String[] { LABELNAME_ORGNAME, LABELNAME_SPACENAME, LABELNAME_APPNAME, LABELNAME_INSTANCEID, LABELNAME_INSTANCE_NUMBER };
-	
+	private Map<String, String> labelsAndValuesToAdd = new LinkedHashMap<>();
 	public static String[] getEnrichingLabelNames() {
 		return labelNames.clone();
 	}
-	
-	private String orgName;
-	private String spaceName;
-	private String appName;
-	private String instanceId;
 
 	public CFAllLabelsMetricFamilySamplesEnricher(String orgName, String spaceName, String appName, String instanceId) {
-		this.instanceId = instanceId;
-		this.spaceName = spaceName;
-		this.appName = appName;
-		this.orgName = orgName;
+		this.labelsAndValuesToAdd.put(LABELNAME_ORGNAME, orgName);
+		this.labelsAndValuesToAdd.put(LABELNAME_SPACENAME, spaceName);
+		this.labelsAndValuesToAdd.put(LABELNAME_APPNAME, appName);
+		this.labelsAndValuesToAdd.put(LABELNAME_INSTANCEID, instanceId);
+		this.labelsAndValuesToAdd.put(LABELNAME_INSTANCE_NUMBER, getInstanceFromInstanceId(instanceId));
 	}
 	
 	@Override
 	protected List<String> getEnrichedLabelNames(List<String> original) {
 		List<String> clone = new LinkedList<>(original);
-		Collections.addAll(clone, labelNames);
-		
+		Collections.addAll(clone, labelsAndValuesToAdd.keySet().toArray(new String[0]));
 		return clone;
 	}
 	
 	@Override
 	public List<String> getEnrichedLabelValues(List<String> original) {
 		List<String> clone = new LinkedList<>(original);
-		
-		clone.add(this.orgName);
-		clone.add(this.spaceName);
-		clone.add(this.appName);
-		clone.add(this.instanceId);
-		clone.add(getInstanceFromInstanceId(this.instanceId));
-		
+		Collections.addAll(clone, labelsAndValuesToAdd.values().toArray(new String[0]));
 		return clone;
+	}
+
+	@Override
+	protected void removeDuplicateLabels(List<String> original){
+		for(String label: original) {
+			labelsAndValuesToAdd.remove(label);
+		}
 	}
 	
 	private static String getInstanceFromInstanceId(String instanceId) {

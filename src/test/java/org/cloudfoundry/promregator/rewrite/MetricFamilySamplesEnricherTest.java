@@ -104,4 +104,48 @@ public class MetricFamilySamplesEnricherTest {
 		Assert.assertEquals("labelValue", labelValues[0]);
 	}
 
+	@Test
+	public void testDuplicatesRemovedFromMetricLabels() {
+		AbstractMetricFamilySamplesEnricher subject = new CFAllLabelsMetricFamilySamplesEnricher("testOrgName", "testSpaceName", "testComponent", "testInstance:42");
+
+		List<Sample> samples = new LinkedList<>();
+		Sample s = new Sample("dummyname", Arrays.asList(new String[] { "app_name", "labelName" }), Arrays.asList(new String[] { "original_appName", "labelvalue"}), 1.0);
+		samples.add(s);
+
+		MetricFamilySamples mfs = new MetricFamilySamples("dummyname", Type.GAUGE, "dummyHelp", samples);
+
+		HashMap<String, MetricFamilySamples> map = new HashMap<>();
+		map.put("metricName", mfs);
+
+		HashMap<String, MetricFamilySamples> result = subject.determineEnumerationOfMetricFamilySamples(map);
+
+		Assert.assertEquals(1, result.size());
+
+		MetricFamilySamples testMFS = result.get("metricName");
+		Assert.assertNotNull(testMFS);
+
+		Sample testSample = testMFS.samples.get(0);
+		Assert.assertNotNull(testSample);
+
+		List<String> labelNamesList = testSample.labelNames;
+		Assert.assertEquals("There should be exactly six labels", 6,labelNamesList.size());
+		String[] labelNames = labelNamesList.toArray(new String[0]);
+		Assert.assertEquals("The first label should have been the app_name", "app_name", labelNames[0]);
+		Assert.assertEquals("The first label should have been the labelName", "labelName", labelNames[1]);
+		Assert.assertEquals("The first label should have been the testOrgName", "org_name", labelNames[2]);
+		Assert.assertEquals("The first label should have been the testSpaceName", "space_name", labelNames[3]);
+		Assert.assertEquals("The first label should have been the testComponent", "cf_instance_id", labelNames[4]);
+		Assert.assertEquals("The first label should have been the testComponent", "cf_instance_number", labelNames[5]);
+
+		List<String> labelValuesList = testSample.labelValues;
+		Assert.assertEquals("There should be exactly 6 values",6, labelValuesList.size());
+		String[] labelValues = labelValuesList.toArray(new String[0]);
+		Assert.assertEquals("The app_name should not have been empty or overridden", "original_appName", labelValues[0]);
+		Assert.assertEquals("The second value should have been labelvalue", "labelvalue", labelValues[1]);
+		Assert.assertEquals("The second value should have been testOrgName", "testOrgName", labelValues[2]);
+		Assert.assertEquals("The second value should have been testSpaceName", "testSpaceName", labelValues[3]);
+		Assert.assertEquals("The second value should have been testComponent", "testInstance:42", labelValues[4]);
+		Assert.assertEquals("The second value should have been testInstance:42", "42", labelValues[5]);
+	}
+
 }
