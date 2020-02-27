@@ -201,6 +201,23 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	@Override
 	public void reset() {
 		try {
+			if (this.cloudFoundryClient != null) {
+				/*
+				 * Note: there may still be connections and threads open, which need to be closed.
+				 * https://github.com/promregator/promregator/issues/161 pointed that out.
+				 */
+				final ConnectionContext connectionContext = this.cloudFoundryClient.getConnectionContext();
+				if (connectionContext != null && connectionContext instanceof DefaultConnectionContext) {
+					/*
+					 * For the idea see also 
+					 * https://github.com/cloudfoundry/cf-java-client/issues/777 and
+					 * https://issues.jenkins-ci.org/browse/JENKINS-53136
+					 */
+					DefaultConnectionContext dcc = (DefaultConnectionContext) connectionContext;
+					dcc.dispose();
+				}
+			}
+			
 			ProxyConfiguration proxyConfiguration = this.proxyConfiguration();
 			DefaultConnectionContext connectionContext = this.connectionContext(proxyConfiguration);
 			PasswordGrantTokenProvider tokenProvider = this.tokenProvider();
