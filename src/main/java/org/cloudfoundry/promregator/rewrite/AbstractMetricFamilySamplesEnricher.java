@@ -27,11 +27,10 @@ public abstract class AbstractMetricFamilySamplesEnricher {
 			
 			List<Collector.MetricFamilySamples.Sample> newSamples = new LinkedList<>();
 			for (Collector.MetricFamilySamples.Sample sample : mfs.samples) {
-				this.removeDuplicateLabels(sample.labelNames);
 				Collector.MetricFamilySamples.Sample newSample = new Collector.MetricFamilySamples.Sample(
 						sample.name,
 						this.getEnrichedLabelNames(sample.labelNames),
-						this.getEnrichedLabelValues(sample.labelValues),
+						this.getEnrichedLabelValues(sample.labelNames, sample.labelValues),
 						sample.value);
 				newSamples.add(newSample);
 			}
@@ -52,6 +51,6 @@ public abstract class AbstractMetricFamilySamplesEnricher {
 	
 	public abstract List<String> getEnrichedLabelValues(List<String> original);
 
-	protected abstract void removeDuplicateLabels(List<String> original);
-	
+	protected abstract List<String> getEnrichedLabelValues(List<String> originalLabelNames, List<String> originalLabelValues);
+
 }
