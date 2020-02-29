@@ -207,7 +207,8 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 				 * https://github.com/promregator/promregator/issues/161 pointed that out.
 				 */
 				final ConnectionContext connectionContext = this.cloudFoundryClient.getConnectionContext();
-				if (connectionContext != null && connectionContext instanceof DefaultConnectionContext) {
+				// Note: connectionContext is ensured to be non-null
+				if (connectionContext instanceof DefaultConnectionContext) {
 					/*
 					 * For the idea see also 
 					 * https://github.com/cloudfoundry/cf-java-client/issues/777 and
