@@ -358,7 +358,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 					.single()
 					.doOnError(e -> {
 						if (e instanceof NoSuchElementException) {
-							logEmptyTarget.warn(String.format("Application id could not be found for org '%s', space '%s' and application '%s'. Check your configuration; skipping it for now", it.getResolvedOrgName(), it.getResolvedSpaceName(), it.getConfigTarget().getApplicationName()));
+							logEmptyTarget.warn(String.format("Application id could not be found for org '%s', space '%s' and application '%s'. Check your configuration of targets; skipping it for now; this message may be muted by setting the log level of the emitting logger accordingly!", it.getResolvedOrgName(), it.getResolvedSpaceName(), it.getConfigTarget().getApplicationName()));
 						}
 					})
 					.onErrorResume(e -> Mono.empty())
