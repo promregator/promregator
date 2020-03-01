@@ -17,6 +17,7 @@ import org.cloudfoundry.promregator.config.Target;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -28,6 +29,9 @@ public class ReactiveTargetResolver implements TargetResolver {
 	@Autowired
 	private CFAccessor cfAccessor;
 
+	@Value("${promregator.resolver.logging.empty.target:true}")
+	private boolean emptyResolutionIsLogged;
+	
 	private static class IntermediateTarget {
 		private Target configTarget;
 		private String resolvedOrgName;
@@ -352,7 +356,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 					.filter(appResource -> appNameToSearchFor.equals(appResource.getEntity().getName().toLowerCase(Locale.ENGLISH)))
 					.single()
 					.doOnError(e -> {
-						if (e instanceof NoSuchElementException) {
+						if (e instanceof NoSuchElementException && this.emptyResolutionIsLogged) {
 							log.warn(String.format("Application id could not be found for org '%s', space '%s' and application '%s'. Check your configuration; skipping it for now", it.getResolvedOrgName(), it.getResolvedSpaceName(), it.getConfigTarget().getApplicationName()));
 						}
 					})

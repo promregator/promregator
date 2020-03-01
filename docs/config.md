@@ -657,6 +657,16 @@ For the purpose of debugging issues with asynchronous handling of operations esp
 
 Be default, this option is set to `false`.
 
+### Option "promregator.resolver.logging.empty.target" (optional)
+
+Suppresses warning messages written to Promregator's logs, which hint to an incomplete resolution of a target. 
+
+The default value of this option is `true`, i.e. logging takes place. If set to `false`, logging will be suppressed. 
+
+If you are expecting that your Promregator's configuration will specify targets, which will never be resolved to an effective targets (e.g. you have specified no orgName, no spaceName and an application name which will never exist on your entire Cloud Foundry platform), you should set this option to `false`. Otherwise the log may get flooded by useless warning messages.
+
+Note, it is best practice to *not* have such target configurations in first place: It is comparably costly for Promregator to detect these cases during runtime. Moreover, as Promregator cannot determine whether only "currently there is no such target" or "there never will be such a target", Promregator still needs to query all metadata from the Cloud Foundry platform. Hence, switching off logging may cover a warning of a valid misconfiguration and shall be used wisely.
+
 
 ### Option "promregator.workaround.dnscache.timeout" (optional)
 
