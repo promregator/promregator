@@ -25,6 +25,7 @@ import reactor.core.scheduler.Schedulers;
 
 public class ReactiveTargetResolver implements TargetResolver {
 	private static final Logger log = LoggerFactory.getLogger(ReactiveTargetResolver.class);
+	private static final Logger logEmptyTarget = LoggerFactory.getLogger(String.format("%s.EmptyTarget", ReactiveTargetResolver.class.getName()));
 	
 	@Autowired
 	private CFAccessor cfAccessor;
@@ -356,8 +357,8 @@ public class ReactiveTargetResolver implements TargetResolver {
 					.filter(appResource -> appNameToSearchFor.equals(appResource.getEntity().getName().toLowerCase(Locale.ENGLISH)))
 					.single()
 					.doOnError(e -> {
-						if (e instanceof NoSuchElementException && this.emptyResolutionIsLogged) {
-							log.warn(String.format("Application id could not be found for org '%s', space '%s' and application '%s'. Check your configuration; skipping it for now", it.getResolvedOrgName(), it.getResolvedSpaceName(), it.getConfigTarget().getApplicationName()));
+						if (e instanceof NoSuchElementException) {
+							logEmptyTarget.warn(String.format("Application id could not be found for org '%s', space '%s' and application '%s'. Check your configuration; skipping it for now", it.getResolvedOrgName(), it.getResolvedSpaceName(), it.getConfigTarget().getApplicationName()));
 						}
 					})
 					.onErrorResume(e -> Mono.empty())
