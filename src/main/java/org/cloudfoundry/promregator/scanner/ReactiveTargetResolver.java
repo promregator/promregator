@@ -22,6 +22,7 @@ import reactor.core.publisher.Mono;
 
 public class ReactiveTargetResolver implements TargetResolver {
 	private static final Logger log = Logger.getLogger(ReactiveTargetResolver.class);
+	private static final Logger logEmptyTarget = Logger.getLogger(String.format("%s.EmptyTarget", ReactiveTargetResolver.class.getName()));
 	
 	@Autowired
 	private CFAccessor cfAccessor;
@@ -261,7 +262,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 					.single()
 					.doOnError(e -> {
 						if (e instanceof NoSuchElementException) {
-							log.warn(String.format("Application id could not be found for org '%s', space '%s' and application '%s'. Check your configuration; skipping it for now", it.resolvedOrgName, it.resolvedSpaceName, it.configTarget.getApplicationName()));
+							logEmptyTarget.warn(String.format("Application id could not be found for org '%s', space '%s' and application '%s'. Check your configuration of targets; skipping it for now; this message may be muted by setting the log level of the emitting logger accordingly!", it.resolvedOrgName, it.resolvedSpaceName, it.configTarget.getApplicationName()));
 						}
 					})
 					.onErrorResume(e -> {
