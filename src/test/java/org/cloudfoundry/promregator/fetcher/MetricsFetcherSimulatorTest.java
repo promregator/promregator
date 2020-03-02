@@ -27,7 +27,7 @@ public class MetricsFetcherSimulatorTest {
 		AbstractMetricFamilySamplesEnricher mfse = new CFAllLabelsMetricFamilySamplesEnricher("testOrgName", "testSpaceName", "testapp", "testinstance1:0");
 		
 		Gauge up = Gauge.build("up_test", "help test").labelNames(CFAllLabelsMetricFamilySamplesEnricher.getEnrichingLabelNames()).create();
-		Child upChild = up.labels(mfse.getEnrichedLabelValues(new LinkedList<>()).toArray(new String[0]));
+		Child upChild = up.labels(mfse.getEnrichedLabelValues(new LinkedList<>(), new LinkedList<>()).toArray(new String[0]));
 		
 		MetricsFetcherSimulator subject = new MetricsFetcherSimulator("accessUrl", 
 				new NullEnricher(), mfse , 

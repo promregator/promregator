@@ -2,10 +2,12 @@ package org.cloudfoundry.promregator.rewrite;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A MetricFamilySamplesEnricher which enriches the labels of metrics by 
@@ -53,28 +55,23 @@ public class CFAllLabelsMetricFamilySamplesEnricher extends AbstractMetricFamily
 		Collections.addAll(clone, labelNames);
 		return clone;
 	}
-	
-	@Override
-	public List<String> getEnrichedLabelValues(List<String> original) {
-		List<String> clone = new LinkedList<>(original);
-		clone.add(orgName);
-		clone.add(spaceName);
-		clone.add(appName);
-		clone.add(instanceId);
-		clone.add(getInstanceFromInstanceId(instanceId));
-		return clone;
-	}
 
 	@Override
-	protected List<String> getEnrichedLabelValues(List<String> originalLabelNames, List<String> originalLabelValues) {
-		List<String> clone = new LinkedList<>(originalLabelValues);
+	public List<String> getEnrichedLabelValues(List<String> originalLabelNames, List<String> originalLabelValues) {
+		List<String> labelListClone = new LinkedList<>(originalLabelValues);
+		Set<String> originalLabelNamesSet = new HashSet<>(originalLabelNames);
 		for(String label: labelNames) {
-			if(originalLabelNames.contains(label)){
-				clone.remove(originalLabelNames.indexOf(label));
-				//TODO: log that value was removed
+			if(originalLabelNamesSet.contains(label)){
+				labelListClone.remove(originalLabelNames.indexOf(label));
+				//TODO: Log that value was removed
 			}
 		}
-		return getEnrichedLabelValues(clone);
+		labelListClone.add(orgName);
+		labelListClone.add(spaceName);
+		labelListClone.add(appName);
+		labelListClone.add(instanceId);
+		labelListClone.add(getInstanceFromInstanceId(instanceId));
+		return labelListClone;
 	}
 
 	private static String getInstanceFromInstanceId(String instanceId) {

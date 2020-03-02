@@ -108,7 +108,7 @@ public class SingleTargetMetricsEndpoint extends AbstractMetricsEndpoint {
 				.labelNames(ownTelemetryLabels)
 				.register(requestRegistry);
 		
-		List<String> labelValues = enricher.getEnrichedLabelValues(new ArrayList<>(0));
+		List<String> labelValues = enricher.getEnrichedLabelValues(new ArrayList<>(), new ArrayList<>(0));
 		scrapeDuration.labels(labelValues.toArray(new String[0])).set(duration.toMillis() / 1000.0);
 	}
 

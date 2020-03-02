@@ -342,7 +342,7 @@ public abstract class AbstractMetricsEndpoint {
 			} else {
 				mfse = new NullMetricFamilySamplesEnricher();
 			}
-			upChild = this.up.labels(mfse.getEnrichedLabelValues(new LinkedList<>()).toArray(new String[0]));
+			upChild = this.up.labels(mfse.getEnrichedLabelValues(new LinkedList<>(), new LinkedList<>()).toArray(new String[0]));
 			
 			AuthenticationEnricher ae = this.authenticatorController.getAuthenticationEnricherByTarget(instance.getTarget().getOriginalTarget());
 			
@@ -370,7 +370,7 @@ public abstract class AbstractMetricsEndpoint {
 	
 	private String[] determineOwnTelemetryLabelValues(String orgName, String spaceName, String appName, String instanceId) {
 		AbstractMetricFamilySamplesEnricher mfse = new CFAllLabelsMetricFamilySamplesEnricher(orgName, spaceName, appName, instanceId);
-		List<String> labelValues = mfse.getEnrichedLabelValues(new LinkedList<>());
+		List<String> labelValues = mfse.getEnrichedLabelValues(new LinkedList<>(), new LinkedList<>());
 		
 		return labelValues.toArray(new String[0]);
 	}
