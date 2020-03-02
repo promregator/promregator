@@ -12,7 +12,7 @@
 # Promregator Project
 
 
-The term "Promregator" is an artifical composite of the two terms "Prometheus" and "aggregator".
+The term "Promregator" is an artificial composite of the two terms "Prometheus" and "aggregator".
 
 Prometheus is referring to the [Prometheus project](https://prometheus.io/), which is a toolset intended for retrieving telemetry data of running applications. It supports monitoring these metrics and triggering alerts based on thresholds.
 
