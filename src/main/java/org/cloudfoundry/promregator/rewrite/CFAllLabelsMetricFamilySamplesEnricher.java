@@ -49,29 +49,64 @@ public class CFAllLabelsMetricFamilySamplesEnricher extends AbstractMetricFamily
 	protected List<String> getEnrichedLabelNames(List<String> original) {
 		List<String> clone = new LinkedList<>(original);
 		for(String label: labelNames) {
-			clone.remove(label);
-			//TODO: log that label was removed
+			if(clone.indexOf(label) < 0) {
+				clone.add(label);
+			} else {
+				//TODO: log that label already existed
+			}
 		}
-		Collections.addAll(clone, labelNames);
 		return clone;
 	}
 
 	@Override
 	public List<String> getEnrichedLabelValues(List<String> originalLabelNames, List<String> originalLabelValues) {
-		List<String> labelListClone = new LinkedList<>(originalLabelValues);
-		Set<String> originalLabelNamesSet = new HashSet<>(originalLabelNames);
+		List<String> clone = new LinkedList<>(originalLabelValues);
+		boolean orgNameExists = false;
+		boolean spaceNameExists = false;
+		boolean appNameExists = false;
+		boolean instanceIdExists = false;
+		boolean instanceNumberExists = false;
+
 		for(String label: labelNames) {
-			if(originalLabelNamesSet.contains(label)){
-				labelListClone.remove(originalLabelNames.indexOf(label));
-				//TODO: Log that value was removed
+			int index = originalLabelNames.indexOf(label);
+			if(index > -1){
+				switch (label){
+					case LABELNAME_ORGNAME:
+						clone.set(index, orgName);
+						orgNameExists = true;
+						//TODO: log that value already existed
+						break;
+					case LABELNAME_SPACENAME:
+						clone.set(index, spaceName);
+						spaceNameExists = true;
+						//TODO: log that value already existed
+						break;
+					case LABELNAME_APPNAME:
+						clone.set(index, appName);
+						appNameExists = true;
+						//TODO: log that value already existed
+						break;
+					case LABELNAME_INSTANCEID:
+						clone.set(index, instanceId);
+						instanceIdExists = true;
+						//TODO: log that value already existed
+						break;
+					case LABELNAME_INSTANCE_NUMBER:
+						clone.set(index, getInstanceFromInstanceId(instanceId));
+						instanceNumberExists = true;
+						//TODO: log that value already existed
+						break;
+				}
 			}
 		}
-		labelListClone.add(orgName);
-		labelListClone.add(spaceName);
-		labelListClone.add(appName);
-		labelListClone.add(instanceId);
-		labelListClone.add(getInstanceFromInstanceId(instanceId));
-		return labelListClone;
+
+		if(!orgNameExists) {clone.add(orgName);}
+		if(!spaceNameExists) {clone.add(spaceName);}
+		if(!appNameExists){clone.add(appName);}
+		if(!instanceIdExists){clone.add(instanceId);}
+		if(!instanceNumberExists){clone.add(getInstanceFromInstanceId(instanceId));}
+
+		return clone;
 	}
 
 	private static String getInstanceFromInstanceId(String instanceId) {

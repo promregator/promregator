@@ -20,9 +20,7 @@ public class NullMetricFamilySamplesEnricher extends AbstractMetricFamilySamples
 	}
 	
 	@Override
-	protected List<String> getEnrichedLabelNames(List<String> original) {
-		return new LinkedList<>(original);
-	}
+	protected List<String> getEnrichedLabelNames(List<String> originalLabelNames) { return new LinkedList<>(originalLabelNames); }
 
 	@Override
 	public List<String> getEnrichedLabelValues(List<String> originalLabelNames, List<String> originalLabelValues) { return new LinkedList<>(originalLabelValues); }

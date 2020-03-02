@@ -47,7 +47,7 @@ public abstract class AbstractMetricFamilySamplesEnricher {
 		return newMap;
 	}
 	
-	protected abstract List<String> getEnrichedLabelNames(List<String> original);
+	protected abstract List<String> getEnrichedLabelNames(List<String> originalLabelNames);
 
 	public abstract List<String> getEnrichedLabelValues(List<String> originalLabelNames, List<String> originalLabelValues);
 
