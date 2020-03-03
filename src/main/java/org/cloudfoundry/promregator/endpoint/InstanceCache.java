@@ -6,7 +6,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.cloudfoundry.promregator.discovery.CFDiscoverer;
 import org.cloudfoundry.promregator.scanner.Instance;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -18,10 +17,10 @@ public class InstanceCache {
 	private Cache<String, Instance> cache;
 	private Object cacheLock = new Object();
 	
-	@Autowired
-	private CFDiscoverer discoverer;
+	private final CFDiscoverer discoverer;
 	
-	public InstanceCache() {
+	public InstanceCache(CFDiscoverer discoverer) {
+		this.discoverer = discoverer;
 		this.cache = Caffeine.newBuilder()
 			.expireAfterAccess(Duration.ofHours(1))
 			.scheduler(this.caffeineScheduler)

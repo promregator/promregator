@@ -136,8 +136,8 @@ public class MockedAppInstanceScannerEndpointSpringApplication {
 	}
 
 	@Bean
-	public AuthenticatorController authenticatorController() {
-		return new AuthenticatorController();
+	public AuthenticatorController authenticatorController(PromregatorConfiguration promregatorConfiguration) {
+		return new AuthenticatorController(promregatorConfiguration);
 	}
 	
 	@Bean
