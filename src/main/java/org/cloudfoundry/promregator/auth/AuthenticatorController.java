@@ -18,12 +18,17 @@ public class AuthenticatorController {
 	private final Map<String, AuthenticationEnricher> mapping = new HashMap<>();
 
 	@Autowired
-	private PromregatorConfiguration promregatorConfiguration;
+	private final PromregatorConfiguration promregatorConfiguration;
 
 	private AuthenticationEnricher globalAuthenticationEnricher;
 
-	@PostConstruct
-	@SuppressWarnings("unused")
+	public AuthenticatorController(PromregatorConfiguration promregatorConfiguration) {
+		this.promregatorConfiguration = promregatorConfiguration;
+
+		determineGlobalAuthenticationEnricher();
+		loadMapFromConfiguration();
+	}
+
 	private void determineGlobalAuthenticationEnricher() {
 		AuthenticatorConfiguration authConfig = promregatorConfiguration.getAuthenticator();
 		if (authConfig == null) {
@@ -34,8 +39,6 @@ public class AuthenticatorController {
 		this.globalAuthenticationEnricher =	AuthenticationEnricherFactory.create(authConfig);
 	}
 	
-	@PostConstruct
-	@SuppressWarnings("unused")
 	private void loadMapFromConfiguration() {
 		for (TargetAuthenticatorConfiguration tac : this.promregatorConfiguration.getTargetAuthenticators()) {
 			String id = tac.getId();

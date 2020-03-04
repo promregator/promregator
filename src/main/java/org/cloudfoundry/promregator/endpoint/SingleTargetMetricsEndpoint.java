@@ -51,44 +51,20 @@ import io.prometheus.client.exporter.common.TextFormat;
 @RestController
 @Scope(value=WebApplicationContext.SCOPE_REQUEST) // see also https://github.com/promregator/promregator/issues/51
 public class SingleTargetMetricsEndpoint {
-	
 	private static final Logger log = LoggerFactory.getLogger(SingleTargetMetricsEndpoint.class);
 
-	@Value("${promregator.simulation.enabled:false}")
-	private boolean simulationMode;
-	
-	@Autowired
-	private ExecutorService metricsFetcherPool;
-	
-	@Autowired
-	private AuthenticatorController authenticatorController;
-
-	@Value("${promregator.scraping.proxy.host:@null}")
-	private String proxyHost;
-	
-	@Value("${promregator.scraping.proxy.port:0}")
-	private int proxyPort;
-
-	@Value("${promregator.scraping.maxProcessingTime:5000}")
-	private int maxProcessingTime;
-	
-	@Value("${promregator.metrics.requestLatency:false}")
-	private boolean recordRequestLatency;
-	
-	@Value("${promregator.scraping.connectionTimeout:5000}")
+	private final boolean simulationMode;
+	private final String proxyHost;
+	private final int proxyPort;
+	private final int maxProcessingTime;
+	private final boolean recordRequestLatency;
 	private int fetcherConnectionTimeout;
-
-	@Value("${promregator.scraping.socketReadTimeout:5000}")
 	private int fetcherSocketReadTimeout;
-	
-	@Autowired
-	private UUID promregatorInstanceIdentifier;
-	
-	@Autowired
-	private HttpServletRequest httpServletRequest;
-	
-	@Autowired
-	private InstanceCache instanceCache;
+
+	private final ExecutorService metricsFetcherPool;
+	private final AuthenticatorController authenticatorController;
+	private final UUID promregatorInstanceIdentifier;
+	private final InstanceCache instanceCache;
 	
 	private GenericMetricFamilySamplesPrefixRewriter gmfspr = new GenericMetricFamilySamplesPrefixRewriter("promregator");
 
@@ -97,8 +73,34 @@ public class SingleTargetMetricsEndpoint {
 	
 	// see also https://prometheus.io/docs/instrumenting/writing_exporters/#metrics-about-the-scrape-itself
 	private Gauge up;
-	
-	@PostConstruct
+
+	public SingleTargetMetricsEndpoint(@Value("${promregator.simulation.enabled:false}") boolean simulationMode,
+									   ExecutorService metricsFetcherPool,
+									   AuthenticatorController authenticatorController,
+									   @Value("${promregator.scraping.proxy.host:@null}") String proxyHost,
+									   @Value("${promregator.scraping.proxy.port:0}") int proxyPort,
+									   @Value("${promregator.scraping.maxProcessingTime:5000}") int maxProcessingTime,
+									   @Value("${promregator.metrics.requestLatency:false}") boolean recordRequestLatency,
+									   @Value("${promregator.scraping.connectionTimeout:5000}") int fetcherConnectionTimeout,
+									   @Value("${promregator.scraping.socketReadTimeout:5000}") int fetcherSocketReadTimeout,
+									   UUID promregatorInstanceIdentifier,
+									   InstanceCache instanceCache) {
+		this.simulationMode = simulationMode;
+		this.metricsFetcherPool = metricsFetcherPool;
+		this.authenticatorController = authenticatorController;
+		this.proxyHost = proxyHost;
+		this.proxyPort = proxyPort;
+		this.maxProcessingTime = maxProcessingTime;
+		this.recordRequestLatency = recordRequestLatency;
+		this.fetcherConnectionTimeout = fetcherConnectionTimeout;
+		this.fetcherSocketReadTimeout = fetcherSocketReadTimeout;
+		this.promregatorInstanceIdentifier = promregatorInstanceIdentifier;
+		this.instanceCache = instanceCache;
+
+		setupOwnRequestScopedMetrics();
+		validateAndFixFetcherTimeouts();
+	}
+
 	public void setupOwnRequestScopedMetrics() {
 		this.requestRegistry = new CollectorRegistry();
 		
@@ -109,7 +111,6 @@ public class SingleTargetMetricsEndpoint {
 		this.up = builder.register(this.requestRegistry);
 	}
 	
-	@PostConstruct
 	public void validateAndFixFetcherTimeouts() {
 		long localMaxProcessingTime = this.maxProcessingTime;
 		
@@ -129,10 +130,11 @@ public class SingleTargetMetricsEndpoint {
 	@RequestMapping(EndpointConstants.ENDPOINT_PATH_SINGLE_TARGET_SCRAPING+"/{hash}")
 	@GetMapping(produces=TextFormat.CONTENT_TYPE_004)
 	public ResponseEntity<String> getMetrics(
-			@PathVariable String hash 
+			@PathVariable String hash,
+			HttpServletRequest request
 			) {
 		
-		if (this.isLoopbackRequest()) {
+		if (this.isLoopbackRequest(request)) {
 			throw new LoopbackScrapingDetectedException("Erroneous Loopback Scraping request detected");
 		}
 		
@@ -279,13 +281,13 @@ public class SingleTargetMetricsEndpoint {
 	 * @return <code>true</code>, if a loopback was detected (which case the current request should be aborted); 
 	 * <code>false</code> otherwise.
 	 */
-	public boolean isLoopbackRequest() {
-		if (this.httpServletRequest == null) {
+	public boolean isLoopbackRequest(HttpServletRequest request) {
+		if (request == null) {
 			log.warn("Missing HTTP Servlet request reference; unable to verify whether this is a loopback request or not");
 			return false;
 		}
 		
-		String headerValue = this.httpServletRequest.getHeader(EndpointConstants.HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER);
+		String headerValue = request.getHeader(EndpointConstants.HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER);
 		if (headerValue == null) {
 			// the header was not set - so this can't be a Promregator instance anyway
 			return false;

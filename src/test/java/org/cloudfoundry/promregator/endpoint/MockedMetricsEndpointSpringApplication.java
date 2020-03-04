@@ -16,6 +16,7 @@ import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.auth.AuthenticatorController;
 import org.cloudfoundry.promregator.auth.NullEnricher;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
+import org.cloudfoundry.promregator.discovery.CFDiscoverer;
 import org.cloudfoundry.promregator.discovery.CFMultiDiscoverer;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.Instance;
@@ -122,8 +123,8 @@ public class MockedMetricsEndpointSpringApplication {
 	}
 
 	@Bean
-	public AuthenticatorController authenticatorController() {
-		return new AuthenticatorController();
+	public AuthenticatorController authenticatorController(PromregatorConfiguration promregatorConfiguration) {
+		return new AuthenticatorController(promregatorConfiguration);
 	}
 	
 	@Bean
@@ -137,8 +138,8 @@ public class MockedMetricsEndpointSpringApplication {
 	}
 
 	@Bean
-	public InstanceCache instanceCache() {
-		return new InstanceCache();
+	public InstanceCache instanceCache(CFDiscoverer discoverer) {
+		return new InstanceCache(discoverer);
 	}
 	
 	public static HttpServletRequest mockedHttpServletRequest = Mockito.mock(HttpServletRequest.class);

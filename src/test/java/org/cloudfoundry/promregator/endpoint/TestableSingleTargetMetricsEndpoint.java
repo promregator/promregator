@@ -1,12 +1,17 @@
 package org.cloudfoundry.promregator.endpoint;
 
+import org.cloudfoundry.promregator.auth.AuthenticatorController;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcher;
 import org.cloudfoundry.promregator.scanner.Instance;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.Scope;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.WebApplicationContext;
+
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
 
 @RestController
 @RequestMapping(EndpointConstants.ENDPOINT_PATH_SINGLE_TARGET_SCRAPING+"_test"+"/{applicationId}/{instanceNumber}")
@@ -18,6 +23,20 @@ import org.springframework.web.context.WebApplicationContext;
 @Scope(value=WebApplicationContext.SCOPE_REQUEST)
 @Profile("SingleTargetMetricsEndpointTest")
 public class TestableSingleTargetMetricsEndpoint extends SingleTargetMetricsEndpoint {
+
+	public TestableSingleTargetMetricsEndpoint(@Value("${promregator.simulation.enabled:false}") boolean simulationMode,
+											   ExecutorService metricsFetcherPool,
+											   AuthenticatorController authenticatorController,
+											   @Value("${promregator.scraping.proxy.host:@null}") String proxyHost,
+											   @Value("${promregator.scraping.proxy.port:0}") int proxyPort,
+											   @Value("${promregator.scraping.maxProcessingTime:5000}") int maxProcessingTime,
+											   @Value("${promregator.metrics.requestLatency:false}") boolean recordRequestLatency,
+											   @Value("${promregator.scraping.connectionTimeout:5000}") int fetcherConnectionTimeout,
+											   @Value("${promregator.scraping.socketReadTimeout:5000}") int fetcherSocketReadTimeout,
+											   UUID promregatorInstanceIdentifier,
+											   InstanceCache instanceCache) {
+		super(simulationMode, metricsFetcherPool, authenticatorController, proxyHost, proxyPort, maxProcessingTime, recordRequestLatency, fetcherConnectionTimeout, fetcherSocketReadTimeout, promregatorInstanceIdentifier, instanceCache);
+	}
 
 	@Override
 	protected MetricsFetcher createMetricsFetcher(Instance instance) {
