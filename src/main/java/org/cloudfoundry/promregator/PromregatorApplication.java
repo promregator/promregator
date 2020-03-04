@@ -57,7 +57,6 @@ import reactor.core.publisher.Hooks;
 
 @SpringBootApplication
 // Warning! This implies @ComponentScan - and we really must have that in place, e.g. due to JMS :(
-//@EnableAutoConfiguration
 @EnableScheduling
 @Import({ BasicAuthenticationSpringConfiguration.class,
 		SecurityConfig.class,

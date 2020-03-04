@@ -23,7 +23,7 @@ data class PromregatorConfiguration(
         val cache: PromCacheConfig = PromCacheConfig()
 )
 
-open class AuthenticatorConfiguration(
+data class AuthenticatorConfiguration(
         var id: String = "__default__",
         var type: String? = null,
         var basic: BasicAuthenticationConfiguration? = null,
