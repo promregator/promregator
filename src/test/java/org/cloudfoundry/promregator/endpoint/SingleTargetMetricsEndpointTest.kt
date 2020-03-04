@@ -74,63 +74,6 @@ class SingleTargetMetricsEndpointTest {
         assertThat(mapMFS).doesNotContainKey("metric_unittestapp2")
     }
 
-    @Disabled("This test is no longer needed since label enrichment is removed")
-    @Test
-    fun testIssue52() {
-        val rt = ResolvedTarget().apply {
-            applicationId = "faedbb0a-2273-4cb4-a659-bd31331f7daf"
-            orgName = "unittestorg"
-            spaceName = "unittestspace"
-            applicationName = "unittestapp"
-        }
-        val dummyInstance = Instance(rt, "0", "http://localhost/dummy")
-        every { instanceCache.getCachedInstance(dummyInstance.hash)} returns dummyInstance
-        val response = subject.getMetrics(dummyInstance.hash, mockedHttpServletRequest).body
-        assertThat(response).isNotNull()
-
-        assertThat(response).isNotEmpty()
-
-        val parser = Parser(response)
-        val mapMFS = parser.parse()
-
-        assertThat(mapMFS).containsKey("metric_unittestapp")
-        assertThat(mapMFS).doesNotContainKey("metric_unittestapp2")
-        val mfs = mapMFS["promregator_scrape_duration_seconds"] ?: throw AssertionError("mfs should not be null")
-
-        assertThat(mfs.samples).hasSize(1)
-
-        val sample = mfs.samples[0]
-        assertThat(sample.labelNames.toString()).isEqualTo("[org_name, space_name, app_name, cf_instance_id, cf_instance_number]")
-        assertThat(sample.labelValues.toString()).isEqualTo("[unittestorg, unittestspace, unittestapp, faedbb0a-2273-4cb4-a659-bd31331f7daf:0, 0]")
-    }
-
-    @Disabled("This test is no longer needed since label enrichment is removed")
-    @Test
-    fun testIssue51() {
-        val rt = ResolvedTarget().apply {
-            applicationId = "faedbb0a-2273-4cb4-a659-bd31331f7daf"
-            orgName = "unittestorg"
-            spaceName = "unittestspace"
-            applicationName = "unittestapp"
-        }
-        val dummyInstance = Instance(rt, "0", "http://localhost/dummy")
-        every { instanceCache.getCachedInstance(dummyInstance.hash)} returns dummyInstance
-
-        val response = subject.getMetrics(dummyInstance.hash, mockedHttpServletRequest).body ?: error("mfs should not be null")
-
-        assertThat(response).isNotEmpty()
-
-        val p = Pattern.compile("   cf_instance_id=\"([^\"]+)\"")
-        val m = p.matcher(response)
-        var atLeastOneFound = false
-        while (m.find()) {
-            atLeastOneFound = true
-            val instanceId = m.group(1)
-            assertThat(instanceId).isEqualTo("faedbb0a-2273-4cb4-a659-bd31331f7daf:0")
-        }
-        assertThat(atLeastOneFound).isTrue()
-    }
-
     @Test
     fun testNegativeIsLoopbackScrapingRequest() {
         every { mockedHttpServletRequest.getHeader(EndpointConstants.HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER) } returns currentPromregatorInstanceIdentifier.toString()
