@@ -20,8 +20,8 @@ public class MockedReactiveAppInstanceScannerSpringApplication {
 	}
 	
 	@Bean
-	public AppInstanceScanner appInstanceScanner() {
-		return new ReactiveAppInstanceScanner();
+	public AppInstanceScanner appInstanceScanner(CFAccessor cfAccessor) {
+		return new ReactiveAppInstanceScanner(cfAccessor);
 	}
 	
 }

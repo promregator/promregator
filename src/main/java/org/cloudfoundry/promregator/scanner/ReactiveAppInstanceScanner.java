@@ -18,8 +18,6 @@ import org.cloudfoundry.client.v2.spaces.SpaceResource;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.util.CollectionUtils;
 import reactor.core.publisher.Flux;
@@ -32,9 +30,6 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	private static final String INVALID_SPACE_ID = "***invalid***";
 	private static final Map<String, SpaceApplicationSummary> INVALID_SUMMARY = new HashMap<>();
 
-	@Value("${cf.cache.timeout.application:300}")
-	private int timeoutCacheApplicationLevel;
-
 	/*
 	 * see also https://github.com/promregator/promregator/issues/76
 	 * This is the locale, which we use to convert both "what we get from CF" and "the stuff, which we get 
@@ -44,6 +39,11 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	 * Turkish case conversion.
 	 */
 	private static final Locale LOCALE_OF_LOWER_CASE_CONVERSION_FOR_IDENTIFIER_COMPARISON = Locale.ENGLISH;
+	private final CFAccessor cfAccessor;
+
+	public ReactiveAppInstanceScanner(CFAccessor cfAccessor) {
+		this.cfAccessor = cfAccessor;
+	}
 
 	/**
 	 * OSA stands for Org-Space-Application
@@ -131,9 +131,6 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		}
 		
 	}
-	
-	@Autowired
-	private CFAccessor cfAccessor;
 	
 	@Override
 	public List<Instance> determineInstancesFromTargets(List<ResolvedTarget> targets, @Null Predicate<? super String> applicationIdFilter, @Null Predicate<? super Instance> instanceFilter) {

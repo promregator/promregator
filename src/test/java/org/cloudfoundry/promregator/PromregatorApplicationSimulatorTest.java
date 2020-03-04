@@ -26,7 +26,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 // Hint: activate the simulation profile, which is defined in src/test/resources/application.yml
 @ActiveProfiles(profiles = {"simulation"})
-
 @DirtiesContext(classMode=ClassMode.AFTER_CLASS)
 public class PromregatorApplicationSimulatorTest {
 

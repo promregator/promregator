@@ -34,6 +34,7 @@ import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 
 import io.prometheus.client.CollectorRegistry;
+import org.springframework.jms.core.JmsTemplate;
 
 @Configuration
 @EnableAutoConfiguration
@@ -46,7 +47,6 @@ import io.prometheus.client.CollectorRegistry;
 		// NOT excluded
 		@Filter(type = FilterType.ASSIGNABLE_TYPE, value=InvalidateCacheEndpoint.class)
 })
-@Import({ PromregatorConfiguration.class })
 public class MockedMetricsEndpointSpringApplication {
 	public static final UUID currentPromregatorInstanceIdentifier = UUID.randomUUID();
 	
@@ -108,8 +108,8 @@ public class MockedMetricsEndpointSpringApplication {
 	}
 	
 	@Bean
-	public CFMultiDiscoverer cfDiscoverer() {
-		return new CFMultiDiscoverer();
+	public CFMultiDiscoverer cfDiscoverer(TargetResolver targetResolver, AppInstanceScanner appInstanceScanner, PromregatorConfiguration promregatorConfiguration, JmsTemplate jmsTemplate, Clock clock) {
+		return new CFMultiDiscoverer(targetResolver, appInstanceScanner, promregatorConfiguration, jmsTemplate, clock);
 	}
 	
 	@Bean

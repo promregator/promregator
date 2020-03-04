@@ -16,7 +16,6 @@ import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import com.github.benmanes.caffeine.cache.AsyncCacheLoader;
@@ -37,33 +36,34 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	private AsyncLoadingCache<CacheKeyAppsInSpace, ListApplicationsResponse> appsInSpaceCache;
 	private AsyncLoadingCache<String, GetSpaceSummaryResponse> spaceSummaryCache;
 	
-	@Value("${cf.cache.timeout.org:3600}")
-	private int refreshCacheOrgLevelInSeconds;
+	private final int refreshCacheOrgLevelInSeconds;
+	private final int refreshCacheSpaceLevelInSeconds;
+	private final int refreshCacheApplicationLevelInSeconds;
+	private final int expiryCacheOrgLevelInSeconds;
+	private final int expiryCacheSpaceLevelInSeconds;
+	private final int expiryCacheApplicationLevelInSeconds;
 
-	@Value("${cf.cache.timeout.space:3600}")
-	private int refreshCacheSpaceLevelInSeconds;
+	private final InternalMetrics internalMetrics;
+	private final CFAccessor parent;
 	
-	@Value("${cf.cache.timeout.application:300}")
-	private int refreshCacheApplicationLevelInSeconds;
-		
-	@Value("${cf.cache.expiry.org:120}")
-	private int expiryCacheOrgLevelInSeconds;
-
-	@Value("${cf.cache.expiry.space:120}")
-	private int expiryCacheSpaceLevelInSeconds;
-	
-	@Value("${cf.cache.expiry.application:120}")
-	private int expiryCacheApplicationLevelInSeconds;
-	
-	
-	@Autowired
-	private InternalMetrics internalMetrics;
-
-	
-	private CFAccessor parent;
-	
-	public CFAccessorCacheCaffeine(CFAccessor parent) {
+	public CFAccessorCacheCaffeine(@Value("${cf.cache.timeout.org:3600}") int refreshCacheOrgLevelInSeconds,
+								   @Value("${cf.cache.timeout.space:3600}") int refreshCacheSpaceLevelInSeconds,
+								   @Value("${cf.cache.timeout.application:300}") int refreshCacheApplicationLevelInSeconds,
+								   @Value("${cf.cache.expiry.org:120}") int expiryCacheOrgLevelInSeconds,
+								   @Value("${cf.cache.expiry.space:120}") int expiryCacheSpaceLevelInSeconds,
+								   @Value("${cf.cache.expiry.application:120}") int expiryCacheApplicationLevelInSeconds,
+								   InternalMetrics internalMetrics,
+								   CFAccessor parent) {
+		this.refreshCacheOrgLevelInSeconds = refreshCacheOrgLevelInSeconds;
+		this.refreshCacheSpaceLevelInSeconds = refreshCacheSpaceLevelInSeconds;
+		this.refreshCacheApplicationLevelInSeconds = refreshCacheApplicationLevelInSeconds;
+		this.expiryCacheOrgLevelInSeconds = expiryCacheOrgLevelInSeconds;
+		this.expiryCacheSpaceLevelInSeconds = expiryCacheSpaceLevelInSeconds;
+		this.expiryCacheApplicationLevelInSeconds = expiryCacheApplicationLevelInSeconds;
+		this.internalMetrics = internalMetrics;
 		this.parent = parent;
+
+		setupCaches();
 	}
 	
 	private class OrgCacheLoader implements AsyncCacheLoader<String, ListOrganizationsResponse> {
@@ -134,7 +134,6 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 		}
 	}
 	
-	@PostConstruct
 	public void setupCaches() {
 		log.info(String.format("Cache refresh timings: org cache: %ds, space cache: %ds, app cache: %ds, app summary cache: %ds", 
 				this.refreshCacheOrgLevelInSeconds, this.refreshCacheSpaceLevelInSeconds, this.refreshCacheApplicationLevelInSeconds, this.refreshCacheApplicationLevelInSeconds));

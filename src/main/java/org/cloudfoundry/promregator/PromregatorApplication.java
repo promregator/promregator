@@ -18,7 +18,9 @@ import org.cloudfoundry.promregator.config.ConfigurationValidations;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.discovery.CFDiscoverer;
 import org.cloudfoundry.promregator.discovery.CFMultiDiscoverer;
+import org.cloudfoundry.promregator.endpoint.DiscoveryEndpoint;
 import org.cloudfoundry.promregator.endpoint.InstanceCache;
+import org.cloudfoundry.promregator.endpoint.SingleTargetMetricsEndpoint;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.cloudfoundry.promregator.lifecycle.InstanceLifecycleHandler;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
@@ -33,12 +35,17 @@ import org.cloudfoundry.promregator.springconfig.JMSSpringConfiguration;
 import org.cloudfoundry.promregator.websecurity.SecurityConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -50,32 +57,32 @@ import reactor.core.publisher.Hooks;
 
 @SpringBootApplication
 // Warning! This implies @ComponentScan - and we really must have that in place, e.g. due to JMS :(
-
+//@EnableAutoConfiguration
 @EnableScheduling
-@Import({ BasicAuthenticationSpringConfiguration.class, SecurityConfig.class, ErrorSpringConfiguration.class, JMSSpringConfiguration.class, AuthenticatorSpringConfiguration.class })
+@Import({ BasicAuthenticationSpringConfiguration.class,
+		SecurityConfig.class,
+		ErrorSpringConfiguration.class,
+		JMSSpringConfiguration.class,
+		AuthenticatorSpringConfiguration.class,
+		DiscoveryEndpoint.class,
+		SingleTargetMetricsEndpoint.class})
+@EnableConfigurationProperties({PromregatorConfiguration.class})
 @EnableAsync
 public class PromregatorApplication {
 	private static final Logger log = LoggerFactory.getLogger(PromregatorApplication.class);
-	
-	@Value("${promregator.simulation.enabled:false}")
-	private boolean simulationMode;
 
-	@Value("${promregator.simulation.instances:10}")
-	private int simulationInstances;
-	
-	@Value("${promregator.reactor.debug:false}")
-	private boolean reactorDebugEnabled;
-	
-	@Value("${promregator.workaround.dnscache.timeout:-1}")
-	private int javaDnsCacheWorkaroundTimeout;
+
+	public PromregatorApplication(PromregatorConfiguration promregatorConfiguration) {
+		enableReactorDebugging(promregatorConfiguration);
+		javaDnsCacheWorkaroundTimeout(promregatorConfiguration);
+	}
 
 	public static void main(String[] args) {
 		SpringApplication.run(PromregatorApplication.class, args);
 	}
-	
-	@PostConstruct
-	public void enableReactorDebugging() {
-		if (this.reactorDebugEnabled) {
+
+	public void enableReactorDebugging(PromregatorConfiguration promregatorConfiguration) {
+		if (promregatorConfiguration.getReactor().getDebug()) {
 			Hooks.onOperatorDebug();
 		}
 	}
@@ -86,16 +93,12 @@ public class PromregatorApplication {
 	}
 	
 	@Bean
-	public CFAccessor mainCFAccessor() {
-		CFAccessor mainAccessor = null;
-		
-		if (this.simulationMode) {
-			mainAccessor = new CFAccessorSimulator(this.simulationInstances);
+	public CFAccessor mainCFAccessor(Environment env, PromregatorConfiguration promregatorConfiguration) {
+		if (promregatorConfiguration.getSimulation().getEnabled()) {
+			return new CFAccessorSimulator(promregatorConfiguration.getSimulation().getInstances());
 		} else {
-			mainAccessor = new ReactiveCFAccessorImpl();
+			return new ReactiveCFAccessorImpl();
 		}
-		
-		return mainAccessor;
 	}
 	
 	@Bean
@@ -104,8 +107,20 @@ public class PromregatorApplication {
 	}
 	
 	@Bean
-	public CFAccessorCache cfAccessorCache(CFAccessor mainCFAccessor) {
-		return new CFAccessorCacheCaffeine(mainCFAccessor);
+	public CFAccessorCache cfAccessorCache(@Value("${cf.cache.timeout.org:3600}") int refreshCacheOrgLevelInSeconds,
+										   @Value("${cf.cache.timeout.space:3600}") int refreshCacheSpaceLevelInSeconds,
+										   @Value("${cf.cache.timeout.application:300}") int refreshCacheApplicationLevelInSeconds,
+										   @Value("${cf.cache.expiry.org:120}") int expiryCacheOrgLevelInSeconds,
+										   @Value("${cf.cache.expiry.space:120}") int expiryCacheSpaceLevelInSeconds,
+										   @Value("${cf.cache.expiry.application:120}") int expiryCacheApplicationLevelInSeconds,
+										   InternalMetrics internalMetrics,
+										   CFAccessor mainCFAccessor) {
+		return new CFAccessorCacheCaffeine(refreshCacheOrgLevelInSeconds,
+				refreshCacheSpaceLevelInSeconds,
+				refreshCacheApplicationLevelInSeconds,
+				expiryCacheOrgLevelInSeconds,
+				expiryCacheSpaceLevelInSeconds,
+				expiryCacheApplicationLevelInSeconds, internalMetrics, mainCFAccessor);
 	}
 	
 	@Bean
@@ -114,13 +129,13 @@ public class PromregatorApplication {
 	}
 	
 	@Bean
-	public ReactiveTargetResolver reactiveTargetResolver() {
-		return new ReactiveTargetResolver();
+	public ReactiveTargetResolver reactiveTargetResolver(CFAccessor cfAccessor) {
+		return new ReactiveTargetResolver(cfAccessor);
 	}
 	
 	@Bean
-	public CachingTargetResolver cachingTargetResolver(ReactiveTargetResolver reactiveTargetResolver) {
-		return new CachingTargetResolver(reactiveTargetResolver);
+	public CachingTargetResolver cachingTargetResolver(ReactiveTargetResolver reactiveTargetResolver, @Value("${cf.cache.timeout.resolver:300}") int timeout) {
+		return new CachingTargetResolver(reactiveTargetResolver, timeout);
 	}
 	
 	@Bean
@@ -129,13 +144,13 @@ public class PromregatorApplication {
 	}
 	
 	@Bean
-	public AppInstanceScanner appInstanceScanner() {
-		return new ReactiveAppInstanceScanner();
+	public AppInstanceScanner appInstanceScanner(CFAccessor cfAccessor) {
+		return new ReactiveAppInstanceScanner(cfAccessor);
 	}
 	
 	@Bean
-	public CFMultiDiscoverer cfDiscoverer() {
-		return new CFMultiDiscoverer();
+	public CFMultiDiscoverer cfDiscoverer(TargetResolver targetResolver, AppInstanceScanner appInstanceScanner, PromregatorConfiguration promregatorConfiguration, JmsTemplate jmsTemplate, Clock clock) {
+		return new CFMultiDiscoverer(targetResolver, appInstanceScanner, promregatorConfiguration, jmsTemplate, clock);
 	}
 	
 	@Bean
@@ -226,14 +241,14 @@ public class PromregatorApplication {
 	public UUID promregatorInstanceIdentifier() {
 		return UUID.randomUUID();
 	}
-	
-	@PostConstruct
-	public void javaDnsCacheWorkaroundTimeout() {
-		if (this.javaDnsCacheWorkaroundTimeout != -1) {
+
+	public void javaDnsCacheWorkaroundTimeout(PromregatorConfiguration promregatorConfiguration) {
+		int javaDnsCacheWorkaroundTimeout = promregatorConfiguration.getWorkaround().getDnscache().getTimeout();
+		if (javaDnsCacheWorkaroundTimeout != -1) {
 			// see also https://docs.aws.amazon.com/de_de/sdk-for-java/v1/developer-guide/java-dg-jvm-ttl.html
 			// and https://github.com/promregator/promregator/issues/84
-			log.info(String.format("Enabling JVM DNS Cache Workaround with TTL value %d", this.javaDnsCacheWorkaroundTimeout));
-			java.security.Security.setProperty("networkaddress.cache.ttl", this.javaDnsCacheWorkaroundTimeout+"");
+			log.info(String.format("Enabling JVM DNS Cache Workaround with TTL value %d", javaDnsCacheWorkaroundTimeout));
+			java.security.Security.setProperty("networkaddress.cache.ttl", javaDnsCacheWorkaroundTimeout+"");
 		}
 	}
 }

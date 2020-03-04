@@ -10,9 +10,5 @@ import org.springframework.context.annotation.Import;
 @Import({AuthenticatorSpringConfiguration.class})
 public class AuthenticatorControllerSpringApplication {
 
-	@Bean
-	public PromregatorConfiguration promregatorConfiguration() {
-		return new PromregatorConfiguration();
-	}
-	
+
 }

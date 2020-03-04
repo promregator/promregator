@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.auth.AuthenticatorController;
+import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.fetcher.CFMetricsFetcher;
 import org.cloudfoundry.promregator.fetcher.CFMetricsFetcherConfig;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcher;
@@ -74,26 +75,21 @@ public class SingleTargetMetricsEndpoint {
 	// see also https://prometheus.io/docs/instrumenting/writing_exporters/#metrics-about-the-scrape-itself
 	private Gauge up;
 
-	public SingleTargetMetricsEndpoint(@Value("${promregator.simulation.enabled:false}") boolean simulationMode,
+	public SingleTargetMetricsEndpoint(PromregatorConfiguration promregatorConfiguration,
 									   ExecutorService metricsFetcherPool,
 									   AuthenticatorController authenticatorController,
-									   @Value("${promregator.scraping.proxy.host:@null}") String proxyHost,
-									   @Value("${promregator.scraping.proxy.port:0}") int proxyPort,
-									   @Value("${promregator.scraping.maxProcessingTime:5000}") int maxProcessingTime,
-									   @Value("${promregator.metrics.requestLatency:false}") boolean recordRequestLatency,
-									   @Value("${promregator.scraping.connectionTimeout:5000}") int fetcherConnectionTimeout,
-									   @Value("${promregator.scraping.socketReadTimeout:5000}") int fetcherSocketReadTimeout,
 									   UUID promregatorInstanceIdentifier,
 									   InstanceCache instanceCache) {
-		this.simulationMode = simulationMode;
+		this.simulationMode = promregatorConfiguration.getSimulation().getEnabled();
 		this.metricsFetcherPool = metricsFetcherPool;
 		this.authenticatorController = authenticatorController;
-		this.proxyHost = proxyHost;
-		this.proxyPort = proxyPort;
-		this.maxProcessingTime = maxProcessingTime;
-		this.recordRequestLatency = recordRequestLatency;
-		this.fetcherConnectionTimeout = fetcherConnectionTimeout;
-		this.fetcherSocketReadTimeout = fetcherSocketReadTimeout;
+
+		this.proxyHost = promregatorConfiguration.getScraping().getProxy().getHost();
+		this.proxyPort = promregatorConfiguration.getScraping().getProxy().getPort();
+		this.maxProcessingTime = promregatorConfiguration.getScraping().getMaxProcessingTime();
+		this.recordRequestLatency = promregatorConfiguration.getMetrics().getRequestLatency();
+		this.fetcherConnectionTimeout = promregatorConfiguration.getScraping().getConnectionTimeout();
+		this.fetcherSocketReadTimeout = promregatorConfiguration.getScraping().getSocketReadTimeout();
 		this.promregatorInstanceIdentifier = promregatorInstanceIdentifier;
 		this.instanceCache = instanceCache;
 

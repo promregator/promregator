@@ -1,6 +1,7 @@
 package org.cloudfoundry.promregator.endpoint;
 
 import org.cloudfoundry.promregator.auth.AuthenticatorController;
+import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcher;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,18 +25,12 @@ import java.util.concurrent.ExecutorService;
 @Profile("SingleTargetMetricsEndpointTest")
 public class TestableSingleTargetMetricsEndpoint extends SingleTargetMetricsEndpoint {
 
-	public TestableSingleTargetMetricsEndpoint(@Value("${promregator.simulation.enabled:false}") boolean simulationMode,
+	public TestableSingleTargetMetricsEndpoint(PromregatorConfiguration promregatorConfiguration,
 											   ExecutorService metricsFetcherPool,
 											   AuthenticatorController authenticatorController,
-											   @Value("${promregator.scraping.proxy.host:@null}") String proxyHost,
-											   @Value("${promregator.scraping.proxy.port:0}") int proxyPort,
-											   @Value("${promregator.scraping.maxProcessingTime:5000}") int maxProcessingTime,
-											   @Value("${promregator.metrics.requestLatency:false}") boolean recordRequestLatency,
-											   @Value("${promregator.scraping.connectionTimeout:5000}") int fetcherConnectionTimeout,
-											   @Value("${promregator.scraping.socketReadTimeout:5000}") int fetcherSocketReadTimeout,
 											   UUID promregatorInstanceIdentifier,
 											   InstanceCache instanceCache) {
-		super(simulationMode, metricsFetcherPool, authenticatorController, proxyHost, proxyPort, maxProcessingTime, recordRequestLatency, fetcherConnectionTimeout, fetcherSocketReadTimeout, promregatorInstanceIdentifier, instanceCache);
+		super(promregatorConfiguration, metricsFetcherPool, authenticatorController, promregatorInstanceIdentifier, instanceCache);
 	}
 
 	@Override

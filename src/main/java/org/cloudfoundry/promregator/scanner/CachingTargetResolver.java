@@ -14,30 +14,17 @@ import org.cloudfoundry.promregator.config.Target;
 import org.springframework.beans.factory.annotation.Value;
 
 public class CachingTargetResolver implements TargetResolver {
-	@Value("${cf.cache.timeout.resolver:300}")
-	private int timeoutCacheResolverLevel;
 
 	private TargetResolver parentTargetResolver;
 	
 	private PassiveExpiringMap<Target, List<ResolvedTarget>> targetResolutionCache;
 	
-	public CachingTargetResolver(TargetResolver parentTargetResolver) {
+	public CachingTargetResolver(TargetResolver parentTargetResolver,
+								 @Value("${cf.cache.timeout.resolver:300}") int timeoutCacheResolverLevel) {
 		this.parentTargetResolver = parentTargetResolver;
+		this.targetResolutionCache = new PassiveExpiringMap<>(timeoutCacheResolverLevel, TimeUnit.SECONDS);
 	}
 	
-	@PostConstruct
-	public void setupCache() {
-		/* Note that this cannot be done during construction as
-		 * this.timeoutCacheResolverLevel isn't available there, yet.
-		 */
-		
-		this.targetResolutionCache = new PassiveExpiringMap<>(this.timeoutCacheResolverLevel, TimeUnit.SECONDS);
-	}
-
-	public TargetResolver getNativeTargetResolver() {
-		return parentTargetResolver;
-	}
-
 	@Override
 	public List<ResolvedTarget> resolveTargets(List<Target> configTargets) {
 		List<Target> toBeLoaded = new LinkedList<>();

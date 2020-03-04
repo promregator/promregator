@@ -19,10 +19,8 @@ public class BasicAuthenticationEnricherTest {
 
 	@Test
 	public void testStraightForward() {
-		BasicAuthenticationConfiguration config = new BasicAuthenticationConfiguration();
-		config.setUsername("dummyuser");
-		config.setPassword("unittestpassword");
-		
+		BasicAuthenticationConfiguration config = new BasicAuthenticationConfiguration("dummyuser", "unittestpassword");
+
 		BasicAuthenticationEnricher subject = new BasicAuthenticationEnricher(config);
 		
 		HttpGet mockGet = Mockito.mock(HttpGet.class);

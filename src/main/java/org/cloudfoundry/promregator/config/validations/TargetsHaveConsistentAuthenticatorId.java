@@ -2,9 +2,9 @@ package org.cloudfoundry.promregator.config.validations;
 
 import java.util.HashSet;
 
+import org.cloudfoundry.promregator.config.AuthenticatorConfiguration;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.config.Target;
-import org.cloudfoundry.promregator.config.TargetAuthenticatorConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +23,7 @@ public class TargetsHaveConsistentAuthenticatorId implements ConfigurationValida
 		final HashSet<String> authenticatorIds = new HashSet<>();
 
 		log.debug("The following target authenticators are registered");
-		for (TargetAuthenticatorConfiguration tac : promregatorConfiguration.getTargetAuthenticators()) {
+		for (AuthenticatorConfiguration tac : promregatorConfiguration.getTargetAuthenticators()) {
 			log.debug(tac.getId());
 			
 			authenticatorIds.add(tac.getId());

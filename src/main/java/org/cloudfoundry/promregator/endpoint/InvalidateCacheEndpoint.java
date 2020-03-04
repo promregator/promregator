@@ -2,7 +2,6 @@ package org.cloudfoundry.promregator.endpoint;
 
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorCache;
 import org.cloudfoundry.promregator.scanner.CachingTargetResolver;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -15,12 +14,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(EndpointConstants.ENDPOINT_PATH_CACHE_INVALIDATION)
 public class InvalidateCacheEndpoint {
 
-	@Autowired
-	private CFAccessorCache cfAccessorCache;
-	
-	@Autowired
-	private CachingTargetResolver cachingTargetResolver;
-	
+	private final CFAccessorCache cfAccessorCache;
+	private final CachingTargetResolver cachingTargetResolver;
+
+	public InvalidateCacheEndpoint(CFAccessorCache cfAccessorCache, CachingTargetResolver cachingTargetResolver) {
+		this.cfAccessorCache = cfAccessorCache;
+		this.cachingTargetResolver = cachingTargetResolver;
+	}
+
 	@GetMapping(produces = MediaType.TEXT_PLAIN_VALUE)
 	public ResponseEntity<String> invalidateCache(
 			@RequestParam(name = "application", required = false) boolean application,
