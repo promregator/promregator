@@ -21,7 +21,6 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 
 @RestController
 @RequestMapping(EndpointConstants.ENDPOINT_PATH_DISCOVERY)
-//@Scope(value=WebApplicationContext.SCOPE_REQUEST)
 public class DiscoveryEndpoint {
 
 	private static final Logger log = LoggerFactory.getLogger(DiscoveryEndpoint.class);

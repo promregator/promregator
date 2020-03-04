@@ -1,13 +1,14 @@
 package org.cloudfoundry.promregator.config
 
 import mu.KotlinLogging
+import org.cloudfoundry.promregator.config.PromregatorConfiguration.Companion.DEFAULT_ID
 import java.util.regex.Pattern
 import java.util.regex.PatternSyntaxException
 
 private val logger = KotlinLogging.logger { }
 
 data class Target(
-        val api: String = "__default__" ,
+        val api: String = DEFAULT_ID ,
         val orgName: String? = null,
         val orgRegex: String? = null,
         val spaceName: String? = null,

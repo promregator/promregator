@@ -1,5 +1,6 @@
 package org.cloudfoundry.promregator.config
 
+import org.cloudfoundry.promregator.config.PromregatorConfiguration.Companion.DEFAULT_ID
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.ConstructorBinding
 import java.util.*
@@ -13,7 +14,6 @@ data class PromregatorConfiguration(
         val reactor: ReactorConfig = ReactorConfig(),
 
         var targets: List<Target> = ArrayList(),
-        var authenticator: AuthenticatorConfiguration = AuthenticatorConfiguration(),
         var targetAuthenticators: List<AuthenticatorConfiguration> = ArrayList(),
         val scraping: ScrapingConfig = ScrapingConfig(),
         val metrics: MetricsConfig = MetricsConfig(),
@@ -21,10 +21,14 @@ data class PromregatorConfiguration(
         val discovery: DiscoveryConfig = DiscoveryConfig(),
         val endpoint: EndpointConfig = EndpointConfig(),
         val cache: PromCacheConfig = PromCacheConfig()
-)
+){
+        companion object {
+                const val DEFAULT_ID = "__default__"
+        }
+}
 
 data class AuthenticatorConfiguration(
-        var id: String = "__default__",
+        var id: String = DEFAULT_ID,
         var type: String? = null,
         var basic: BasicAuthenticationConfiguration? = null,
         var oauth2xsuaa: OAuth2XSUAAAuthenticationConfiguration? = null
