@@ -10,6 +10,8 @@ import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.config.Target;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import static org.cloudfoundry.promregator.config.PromregatorConfiguration.DEFAULT_ID;
+
 /**
  * This class controls the target-dependent set of AuthenticationEnrichers
  */
@@ -28,7 +30,9 @@ public class AuthenticatorController {
 	}
 
 	private void determineGlobalAuthenticationEnricher() {
-		AuthenticatorConfiguration authConfig = promregatorConfiguration.getAuthenticator();
+		AuthenticatorConfiguration authConfig = promregatorConfiguration.getTargetAuthenticators()
+				.stream().filter(auth -> auth.getId().equals(DEFAULT_ID))
+				.findFirst().orElse(null);
 		if (authConfig == null) {
 			this.globalAuthenticationEnricher = new NullEnricher();
 			return;
