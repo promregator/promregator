@@ -3,6 +3,7 @@ package org.cloudfoundry.promregator.endpoint
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
 import org.cloudfoundry.promregator.config.PromregatorConfiguration
+import org.cloudfoundry.promregator.config.Target
 import org.cloudfoundry.promregator.discovery.CFMultiDiscoverer
 import org.cloudfoundry.promregator.scanner.Instance
 import org.cloudfoundry.promregator.scanner.ResolvedTarget
@@ -43,6 +44,7 @@ class DiscoveryEndpointControllerTest(
             this.path = "/a/path"
             this.protocol = "http"
             this.spaceName = "testSpace"
+            this.originalTarget = Target()
         }, "appguid:0", "/url1"))
 
         mockMvc.get("/discovery").andDo { print() }.andExpect {
