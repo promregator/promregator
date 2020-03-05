@@ -9,6 +9,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.apache.http.Consts;
 import org.apache.http.NameValuePair;
@@ -29,6 +30,7 @@ import com.google.gson.Gson;
 import com.google.json.JsonSanitizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.reactive.function.client.WebClient;
 
 public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
 	
@@ -54,6 +56,17 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
 		}
 		
 		httpget.setHeader("Authorization", String.format("Bearer %s", jwt));
+	}
+
+	@Override
+	public Consumer<WebClient.Builder> lookupEnrichAuthentication() {
+		//FIXME implement support for oauth
+		log.error("Unable to enrich request with JWT when using scraping v2");
+		String jwt = "not implemented";
+
+		return builder -> {
+			builder.defaultHeader("Authorization", String.format("Bearer %s", jwt));
+		};
 	}
 
 	private String bufferedJwt = null;

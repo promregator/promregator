@@ -2,9 +2,11 @@ package org.cloudfoundry.promregator.auth;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.function.Consumer;
 
 import org.apache.http.client.methods.HttpGet;
 import org.cloudfoundry.promregator.config.BasicAuthenticationConfiguration;
+import org.springframework.web.reactive.function.client.WebClient;
 
 public class BasicAuthenticationEnricher implements AuthenticationEnricher {
 	
@@ -28,6 +30,11 @@ public class BasicAuthenticationEnricher implements AuthenticationEnricher {
 		String b64usernamepassword = this.getBase64EncodedUsernamePassword();
 		
 		httpget.setHeader("Authorization", String.format("Basic %s", b64usernamepassword));
+	}
+
+	@Override
+	public Consumer<WebClient.Builder> lookupEnrichAuthentication() {
+		return builder -> builder.defaultHeaders(c -> c.setBasicAuth(authenticatorConfig.getUsername(),authenticatorConfig.getPassword()));
 	}
 
 }

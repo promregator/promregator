@@ -145,7 +145,7 @@ public class DiscoveryEndpoint {
 		List<DiscoveryResponse> result = new LinkedList<>();
 		for (Instance instance : instances) {
 			
-			String path = String.format(EndpointConstants.ENDPOINT_PATH_SINGLE_TARGET_SCRAPING+"/%s/%s", instance.getApplicationId(), instance.getInstanceNumber());
+			String path = String.format(EndpointConstants.ENDPOINT_PATH_SINGLE_TARGET_SCRAPING+"/%s", instance.getHash());
 			DiscoveryLabel dl = new DiscoveryLabel(path, instance);
 			
 			DiscoveryResponse dr = new DiscoveryResponse(targets, dl);

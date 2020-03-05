@@ -15,7 +15,11 @@ class AuthenticationService(
     private val mapping: MutableMap<String, AuthenticationEnricher> = mutableMapOf()
     private lateinit var globalAuthenticationEnricher: AuthenticationEnricher
 
-    @PostConstruct
+    init {
+        determineGlobalAuthenticationEnricher()
+        loadMapFromConfiguration()
+    }
+
     private fun determineGlobalAuthenticationEnricher() {
         val authConfig = promregatorConfiguration.targetAuthenticators.firstOrNull { it.id == DEFAULT_ID}
         if (authConfig == null) {
@@ -25,10 +29,9 @@ class AuthenticationService(
         globalAuthenticationEnricher = AuthenticationEnricherFactory.create(authConfig) ?: NullEnricher()
     }
 
-    @PostConstruct
     private fun loadMapFromConfiguration() {
         for (tac in promregatorConfiguration.targetAuthenticators) {
-            val id = tac.id ?: throw RuntimeException("target authenticator is missing id property $tac")
+            val id = tac.id ?: throw RuntimeException("target authenticator is missing id property $tac") //FIXME error if more than one authenticator is `DEFAULT_ID`
             val ae: AuthenticationEnricher? = AuthenticationEnricherFactory.create(tac)
             if (ae != null) {
                 mapping[id] = ae

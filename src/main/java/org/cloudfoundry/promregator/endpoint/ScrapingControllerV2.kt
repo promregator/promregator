@@ -51,7 +51,7 @@ class ScrapingControllerV2(
 
             webClient
                     .baseUrl(instance.accessUrl ?: "")
-//                    .apply(authEnricher.lookupEnrichAuthentication())
+                    .apply(authEnricher.lookupEnrichAuthentication())
                     .defaultHeader("X-CF-APP-INSTANCE", "${instance.applicationId}:${instance.instanceNumber}")
                     .clientConnector(ReactorClientHttpConnector(HttpClient.from(tcpClient)))
                     .build()
