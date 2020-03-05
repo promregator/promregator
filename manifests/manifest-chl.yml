@@ -82,6 +82,10 @@ applications:
       PROMREGATOR_TARGETS_8_PATH: /management/prometheus
       PROMREGATOR_TARGETS_8_APPLICATION_REGEX: "(dp-prod)"
 
+      PROMREGATOR_TARGETS_9_API: pvu
+      PROMREGATOR_TARGETS_9_ORG_NAME: General Authority
+      PROMREGATOR_TARGETS_9_PATH: /management/prometheus
+      PROMREGATOR_TARGETS_9_APPLICATION_REGEX: "pas-(dev)"
 
       PROMREGATOR_TARGETS_10_API: pvu
       PROMREGATOR_TARGETS_10_ORG_NAME: General Authority
@@ -134,7 +138,3 @@ applications:
       PROMREGATOR_TARGETS_19_PATH: /assets/metrics
       PROMREGATOR_TARGETS_19_APPLICATION_REGEX: "bl-(area-office-|blcc|gis|gsc|patriarch)-(dev|test)"
 
-      PROMREGATOR_TARGETS_20_API: pvu
-      PROMREGATOR_TARGETS_20_ORG_NAME: General Authority
-      PROMREGATOR_TARGETS_20_PATH: /management/prometheus
-      PROMREGATOR_TARGETS_20_APPLICATION_REGEX: "pas-(dev)"
