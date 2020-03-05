@@ -49,14 +49,14 @@ class DiscoveryEndpointControllerTest(
 
         mockMvc.get("/discovery").andDo { print() }.andExpect {
             status { isOk }
-            jsonPath("$[0].labels.__meta_promregator_target_path", `is`("/singleTargetMetrics/appguid/0"))
+            jsonPath("$[0].labels.__meta_promregator_target_path", `is`("/singleTargetMetrics/c552576c077cdd4588508abd912917bf9870135f"))
             jsonPath("$[0].labels.__meta_promregator_target_orgName", `is`("testOrg"))
             jsonPath("$[0].labels.__meta_promregator_target_spaceName", `is`("testSpace"))
             jsonPath("$[0].labels.__meta_promregator_target_applicationName", `is`("testApp"))
             jsonPath("$[0].labels.__meta_promregator_target_applicationId", `is`("appguid"))
             jsonPath("$[0].labels.__meta_promregator_target_instanceNumber", `is`("0"))
             jsonPath("$[0].labels.__meta_promregator_target_instanceId", `is`("appguid:0"))
-            jsonPath("$[0].labels.__metrics_path__", `is`("/singleTargetMetrics/appguid/0"))
+            jsonPath("$[0].labels.__metrics_path__", `is`("/singleTargetMetrics/c552576c077cdd4588508abd912917bf9870135f"))
         }
     }
 }
