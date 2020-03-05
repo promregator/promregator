@@ -11,8 +11,7 @@ class PreferredRouteRegexMustBeCompilableTest {
     @Test
     fun testValidDoesNotBreak() {
         val subject = PreferredRouteRegexMustBeCompilable()
-        val promregatorConfiguration = PromregatorConfiguration()
-        promregatorConfiguration.targets = listOf(Target(preferredRouteRegex = listOf("dummy")))
+        val promregatorConfiguration = PromregatorConfiguration(targets = listOf(Target(preferredRouteRegex = listOf("dummy"))))
 
         Assert.assertNull(subject.validate(promregatorConfiguration))
     }

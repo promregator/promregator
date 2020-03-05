@@ -16,8 +16,8 @@ class AuthenticatorControllerTest {
     @BeforeEach
     fun setup() {
         promregatorConfiguration = PromregatorConfiguration(
-                authenticator = AuthenticatorConfiguration(type = "none"),
                 targetAuthenticators = listOf(
+                        AuthenticatorConfiguration(type = "none"),
                         AuthenticatorConfiguration("unittestAuth0", type = "basic",
                                 basic = BasicAuthenticationConfiguration("username", "password")),
                         AuthenticatorConfiguration("unittestAuth1", type = "OAuth2XSUAA", oauth2xsuaa = OAuth2XSUAAAuthenticationConfiguration("http://someurl.bogus", "client_id", "secret123"))
