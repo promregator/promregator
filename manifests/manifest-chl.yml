@@ -1,0 +1,140 @@
+applications:
+  - name: prom-chl
+    memory: 1024m
+    path: promregator.jar
+    routes:
+      - route: ga-prom-all.chl.cf.churchofjesuschrist.org
+    services:
+      - splunk
+    env:
+      JAVA_OPTS: "-Xmx500m -XX:MaxDirectMemorySize=500m -Dio.netty.leakDetectionLevel=paranoid -Dio.netty.leakDetection.targetRecords=30"
+      CF_APIHOST: api.chl.cf.churchofjesuschrist.org
+      CF_USERNAME: svc-ga-mon
+      CF_PASSWORD: ((password))
+      CF_API_CHL_USERNAME: svc-ga-mon
+      CF_API_CHL_PASSWORD: xWDpJjQs7RRwDg4WWqwABbP9MgUXT39KX
+      CF_API_CHL_HOST: api.chl.cf.churchofjesuschrist.org
+
+      CF_API_ASH_USERNAME: svc-ga-mon
+      CF_API_ASH_PASSWORD: xWDpJjQs7RRwDg4WWqwABbP9MgUXT39KX
+      CF_API_ASH_HOST: api.ash.cf.churchofjesuschrist.org
+
+      CF_API_PVU_USERNAME: svc-ga-mon
+      CF_API_PVU_PASSWORD: xWDpJjQs7RRwDg4WWqwABbP9MgUXT39KX
+      CF_API_PVU_HOST: api.pvu.cf.churchofjesuschrist.org
+
+      CF_REQUEST_TIMEOUT_APPSUMMARY: 10000
+      CF_REQUEST_TIMEOUT_ORG: 10000
+      CF_REQUEST_TIMEOUT_SPACE: 10000
+      CF_REQUEST_TIMEOUT_APPINSPACE: 10000
+      PROMREGATOR_SCRAPING_LABELENRICHMENT: false
+      PROMREGATOR_AUTHENTICATOR_TYPE: basic
+      PROMREGATOR_AUTHENTICATOR_BASIC_USERNAME: metrics
+      PROMREGATOR_AUTHENTICATOR_BASIC_PASSWORD: give$me_metrics!
+      PROMREGATOR_DISCOVERY_HOSTNAME: ga-prom-all.chl.cf.churchofjesuschrist.org
+      PROMREGATOR_DISCOVERY_PORT: 443
+      PROMREGATOR_DISCOVERY_CACHE_DURATION: 60s
+      SPRING_APPLICATION_JSON: "{}"
+
+      PROMREGATOR_TARGETS_0_API: chl
+      PROMREGATOR_TARGETS_0_ORG_NAME: General Authority
+      PROMREGATOR_TARGETS_0_PATH: /management/prometheus
+      PROMREGATOR_TARGETS_0_APPLICATION_REGEX: "(dp-prod|dp-stage|dp-training)"
+
+      PROMREGATOR_TARGETS_1_API: chl
+      PROMREGATOR_TARGETS_1_ORG_NAME: General Authority
+      PROMREGATOR_TARGETS_1_PATH: /hasRecord/canary/prometheus
+      PROMREGATOR_TARGETS_1_APPLICATION_REGEX: "(crs-ws).+"
+
+      PROMREGATOR_TARGETS_2_API: chl
+      PROMREGATOR_TARGETS_2_ORG_NAME: General Authority
+      PROMREGATOR_TARGETS_2_PATH: /management/prometheus
+      PROMREGATOR_TARGETS_2_APPLICATION_REGEX: "(membersearch).+"
+
+      PROMREGATOR_TARGETS_3_API: chl
+      PROMREGATOR_TARGETS_3_ORG_NAME: General Authority
+      PROMREGATOR_TARGETS_3_PATH: /management/prometheus
+      PROMREGATOR_TARGETS_3_APPLICATION_REGEX: "(las).+"
+
+      PROMREGATOR_TARGETS_4_API: chl
+      PROMREGATOR_TARGETS_4_ORG_NAME: General Authority
+      PROMREGATOR_TARGETS_4_PATH: /management/prometheus
+      PROMREGATOR_TARGETS_4_APPLICATION_REGEX: "(ga-).+"
+
+      PROMREGATOR_TARGETS_5_API: chl
+      PROMREGATOR_TARGETS_5_ORG_NAME: General Authority
+      PROMREGATOR_TARGETS_5_PATH: /management/prometheus
+      PROMREGATOR_TARGETS_5_APPLICATION_REGEX: "(gards).+"
+
+      PROMREGATOR_TARGETS_6_API: chl
+      PROMREGATOR_TARGETS_6_ORG_NAME: General Authority
+      PROMREGATOR_TARGETS_6_PATH: /actuator/prometheus
+      PROMREGATOR_TARGETS_6_APPLICATION_REGEX: "(prom-).+"
+
+
+      PROMREGATOR_TARGETS_7_API: ash
+      PROMREGATOR_TARGETS_7_ORG_NAME: General Authority
+      PROMREGATOR_TARGETS_7_PATH: /management/prometheus
+      PROMREGATOR_TARGETS_7_APPLICATION_REGEX: "(dp-dev|dp-test)"
+
+      PROMREGATOR_TARGETS_8_API: ash
+      PROMREGATOR_TARGETS_8_ORG_NAME: General Authority
+      PROMREGATOR_TARGETS_8_PATH: /management/prometheus
+      PROMREGATOR_TARGETS_8_APPLICATION_REGEX: "(dp-prod)"
+
+
+      PROMREGATOR_TARGETS_10_API: pvu
+      PROMREGATOR_TARGETS_10_ORG_NAME: General Authority
+      PROMREGATOR_TARGETS_10_PATH: /management/prometheus
+      PROMREGATOR_TARGETS_10_APPLICATION_REGEX: "(galt-dev|galt-test|galt-stage|galt-prod)"
+
+      PROMREGATOR_TARGETS_11_API: pvu
+      PROMREGATOR_TARGETS_11_ORG_NAME: General Authority
+      PROMREGATOR_TARGETS_11_PATH: /management/prometheus
+      PROMREGATOR_TARGETS_11_APPLICATION_REGEX: "(gards-dev|gards-test)" #gards-int isn't running
+
+      PROMREGATOR_TARGETS_12_API: pvu
+      PROMREGATOR_TARGETS_12_ORG_NAME: General Authority
+      PROMREGATOR_TARGETS_12_PATH: /hasRecord/canary/prometheus
+      PROMREGATOR_TARGETS_12_APPLICATION_REGEX: "(crs-ws).+"
+
+      PROMREGATOR_TARGETS_13_API: pvu
+      PROMREGATOR_TARGETS_13_ORG_NAME: General Authority
+      PROMREGATOR_TARGETS_13_PATH: /management/prometheus
+      PROMREGATOR_TARGETS_13_APPLICATION_REGEX: "(bl-dev|bl-test|bl-stage|bl-prod)"
+
+      PROMREGATOR_TARGETS_14_API: pvu
+      PROMREGATOR_TARGETS_14_ORG_NAME: General Authority
+      PROMREGATOR_TARGETS_14_PATH: /management/prometheus
+      PROMREGATOR_TARGETS_14_APPLICATION_REGEX: "(ga-test)" #ga-dev is disabled since it isn't running
+
+      PROMREGATOR_TARGETS_15_API: pvu
+      PROMREGATOR_TARGETS_15_ORG_NAME: General Authority
+      PROMREGATOR_TARGETS_15_PATH: /management/prometheus
+      PROMREGATOR_TARGETS_15_APPLICATION_REGEX: "(membersearch-dev|membersearch-test)"
+
+
+      PROMREGATOR_TARGETS_16_API: chl
+      PROMREGATOR_TARGETS_16_ORG_NAME: General Authority
+      PROMREGATOR_TARGETS_16_PATH: /assets/metrics
+      PROMREGATOR_TARGETS_16_APPLICATION_REGEX: "(dp-fe-prod|dp-fe-stage|dp-fe-training)"
+
+      PROMREGATOR_TARGETS_17_API: ash
+      PROMREGATOR_TARGETS_17_ORG_NAME: General Authority
+      PROMREGATOR_TARGETS_17_PATH: /assets/metrics
+      PROMREGATOR_TARGETS_17_APPLICATION_REGEX: "(dp-fe-dev|dp-fe-test|dp-fe-prod)"
+
+      PROMREGATOR_TARGETS_18_API: chl
+      PROMREGATOR_TARGETS_18_ORG_NAME: General Authority
+      PROMREGATOR_TARGETS_18_PATH: /management/prometheus
+      PROMREGATOR_TARGETS_18_APPLICATION_REGEX: "(gavideo).+"
+
+      PROMREGATOR_TARGETS_19_API: pvu
+      PROMREGATOR_TARGETS_19_ORG_NAME: General Authority
+      PROMREGATOR_TARGETS_19_PATH: /assets/metrics
+      PROMREGATOR_TARGETS_19_APPLICATION_REGEX: "bl-(area-office-|blcc|gis|gsc|patriarch)-(dev|test)"
+
+      PROMREGATOR_TARGETS_20_API: pvu
+      PROMREGATOR_TARGETS_20_ORG_NAME: General Authority
+      PROMREGATOR_TARGETS_20_PATH: /management/prometheus
+      PROMREGATOR_TARGETS_20_APPLICATION_REGEX: "pas-(dev)"

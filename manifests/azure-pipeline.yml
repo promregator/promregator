@@ -1,0 +1,31 @@
+name: $(SourceBranchName)_$(Date:yyyyMMdd).$(BuildID)
+
+
+pool: private linux
+  
+#container:
+#  image: adoptopenjdk:8u222-b10-jdk-hotspot
+#  options: -v /home/bldmgr:/home/bldmgr_azpcontainer #Mount the agent's home directory into image to share gradle cache
+variables:
+  - name: BUILD_ID
+    value: $(Build.BuildId)
+  
+steps:
+  - task: Maven@3
+    displayName: 'Maven build'
+  - task: CopyFiles@2
+    displayName: 'Copy jar'
+    inputs:
+      SourceFolder: 'target'
+      Contents: '*.jar'
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+  - task: CopyFiles@2
+    displayName: 'Copy manifests'
+    inputs:
+      SourceFolder: 'manifests'
+      Contents: '*.yml'
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      artifactName: promregator
