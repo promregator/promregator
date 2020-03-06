@@ -1,9 +1,9 @@
 applications:
-  - name: prom-chl2
+  - name: prom-chl
     memory: 1024m
     path: promregator.jar
     routes:
-      - route: ga-prom-all2.chl.cf.churchofjesuschrist.org
+      - route: ga-prom-all.chl.cf.churchofjesuschrist.org
     services:
       - splunk
     env:
