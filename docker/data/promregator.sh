@@ -2,7 +2,7 @@
 
 if [ "$JAVACMD" == "" ]; then
 	# Note: this supports mocking for our test environment of this script
-	JAVACMD=/usr/bin/java
+	JAVACMD=java
 fi
 
 if [ "$JAVA_MEM_OPTS" == "" ]; then
