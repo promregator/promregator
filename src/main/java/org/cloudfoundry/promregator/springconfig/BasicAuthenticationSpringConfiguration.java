@@ -11,12 +11,6 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 public class BasicAuthenticationSpringConfiguration {
 
 	@Bean
-	public BasicAuthenticationFilter basicAuthFilter(AuthenticationManager authenticationManager,
-			BasicAuthenticationEntryPoint basicAuthEntryPoint) {
-		return new BasicAuthenticationFilter(authenticationManager, basicAuthEntryPoint());
-	}
-
-	@Bean
 	public BasicAuthenticationEntryPoint basicAuthEntryPoint() {
 		BasicAuthenticationEntryPoint bauth = new BasicAuthenticationEntryPoint();
 		bauth.setRealmName("Promregator");
