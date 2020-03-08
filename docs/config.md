@@ -293,6 +293,18 @@ This option defines the request timeout value for sending requests retrieving a 
 
 By default, this value is set to 4000 milliseconds.
 
+
+### Option "cf.request.rateLimit" (optional)
+
+Promregator is able to send large amounts of requests to the Cloud Foundry platform. Due to its design, in large environments it is even possible that too many requests are sent in a too short time. In this case, the Cloud Foundry platform may [take protect measures for self-protection](https://docs.cloudfoundry.org/running/rate-limit-cloud-controller-api.html). Due to this, corresponding requests will fail, because they will be completed with various types of error messages.
+
+This option defines the number of requests per second that Promregator is allowed to send for fetching metadata from the Cloud Foundry platform. Requests which exceed this threshold are queued and will be processed only after enough "capacity" is available again.
+
+By default, this value is set to 0 (zero), which means that rate limiting is disabled.
+
+In contrast to many other settings in this document, the type of this parameter is a float with double precision. So providing values such as `2.5` is acceptable here.
+
+
 ### Subgroup "cf.proxy"
 
 #### Option "cf.proxy.host" (optional)
