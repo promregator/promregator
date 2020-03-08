@@ -39,6 +39,7 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>2.2.2.RELEASE</version> <!-- see also https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-parent -->
+		<!-- Warning! On bumping also check guava-version below! -->
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 
@@ -61,6 +62,11 @@
 		<sonar.organization>promregator</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 		<sonar.coverage.jacoco.xmlReportPaths>${project.reporting.outputDirectory}/jacoco-ut/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+		
+		<!-- Warning! This should be in line to what spring-framework uses.
+		Unfortunately, there is no global constant provided by spring-boot for
+		the version. -->
+		<guava-version>28.0-jre</guava-version>
 	</properties>
 
 	<dependencies>
@@ -160,7 +166,8 @@
 			<version>4.4</version>
 		</dependency>
 
-		<!--  see also https://github.com/google/guava/issues/2350#issuecomment-169097253 and https://stackoverflow.com/a/52345191 -->
+		<!-- see also https://github.com/google/guava/issues/2350#issuecomment-169097253 
+			and https://stackoverflow.com/a/52345191 -->
 		<dependency>
 			<groupId>com.github.ben-manes.caffeine</groupId>
 			<artifactId>caffeine</artifactId>
@@ -235,12 +242,20 @@
 			<version>3.0.1</version>
 		</dependency>
 
-		<!--  see also https://github.com/owasp/json-sanitizer - Apache 2.0 license -->
+		<!-- see also https://github.com/owasp/json-sanitizer - Apache 2.0 license -->
 		<dependency>
 			<groupId>com.mikesamuel</groupId>
 			<artifactId>json-sanitizer</artifactId>
 			<version>1.2.0</version>
 		</dependency>
+
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>${guava-version}</version>
+		</dependency>
+
+
 	</dependencies>
 
 	<dependencyManagement>
