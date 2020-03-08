@@ -40,7 +40,7 @@ public class ReactiveCFPaginatedRequestFetcherTest {
 	
 	@Test
 	public void testEmptyResponse() {
-		ReactiveCFPaginatedRequestFetcher subject = new ReactiveCFPaginatedRequestFetcher(this.internalMetricsMocked);
+		ReactiveCFPaginatedRequestFetcher subject = new ReactiveCFPaginatedRequestFetcher(this.internalMetricsMocked, Double.MAX_VALUE);
 		
 		Mono<ListOrganizationsResponse> subjectResponseMono = subject.performGenericPagedRetrieval(RequestType.OTHER, "nokey", requestGenerator, request -> {
 			ListOrganizationsResponse response = ListOrganizationsResponse.builder()
@@ -61,7 +61,7 @@ public class ReactiveCFPaginatedRequestFetcherTest {
 	
 	@Test
 	public void testWithContentOnePage() {
-		ReactiveCFPaginatedRequestFetcher subject = new ReactiveCFPaginatedRequestFetcher(this.internalMetricsMocked);
+		ReactiveCFPaginatedRequestFetcher subject = new ReactiveCFPaginatedRequestFetcher(this.internalMetricsMocked, Double.MAX_VALUE);
 		
 		Mono<ListOrganizationsResponse> subjectResponseMono = subject.performGenericPagedRetrieval(RequestType.OTHER, "nokey", requestGenerator, request -> {
 			LinkedList<OrganizationResource> list = new LinkedList<>();
@@ -86,7 +86,7 @@ public class ReactiveCFPaginatedRequestFetcherTest {
 	
 	@Test
 	public void testWithContentTwoPages() {
-		ReactiveCFPaginatedRequestFetcher subject = new ReactiveCFPaginatedRequestFetcher(this.internalMetricsMocked);
+		ReactiveCFPaginatedRequestFetcher subject = new ReactiveCFPaginatedRequestFetcher(this.internalMetricsMocked, Double.MAX_VALUE);
 		
 		Mono<ListOrganizationsResponse> subjectResponseMono = subject.performGenericPagedRetrieval(RequestType.OTHER, "nokey", requestGenerator, request -> {
 			LinkedList<OrganizationResource> list = new LinkedList<>();
@@ -113,7 +113,7 @@ public class ReactiveCFPaginatedRequestFetcherTest {
 	
 	@Test
 	public void testWithContentTwoPagesSecondWithoutItems() {
-		ReactiveCFPaginatedRequestFetcher subject = new ReactiveCFPaginatedRequestFetcher(this.internalMetricsMocked);
+		ReactiveCFPaginatedRequestFetcher subject = new ReactiveCFPaginatedRequestFetcher(this.internalMetricsMocked, Double.MAX_VALUE);
 		
 		Mono<ListOrganizationsResponse> subjectResponseMono = subject.performGenericPagedRetrieval(RequestType.OTHER, "nokey", requestGenerator, request -> {
 			LinkedList<OrganizationResource> list = new LinkedList<>();
@@ -142,7 +142,7 @@ public class ReactiveCFPaginatedRequestFetcherTest {
 	
 	@Test
 	public void testWithContentTimeoutOnFirstPage() {
-		ReactiveCFPaginatedRequestFetcher subject = new ReactiveCFPaginatedRequestFetcher(this.internalMetricsMocked);
+		ReactiveCFPaginatedRequestFetcher subject = new ReactiveCFPaginatedRequestFetcher(this.internalMetricsMocked, Double.MAX_VALUE);
 		
 		Mono<ListOrganizationsResponse> subjectResponseMono = subject.performGenericPagedRetrieval(RequestType.OTHER, "nokey", requestGenerator, request ->
 				Mono.error(new TimeoutException()), 100, responseGenerator);
@@ -157,7 +157,7 @@ public class ReactiveCFPaginatedRequestFetcherTest {
 	
 	@Test
 	public void testWithContentTimeoutOnSecondPage() {
-		ReactiveCFPaginatedRequestFetcher subject = new ReactiveCFPaginatedRequestFetcher(this.internalMetricsMocked);
+		ReactiveCFPaginatedRequestFetcher subject = new ReactiveCFPaginatedRequestFetcher(this.internalMetricsMocked, Double.MAX_VALUE);
 		
 		Mono<ListOrganizationsResponse> subjectResponseMono = subject.performGenericPagedRetrieval(RequestType.OTHER, "nokey", requestGenerator, request -> {
 			if (request.getPage() == 2) {
@@ -191,7 +191,7 @@ public class ReactiveCFPaginatedRequestFetcherTest {
 
 	@Test
 	public void testWithContentGeneralException() {
-		ReactiveCFPaginatedRequestFetcher subject = new ReactiveCFPaginatedRequestFetcher(this.internalMetricsMocked);
+		ReactiveCFPaginatedRequestFetcher subject = new ReactiveCFPaginatedRequestFetcher(this.internalMetricsMocked, Double.MAX_VALUE);
 		
 		Mono<ListOrganizationsResponse> subjectResponseMono = subject.performGenericPagedRetrieval(RequestType.OTHER, "nokey", requestGenerator, request ->
 			Mono.error(new Exception()), 100, responseGenerator);

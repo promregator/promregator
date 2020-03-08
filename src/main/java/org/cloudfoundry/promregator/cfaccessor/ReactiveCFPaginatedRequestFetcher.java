@@ -16,10 +16,14 @@ import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.util.concurrent.RateLimiter;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.prometheus.client.Histogram.Timer;
 import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 class ReactiveCFPaginatedRequestFetcher {
 	private static final Logger log = LoggerFactory.getLogger(ReactiveCFPaginatedRequestFetcher.class);
@@ -28,12 +32,44 @@ class ReactiveCFPaginatedRequestFetcher {
 	private static final int RESULTS_PER_PAGE = MAX_SUPPORTED_RESULTS_PER_PAGE;
 
 	private InternalMetrics internalMetrics;
+	private final RateLimiter cfccRateLimiter;
 
-	public ReactiveCFPaginatedRequestFetcher(InternalMetrics internalMetrics) {
+	public ReactiveCFPaginatedRequestFetcher(InternalMetrics internalMetrics, double requestRateLimit) {
 		super();
 		this.internalMetrics = internalMetrics;
+		this.cfccRateLimiter = RateLimiter.create(requestRateLimit);
 	}
 
+	/**
+	 * Returns an empty Mono, which is only resolved after the configured rate limit
+	 * could be acquired.
+	 * @param requestType the RequestType for which the rate limiting shall be acquired (mainly for statistical purpose only)
+	 * @return an empty Mono
+	 */
+	private Mono<Object> rateLimitingMono(RequestType requestType) {
+		return Mono.fromCallable(() -> {
+			
+			Timer startTimerRateLimit = null;
+			if (this.internalMetrics != null) {
+				startTimerRateLimit = this.internalMetrics.startTimerRateLimit(requestType.getMetricName());
+			}
+			
+			double waitTime = cfccRateLimiter.acquire(1);
+			
+			if (startTimerRateLimit != null) {
+				startTimerRateLimit.observeDuration();
+			}
+			
+			if (waitTime > 0.001) {
+				log.debug(String.format("Rate Limiting has throttled request of %s for %.3f seconds", requestType.getLoggerSuffix(), waitTime));
+			}
+			
+			return new Object();
+		}).subscribeOn(Schedulers.elastic())
+		.flatMap(x -> Mono.empty());
+	}
+
+	
 	/**
 	 * performs standard (raw) retrieval from the CF Cloud Controller of a single
 	 * page
@@ -80,7 +116,7 @@ class ReactiveCFPaginatedRequestFetcher {
 
 			ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, retrievalTypeName);
 
-			result = Mono.just(requestData)
+			result = this.rateLimitingMono(requestType).then(Mono.just(requestData))
 					// start the timer
 					.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
 						tuple.getT2().start();

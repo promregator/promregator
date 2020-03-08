@@ -11,8 +11,6 @@ import javax.annotation.PostConstruct;
 import org.cloudfoundry.promregator.cfaccessor.AccessorCacheType;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorCache;
-import org.cloudfoundry.promregator.cfaccessor.CFAccessorCacheClassic;
-import org.cloudfoundry.promregator.cfaccessor.CFAccessorRateLimit;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorCacheCaffeine;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorCacheClassic;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorSimulator;
@@ -110,21 +108,11 @@ public class PromregatorApplication {
 	}
 	
 	@Bean
-	public CFAccessor cfAccessorRateLimit(@Qualifier("mainCFAccessor") CFAccessor mainCFAccessor, @Value("${cf.request.rateLimit:0}") double requestRateLimit, InternalMetrics internalMetrics) {
-		if (requestRateLimit <= 0.0f) {
-			return mainCFAccessor;
-		}
-		
-		return new CFAccessorRateLimit(mainCFAccessor, requestRateLimit, internalMetrics);
-	}
-	
-	
-	@Bean
-	public CFAccessorCache cfAccessorCache(@Qualifier("cfAccessorRateLimit") CFAccessor cfAccessorRateLimit) {
+	public CFAccessorCache cfAccessorCache(@Qualifier("mainCFAccessor") CFAccessor cfMainAccessor) {
 		if (this.cacheType == AccessorCacheType.CLASSIC) {
-			return new CFAccessorCacheClassic(cfAccessorRateLimit);
+			return new CFAccessorCacheClassic(cfMainAccessor);
 		} else if (this.cacheType == AccessorCacheType.CAFFEINE) {
-			return new CFAccessorCacheCaffeine(cfAccessorRateLimit);
+			return new CFAccessorCacheCaffeine(cfMainAccessor);
 		} else {
 			throw new UnknownCacheTypeError("Unknown CF Accessor Cache selected: "+this.cacheType);
 		}

@@ -95,6 +95,9 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	@Value("${promregator.internal.preCheckAPIVersion:true}")
 	private boolean performPrecheckOfAPIVersion;
 	
+	@Value("${cf.request.rateLimit:0}") 
+	private double requestRateLimit;
+	
 	@Autowired
 	private InternalMetrics internalMetrics;
 
@@ -232,7 +235,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	@PostConstruct
 	@SuppressWarnings("unused")
 	private void setupPaginatedRequestFetcher() {
-		this.paginatedRequestFetcher = new ReactiveCFPaginatedRequestFetcher(this.internalMetrics);
+		this.paginatedRequestFetcher = new ReactiveCFPaginatedRequestFetcher(this.internalMetrics, this.requestRateLimit);
 	}
 	
 	private static final GetInfoRequest DUMMY_GET_INFO_REQUEST = GetInfoRequest.builder().build();
