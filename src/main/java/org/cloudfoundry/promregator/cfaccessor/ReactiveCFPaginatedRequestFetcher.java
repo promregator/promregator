@@ -68,8 +68,11 @@ class ReactiveCFPaginatedRequestFetcher {
 	 * The effort of implementing a key to lock-object mapping (as alternative) is expected to be rather high
 	 * and would imply the risk of memory leaks. 
 	 */
-	public <P, R> Mono<P> performGenericRetrieval(String retrievalTypeName, String logName, String key, R requestData,
+	public <P, R> Mono<P> performGenericRetrieval(RequestType requestType, String key, R requestData,
 			Function<R, Mono<P>> requestFunction, int timeoutInMS) {
+		final String retrievalTypeName = requestType.getMetricName();
+		final String logName = requestType.getLoggerSuffix();
+		
 		final String lock = (this.getClass().getCanonicalName()+"|"+retrievalTypeName+"|"+key).intern();
 		
 		synchronized (lock) {
@@ -148,16 +151,16 @@ class ReactiveCFPaginatedRequestFetcher {
 	 * @return a Mono on the response provided by the CF Cloud Controller
 	 */
 	public <S, P extends PaginatedResponse<?>, R extends PaginatedRequest> Mono<P> performGenericPagedRetrieval(
-			String retrievalTypeName, String logName, String key, PaginatedRequestGeneratorFunction<R> requestGenerator,
+			RequestType requestType, String key, PaginatedRequestGeneratorFunction<R> requestGenerator,
 			Function<R, Mono<P>> requestFunction, int timeoutInMS,
 			PaginatedResponseGeneratorFunction<S, P> responseGenerator) {
 
-		final String pageRetrievalType = retrievalTypeName + "_singlePage";
+		final String pageRetrievalType = requestType.getMetricName() + "_singlePage";
 
-		ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, retrievalTypeName);
+		ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, pageRetrievalType);
 
 		Mono<P> firstPage = Mono.just(reactiveTimer).doOnNext(ReactiveTimer::start).flatMap(dummy ->
-				this.performGenericRetrieval(pageRetrievalType, logName, key, requestGenerator.
+				this.performGenericRetrieval(requestType, key, requestGenerator.
 								apply(OrderDirection.ASCENDING, RESULTS_PER_PAGE, 1), requestFunction,	timeoutInMS));
 
 		Flux<R> requestFlux = firstPage.map(page -> page.getTotalPages() - 1)
@@ -165,7 +168,8 @@ class ReactiveCFPaginatedRequestFetcher {
 				.map(pageNumber -> requestGenerator.apply(OrderDirection.ASCENDING, RESULTS_PER_PAGE, pageNumber));
 
 		Mono<List<P>> subsequentPagesList = requestFlux.flatMap(req ->
-				this.performGenericRetrieval(pageRetrievalType, logName, key, req, requestFunction, timeoutInMS)).collectList();
+				this.performGenericRetrieval(requestType, key, req, requestFunction, timeoutInMS)).collectList();
+
 		/*
 		 * Word on error handling: We can't judge here what will be the consequence, if
 		 * the first page could be retrieved properly, but retrieving some some later

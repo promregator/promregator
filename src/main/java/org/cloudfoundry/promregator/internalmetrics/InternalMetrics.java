@@ -31,6 +31,8 @@ public class InternalMetrics {
 	
 	private CacheMetricsCollector caffeineCacheMetricsCollector;
 
+	private Histogram rateLimitWaitTime;
+	
 	@PostConstruct
 	@SuppressWarnings("PMD.UnusedPrivateMethod")
 	// method is required and called by the Spring Framework
@@ -61,6 +63,9 @@ public class InternalMetrics {
 				.register();
 		
 		this.caffeineCacheMetricsCollector = new CacheMetricsCollector().register();
+		
+		this.rateLimitWaitTime = Histogram.build("promregator_cffetch_ratelimit_waittime", "Wait time due to CFCC rate limiting")
+				.labelNames("request_type").linearBuckets(0.0, 0.05, 50).register();
 		
 	}
 
@@ -128,4 +133,12 @@ public class InternalMetrics {
 		
 		this.caffeineCacheMetricsCollector.addCache(cacheName, cache);
 	}
+	
+	public Timer startTimerRateLimit(String requestType) {
+		if (!this.enabled)
+			return null;
+		
+		return this.rateLimitWaitTime.labels(requestType).startTimer();
+	}
+
 }

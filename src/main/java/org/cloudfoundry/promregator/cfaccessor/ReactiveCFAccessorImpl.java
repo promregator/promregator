@@ -251,7 +251,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		// ==> No need for a paged request. 
 		ListOrganizationsRequest orgsRequest = ListOrganizationsRequest.builder().name(orgName).build();
 		
-		return this.paginatedRequestFetcher.performGenericRetrieval("org", "retrieveOrgId", orgName, orgsRequest,
+		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.ORG, orgName, orgsRequest,
 				or -> this.cloudFoundryClient.organizations()
 				          .list(or), this.requestTimeoutOrg);
 	}
@@ -275,7 +275,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 				.totalResults(list.size())
 				.build();
 		
-		return this.paginatedRequestFetcher.performGenericPagedRetrieval("allOrgs", "retrieveAllOrgIds", "(empty)", requestGenerator, 
+		return this.paginatedRequestFetcher.performGenericPagedRetrieval(RequestType.ALL_ORGS, "(empty)", requestGenerator, 
 				r -> this.cloudFoundryClient.organizations().list(r),  this.requestTimeoutOrg, responseGenerator);
 	}
 
@@ -291,7 +291,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		
 		ListSpacesRequest spacesRequest = ListSpacesRequest.builder().organizationId(orgId).name(spaceName).build();
 		
-		return this.paginatedRequestFetcher.performGenericRetrieval("space", "retrieveSpaceId", key, spacesRequest, sr ->
+		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.SPACE, key, spacesRequest, sr ->
 				this.cloudFoundryClient.spaces().list(sr),
 				this.requestTimeoutSpace);
 	}
@@ -317,7 +317,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 				.build();
 
 		
-		return this.paginatedRequestFetcher.performGenericPagedRetrieval("space", "retrieveAllSpaceIdsInOrg", orgId, requestGenerator, 
+		return this.paginatedRequestFetcher.performGenericPagedRetrieval(RequestType.SPACE_IN_ORG, orgId, requestGenerator, 
 				r -> this.cloudFoundryClient.spaces().list(r),  this.requestTimeoutSpace, responseGenerator);
 	}
 
@@ -344,8 +344,8 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 				.totalResults(list.size())
 				.build();
 		
-		return this.paginatedRequestFetcher.performGenericPagedRetrieval("allApps", "retrieveAllApplicationIdsInSpace", key, requestGenerator, 
-				r -> this.cloudFoundryClient.applicationsV2().list(r),  this.requestTimeoutAppInSpace, responseGenerator);
+		return this.paginatedRequestFetcher.performGenericPagedRetrieval(RequestType.ALL_APPS_IN_SPACE, key, requestGenerator, 
+				r -> this.cloudFoundryClient.applicationsV2().list(r), this.requestTimeoutAppInSpace, responseGenerator);
 	}
 	
 	@Override
@@ -354,7 +354,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		
 		GetSpaceSummaryRequest request = GetSpaceSummaryRequest.builder().spaceId(spaceId).build();
 		
-		return this.paginatedRequestFetcher.performGenericRetrieval("spaceSummary", "retrieveSpaceSummary", spaceId, 
+		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.SPACE_SUMMARY, spaceId, 
 				request, r -> this.cloudFoundryClient.spaces().getSummary(r), this.requestTimeoutAppSummary);
 
 	}

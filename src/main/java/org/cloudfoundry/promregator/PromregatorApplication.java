@@ -110,12 +110,12 @@ public class PromregatorApplication {
 	}
 	
 	@Bean
-	public CFAccessor cfAccessorRateLimit(@Qualifier("mainCFAccessor") CFAccessor mainCFAccessor, @Value("${cf.request.rateLimit:0}") double requestRateLimit) {
+	public CFAccessor cfAccessorRateLimit(@Qualifier("mainCFAccessor") CFAccessor mainCFAccessor, @Value("${cf.request.rateLimit:0}") double requestRateLimit, InternalMetrics internalMetrics) {
 		if (requestRateLimit <= 0.0f) {
 			return mainCFAccessor;
 		}
 		
-		return new CFAccessorRateLimit(mainCFAccessor, requestRateLimit);
+		return new CFAccessorRateLimit(mainCFAccessor, requestRateLimit, internalMetrics);
 	}
 	
 	
