@@ -11,6 +11,8 @@ import javax.annotation.PostConstruct;
 import org.cloudfoundry.promregator.cfaccessor.AccessorCacheType;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorCache;
+import org.cloudfoundry.promregator.cfaccessor.CFAccessorCacheClassic;
+import org.cloudfoundry.promregator.cfaccessor.CFAccessorRateLimit;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorCacheCaffeine;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorCacheClassic;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorSimulator;
@@ -32,6 +34,7 @@ import org.cloudfoundry.promregator.springconfig.JMSSpringConfiguration;
 import org.cloudfoundry.promregator.websecurity.SecurityConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -107,11 +110,21 @@ public class PromregatorApplication {
 	}
 	
 	@Bean
-	public CFAccessorCache cfAccessorCache(CFAccessor mainCFAccessor) {
+	public CFAccessor cfAccessorRateLimit(@Qualifier("mainCFAccessor") CFAccessor mainCFAccessor, @Value("${cf.request.rateLimit:0}") double requestRateLimit) {
+		if (requestRateLimit <= 0.0f) {
+			return mainCFAccessor;
+		}
+		
+		return new CFAccessorRateLimit(mainCFAccessor, requestRateLimit);
+	}
+	
+	
+	@Bean
+	public CFAccessorCache cfAccessorCache(@Qualifier("cfAccessorRateLimit") CFAccessor cfAccessorRateLimit) {
 		if (this.cacheType == AccessorCacheType.CLASSIC) {
-			return new CFAccessorCacheClassic(mainCFAccessor);
+			return new CFAccessorCacheClassic(cfAccessorRateLimit);
 		} else if (this.cacheType == AccessorCacheType.CAFFEINE) {
-			return new CFAccessorCacheCaffeine(mainCFAccessor);
+			return new CFAccessorCacheCaffeine(cfAccessorRateLimit);
 		} else {
 			throw new UnknownCacheTypeError("Unknown CF Accessor Cache selected: "+this.cacheType);
 		}
