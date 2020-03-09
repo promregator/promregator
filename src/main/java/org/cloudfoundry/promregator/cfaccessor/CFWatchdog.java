@@ -19,12 +19,12 @@ public class CFWatchdog {
 	
 	private static final GetInfoResponse ERRONEOUS_GET_INFO_RESPONSE = GetInfoResponse.builder().apiVersion("FAILED").build();
 	private final CloudFoundryConfiguration cf;
-	private final CFAccessor mainCFAccessor;
+	private final CFApiClients cfApiClients;
 	private final InternalMetrics internalMetrics;
 
-	public CFWatchdog(CloudFoundryConfiguration cf, CFAccessor mainCFAccessor, InternalMetrics internalMetrics) {
+	public CFWatchdog(CloudFoundryConfiguration cf, CFApiClients cfApiClients, InternalMetrics internalMetrics) {
 		this.cf = cf;
-		this.mainCFAccessor = mainCFAccessor;
+		this.cfApiClients = cfApiClients;
 		this.internalMetrics = internalMetrics;
 	}
 
@@ -40,7 +40,7 @@ public class CFWatchdog {
 		}
 
 		cf.getApi().forEach((api, apiConfig) -> {
-			this.mainCFAccessor.getInfo(api)
+			this.cfApiClients.check(api)
 					.timeout(Duration.ofMillis(this.cf.getWatchdog().getTimeout()))
 					.doOnError(e -> {
 						log.warn("Woof woof! It appears that the connection to the Cloud Controller is gone (api: "+api+"). Trying to restart Cloud Foundry Client", e);
@@ -64,7 +64,7 @@ public class CFWatchdog {
 					.subscribe(response -> {
 						if (response == ERRONEOUS_GET_INFO_RESPONSE) {
 							// Note that there is no method at this.cloudFoundryClient, which would permit closing the old client
-							this.mainCFAccessor.reset(api);
+							this.cfApiClients.reset(api);
 						}
 					});
 		});

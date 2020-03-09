@@ -249,9 +249,5 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 		this.allOrgIdCache.synchronous().invalidateAll();
 	}
 
-	@Override
-	public void reset(String api) {
-		this.parent.reset(api);
-	}
 
 }

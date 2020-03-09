@@ -2,9 +2,6 @@ promregator:
   simulation:
     enabled: true
     instances: 2
-    
-  internal:
-    preCheckAPIVersion: false
 
   metrics:
     internal: true
@@ -331,3 +328,6 @@ cf:
   api_host: dummy.api.host.bogus
   username: dummyusername
   password: dummypassword
+
+  internal:
+    preCheckAPIVersion: false

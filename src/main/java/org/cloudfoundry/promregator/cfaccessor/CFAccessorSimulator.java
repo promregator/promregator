@@ -168,11 +168,5 @@ public class CFAccessorSimulator implements CFAccessor {
 		
 		return Mono.just(data);
 	}
-	
-	@Override
-	public void reset(String api) {
-		// nothing to do
-	}
-
 
 }

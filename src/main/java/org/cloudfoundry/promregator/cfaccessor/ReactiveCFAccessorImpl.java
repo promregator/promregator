@@ -46,130 +46,19 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	private final PromregatorConfiguration promregatorConfiguration;
 
 	private InternalMetrics internalMetrics;
+	private final CFApiClients apiClients;
 
 	public ReactiveCFAccessorImpl(CloudFoundryConfiguration cf,
 								  PromregatorConfiguration promregatorConfiguration,
-								  InternalMetrics internalMetrics) {
+								  InternalMetrics internalMetrics,
+								  CFApiClients apiClients) {
 		this.cf = cf;
 		this.promregatorConfiguration = promregatorConfiguration;
 		this.internalMetrics = internalMetrics;
-		createClients();
+		this.apiClients = apiClients;
 	}
 
-	private static final Pattern PATTERN_HTTP_BASED_PROTOCOL_PREFIX = Pattern.compile("^https?://", Pattern.CASE_INSENSITIVE);
-	
-	private Map<String,ReactorCloudFoundryClient> cloudFoundryClients = new ConcurrentHashMap<>();
 	private ReactiveCFPaginatedRequestFetcher paginatedRequestFetcher;
-	
-	private DefaultConnectionContext connectionContext(ApiConfig apiConfig, ProxyConfiguration proxyConfiguration) throws ConfigurationException {
-		if (PATTERN_HTTP_BASED_PROTOCOL_PREFIX.matcher(apiConfig.getHost()).find()) {
-			throw new ConfigurationException("cf.api_host configuration parameter must not contain an http(s)://-like prefix; specify the hostname only instead");
-		}
-
-		Builder connctx = DefaultConnectionContext.builder()
-				.apiHost(apiConfig.getHost())
-				.skipSslValidation(apiConfig.getSkipSslValidation());
-		
-		if (proxyConfiguration != null) {
-			connctx = connctx.proxyConfiguration(proxyConfiguration);
-		}
-		
-		if (apiConfig.getConnectionPool().getSize() != null) {
-			connctx = connctx.connectionPoolSize(apiConfig.getConnectionPool().getSize());
-		}
-		
-		if (apiConfig.getThreadPool().getSize() != null) {
-			connctx = connctx.threadPoolSize(apiConfig.getThreadPool().getSize());
-		}
-		
-		return connctx.build();
-	}
-
-	private PasswordGrantTokenProvider tokenProvider(ApiConfig apiConfig) {
-		return PasswordGrantTokenProvider.builder().password(apiConfig.getPassword()).username(apiConfig.getUsername()).build();
-	}
-
-	private ProxyConfiguration proxyConfiguration(ApiConfig apiConfig) throws ConfigurationException {
-		
-		String effectiveProxyHost = null;
-		int effectiveProxyPort = 0;
-		
-		if (apiConfig.getProxy() != null && apiConfig.getProxy().getHost() != null && apiConfig.getProxy().getPort() != null) {
-			// used the new way of defining proxies
-			effectiveProxyHost = apiConfig.getProxy().getHost();
-			effectiveProxyPort = apiConfig.getProxy().getPort();
-		}
-		
-		if (effectiveProxyHost != null && PATTERN_HTTP_BASED_PROTOCOL_PREFIX.matcher(effectiveProxyHost).find()) {
-			throw new ConfigurationException("Configuring of cf.proxyHost or cf.proxy.host configuration parameter must not contain an http(s)://-like prefix; specify the hostname only instead");
-		}
-		
-		if (effectiveProxyHost != null && effectiveProxyPort != 0) {
-			
-			String proxyIP = null;
-			if (!InetAddressUtils.isIPv4Address(effectiveProxyHost) && !InetAddressUtils.isIPv6Address(effectiveProxyHost)) {
-				/*
-				 * NB: There is currently a bug in io.netty.util.internal.SocketUtils.connect()
-				 * which is called implicitly by the CF API Client library, which leads to the effect
-				 * that a hostname for the proxy isn't resolved. Thus, it is only possible to pass 
-				 * IP addresses as proxy names.
-				 * To work around this issue, we manually perform a resolution of the hostname here
-				 * and then feed that one to the CF API Client library...
-				 */
-				try {
-					InetAddress ia = InetAddress.getByName(effectiveProxyHost);
-					proxyIP = ia.getHostAddress();
-				} catch (UnknownHostException e) {
-					throw new ConfigurationException(String.format("The proxy host '%s' cannot be resolved to an IP address; is there a typo in your configuration?", effectiveProxyHost), e);
-				}
-			} else {
-				// the address specified is already an IP address
-				proxyIP = effectiveProxyHost;
-			}
-			
-			return ProxyConfiguration.builder().host(proxyIP).port(effectiveProxyPort).build();
-			
-		} else {
-			return null;
-		}
-	}
-	
-	private ReactorCloudFoundryClient cloudFoundryClient(ConnectionContext connectionContext, TokenProvider tokenProvider) {
-		return ReactorCloudFoundryClient.builder().connectionContext(connectionContext).tokenProvider(tokenProvider).build();
-	}
-
-	private void createClients(){
-		cf.getApi().keySet().forEach(this::reset);
-
-		if (promregatorConfiguration.getInternal().getPreCheckAPIVersion()) {
-			GetInfoRequest request = GetInfoRequest.builder().build();
-			cloudFoundryClients.forEach((api, client) -> {
-				GetInfoResponse getInfo = client.info().get(request).block();
-				if(getInfo == null) throw new RuntimeException("Error connecting to CF api '"+api+"'");
-				// NB: This also ensures that the connection has been established properly...
-				log.info("Target CF platform ({}) is running on API version {}", api, getInfo.getApiVersion());
-			});
-		}
-	}
-
-	@Override
-	public void reset(String api) {
-		ApiConfig apiConfig = this.cf.getApi().get(api);
-		resetCloudFoundryClient(api, apiConfig);
-	}
-
-
-	public void resetCloudFoundryClient(String api, ApiConfig apiConfig) {
-		try {
-			ProxyConfiguration proxyConfiguration = this.proxyConfiguration(apiConfig);
-			DefaultConnectionContext connectionContext = this.connectionContext(apiConfig, proxyConfiguration);
-			PasswordGrantTokenProvider tokenProvider = this.tokenProvider(apiConfig);
-		
-			this.cloudFoundryClients.put(api,this.cloudFoundryClient(connectionContext, tokenProvider));
-		} catch (ConfigurationException e) {
-			log.error("Restarting Cloud Foundry Client failed due to Configuration Exception raised", e);
-		}
-	}
 
 	@PostConstruct
 	@SuppressWarnings("unused")
@@ -181,7 +70,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	
 	@Override
 	public Mono<GetInfoResponse> getInfo(String api) {
-		return this.cloudFoundryClients.get(api).info().get(DUMMY_GET_INFO_REQUEST);
+		return this.apiClients.getClient(api).info().get(DUMMY_GET_INFO_REQUEST);
 	}
 	
 	/* (non-Javadoc)
@@ -194,7 +83,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		ListOrganizationsRequest orgsRequest = ListOrganizationsRequest.builder().name(orgName).build();
 		
 		return this.paginatedRequestFetcher.performGenericRetrieval("org", "retrieveOrgId", orgName, orgsRequest,
-				or -> this.cloudFoundryClients.get(api).organizations()
+				or -> this.apiClients.getClient(api).organizations()
 				          .list(or), this.cf.getRequest().getTimeout().getOrg());
 	}
 	
@@ -218,7 +107,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 				.build();
 		
 		return this.paginatedRequestFetcher.performGenericPagedRetrieval("allOrgs", "retrieveAllOrgIds", "(empty)", requestGenerator, 
-				r -> this.cloudFoundryClients.get(api).organizations().list(r),  this.cf.getRequest().getTimeout().getOrg(), responseGenerator);
+				r -> this.apiClients.getClient(api).organizations().list(r),  this.cf.getRequest().getTimeout().getOrg(), responseGenerator);
 	}
 
 	/* (non-Javadoc)
@@ -234,7 +123,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		ListSpacesRequest spacesRequest = ListSpacesRequest.builder().organizationId(orgId).name(spaceName).build();
 		
 		return this.paginatedRequestFetcher.performGenericRetrieval("space", "retrieveSpaceId", key, spacesRequest, sr ->
-				this.cloudFoundryClients.get(api).spaces().list(sr),
+				this.apiClients.getClient(api).spaces().list(sr),
 				this.cf.getRequest().getTimeout().getSpace());
 	}
 	
@@ -260,7 +149,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 
 		
 		return this.paginatedRequestFetcher.performGenericPagedRetrieval("space", "retrieveAllSpaceIdsInOrg", orgId, requestGenerator, 
-				r -> this.cloudFoundryClients.get(api).spaces().list(r),  this.cf.getRequest().getTimeout().getSpace(), responseGenerator);
+				r -> this.apiClients.getClient(api).spaces().list(r),  this.cf.getRequest().getTimeout().getSpace(), responseGenerator);
 	}
 
 	/* (non-Javadoc)
@@ -287,7 +176,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 				.build();
 		
 		return this.paginatedRequestFetcher.performGenericPagedRetrieval("allApps", "retrieveAllApplicationIdsInSpace", key, requestGenerator, 
-				r -> this.cloudFoundryClients.get(api).applicationsV2().list(r),  this.cf.getRequest().getTimeout().getAppInSpace(), responseGenerator);
+				r -> this.apiClients.getClient(api).applicationsV2().list(r),  this.cf.getRequest().getTimeout().getAppInSpace(), responseGenerator);
 	}
 	
 	@Override
@@ -297,7 +186,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		GetSpaceSummaryRequest request = GetSpaceSummaryRequest.builder().spaceId(spaceId).build();
 		
 		return this.paginatedRequestFetcher.performGenericRetrieval("spaceSummary", "retrieveSpaceSummary", spaceId, 
-				request, r -> this.cloudFoundryClients.get(api).spaces().getSummary(r), this.cf.getRequest().getTimeout().getAppSummary());
+				request, r -> this.apiClients.getClient(api).spaces().getSummary(r), this.cf.getRequest().getTimeout().getAppSummary());
 
 	}
 

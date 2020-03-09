@@ -12,6 +12,7 @@ import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorCache;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorCacheCaffeine;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorSimulator;
+import org.cloudfoundry.promregator.cfaccessor.CFApiClients;
 import org.cloudfoundry.promregator.cfaccessor.CFWatchdog;
 import org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl;
 import org.cloudfoundry.promregator.config.CloudFoundryConfiguration;
@@ -19,7 +20,6 @@ import org.cloudfoundry.promregator.config.ConfigurationValidations;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.discovery.CFDiscoverer;
 import org.cloudfoundry.promregator.discovery.CFMultiDiscoverer;
-import org.cloudfoundry.promregator.endpoint.DiscoveryEndpoint;
 import org.cloudfoundry.promregator.endpoint.InstanceCache;
 import org.cloudfoundry.promregator.endpoint.SingleTargetMetricsEndpoint;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
@@ -36,17 +36,13 @@ import org.cloudfoundry.promregator.springconfig.JMSSpringConfiguration;
 import org.cloudfoundry.promregator.websecurity.SecurityConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.cloud.Cloud;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.env.Environment;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -65,8 +61,8 @@ import reactor.core.publisher.Hooks;
 		ErrorSpringConfiguration.class,
 		JMSSpringConfiguration.class,
 		AuthenticatorSpringConfiguration.class,
-		DiscoveryEndpoint.class,
-		SingleTargetMetricsEndpoint.class})
+		SingleTargetMetricsEndpoint.class,
+		CFApiClients.class})
 @EnableAsync
 @EnableConfigurationProperties({PromregatorConfiguration.class, CloudFoundryConfiguration.class})
 public class PromregatorApplication {
@@ -94,17 +90,17 @@ public class PromregatorApplication {
 	}
 	
 	@Bean
-	public CFAccessor mainCFAccessor(CloudFoundryConfiguration cf, PromregatorConfiguration promregatorConfiguration, InternalMetrics internalMetrics) {
+	public CFAccessor mainCFAccessor(CloudFoundryConfiguration cf, PromregatorConfiguration promregatorConfiguration, InternalMetrics internalMetrics, CFApiClients cfApiClients) {
 		if (promregatorConfiguration.getSimulation().getEnabled()) {
 			return new CFAccessorSimulator(promregatorConfiguration.getSimulation().getInstances());
 		} else {
-			return new ReactiveCFAccessorImpl(cf, promregatorConfiguration, internalMetrics);
+			return new ReactiveCFAccessorImpl(cf, promregatorConfiguration, internalMetrics, cfApiClients);
 		}
 	}
 	
 	@Bean
-	public CFWatchdog cfWatchdog(CloudFoundryConfiguration cf, CFAccessor cfAccessor, InternalMetrics internalMetrics) {
-		return new CFWatchdog(cf, cfAccessor, internalMetrics);
+	public CFWatchdog cfWatchdog(CloudFoundryConfiguration cf, CFApiClients cfApiClients, InternalMetrics internalMetrics) {
+		return new CFWatchdog(cf, cfApiClients, internalMetrics);
 	}
 	
 	@Bean
@@ -152,7 +148,7 @@ public class PromregatorApplication {
 	
 	@Bean
 	public InstanceCache instanceCache(CFDiscoverer discoverer) {
-		return new InstanceCache(discoverer);
+		return new InstanceCache();
 	}
 	
 	@Bean

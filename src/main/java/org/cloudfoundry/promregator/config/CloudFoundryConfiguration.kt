@@ -18,9 +18,13 @@ class CloudFoundryConfiguration(
         val request: RequestConfig = RequestConfig(),
         val api: MutableMap<String, ApiConfig> = mutableMapOf(),
         val watchdog: WatchDogConfig = WatchDogConfig(),
-        val cache: CacheConfig = CacheConfig()
+        val cache: CacheConfig = CacheConfig(),
+        val internal: InternalConfig = InternalConfig()
 ) {
+
     init {
+        api.forEach{ (key, config) -> config.id = key} //tell each config about their own id
+
         if (api[DEFAULT_API] == null && apiHost != null && username != null && password != null) api[DEFAULT_API] = ApiConfig(
                 host = apiHost,
                 username = username,
@@ -38,6 +42,10 @@ class CloudFoundryConfiguration(
     }
 
 }
+
+data class InternalConfig(
+        val preCheckAPIVersion: Boolean = true
+)
 
 data class CacheConfig(
         val timeout: CacheTimeoutConfig = CacheTimeoutConfig(),
@@ -64,6 +72,7 @@ data class WatchDogConfig(
 
 data class ApiConfig(
         val host: String,
+        var id: String = host,
         val username: String,
         val password: String,
         val proxy: ProxyConfig? = null,
@@ -84,10 +93,10 @@ data class RequestConfig(
 )
 
 data class TimeoutConfig(
-        val org: Int = 2500,
-        val space: Int = 2500,
-        val appInSpace: Int = 2500,
-        val appSummary: Int = 4000
+        val org: Int = 10_000,
+        val space: Int = 10_000,
+        val appInSpace: Int = 10_000,
+        val appSummary: Int = 10_000
 )
 
 data class ConnectionPoolConfig(
