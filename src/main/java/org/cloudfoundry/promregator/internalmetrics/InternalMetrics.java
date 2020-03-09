@@ -1,11 +1,19 @@
 package org.cloudfoundry.promregator.internalmetrics;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Value;
 
 import com.github.benmanes.caffeine.cache.AsyncLoadingCache;
+import com.google.common.collect.Lists;
 
+import io.prometheus.client.Collector;
+import io.prometheus.client.Collector.MetricFamilySamples.Sample;
+import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Counter;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.Histogram;
@@ -32,6 +40,24 @@ public class InternalMetrics {
 	private CacheMetricsCollector caffeineCacheMetricsCollector;
 
 	private Histogram rateLimitWaitTime;
+	private AtomicInteger rateLimitQueueSize = new AtomicInteger(0);
+	
+	private class InternalCollector extends Collector {
+
+		private static final String PROMREGATOR_CFFETCH_RATELIMIT_QUEUE_SIZE = "promregator_cffetch_ratelimit_queue_size";
+
+		@Override
+		public List<MetricFamilySamples> collect() {
+			
+			Sample queueSize = new Sample(PROMREGATOR_CFFETCH_RATELIMIT_QUEUE_SIZE, new ArrayList<>(), new ArrayList<>(), rateLimitQueueSize.doubleValue());
+			
+			MetricFamilySamples queueSizeMFS = new MetricFamilySamples(PROMREGATOR_CFFETCH_RATELIMIT_QUEUE_SIZE, Type.GAUGE, 
+					"The number of CFCC requests being throttled by rate limiting", Lists.newArrayList(queueSize));
+			
+			return Lists.newArrayList(queueSizeMFS);
+		}
+		
+	}
 	
 	@PostConstruct
 	@SuppressWarnings("PMD.UnusedPrivateMethod")
@@ -67,6 +93,7 @@ public class InternalMetrics {
 		this.rateLimitWaitTime = Histogram.build("promregator_cffetch_ratelimit_waittime", "Wait time due to CFCC rate limiting")
 				.labelNames("request_type").linearBuckets(0.0, 0.05, 50).register();
 		
+		CollectorRegistry.defaultRegistry.register(new InternalCollector());
 	}
 
 	
@@ -139,6 +166,14 @@ public class InternalMetrics {
 			return null;
 		
 		return this.rateLimitWaitTime.labels(requestType).startTimer();
+	}
+	
+	public void increaseRateLimitQueueSize() {
+		this.rateLimitQueueSize.incrementAndGet();
+	}
+	
+	public void decreaseRateLimitQueueSize() {
+		this.rateLimitQueueSize.decrementAndGet();
 	}
 
 }

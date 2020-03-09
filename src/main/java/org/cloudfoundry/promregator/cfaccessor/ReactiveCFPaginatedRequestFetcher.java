@@ -12,7 +12,6 @@ import org.cloudfoundry.client.v2.PaginatedRequest;
 import org.cloudfoundry.client.v2.PaginatedResponse;
 import org.cloudfoundry.promregator.ExitCodes;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +31,7 @@ class ReactiveCFPaginatedRequestFetcher {
 	private static final int RESULTS_PER_PAGE = MAX_SUPPORTED_RESULTS_PER_PAGE;
 
 	private InternalMetrics internalMetrics;
+	
 	private final RateLimiter cfccRateLimiter;
 
 	public ReactiveCFPaginatedRequestFetcher(InternalMetrics internalMetrics, double requestRateLimit) {
@@ -51,6 +51,7 @@ class ReactiveCFPaginatedRequestFetcher {
 			
 			Timer startTimerRateLimit = null;
 			if (this.internalMetrics != null) {
+				this.internalMetrics.increaseRateLimitQueueSize();
 				startTimerRateLimit = this.internalMetrics.startTimerRateLimit(requestType.getMetricName());
 			}
 			
@@ -62,6 +63,10 @@ class ReactiveCFPaginatedRequestFetcher {
 			
 			if (waitTime > 0.001) {
 				log.debug(String.format("Rate Limiting has throttled request of %s for %.3f seconds", requestType.getLoggerSuffix(), waitTime));
+			}
+			
+			if (this.internalMetrics != null) {
+				this.internalMetrics.decreaseRateLimitQueueSize();
 			}
 			
 			return new Object();
