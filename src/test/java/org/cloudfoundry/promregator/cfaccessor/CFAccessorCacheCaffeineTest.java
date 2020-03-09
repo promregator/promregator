@@ -76,6 +76,12 @@ public class CFAccessorCacheCaffeineTest {
 	}
 
 	@Test
+	public void testRetrieveAllOrgIds() {
+		subject.retrieveAllOrgIds();
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllOrgIds();
+	}
+	
+	@Test
 	public void testRetrieveSpaceSummary() {
 		Mono<GetSpaceSummaryResponse> response1 = subject.retrieveSpaceSummary("dummy");
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveSpaceSummary("dummy");
