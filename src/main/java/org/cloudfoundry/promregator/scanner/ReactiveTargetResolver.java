@@ -17,16 +17,24 @@ import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.config.Target;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.beans.factory.annotation.Value;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class ReactiveTargetResolver implements TargetResolver {
 	private static final Logger log = Logger.getLogger(ReactiveTargetResolver.class);
 	private static final Logger logEmptyTarget = Logger.getLogger(String.format("%s.EmptyTarget", ReactiveTargetResolver.class.getName()));
-	
+
 	@Autowired
 	private CFAccessor cfAccessor;
-	
+
+	@Value("${cf.request.retires:3}")
+	private int maxRetries;
+
+	@Value("${cf.request.max:500}")
+	private int maxRequests;
+
+
 	private static class IntermediateTarget {
 		public Target configTarget;
 		public String resolvedOrgName;
@@ -114,8 +122,8 @@ public class ReactiveTargetResolver implements TargetResolver {
 				});
 		
 		Flux<ResolvedTarget> resultFlux = applicationResolvedFlux.map(it -> it.toResolvedTarget());
-		
-		List<ResolvedTarget> resultList = resultFlux.distinct().collectList().block();
+
+		List<ResolvedTarget> resultList = resultFlux.distinct().collectList().compose(new BackPressureOps<>(maxRetries, maxRequests)).block();
 		if (log.isDebugEnabled()) {
 			log.debug(String.format("Successfully resolved %d configuration targets to %d resolved targets", configTargets.size(), resultList.size()));
 		}

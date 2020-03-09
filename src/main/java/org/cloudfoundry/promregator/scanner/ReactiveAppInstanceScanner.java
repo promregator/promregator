@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.context.Context;
 
 public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	
@@ -32,6 +33,12 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 
 	@Value("${cf.cache.timeout.application:300}")
 	private int timeoutCacheApplicationLevel;
+
+	@Value("${cf.request.retires:3}")
+	private int maxRetries;
+
+	@Value("${cf.request.max:500}")
+	private int maxRequests;
 
 	/*
 	 * see also https://github.com/promregator/promregator/issues/76
@@ -144,7 +151,8 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		
 		List<Instance> result = null;
 		try {
-			result = listInstancesMono.block();
+			result = listInstancesMono.compose(new BackPressureOps<>(maxRetries, maxRequests))
+					.block();
 		} catch (RuntimeException e) {
 			log.error("Error during retrieving the instances of a list of targets", e);
 			result = null;

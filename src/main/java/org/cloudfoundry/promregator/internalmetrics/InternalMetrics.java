@@ -2,6 +2,7 @@ package org.cloudfoundry.promregator.internalmetrics;
 
 import javax.annotation.PostConstruct;
 
+import com.github.benmanes.caffeine.cache.Cache;
 import org.springframework.beans.factory.annotation.Value;
 
 import com.github.benmanes.caffeine.cache.AsyncLoadingCache;
@@ -116,7 +117,7 @@ public class InternalMetrics {
 		this.connectionWatchdogReconnects.inc();
 	}
 	
-	public void addCaffeineCache(String cacheName, AsyncLoadingCache<?, ?> cache) {
+	public void addCaffeineCache(String cacheName, Cache<?, ?> cache) {
 		if (!this.enabled)
 			return;
 		
