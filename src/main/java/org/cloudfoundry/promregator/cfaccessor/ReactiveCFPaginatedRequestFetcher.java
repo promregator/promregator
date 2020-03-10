@@ -126,7 +126,7 @@ class ReactiveCFPaginatedRequestFetcher {
 					.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
 						tuple.getT2().start();
 						return tuple.getT1();
-					}).flatMap(requestFunction).timeout(Duration.ofMillis(timeoutInMS)).retry(2)
+					}).flatMap(value -> requestFunction.apply(value).timeout(Duration.ofMillis(timeoutInMS))) //.retry(2)
 					.doOnError(throwable -> {
 						Throwable unwrappedThrowable = Exceptions.unwrap(throwable);
 						if (unwrappedThrowable instanceof TimeoutException) {
