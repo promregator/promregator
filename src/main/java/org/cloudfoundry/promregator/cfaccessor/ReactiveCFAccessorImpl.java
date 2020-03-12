@@ -99,6 +99,12 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	@Value("${cf.request.rateLimit:0}") 
 	private double requestRateLimit;
 	
+	@Value("${cf.request.backoff.initial:500}") 
+	private long firstBackoffMillis;
+	
+	@Value("${cf.request.backoff.max:1200}")
+	private long maxBackoffMillis;
+
 	@Autowired
 	private InternalMetrics internalMetrics;
 
@@ -235,10 +241,9 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 
 	@PostConstruct
 	@SuppressWarnings("unused")
-	private void setupPaginatedRequestFetcher(@Value("${cf.request.backoff.initial:500}") long firstBackoffMillis, 
-			@Value("${cf.request.backoff.max:1200}") long maxBackoffMillis) {
+	private void setupPaginatedRequestFetcher() {
 		this.paginatedRequestFetcher = new ReactiveCFPaginatedRequestFetcher(this.internalMetrics, this.requestRateLimit, 
-				Duration.ofMillis(firstBackoffMillis), Duration.ofMillis(maxBackoffMillis));
+				Duration.ofMillis(this.firstBackoffMillis), Duration.ofMillis(this.maxBackoffMillis));
 	}
 	
 	private static final GetInfoRequest DUMMY_GET_INFO_REQUEST = GetInfoRequest.builder().build();
