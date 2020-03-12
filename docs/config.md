@@ -294,6 +294,22 @@ This option defines the request timeout value for sending requests retrieving a 
 By default, this value is set to 4000 milliseconds.
 
 
+### Option "cf.request.backoff.initial" (optional)
+
+When Promregator is sending metadata requests to the Cloud Foundry platform and receives an error, it will automatically retry the request up to two further attempts. However, it will not do so immediately on receiving the error (as this could lead to flooding of an already failing server). Instead it will retry only after waiting for a short amount of time - the backoff interval. For each repeated failure, the backoff interval is doubled, leading to an exponential increase of this interval the more failures are reported (giving the server more time to recover). Furthermore, a random duration is added to prevent peaks on retry attempts, which also can be hard for the server to survive.
+
+This option defines the initial duration of the backoff interval.
+
+The unit of this option is in milliseconds. By default, this value is set to 500 milliseconds.
+
+### Option "cf.request.backoff.max" (optional)
+
+When Promregator is sending metadata requests to the Cloud Foundry platform and receives an error, it will automatically retry the request up to two further attempts. However, it will not do so immediately on receiving the error (as this could lead to flooding of an already failing server). Instead it will retry only after waiting for a short amount of time - the backoff interval. For each repeated failure, the backoff interval is doubled, leading to an exponential increase of this interval the more failures are reported (giving the server more time to recover). Furthermore, a random duration is added to prevent peaks on retry attempts, which also can be hard for the server to survive.
+
+This option defines the maximal duration of the backoff interval (including the random duration) - the backoff interval will never grow above this value.
+
+The unit of this option is in milliseconds. By default, this value is set to 1200 milliseconds.
+
 ### Option "cf.request.rateLimit" (optional)
 
 Promregator is able to send large amounts of requests to the Cloud Foundry platform. Due to its design, in large environments it is even possible that too many requests are sent in a too short time. In this case, the Cloud Foundry platform may [take protect measures for self-protection](https://docs.cloudfoundry.org/running/rate-limit-cloud-controller-api.html). Due to this, corresponding requests will fail, because they will be completed with various types of error messages.
