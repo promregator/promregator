@@ -34,9 +34,15 @@ class ReactiveCFPaginatedRequestFetcher {
 	
 	private final RateLimiter cfccRateLimiter;
 
-	public ReactiveCFPaginatedRequestFetcher(InternalMetrics internalMetrics, double requestRateLimit) {
+	private final Duration firstBackoffDelay;
+
+	private final Duration maxBackoffDelay;
+
+	public ReactiveCFPaginatedRequestFetcher(InternalMetrics internalMetrics, double requestRateLimit, Duration firstBackoffDelay, Duration maxBackoffDelay) {
 		super();
 		this.internalMetrics = internalMetrics;
+		this.firstBackoffDelay = firstBackoffDelay;
+		this.maxBackoffDelay = maxBackoffDelay;
 		this.cfccRateLimiter = RateLimiter.create(requestRateLimit);
 	}
 
@@ -120,13 +126,48 @@ class ReactiveCFPaginatedRequestFetcher {
 			Mono<P> result = null;
 
 			ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, retrievalTypeName);
+			
+			final Mono<P> enrichedRequestFunction = requestFunction.apply(requestData)
+				.timeout(Duration.ofMillis(timeoutInMS))
+				.retryBackoff(2, this.firstBackoffDelay, this.maxBackoffDelay);
+			/*
+			 * Note 1: Applying (i.e. calling) the function "requestFunction" here  
+			 * does not trigger the request to be sent to the CFCC. 
+			 * Instead, it just will create the corresponding Flux/Mono, which does
+			 * not have any subscriber yet. 
+			 * 
+			 * Note 2: There is a major difference between the coding modeled
+			 * 
+			 * requestFunction.apply(requestData).timeout(...)
+			 * 
+			 * and
+			 * 
+			 * someMono.flatMap(value -> requestFunction).timeout(...)
+			 * 
+			 * The major point here is that the first variant applies the timeout
+			 * only to the stream returned by requestFunction.apply(...), whilst
+			 * the second variant applies it to
+			 * 1. someMono,
+			 * 2. the flatMap function
+			 * 3. the return value of the requestFunction
+			 * 
+			 * The difference there is that in the second variant counting 
+			 * for the timeout starts already when someMono is subscribed to.
+			 * In the second variant, someMono is not considered.
+			 * 
+			 * In this case here, the difference may be huge: The first variant
+			 * puts a timeout on each request (which is what we want). The 
+			 * second variant means that timeout would be counting from the
+			 * first subscription happening - which is wrong especially in case 
+			 * of retry attempts.
+			 */
 
-			result = this.rateLimitingMono(requestType).then(Mono.just(requestData))
+			result = this.rateLimitingMono(requestType).then(Mono.just(reactiveTimer))
 					// start the timer
-					.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
-						tuple.getT2().start();
-						return tuple.getT1();
-					}).flatMap(value -> requestFunction.apply(value).timeout(Duration.ofMillis(timeoutInMS))) //.retry(2)
+					.flatMap(timer -> {
+						timer.start();
+						return Mono.just(0 /* any value will just do; will be ignored */); // Cannot use Mono.empty() here!
+					}).flatMap(nothing -> enrichedRequestFunction)
 					.doOnError(throwable -> {
 						Throwable unwrappedThrowable = Exceptions.unwrap(throwable);
 						if (unwrappedThrowable instanceof TimeoutException) {

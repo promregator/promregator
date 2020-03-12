@@ -2,6 +2,7 @@ package org.cloudfoundry.promregator.cfaccessor;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.time.Duration;
 import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
@@ -234,8 +235,10 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 
 	@PostConstruct
 	@SuppressWarnings("unused")
-	private void setupPaginatedRequestFetcher() {
-		this.paginatedRequestFetcher = new ReactiveCFPaginatedRequestFetcher(this.internalMetrics, this.requestRateLimit);
+	private void setupPaginatedRequestFetcher(@Value("${cf.request.backoff.initial:500}") long firstBackoffMillis, 
+			@Value("${cf.request.backoff.max:1200}") long maxBackoffMillis) {
+		this.paginatedRequestFetcher = new ReactiveCFPaginatedRequestFetcher(this.internalMetrics, this.requestRateLimit, 
+				Duration.ofMillis(firstBackoffMillis), Duration.ofMillis(maxBackoffMillis));
 	}
 	
 	private static final GetInfoRequest DUMMY_GET_INFO_REQUEST = GetInfoRequest.builder().build();
