@@ -123,8 +123,7 @@ class ReactiveCFPaginatedRequestFetcher {
 			ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, retrievalTypeName);
 			
 			final Mono<P> enrichedRequestFunction = requestFunction.apply(requestData)
-				.timeout(Duration.ofMillis(timeoutInMS))
-				.retryBackoff(2, this.firstBackoffDelay, this.maxBackoffDelay);
+				.timeout(Duration.ofMillis(timeoutInMS));
 			/*
 			 * Note 1: Applying (i.e. calling) the function "requestFunction" here  
 			 * does not trigger the request to be sent to the CFCC. 
@@ -163,6 +162,12 @@ class ReactiveCFPaginatedRequestFetcher {
 						timer.start();
 						return Mono.just(0 /* any value will just do; will be ignored */); // Cannot use Mono.empty() here!
 					}).flatMap(nothing -> enrichedRequestFunction)
+					.retryBackoff(2, this.firstBackoffDelay, this.maxBackoffDelay)
+					/*
+					 * Note: Don't push the retry attempts above into enrichedRequestFunction!
+					 * It would change the semantics of the metric behind the timer.
+					 * see also https://github.com/promregator/promregator/pull/174/files#r392031592
+					 */
 					.doOnError(throwable -> {
 						Throwable unwrappedThrowable = Exceptions.unwrap(throwable);
 						if (unwrappedThrowable instanceof TimeoutException) {
