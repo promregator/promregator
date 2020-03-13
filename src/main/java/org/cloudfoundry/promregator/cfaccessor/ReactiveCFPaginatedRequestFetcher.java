@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.util.concurrent.RateLimiter;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import io.prometheus.client.Histogram.Timer;
 import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -60,17 +59,13 @@ class ReactiveCFPaginatedRequestFetcher {
 	private Mono<Object> rateLimitingMono(RequestType requestType) {
 		return Mono.fromCallable(() -> {
 			
-			Timer startTimerRateLimit = null;
 			if (this.internalMetrics != null) {
 				this.internalMetrics.increaseRateLimitQueueSize();
-				startTimerRateLimit = this.internalMetrics.startTimerRateLimit(requestType.getMetricName());
 			}
 			
 			double waitTime = cfccRateLimiter.acquire(1);
 			
-			if (startTimerRateLimit != null) {
-				startTimerRateLimit.observeDuration();
-			}
+			this.internalMetrics.observeRateLimiterDuration(requestType.getMetricName(), waitTime);
 			
 			if (waitTime > 0.001) {
 				log.debug(String.format("Rate Limiting has throttled request of %s for %.3f seconds", requestType.getLoggerSuffix(), waitTime));

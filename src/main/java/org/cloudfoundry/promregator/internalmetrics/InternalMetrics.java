@@ -161,11 +161,9 @@ public class InternalMetrics {
 		this.caffeineCacheMetricsCollector.addCache(cacheName, cache);
 	}
 	
-	public Timer startTimerRateLimit(String requestType) {
-		if (!this.enabled)
-			return null;
+	public void observeRateLimiterDuration(String requestType, double waitTime) {
+		this.rateLimitWaitTime.labels(requestType).observe(waitTime);
 		
-		return this.rateLimitWaitTime.labels(requestType).startTimer();
 	}
 	
 	public void increaseRateLimitQueueSize() {
