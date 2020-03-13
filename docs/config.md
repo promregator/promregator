@@ -294,21 +294,15 @@ This option defines the request timeout value for sending requests retrieving a 
 By default, this value is set to 4000 milliseconds.
 
 
-### Option "cf.request.backoff.initial" (optional)
+### Option "cf.request.backoff" (optional)
 
-When Promregator is sending metadata requests to the Cloud Foundry platform and receives an error, it will automatically retry the request up to two further attempts. However, it will not do so immediately on receiving the error (as this could lead to flooding of an already failing server). Instead it will retry only after waiting for a short amount of time - the backoff interval. For each repeated failure, the backoff interval is doubled, leading to an exponential increase of this interval the more failures are reported (giving the server more time to recover). Furthermore, a random duration is added to prevent peaks on retry attempts, which also can be hard for the server to survive.
+When Promregator is sending metadata requests to the Cloud Foundry platform and receives an error, it will automatically retry the request once more. However, it will not do so immediately on receiving the error (as this could lead to flooding of an already failing server). Instead it will retry only after waiting for a short amount of time - the backoff interval. Moreover, an additional random delay (of up to 50% of the backoff interval) is added to prevent load peaks caused by parallel attempts to help a potentially heavily loaded server to recover.
 
-This option defines the initial duration of the backoff interval.
+The higher the backoff interval is set, the easier it is for the Cloud Foundry platform to recover from an error situation.
+
+It is not recommended to set the backoff interval to a value larger than 2/3 of the scraping interval. If you do, you may risk Promregator to become unstable due to large amounts of queued metadata requests.
 
 The unit of this option is in milliseconds. By default, this value is set to 500 milliseconds.
-
-### Option "cf.request.backoff.max" (optional)
-
-When Promregator is sending metadata requests to the Cloud Foundry platform and receives an error, it will automatically retry the request up to two further attempts. However, it will not do so immediately on receiving the error (as this could lead to flooding of an already failing server). Instead it will retry only after waiting for a short amount of time - the backoff interval. For each repeated failure, the backoff interval is doubled, leading to an exponential increase of this interval the more failures are reported (giving the server more time to recover). Furthermore, a random duration is added to prevent peaks on retry attempts, which also can be hard for the server to survive.
-
-This option defines the maximal duration of the backoff interval (including the random duration) - the backoff interval will never grow above this value.
-
-The unit of this option is in milliseconds. By default, this value is set to 1200 milliseconds.
 
 ### Option "cf.request.rateLimit" (optional)
 
