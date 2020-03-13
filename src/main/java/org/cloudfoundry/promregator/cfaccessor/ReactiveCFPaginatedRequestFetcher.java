@@ -65,14 +65,13 @@ class ReactiveCFPaginatedRequestFetcher {
 			
 			double waitTime = cfccRateLimiter.acquire(1);
 			
-			this.internalMetrics.observeRateLimiterDuration(requestType.getMetricName(), waitTime);
-			
 			if (waitTime > 0.001) {
 				log.debug(String.format("Rate Limiting has throttled request of %s for %.3f seconds", requestType.getLoggerSuffix(), waitTime));
 			}
 			
 			if (this.internalMetrics != null) {
 				this.internalMetrics.decreaseRateLimitQueueSize();
+				this.internalMetrics.observeRateLimiterDuration(requestType.getMetricName(), waitTime);
 			}
 			
 			return new Object();
