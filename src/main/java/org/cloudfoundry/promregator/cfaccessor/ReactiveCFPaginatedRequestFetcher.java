@@ -85,12 +85,8 @@ class ReactiveCFPaginatedRequestFetcher {
 	 * performs standard (raw) retrieval from the CF Cloud Controller of a single
 	 * page
 	 * 
-	 * @param retrievalTypeName
-	 *            the name of type of the request which is being made; used for
-	 *            identification in internalMetrics
-	 * @param logName
-	 *            the name of the logger category, which shall be used for logging
-	 *            this Reactor operation
+	 * @param requestType
+	 *            the type information of the request which is being made
 	 * @param key
 	 *            the key for which the request is being made (e.g. orgId,
 	 *            orgId|spaceName, ...)
@@ -208,12 +204,8 @@ class ReactiveCFPaginatedRequestFetcher {
 	 * performs a retrieval from the CF Cloud Controller fetching all pages
 	 * available.
 	 * 
-	 * @param retrievalTypeName
-	 *            the name of type of the request which is being made; used for
-	 *            identification in internalMetrics
-	 * @param logName
-	 *            the name of the logger category, which shall be used for logging
-	 *            this Reactor operation
+	 * @param requestType
+	 *            the type information of the request which is being made
 	 * @param key
 	 *            the key for which the request is being made (e.g. orgId,
 	 *            orgId|spaceName, ...)
