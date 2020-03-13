@@ -43,7 +43,12 @@ class ReactiveCFPaginatedRequestFetcher {
 		this.internalMetrics = internalMetrics;
 		this.firstBackoffDelay = firstBackoffDelay;
 		this.maxBackoffDelay = maxBackoffDelay;
-		this.cfccRateLimiter = RateLimiter.create(requestRateLimit);
+		
+		if (requestRateLimit <= 0.0f) {
+			this.cfccRateLimiter = RateLimiter.create(Double.POSITIVE_INFINITY);
+		} else {
+			this.cfccRateLimiter = RateLimiter.create(requestRateLimit);
+		}
 	}
 
 	/**

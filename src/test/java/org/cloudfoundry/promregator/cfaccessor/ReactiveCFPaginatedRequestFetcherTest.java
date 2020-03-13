@@ -12,6 +12,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.google.common.util.concurrent.RateLimiter;
+
 import reactor.core.Exceptions;
 import reactor.core.publisher.Mono;
 
@@ -87,7 +89,7 @@ public class ReactiveCFPaginatedRequestFetcherTest {
 	
 	@Test
 	public void testWithContentTwoPages() {
-		ReactiveCFPaginatedRequestFetcher subject = new ReactiveCFPaginatedRequestFetcher(this.internalMetricsMocked, Double.MAX_VALUE, Duration.ofMillis(100), Duration.ofMillis(10000));
+		ReactiveCFPaginatedRequestFetcher subject = new ReactiveCFPaginatedRequestFetcher(this.internalMetricsMocked, 0, Duration.ofMillis(100), Duration.ofMillis(10000));
 		
 		Mono<ListOrganizationsResponse> subjectResponseMono = subject.performGenericPagedRetrieval(RequestType.OTHER, "nokey", requestGenerator, request -> {
 			LinkedList<OrganizationResource> list = new LinkedList<>();
@@ -203,5 +205,13 @@ public class ReactiveCFPaginatedRequestFetcherTest {
 			Assert.assertTrue(Exceptions.unwrap(e) instanceof Exception)
 		).onErrorReturn(fallback).block();
 		Assert.assertEquals(fallback, subjectResponse);
+	}
+	
+	@Test
+	public void testInfiniteRateLimitPossible() {
+		RateLimiter rl = RateLimiter.create(Double.POSITIVE_INFINITY);
+		
+		boolean acquired = rl.tryAcquire(10000, Duration.ofMillis(100));
+		Assert.assertTrue(acquired);
 	}
 }
