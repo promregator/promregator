@@ -318,7 +318,7 @@ This option defines the number of requests per second that Promregator is allowe
 
 By default, this value is set to 0 (zero), which means that rate limiting is disabled.
 
-In contrast to many other settings in this document, the type of this parameter is a float with double precision. So providing values such as `2.5` is acceptable here.
+In contrast to many other settings in this document, the type of this parameter is a float with double precision. So providing values such as `22.5` is acceptable here.
 
 
 ### Subgroup "cf.proxy"
