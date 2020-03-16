@@ -847,5 +847,47 @@ public class ParserTest {
 		
 		Assert.assertEquals(0.034350549,  mfs.samples.get(65).value, 0.001);
 	}
+	
+	@Test
+	// see also issue #175
+	public void testGaugeNonParsableJunk() {
+		String textToParse = "# TYPE metric_with_label gauge\n" + 
+				"metric_with_label{name=\"xyz\"} 12.47\n"
+				+ "\n"
+				+ "some_garbage abc----\n"
+				+ "\n"
+				+ "# TYPE another_metric gauge\n"
+				+ "another_metric 123.1\n";
 		
+		Parser subject = new Parser(textToParse);
+		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
+		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
+
+		// creating expected result
+		LinkedList<Collector.MetricFamilySamples> expectedList = new LinkedList<>();
+
+		List<Sample> samples = new LinkedList<>();
+		
+		List<String> labelNames = new LinkedList<>();
+		labelNames.add("name");
+		List<String> labelValues = new LinkedList<>();
+		labelValues.add("xyz");
+		
+		Sample sample = new Sample("metric_with_label", labelNames, labelValues, 12.47);
+		samples.add(sample);
+		
+		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("metric_with_label", Type.GAUGE, "", samples);
+		expectedList.add(expectedMFS);
+
+		samples = new LinkedList<>();
+
+		samples.add(new Sample("another_metric", Collections.emptyList(), Collections.emptyList(), 123.1));
+		expectedMFS = new Collector.MetricFamilySamples("another_metric", Type.GAUGE, "", samples);
+		expectedList.add(expectedMFS);
+		
+		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
+		
+		// compare
+		compareEMFS(expected, result);
+	}
 }

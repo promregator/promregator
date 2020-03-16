@@ -70,7 +70,14 @@ public class Parser {
 	
 	private void parseMetric(String line) {
 		final MetricLine ml = new MetricLine(line);
-		Sample sample = ml.parse();
+		
+		Sample sample = null;
+		try {
+			sample = ml.parse();
+		} catch (MetricLine.ParseException e) {
+			log.warn(String.format("Detected non-parsable metric line '%s'", line), e);
+			return;
+		}
 		
 		final String metricName = sample.name;
 		
