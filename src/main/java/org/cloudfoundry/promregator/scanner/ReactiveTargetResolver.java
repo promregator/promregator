@@ -16,7 +16,6 @@ import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.config.Target;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -26,8 +25,11 @@ public class ReactiveTargetResolver implements TargetResolver {
 	private static final Logger log = LoggerFactory.getLogger(ReactiveTargetResolver.class);
 	private static final Logger logEmptyTarget = LoggerFactory.getLogger(String.format("%s.EmptyTarget", ReactiveTargetResolver.class.getName()));
 	
-	@Autowired
-	private CFAccessor cfAccessor;
+	private final CFAccessor cfAccessor;
+
+	public ReactiveTargetResolver(CFAccessor cfAccessor) {
+		this.cfAccessor = cfAccessor;
+	}
 
 	private static class IntermediateTarget {
 		private Target configTarget;
@@ -287,7 +289,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 		 * Case 3: spaceName is filled, but spaceRegex is null => select a single space
 		 * In cases 1 and 2, we need the list of all spaces in the org.
 		 */
-		
+
 		if (it.getConfigTarget().getSpaceRegex() == null && it.getConfigTarget().getSpaceName() != null) {
 			// Case 3: we have the spaceName, but we also need its id
 			Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveSpaceId(it.getResolvedOrgId(), it.getConfigTarget().getSpaceName())

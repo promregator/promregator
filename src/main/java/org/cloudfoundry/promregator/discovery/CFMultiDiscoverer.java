@@ -21,35 +21,28 @@ import org.cloudfoundry.promregator.scanner.ResolvedTarget;
 import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 
 public class CFMultiDiscoverer implements CFDiscoverer {
 	private static final Logger log = LoggerFactory.getLogger(CFMultiDiscoverer.class);
 	
-	@Autowired
-	private TargetResolver targetResolver;
-	
-	@Autowired
-	private AppInstanceScanner appInstanceScanner;
-	
-	@Autowired
-	private PromregatorConfiguration promregatorConfiguration;
-
-	@Autowired
-	private JmsTemplate jmsTemplate;
-	
-
-	@Autowired
-	private Clock clock;
+	private final TargetResolver targetResolver;
+	private final AppInstanceScanner appInstanceScanner;
+	private final PromregatorConfiguration promregatorConfiguration;
+	private final JmsTemplate jmsTemplate;
+	private final Clock clock;
 	
 	private Map<Instance, Instant> instanceExpiryMap = new ConcurrentHashMap<>();
-	
-	@Value("${promregator.discoverer.timeout:600}")
-	private int expiryTimeout;
-	
+
+	public CFMultiDiscoverer(TargetResolver targetResolver, AppInstanceScanner appInstanceScanner, PromregatorConfiguration promregatorConfiguration, JmsTemplate jmsTemplate, Clock clock) {
+		this.targetResolver = targetResolver;
+		this.appInstanceScanner = appInstanceScanner;
+		this.promregatorConfiguration = promregatorConfiguration;
+		this.jmsTemplate = jmsTemplate;
+		this.clock = clock;
+	}
+
 	/**
 	 * performs the discovery based on the configured set of targets in the configuration, (pre-)filtering the returned set applying the filter criteria supplied.
 	 * The instances discovered are automatically registered at this Discoverer
@@ -99,7 +92,7 @@ public class CFMultiDiscoverer implements CFDiscoverer {
 	}
 
 	private Instant nextTimeout() {
-		return Instant.now(this.clock).plus(this.expiryTimeout, ChronoUnit.SECONDS);
+		return Instant.now(this.clock).plus(this.promregatorConfiguration.getDiscoverer().getTimeout(), ChronoUnit.SECONDS);
 	}
 	
 	/**
@@ -127,7 +120,4 @@ public class CFMultiDiscoverer implements CFDiscoverer {
 		}
 	}
 	
-	public void setClock(Clock newClock) {
-		this.clock = newClock;
-	}
 }

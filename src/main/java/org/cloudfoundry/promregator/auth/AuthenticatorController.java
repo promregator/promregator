@@ -8,8 +8,9 @@ import javax.annotation.PostConstruct;
 import org.cloudfoundry.promregator.config.AuthenticatorConfiguration;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.config.Target;
-import org.cloudfoundry.promregator.config.TargetAuthenticatorConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import static org.cloudfoundry.promregator.config.PromregatorConfiguration.DEFAULT_ID;
 
 /**
  * This class controls the target-dependent set of AuthenticationEnrichers
@@ -17,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class AuthenticatorController {
 	private final Map<String, AuthenticationEnricher> mapping = new HashMap<>();
 
-	@Autowired
 	private final PromregatorConfiguration promregatorConfiguration;
 
 	private AuthenticationEnricher globalAuthenticationEnricher;
@@ -30,7 +30,9 @@ public class AuthenticatorController {
 	}
 
 	private void determineGlobalAuthenticationEnricher() {
-		AuthenticatorConfiguration authConfig = promregatorConfiguration.getAuthenticator();
+		AuthenticatorConfiguration authConfig = promregatorConfiguration.getTargetAuthenticators()
+				.stream().filter(auth -> auth.getId().equals(DEFAULT_ID))
+				.findFirst().orElse(null);
 		if (authConfig == null) {
 			this.globalAuthenticationEnricher = new NullEnricher();
 			return;
@@ -40,7 +42,7 @@ public class AuthenticatorController {
 	}
 	
 	private void loadMapFromConfiguration() {
-		for (TargetAuthenticatorConfiguration tac : this.promregatorConfiguration.getTargetAuthenticators()) {
+		for (AuthenticatorConfiguration tac : this.promregatorConfiguration.getTargetAuthenticators()) {
 			String id = tac.getId();
 			AuthenticationEnricher ae = AuthenticationEnricherFactory.create(tac);
 

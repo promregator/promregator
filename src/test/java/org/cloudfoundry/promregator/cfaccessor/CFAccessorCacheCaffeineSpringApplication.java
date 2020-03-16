@@ -8,6 +8,7 @@ import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -71,8 +72,15 @@ public class CFAccessorCacheCaffeineSpringApplication {
 	}
 	
 	@Bean
-	public CFAccessorCacheCaffeine subject(@Qualifier("parentMock") CFAccessor parentMock) {
-		return new CFAccessorCacheCaffeine(parentMock);
+	public CFAccessorCacheCaffeine subject(@Value("${cf.cache.timeout.org:3600}") int refreshCacheOrgLevelInSeconds,
+										   @Value("${cf.cache.timeout.space:3600}") int refreshCacheSpaceLevelInSeconds,
+										   @Value("${cf.cache.timeout.application:300}") int refreshCacheApplicationLevelInSeconds,
+										   @Value("${cf.cache.expiry.org:120}") int expiryCacheOrgLevelInSeconds,
+										   @Value("${cf.cache.expiry.space:120}") int expiryCacheSpaceLevelInSeconds,
+										   @Value("${cf.cache.expiry.application:120}") int expiryCacheApplicationLevelInSeconds,
+										   InternalMetrics internalMetrics,
+										   @Qualifier("parentMock") CFAccessor parentMock) {
+		return new CFAccessorCacheCaffeine(refreshCacheOrgLevelInSeconds, refreshCacheSpaceLevelInSeconds, refreshCacheApplicationLevelInSeconds, expiryCacheOrgLevelInSeconds, expiryCacheSpaceLevelInSeconds, expiryCacheApplicationLevelInSeconds, internalMetrics, parentMock);
 	}
 	
 }

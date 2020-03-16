@@ -15,8 +15,8 @@ public class MockedReactiveTargetResolverSpringApplication {
 	}
 	
 	@Bean
-	public TargetResolver targetResolver() {
-		return new ReactiveTargetResolver();
+	public TargetResolver targetResolver(CFAccessor cfAccessor) {
+		return new ReactiveTargetResolver(cfAccessor);
 	}
 	
 }

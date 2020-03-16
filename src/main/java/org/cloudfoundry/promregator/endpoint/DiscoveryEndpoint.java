@@ -5,42 +5,34 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.discovery.CFMultiDiscoverer;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.WebApplicationContext;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 
 @RestController
 @RequestMapping(EndpointConstants.ENDPOINT_PATH_DISCOVERY)
-@Scope(value=WebApplicationContext.SCOPE_REQUEST)
 public class DiscoveryEndpoint {
 
 	private static final Logger log = LoggerFactory.getLogger(DiscoveryEndpoint.class);
 	
-	@Autowired
-	private CFMultiDiscoverer cfDiscoverer;
+	private final CFMultiDiscoverer cfDiscoverer;
+	private final PromregatorConfiguration promregatorConfiguration;
 
-	@Value("${promregator.discovery.hostname:#{null}}")
-	private String myHostname;
-	
-	@Value("${promregator.discovery.port:0}")
-	private int myPort;
-	
-	@Value("${promregator.discovery.ownMetricsEndpoint:true}")
-	private boolean promregatorMetricsEndpoint;
-	
+	public DiscoveryEndpoint(CFMultiDiscoverer cfDiscoverer, PromregatorConfiguration promregatorConfiguration) {
+		this.cfDiscoverer = cfDiscoverer;
+		this.promregatorConfiguration = promregatorConfiguration;
+	}
+
 	public static class DiscoveryLabel {
 		private String targetPath;
 		private String orgName;
@@ -134,9 +126,11 @@ public class DiscoveryEndpoint {
 		if (instances == null || instances.isEmpty()) {
 			return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
 		}
-		
-		String localHostname = this.myHostname != null ? this.myHostname : request.getLocalName();
-		int localPort = this.myPort != 0 ? this.myPort : request.getLocalPort();
+
+		String myHostName = this.promregatorConfiguration.getDiscovery().getHostname();
+		int myPort = this.promregatorConfiguration.getDiscovery().getPort();
+		String localHostname = myHostName != null ? myHostName : request.getLocalName();
+		int localPort = myPort != 0 ? myPort : request.getLocalPort();
 		final String[] targets = { String.format("%s:%d", localHostname, localPort) };
 		
 		log.info(String.format("Using scraping target %s in discovery response", targets[0]));
@@ -151,7 +145,7 @@ public class DiscoveryEndpoint {
 			result.add(dr);
 		}
 		
-		if (this.promregatorMetricsEndpoint) {
+		if (this.promregatorConfiguration.getDiscovery().getOwnMetricsEndpoint()) {
 			// finally, also add our own metrics endpoint
 			DiscoveryLabel dl = new DiscoveryLabel(EndpointConstants.ENDPOINT_PATH_PROMREGATOR_METRICS);
 			result.add(new DiscoveryResponse(targets, dl));

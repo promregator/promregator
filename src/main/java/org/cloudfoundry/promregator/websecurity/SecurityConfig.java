@@ -3,6 +3,7 @@ package org.cloudfoundry.promregator.websecurity;
 import java.util.UUID;
 
 import org.cloudfoundry.promregator.config.InboundAuthorizationMode;
+import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.endpoint.EndpointConstants;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +23,11 @@ import org.springframework.security.web.savedrequest.RequestCache;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+	private final PromregatorConfiguration promregatorConfiguration;
+	public SecurityConfig(PromregatorConfiguration promregatorConfiguration) {
+		this.promregatorConfiguration = promregatorConfiguration;
+	}
+
 	@Bean(name = BeanIds.AUTHENTICATION_MANAGER)
 	@Override
 	// see also
@@ -30,29 +36,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		return super.authenticationManagerBean();
 	}
 
-	@Value("${promregator.discovery.auth:NONE}")
-	private InboundAuthorizationMode discoveryAuth;
-
-	@Value("${promregator.endpoint.auth:NONE}")
-	private InboundAuthorizationMode endpointAuth;
-
-	@Value("${promregator.metrics.auth:NONE}")
-	private InboundAuthorizationMode promregatorMetricsAuth;
-	
-	@Value("${promregator.cache.invalidate.auth:NONE}")
-	private InboundAuthorizationMode cacheInvalidateAuth;
-
 	private boolean isInboundAuthSecurityEnabled() {
-		if (this.discoveryAuth != InboundAuthorizationMode.NONE)
+		if (this.promregatorConfiguration.getDiscovery().getAuth() != InboundAuthorizationMode.NONE)
 			return true;
 
-		if (this.endpointAuth != InboundAuthorizationMode.NONE)
+		if (this.promregatorConfiguration.getEndpoint().getAuth() != InboundAuthorizationMode.NONE)
 			return true;
 
-		if (this.promregatorMetricsAuth != InboundAuthorizationMode.NONE)
+		if (this.promregatorConfiguration.getMetrics().getAuth() != InboundAuthorizationMode.NONE)
 			return true;
 
-		if (this.cacheInvalidateAuth != InboundAuthorizationMode.NONE)
+		if (this.promregatorConfiguration.getCache().getInvalidate().getAuth() != InboundAuthorizationMode.NONE)
 			return true;
 		
 		return false;
@@ -109,11 +103,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		}
 
 		HttpSecurity sec = security;
-		sec = this.determineHttpSecurityForEndpoint(sec, EndpointConstants.ENDPOINT_PATH_DISCOVERY, this.discoveryAuth);
-		sec = this.determineHttpSecurityForEndpoint(sec, EndpointConstants.ENDPOINT_PATH_SINGLE_ENDPOINT_SCRAPING, this.endpointAuth);
-		sec = this.determineHttpSecurityForEndpoint(sec, EndpointConstants.ENDPOINT_PATH_SINGLE_TARGET_SCRAPING+"/**", this.endpointAuth);
-		sec = this.determineHttpSecurityForEndpoint(sec, EndpointConstants.ENDPOINT_PATH_PROMREGATOR_METRICS, this.promregatorMetricsAuth);
-		sec = this.determineHttpSecurityForEndpoint(sec, EndpointConstants.ENDPOINT_PATH_CACHE_INVALIDATION, this.cacheInvalidateAuth);
+		sec = this.determineHttpSecurityForEndpoint(sec, EndpointConstants.ENDPOINT_PATH_DISCOVERY, this.promregatorConfiguration.getDiscovery().getAuth());
+		sec = this.determineHttpSecurityForEndpoint(sec, EndpointConstants.ENDPOINT_PATH_SINGLE_ENDPOINT_SCRAPING, this.promregatorConfiguration.getEndpoint().getAuth());
+		sec = this.determineHttpSecurityForEndpoint(sec, EndpointConstants.ENDPOINT_PATH_SINGLE_TARGET_SCRAPING+"/**", this.promregatorConfiguration.getEndpoint().getAuth());
+		sec = this.determineHttpSecurityForEndpoint(sec, EndpointConstants.ENDPOINT_PATH_PROMREGATOR_METRICS, this.promregatorConfiguration.getMetrics().getAuth());
+		sec = this.determineHttpSecurityForEndpoint(sec, EndpointConstants.ENDPOINT_PATH_CACHE_INVALIDATION, this.promregatorConfiguration.getCache().getInvalidate().getAuth());
 
 		
 		// see also https://github.com/spring-projects/spring-security/issues/4242
@@ -144,11 +138,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 		WebSecurity web = webInitial;
 
-		web = this.determineWebSecurityForEndpoint(web, EndpointConstants.ENDPOINT_PATH_DISCOVERY, this.discoveryAuth);
-		web = this.determineWebSecurityForEndpoint(web, EndpointConstants.ENDPOINT_PATH_SINGLE_ENDPOINT_SCRAPING, this.endpointAuth);
-		web = this.determineWebSecurityForEndpoint(web, EndpointConstants.ENDPOINT_PATH_SINGLE_TARGET_SCRAPING+"/**", this.endpointAuth);
-		web = this.determineWebSecurityForEndpoint(web, EndpointConstants.ENDPOINT_PATH_PROMREGATOR_METRICS, this.promregatorMetricsAuth);
-		this.determineWebSecurityForEndpoint(web, EndpointConstants.ENDPOINT_PATH_CACHE_INVALIDATION, this.cacheInvalidateAuth);
+		web = this.determineWebSecurityForEndpoint(web, EndpointConstants.ENDPOINT_PATH_DISCOVERY, this.promregatorConfiguration.getDiscovery().getAuth());
+		web = this.determineWebSecurityForEndpoint(web, EndpointConstants.ENDPOINT_PATH_SINGLE_ENDPOINT_SCRAPING, this.promregatorConfiguration.getEndpoint().getAuth());
+		web = this.determineWebSecurityForEndpoint(web, EndpointConstants.ENDPOINT_PATH_SINGLE_TARGET_SCRAPING+"/**", this.promregatorConfiguration.getEndpoint().getAuth());
+		web = this.determineWebSecurityForEndpoint(web, EndpointConstants.ENDPOINT_PATH_PROMREGATOR_METRICS, this.promregatorConfiguration.getMetrics().getAuth());
+		this.determineWebSecurityForEndpoint(web, EndpointConstants.ENDPOINT_PATH_CACHE_INVALIDATION, this.promregatorConfiguration.getCache().getInvalidate().getAuth());
 
 	}
 

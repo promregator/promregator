@@ -37,15 +37,9 @@ class SingleTargetMetricsEndpointTest {
         val promConfig = PromregatorConfiguration()
 
 
-        subject = TestableSingleTargetMetricsEndpoint(false,
+        subject = TestableSingleTargetMetricsEndpoint(promConfig,
                 Executors.newSingleThreadExecutor(),
                 AuthenticatorController(promConfig),
-                null,
-                0,
-                5000,
-                false,
-                5000,
-                5000,
                 currentPromregatorInstanceIdentifier,
                 instanceCache)
     }
