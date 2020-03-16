@@ -89,7 +89,9 @@ data class ProxyConfig(
 
 data class RequestConfig(
         val timeout: TimeoutConfig = TimeoutConfig(),
-        val cacheDuration: Duration = Duration.ofSeconds(30)
+        val cacheDuration: Duration = Duration.ofSeconds(30),
+        val rateLimit: Double = Double.MAX_VALUE,
+        val backoff: Duration = Duration.ofMillis(500)
 )
 
 data class TimeoutConfig(

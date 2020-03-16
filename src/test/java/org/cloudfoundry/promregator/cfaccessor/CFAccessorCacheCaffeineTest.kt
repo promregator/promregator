@@ -10,6 +10,7 @@ import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse
 import org.cloudfoundry.promregator.config.CloudFoundryConfiguration
 import org.cloudfoundry.promregator.config.CloudFoundryConfiguration.Companion.DEFAULT_API
+import org.cloudfoundry.promregator.config.PromregatorConfiguration.Companion.DEFAULT_ID
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -18,7 +19,7 @@ import reactor.kotlin.core.publisher.toMono
 class CFAccessorCacheCaffeineTest {
     private lateinit var parentMock: CFAccessor
     private lateinit var subject: CFAccessorCacheCaffeine
-    
+
     @BeforeEach
     fun setup() {
         parentMock = mockk()
@@ -64,6 +65,16 @@ class CFAccessorCacheCaffeineTest {
 
         verify(exactly = 1) { parentMock.retrieveSpaceId(DEFAULT_API, "dummy1", "dummy2") }
     }
+
+    @Test
+    fun testRetrieveAllOrgIds() {
+        every { parentMock.retrieveAllOrgIds(DEFAULT_API) } returns ListOrganizationsResponse.builder().build().toMono()
+
+        subject.retrieveAllOrgIds(DEFAULT_ID);
+
+        verify(exactly = 1) { parentMock.retrieveAllOrgIds(DEFAULT_API) }
+    }
+
 
     @Test
     fun `testRetrieveSpaceId fetches a fresh result after cache is invalidated`() {

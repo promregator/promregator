@@ -88,13 +88,15 @@ public class PromregatorApplication {
 	public Clock clock() {
 		return Clock.systemDefaultZone();
 	}
-	
+
+
+
 	@Bean
 	public CFAccessor mainCFAccessor(CloudFoundryConfiguration cf, PromregatorConfiguration promregatorConfiguration, InternalMetrics internalMetrics, CFApiClients cfApiClients) {
 		if (promregatorConfiguration.getSimulation().getEnabled()) {
 			return new CFAccessorSimulator(promregatorConfiguration.getSimulation().getInstances());
 		} else {
-			return new ReactiveCFAccessorImpl(cf, promregatorConfiguration, internalMetrics, cfApiClients);
+			return new ReactiveCFAccessorImpl(cf, internalMetrics, cfApiClients);
 		}
 	}
 	
