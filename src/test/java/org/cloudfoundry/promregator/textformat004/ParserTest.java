@@ -11,6 +11,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.assertj.core.util.Lists;
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.rewrite.MFSUtils;
 import org.cloudfoundry.promregator.textformat004.Parser;
@@ -877,6 +878,12 @@ public class ParserTest {
 		samples.add(sample);
 		
 		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("metric_with_label", Type.GAUGE, "", samples);
+		expectedList.add(expectedMFS);
+
+		samples = new LinkedList<>();
+
+		samples.add(new Sample("another_metric", Lists.emptyList(),Lists.emptyList(), 123.1));
+		expectedMFS = new Collector.MetricFamilySamples("another_metric", Type.GAUGE, "", samples);
 		expectedList.add(expectedMFS);
 		
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
