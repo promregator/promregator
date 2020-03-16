@@ -54,14 +54,14 @@ public class CFMultiDiscoverer implements CFDiscoverer {
 	public List<Instance> discover(@Null Predicate<? super String> applicationIdFilter, @Null Predicate<? super Instance> instanceFilter) {
 		log.debug(String.format("We have %d targets configured", this.promregatorConfiguration.getTargets().size()));
 		
-		List<ResolvedTarget> resolvedTargets = this.targetResolver.resolveTargets(this.promregatorConfiguration.getTargets());
+		List<ResolvedTarget> resolvedTargets = this.targetResolver.resolveTargets(this.promregatorConfiguration.getTargets()).block();
 		if (resolvedTargets == null) {
 			log.warn("Target resolved was unable to resolve configured targets");
 			return Collections.emptyList();
 		}
 		log.debug(String.format("Raw list contains %d resolved targets", resolvedTargets.size()));
 		
-		List<Instance> instanceList = this.appInstanceScanner.determineInstancesFromTargets(resolvedTargets, applicationIdFilter, instanceFilter);
+		List<Instance> instanceList = this.appInstanceScanner.determineInstancesFromTargets(resolvedTargets, applicationIdFilter, instanceFilter).block();
 		if (instanceList == null) {
 			log.warn("Instance Scanner unable to determine instances from provided targets");
 			return Collections.emptyList();

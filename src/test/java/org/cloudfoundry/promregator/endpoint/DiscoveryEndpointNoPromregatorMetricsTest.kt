@@ -37,14 +37,14 @@ class DiscoveryEndpointNoPromregatorMetricsTest {
         val target2 = ResolvedTarget(Target(applicationName = "unittestapp2", orgName = "unittestorg", spaceName = "unittestspace"))
 
         every { cfDiscoverer.discover(null, null)} returns listOf(
-                Instance(target1, "faedbb0a-2273-4cb4-a659-bd31331f7daf:0", "/singleTargetMetrics/faedbb0a-2273-4cb4-a659-bd31331f7daf/0"),
-                Instance(target1, "faedbb0a-2273-4cb4-a659-bd31331f7daf:1", "/singleTargetMetrics/faedbb0a-2273-4cb4-a659-bd31331f7daf/1"),
-                Instance(target2, "1142a717-e27d-4028-89d8-b42a0c973300:0", "/singleTargetMetrics/1142a717-e27d-4028-89d8-b42a0c973300/0")
+                Instance(target1, "faedbb0a-2273-4cb4-a659-bd31331f7daf:0", "/app1"),
+                Instance(target1, "faedbb0a-2273-4cb4-a659-bd31331f7daf:1", "/app1"),
+                Instance(target2, "1142a717-e27d-4028-89d8-b42a0c973300:0", "/app2")
         )
 
         val requestMock = mockk<HttpServletRequest>()
         val responseEntity = subject.getDiscovery(requestMock)
-        val response = responseEntity.body ?: fail("Responsse is missing")
+        val response = responseEntity.body ?: fail("Response is missing")
 
         assertThat(response).hasSize(3)
         assertThat(response[0].targets).containsExactly("discovery-hostname:1234")
@@ -59,7 +59,7 @@ class DiscoveryEndpointNoPromregatorMetricsTest {
             assertThat(instanceNumber).isEqualTo("0")
             assertThat(orgName).isEqualTo("unittestorg")
             assertThat(spaceName).isEqualTo("unittestspace")
-            assertThat(targetPath).isEqualTo("/singleTargetMetrics/faedbb0a-2273-4cb4-a659-bd31331f7daf/0")
+            assertThat(targetPath).isEqualTo("/singleTargetMetrics/4a624cb57f79dfb764cb6f149c7f9feb415c5d84")
         }
 
         with(response[1].labels) {
@@ -69,7 +69,7 @@ class DiscoveryEndpointNoPromregatorMetricsTest {
             assertThat(instanceNumber).isEqualTo("1")
             assertThat(orgName).isEqualTo("unittestorg")
             assertThat(spaceName).isEqualTo("unittestspace")
-            assertThat(targetPath).isEqualTo("/singleTargetMetrics/faedbb0a-2273-4cb4-a659-bd31331f7daf/1")
+            assertThat(targetPath).isEqualTo("/singleTargetMetrics/30ee5a88a137a12295a7102535e4b368db53a173")
         }
 
         with(response[2].labels) {
@@ -79,7 +79,7 @@ class DiscoveryEndpointNoPromregatorMetricsTest {
             assertThat(instanceNumber).isEqualTo("0")
             assertThat(orgName).isEqualTo("unittestorg")
             assertThat(spaceName).isEqualTo("unittestspace")
-            assertThat(targetPath).isEqualTo("/singleTargetMetrics/1142a717-e27d-4028-89d8-b42a0c973300/0")
+            assertThat(targetPath).isEqualTo("/singleTargetMetrics/72468cc7307539375894d60a9328ff3e08d2b6f9")
         }
 
         // NB: /promregatorMetrics endpoint must not be mentioned here (that's checked with Assert.assertEquals(3, response.length); )

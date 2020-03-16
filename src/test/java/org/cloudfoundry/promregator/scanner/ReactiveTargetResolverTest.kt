@@ -34,7 +34,7 @@ class ReactiveTargetResolverTest {
         )
 
         list.add(t)
-        val actualList = targetResolver.resolveTargets(list)
+        val actualList = targetResolver.resolveTargets(list).block()
         assertThat(actualList).hasSize(1)
         with(actualList[0]) {
             assertThat(originalTarget).isEqualTo(t)
@@ -46,8 +46,8 @@ class ReactiveTargetResolverTest {
         }
 
 
-        verify(exactly = 1) { cfAccessor.retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID) }
-        verify(exactly = 0) { cfAccessor.retrieveSpaceSummary(CFAccessorMock.UNITTEST_SPACE_UUID) }
+        verify(exactly = 1) { cfAccessor.retrieveAllApplicationIdsInSpace(any(), CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID) }
+        verify(exactly = 0) { cfAccessor.retrieveSpaceSummary(any(), CFAccessorMock.UNITTEST_SPACE_UUID) }
     }
 
     @Test
@@ -58,7 +58,7 @@ class ReactiveTargetResolverTest {
                 protocol = "https")
         val list = listOf(t)
 
-        val actualList = targetResolver.resolveTargets(list)
+        val actualList = targetResolver.resolveTargets(list).block()
 
         assertThat(actualList).hasSize(2)
         with(actualList[0]) {
@@ -79,7 +79,7 @@ class ReactiveTargetResolverTest {
             assertThat(protocol).isEqualTo(t.protocol)
         }
 
-        verify(exactly = 1) { cfAccessor.retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID) }
+        verify(exactly = 1) { cfAccessor.retrieveAllApplicationIdsInSpace(any(), CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID) }
     }
 
     @Test
@@ -93,7 +93,7 @@ class ReactiveTargetResolverTest {
         )
         val list = listOf(t)
 
-        val actualList = targetResolver.resolveTargets(list)
+        val actualList = targetResolver.resolveTargets(list).block()
 
         assertThat(actualList).hasSize(1)
         with(actualList[0]) {
@@ -105,7 +105,7 @@ class ReactiveTargetResolverTest {
             assertThat(protocol).isEqualTo(t.protocol)
         }
 
-        verify(exactly = 1) {cfAccessor.retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID) }
+        verify(exactly = 1) {cfAccessor.retrieveAllApplicationIdsInSpace(any(), CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID) }
     }
 
     @Test
@@ -119,7 +119,7 @@ class ReactiveTargetResolverTest {
         )
         val list = listOf(t)
 
-        val actualList = targetResolver.resolveTargets(list)
+        val actualList = targetResolver.resolveTargets(list).block()
 
         assertThat(actualList).hasSize(1)
         with(actualList[0]) {
@@ -131,12 +131,12 @@ class ReactiveTargetResolverTest {
             assertThat(protocol).isEqualTo(t.protocol)
         }
 
-        verify(exactly = 1) {cfAccessor.retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID) }
+        verify(exactly = 1) {cfAccessor.retrieveAllApplicationIdsInSpace(any(), CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID) }
     }
 
     @Test
     fun testEmpty() {
-        val actualList = targetResolver.resolveTargets(listOf())
+        val actualList = targetResolver.resolveTargets(listOf()).block()
 
         assertThat(actualList).hasSize(0)
     }
@@ -151,11 +151,11 @@ class ReactiveTargetResolverTest {
         )
         val list = listOf(t)
 
-        val actualList = targetResolver.resolveTargets(list)
+        val actualList = targetResolver.resolveTargets(list).block()
 
         assertThat(actualList).hasSize(0)
 
-        verify(exactly = 1) {cfAccessor.retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID_DOESNOTEXIST) }
+        verify(exactly = 1) {cfAccessor.retrieveAllApplicationIdsInSpace(any(), CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID_DOESNOTEXIST) }
     }
 
     @Test
@@ -168,10 +168,10 @@ class ReactiveTargetResolverTest {
         )
         val list = listOf(t)
 
-        val actualList = targetResolver.resolveTargets(list)
+        val actualList = targetResolver.resolveTargets(list).block()
         assertThat(actualList).hasSize(0)
 
-        verify(exactly = 1) {cfAccessor.retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID_EXCEPTION) }
+        verify(exactly = 1) {cfAccessor.retrieveAllApplicationIdsInSpace(any(), CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID_EXCEPTION) }
     }
 
     @Test
@@ -193,7 +193,7 @@ class ReactiveTargetResolverTest {
                 ), t
         )
 
-        val actualList = targetResolver.resolveTargets(list)
+        val actualList = targetResolver.resolveTargets(list).block()
 
         assertThat(actualList).hasSize(1)
         with(actualList[0]) {
@@ -224,7 +224,7 @@ class ReactiveTargetResolverTest {
         )
         val list = listOf(tBadOrg, t)
 
-        val actualList = targetResolver.resolveTargets(list)
+        val actualList = targetResolver.resolveTargets(list).block()
         assertThat(actualList).hasSize(1)
 
         with(actualList[0]) {
@@ -255,7 +255,7 @@ class ReactiveTargetResolverTest {
         )
         val list = listOf(tInvalidSpaceName, t)
 
-        val actualList = targetResolver.resolveTargets(list)
+        val actualList = targetResolver.resolveTargets(list).block()
 
         assertThat(actualList).hasSize(1)
         with(actualList[0]) {
@@ -284,7 +284,7 @@ class ReactiveTargetResolverTest {
                 protocol = "https")
         val list = listOf(tBadSpaceName, t)
 
-        val actualList = targetResolver.resolveTargets(list)
+        val actualList = targetResolver.resolveTargets(list).block()
 
         assertThat(actualList).hasSize(1)
         with(actualList[0]) {
@@ -316,7 +316,7 @@ class ReactiveTargetResolverTest {
         val list = listOf(tRegex, t)
 
         // NB: The regex target (first one) overlaps with the already fully resolved target (second one)
-        val actualList = targetResolver.resolveTargets(list)
+        val actualList = targetResolver.resolveTargets(list).block()
 
         assertThat(actualList).hasSize(2) // and not 3!
         val rt1 = actualList.firstOrNull {it.applicationName == "testapp"} ?: fail("testapp was expected")
@@ -344,7 +344,7 @@ class ReactiveTargetResolverTest {
                 protocol = "https"
         )
 
-        val actualList = targetResolver.resolveTargets(listOf(t))
+        val actualList = targetResolver.resolveTargets(listOf(t)).block()
 
         assertThat(actualList).hasSize(1)
         with(actualList[0]) {
@@ -356,8 +356,8 @@ class ReactiveTargetResolverTest {
             assertThat(protocol).isEqualTo(t.protocol)
         }
 
-        verify(exactly = 1) {cfAccessor.retrieveAllOrgIds() }
-        verify(exactly = 1) {cfAccessor.retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID) }
+        verify(exactly = 1) {cfAccessor.retrieveAllOrgIds(any()) }
+        verify(exactly = 1) {cfAccessor.retrieveAllApplicationIdsInSpace(any(), CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID) }
     }
 
     @Test
@@ -370,7 +370,7 @@ class ReactiveTargetResolverTest {
                 protocol = "https"
         )
 
-        val actualList = targetResolver.resolveTargets(listOf(t))
+        val actualList = targetResolver.resolveTargets(listOf(t)).block()
 
         assertThat(actualList).hasSize(1)
         with(actualList[0]) {
@@ -382,8 +382,8 @@ class ReactiveTargetResolverTest {
             assertThat(protocol).isEqualTo(t.protocol)
         }
 
-        verify(exactly = 1) {cfAccessor.retrieveAllOrgIds() }
-        verify(exactly = 1) {cfAccessor.retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID) }
+        verify(exactly = 1) {cfAccessor.retrieveAllOrgIds(any()) }
+        verify(exactly = 1) {cfAccessor.retrieveAllApplicationIdsInSpace(any(), CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID) }
     }
 
     @Test
@@ -396,7 +396,7 @@ class ReactiveTargetResolverTest {
                 protocol = "https"
         )
 
-        val actualList = targetResolver.resolveTargets(listOf(t))
+        val actualList = targetResolver.resolveTargets(listOf(t)).block()
 
         assertThat(actualList).hasSize(1)
         with(actualList[0]) {
@@ -408,7 +408,7 @@ class ReactiveTargetResolverTest {
             assertThat(protocol).isEqualTo(t.protocol)
         }
 
-        verify(exactly = 1) {cfAccessor.retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID) }
+        verify(exactly = 1) {cfAccessor.retrieveAllApplicationIdsInSpace(any(), CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID) }
     }
 
     @Test
@@ -420,7 +420,7 @@ class ReactiveTargetResolverTest {
                 protocol = "https"
         )
 
-        val actualList = targetResolver.resolveTargets(listOf(t))
+        val actualList = targetResolver.resolveTargets(listOf(t)).block()
 
         assertThat(actualList).hasSize(1)
         with(actualList[0]) {
@@ -432,8 +432,8 @@ class ReactiveTargetResolverTest {
             assertThat(protocol).isEqualTo(t.protocol)
         }
 
-        verify(exactly = 1) {cfAccessor.retrieveSpaceIdsInOrg(CFAccessorMock.UNITTEST_ORG_UUID) }
-        verify(exactly = 1) {cfAccessor.retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID) }
+        verify(exactly = 1) {cfAccessor.retrieveSpaceIdsInOrg(any(), CFAccessorMock.UNITTEST_ORG_UUID) }
+        verify(exactly = 1) {cfAccessor.retrieveAllApplicationIdsInSpace(any(), CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID) }
     }
 
     @Test
@@ -446,7 +446,7 @@ class ReactiveTargetResolverTest {
                 protocol = "https"
         )
 
-        val actualList = targetResolver.resolveTargets(listOf(t))
+        val actualList = targetResolver.resolveTargets(listOf(t)).block()
 
         assertThat(actualList).hasSize(1)
         with(actualList[0]) {
@@ -458,8 +458,8 @@ class ReactiveTargetResolverTest {
             assertThat(protocol).isEqualTo(t.protocol)
         }
 
-        verify(exactly = 1) {cfAccessor.retrieveSpaceIdsInOrg(CFAccessorMock.UNITTEST_ORG_UUID) }
-        verify(exactly = 1) {cfAccessor.retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID) }
+        verify(exactly = 1) {cfAccessor.retrieveSpaceIdsInOrg(any(), CFAccessorMock.UNITTEST_ORG_UUID) }
+        verify(exactly = 1) {cfAccessor.retrieveAllApplicationIdsInSpace(any(), CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID) }
     }
 
     @Test
@@ -472,7 +472,7 @@ class ReactiveTargetResolverTest {
                 protocol = "https"
         )
 
-        val actualList = targetResolver.resolveTargets(listOf(t))
+        val actualList = targetResolver.resolveTargets(listOf(t)).block()
 
         assertThat(actualList).hasSize(1)
         with(actualList[0]) {
@@ -484,8 +484,8 @@ class ReactiveTargetResolverTest {
             assertThat(protocol).isEqualTo(t.protocol)
         }
 
-        verify(exactly = 1) {cfAccessor.retrieveSpaceIdsInOrg(CFAccessorMock.UNITTEST_ORG_UUID) }
-        verify(exactly = 1) {cfAccessor.retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID) }
+        verify(exactly = 1) {cfAccessor.retrieveSpaceIdsInOrg(any(), CFAccessorMock.UNITTEST_ORG_UUID) }
+        verify(exactly = 1) {cfAccessor.retrieveAllApplicationIdsInSpace(any(), CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID) }
     }
 
     @Test
@@ -498,7 +498,7 @@ class ReactiveTargetResolverTest {
                 protocol = "https"
         )
 
-        val actualList = targetResolver.resolveTargets(listOf(t))
+        val actualList = targetResolver.resolveTargets(listOf(t)).block()
 
         assertThat(actualList).hasSize(1)
         with(actualList[0]) {
@@ -515,7 +515,7 @@ class ReactiveTargetResolverTest {
     fun testInvalidOrgNameDoesNotRaiseExceptionIssue109() {
         val t = Target(orgName = "doesnotexist")
 
-        val actualList = targetResolver.resolveTargets(listOf(t))
+        val actualList = targetResolver.resolveTargets(listOf(t)).block()
         assertThat(actualList).isEmpty()
     }
 
@@ -526,7 +526,7 @@ class ReactiveTargetResolverTest {
                 spaceName = "doesnotexist"
         )
 
-        val actualList = targetResolver.resolveTargets(listOf(t))
+        val actualList = targetResolver.resolveTargets(listOf(t)).block()
         assertThat(actualList).isEmpty()
     }
 

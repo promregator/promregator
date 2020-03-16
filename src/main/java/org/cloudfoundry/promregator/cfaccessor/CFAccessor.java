@@ -9,19 +9,19 @@ import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import reactor.core.publisher.Mono;
 
 public interface CFAccessor {
-	Mono<GetInfoResponse> getInfo();
+	Mono<GetInfoResponse> getInfo(String api);
 	
-	Mono<ListOrganizationsResponse> retrieveOrgId(String orgName);
+	Mono<ListOrganizationsResponse> retrieveOrgId(String api, String orgName);
 	
-	Mono<ListOrganizationsResponse> retrieveAllOrgIds();
+	Mono<ListOrganizationsResponse> retrieveAllOrgIds(String api);
 
-	Mono<ListSpacesResponse> retrieveSpaceId(String orgId, String spaceName);
+	Mono<ListSpacesResponse> retrieveSpaceId(String api, String orgId, String spaceName);
 	
-	Mono<ListSpacesResponse> retrieveSpaceIdsInOrg(String orgId);
+	Mono<ListSpacesResponse> retrieveSpaceIdsInOrg(String api, String orgId);
 
-	Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String orgId, String spaceId);
+	Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String api, String orgId, String spaceId);
 
-	Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId);
+	Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String api, String spaceId);
 	
-	void reset();
+	void reset(String api);
 }

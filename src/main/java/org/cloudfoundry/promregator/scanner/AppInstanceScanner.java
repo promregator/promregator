@@ -1,5 +1,7 @@
 package org.cloudfoundry.promregator.scanner;
 
+import reactor.core.publisher.Mono;
+
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -20,6 +22,5 @@ public interface AppInstanceScanner {
 	 * @param instanceFilter an optional filter function allowing to prefilter results early, indicating whether an instance is in scope or not
 	 * @return the list of instances containing the access URL and the instance identifier
 	 */
-	@Null
-	List<Instance> determineInstancesFromTargets(List<ResolvedTarget> targets, @Null Predicate<? super String> applicationIdFilter, @Null Predicate<? super Instance> instanceFilter);
+	Mono<List<Instance>> determineInstancesFromTargets(List<ResolvedTarget> targets, @Null Predicate<? super String> applicationIdFilter, @Null Predicate<? super Instance> instanceFilter);
 }

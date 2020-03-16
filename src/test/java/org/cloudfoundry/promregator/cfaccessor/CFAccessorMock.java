@@ -40,7 +40,7 @@ public class CFAccessorMock implements CFAccessor {
 	public static final String UPDATED_AT_TIMESTAMP = "2014-11-24T19:32:49+00:00";
 	
 	@Override
-	public Mono<ListOrganizationsResponse> retrieveOrgId(String orgName) {
+	public Mono<ListOrganizationsResponse> retrieveOrgId(String api, String orgName) {
 		
 		if ("unittestorg".equalsIgnoreCase(orgName)) {
 			
@@ -68,7 +68,7 @@ public class CFAccessorMock implements CFAccessor {
 	}
 
 	@Override
-	public Mono<ListSpacesResponse> retrieveSpaceId(String orgId, String spaceName) {
+	public Mono<ListSpacesResponse> retrieveSpaceId(String api, String orgId, String spaceName) {
 		if (orgId.equals(UNITTEST_ORG_UUID)) {
 			if ( "unittestspace".equalsIgnoreCase(spaceName)) {
 				SpaceResource sr = SpaceResource.builder().entity(
@@ -112,7 +112,7 @@ public class CFAccessorMock implements CFAccessor {
 	}
 
 	@Override
-	public Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String orgId, String spaceId) {
+	public Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String api, String orgId, String spaceId) {
 		if (orgId.equals(UNITTEST_ORG_UUID) && spaceId.equals(UNITTEST_SPACE_UUID)) {
 			List<ApplicationResource> list = new LinkedList<>();
 
@@ -143,7 +143,7 @@ public class CFAccessorMock implements CFAccessor {
 	}
 	
 	@Override
-	public Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId) {
+	public Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String api, String spaceId) {
 		if (spaceId.equals(UNITTEST_SPACE_UUID)) {
 			List<SpaceApplicationSummary> list = new LinkedList<>();
 			
@@ -179,17 +179,18 @@ public class CFAccessorMock implements CFAccessor {
 		return null;
 	}
 
-	public Mono<ListOrganizationsResponse> retrieveAllOrgIds() {
-		return this.retrieveOrgId("unittestorg");
+	@Override
+	public Mono<ListOrganizationsResponse> retrieveAllOrgIds(String api) {
+		return this.retrieveOrgId(api, "unittestorg");
 	}
 
 	@Override
-	public Mono<ListSpacesResponse> retrieveSpaceIdsInOrg(String orgId) {
-		return this.retrieveSpaceId(UNITTEST_ORG_UUID, "unittestspace");
+	public Mono<ListSpacesResponse> retrieveSpaceIdsInOrg(String api, String orgId) {
+		return this.retrieveSpaceId(api, UNITTEST_ORG_UUID, "unittestspace");
 	}
 
 	@Override
-	public Mono<GetInfoResponse> getInfo() {
+	public Mono<GetInfoResponse> getInfo(String api) {
 		GetInfoResponse data = GetInfoResponse.builder()
 				.description("CFAccessorMock")
 				.name("CFAccessorMock")
@@ -200,7 +201,7 @@ public class CFAccessorMock implements CFAccessor {
 	}
 
 	@Override
-	public void reset() {
+	public void reset(String api) {
 		// nothing to be done
 	}
 }

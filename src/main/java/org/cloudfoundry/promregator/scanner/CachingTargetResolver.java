@@ -12,6 +12,7 @@ import javax.annotation.PostConstruct;
 import org.apache.commons.collections4.map.PassiveExpiringMap;
 import org.cloudfoundry.promregator.config.Target;
 import org.springframework.beans.factory.annotation.Value;
+import reactor.core.publisher.Mono;
 
 public class CachingTargetResolver implements TargetResolver {
 
@@ -26,7 +27,7 @@ public class CachingTargetResolver implements TargetResolver {
 	}
 	
 	@Override
-	public List<ResolvedTarget> resolveTargets(List<Target> configTargets) {
+	public Mono<List<ResolvedTarget>> resolveTargets(List<Target> configTargets) {
 		List<Target> toBeLoaded = new LinkedList<>();
 		
 		List<ResolvedTarget> result = new LinkedList<>();
@@ -41,16 +42,21 @@ public class CachingTargetResolver implements TargetResolver {
 		}
 		
 		if (!toBeLoaded.isEmpty()) {
-			List<ResolvedTarget> newlyResolvedTargets = this.parentTargetResolver.resolveTargets(toBeLoaded);
-			
-			result.addAll(newlyResolvedTargets);
-			
-			updateTargetResolutionCache(newlyResolvedTargets);
+			return this.parentTargetResolver.resolveTargets(toBeLoaded)
+					.map(newResolvedTargets -> {
+						result.addAll(newResolvedTargets);
+
+						updateTargetResolutionCache(newResolvedTargets);
+
+						/* see also issue #75: the list here might include duplicates, which we need to eliminate */
+						HashSet<ResolvedTarget> hset = new HashSet<>(result);
+						return new LinkedList<>(hset);
+					});
+		} else {
+			/* see also issue #75: the list here might include duplicates, which we need to eliminate */
+			HashSet<ResolvedTarget> hset = new HashSet<>(result);
+			return Mono.just(new LinkedList<>(hset));
 		}
-		
-		/* see also issue #75: the list here might include duplicates, which we need to eliminate */
-		HashSet<ResolvedTarget> hset = new HashSet<>(result);
-		return new LinkedList<>(hset);
 	}
 
 	private void updateTargetResolutionCache(List<ResolvedTarget> newlyResolvedTargets) {

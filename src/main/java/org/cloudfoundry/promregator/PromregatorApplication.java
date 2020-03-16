@@ -14,6 +14,7 @@ import org.cloudfoundry.promregator.cfaccessor.CFAccessorCacheCaffeine;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorSimulator;
 import org.cloudfoundry.promregator.cfaccessor.CFWatchdog;
 import org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl;
+import org.cloudfoundry.promregator.config.CloudFoundryConfiguration;
 import org.cloudfoundry.promregator.config.ConfigurationValidations;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.discovery.CFDiscoverer;
@@ -42,6 +43,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cloud.Cloud;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
@@ -65,8 +67,8 @@ import reactor.core.publisher.Hooks;
 		AuthenticatorSpringConfiguration.class,
 		DiscoveryEndpoint.class,
 		SingleTargetMetricsEndpoint.class})
-@EnableConfigurationProperties({PromregatorConfiguration.class})
 @EnableAsync
+@EnableConfigurationProperties({PromregatorConfiguration.class, CloudFoundryConfiguration.class})
 public class PromregatorApplication {
 	private static final Logger log = LoggerFactory.getLogger(PromregatorApplication.class);
 
@@ -92,34 +94,24 @@ public class PromregatorApplication {
 	}
 	
 	@Bean
-	public CFAccessor mainCFAccessor(Environment env, PromregatorConfiguration promregatorConfiguration) {
+	public CFAccessor mainCFAccessor(CloudFoundryConfiguration cf, PromregatorConfiguration promregatorConfiguration, InternalMetrics internalMetrics) {
 		if (promregatorConfiguration.getSimulation().getEnabled()) {
 			return new CFAccessorSimulator(promregatorConfiguration.getSimulation().getInstances());
 		} else {
-			return new ReactiveCFAccessorImpl();
+			return new ReactiveCFAccessorImpl(cf, promregatorConfiguration, internalMetrics);
 		}
 	}
 	
 	@Bean
-	public CFWatchdog cfWatchdog() {
-		return new CFWatchdog();
+	public CFWatchdog cfWatchdog(CloudFoundryConfiguration cf, CFAccessor cfAccessor, InternalMetrics internalMetrics) {
+		return new CFWatchdog(cf, cfAccessor, internalMetrics);
 	}
 	
 	@Bean
-	public CFAccessorCache cfAccessorCache(@Value("${cf.cache.timeout.org:3600}") int refreshCacheOrgLevelInSeconds,
-										   @Value("${cf.cache.timeout.space:3600}") int refreshCacheSpaceLevelInSeconds,
-										   @Value("${cf.cache.timeout.application:300}") int refreshCacheApplicationLevelInSeconds,
-										   @Value("${cf.cache.expiry.org:120}") int expiryCacheOrgLevelInSeconds,
-										   @Value("${cf.cache.expiry.space:120}") int expiryCacheSpaceLevelInSeconds,
-										   @Value("${cf.cache.expiry.application:120}") int expiryCacheApplicationLevelInSeconds,
+	public CFAccessorCache cfAccessorCache(CloudFoundryConfiguration cf,
 										   InternalMetrics internalMetrics,
 										   CFAccessor mainCFAccessor) {
-		return new CFAccessorCacheCaffeine(refreshCacheOrgLevelInSeconds,
-				refreshCacheSpaceLevelInSeconds,
-				refreshCacheApplicationLevelInSeconds,
-				expiryCacheOrgLevelInSeconds,
-				expiryCacheSpaceLevelInSeconds,
-				expiryCacheApplicationLevelInSeconds, internalMetrics, mainCFAccessor);
+		return new CFAccessorCacheCaffeine(internalMetrics, mainCFAccessor, cf);
 	}
 	
 	@Bean

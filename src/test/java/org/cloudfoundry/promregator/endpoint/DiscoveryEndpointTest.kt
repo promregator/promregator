@@ -57,7 +57,7 @@ class DiscoveryEndpointTest {
             assertThat(instanceNumber).isEqualTo("0")
             assertThat(orgName).isEqualTo("unittestorg")
             assertThat(spaceName).isEqualTo("unittestspace")
-            assertThat(targetPath).isEqualTo("/singleTargetMetrics/faedbb0a-2273-4cb4-a659-bd31331f7daf/0")
+            assertThat(targetPath).isEqualTo("/singleTargetMetrics/4229b9c0d0ee3e3617ca9870a4397e9346110935")
         }
 
         with(response[1].labels) {
@@ -67,7 +67,7 @@ class DiscoveryEndpointTest {
             assertThat(instanceNumber).isEqualTo("1")
             assertThat(orgName).isEqualTo("unittestorg")
             assertThat(spaceName).isEqualTo("unittestspace")
-            assertThat(targetPath).isEqualTo("/singleTargetMetrics/faedbb0a-2273-4cb4-a659-bd31331f7daf/1")
+            assertThat(targetPath).isEqualTo("/singleTargetMetrics/f196da8424012697b17ca8f3e28aaa8524ab5c7a")
         }
 
         with(response[2].labels) {
@@ -77,7 +77,7 @@ class DiscoveryEndpointTest {
             assertThat(instanceNumber).isEqualTo("0")
             assertThat(orgName).isEqualTo("unittestorg")
             assertThat(spaceName).isEqualTo("unittestspace")
-            assertThat(targetPath).isEqualTo("/singleTargetMetrics/1142a717-e27d-4028-89d8-b42a0c973300/0")
+            assertThat(targetPath).isEqualTo("/singleTargetMetrics/6f134949dc43fbe0cadd289df8a5f766bc239b16")
         }
 
         with(response[3].labels) {

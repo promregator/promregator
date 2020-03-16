@@ -4,6 +4,7 @@ import mu.KotlinLogging
 import org.cloudfoundry.promregator.config.PromregatorConfiguration.Companion.DEFAULT_ID
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.ConstructorBinding
+import java.time.Duration
 import java.util.*
 import java.util.regex.Pattern
 import java.util.regex.PatternSyntaxException
@@ -24,7 +25,8 @@ data class PromregatorConfiguration(
         val discoverer: DiscovererConfig = DiscovererConfig(),
         val discovery: DiscoveryConfig = DiscoveryConfig(),
         val endpoint: EndpointConfig = EndpointConfig(),
-        val cache: PromCacheConfig = PromCacheConfig()
+        val cache: PromCacheConfig = PromCacheConfig(),
+        val internal: InternalConfig = InternalConfig()
 ){
         companion object {
                 const val DEFAULT_ID = "__default__"
@@ -92,7 +94,12 @@ data class DiscoveryConfig(
         val hostname: String? = null,
         val port: Int = 0,
         val ownMetricsEndpoint: Boolean = true,
-        val auth: InboundAuthorizationMode = InboundAuthorizationMode.NONE
+        val auth: InboundAuthorizationMode = InboundAuthorizationMode.NONE,
+        val cache: DiscoveryCacheConfig = DiscoveryCacheConfig()
+)
+
+data class DiscoveryCacheConfig (
+        val duration: Duration = Duration.ofSeconds(300)
 )
 
 data class MetricsConfig(
@@ -127,4 +134,8 @@ data class WorkAroundConfig(
 
 data class WorkAroundDnsCacheConfig(
         val timeout: Int = -1
+)
+
+data class InternalConfig(
+        val preCheckAPIVersion: Boolean = true
 )

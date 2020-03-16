@@ -15,6 +15,7 @@ import javax.validation.constraints.Null;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.auth.AuthenticatorController;
 import org.cloudfoundry.promregator.auth.NullEnricher;
+import org.cloudfoundry.promregator.config.CloudFoundryConfiguration;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.discovery.CFDiscoverer;
 import org.cloudfoundry.promregator.discovery.CFMultiDiscoverer;
@@ -26,6 +27,8 @@ import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.AutoConfigurationExcludeFilter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.TypeExcludeFilter;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
@@ -34,28 +37,33 @@ import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 
 import io.prometheus.client.CollectorRegistry;
+import reactor.core.publisher.Mono;
 import org.springframework.jms.core.JmsTemplate;
+
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.when;
 
 @Configuration
 @EnableAutoConfiguration
-@ComponentScan(excludeFilters = { @Filter(type = FilterType.CUSTOM, classes = { TypeExcludeFilter.class }),
-		@Filter(type = FilterType.CUSTOM, classes = { AutoConfigurationExcludeFilter.class }),
-		// NB: Handling is taken over by TestableMetricsEndpoint! That one is
-		// NOT excluded
-		@Filter(type = FilterType.ASSIGNABLE_TYPE, value=SingleTargetMetricsEndpoint.class),
-		// NB: Handling is taken over by TestableSingleTargetMetricsEndpoint! That one is
-		// NOT excluded
-		@Filter(type = FilterType.ASSIGNABLE_TYPE, value=InvalidateCacheEndpoint.class)
-})
+@EnableConfigurationProperties({CloudFoundryConfiguration.class, PromregatorConfiguration.class })
 public class MockedMetricsEndpointSpringApplication {
 	public static final UUID currentPromregatorInstanceIdentifier = UUID.randomUUID();
-	
+
+	@Bean
+	public TestableSingleTargetMetricsEndpoint testableSingleTargetMetricsEndpoint(PromregatorConfiguration promregatorConfiguration,
+																				   ExecutorService metricsFetcherPool,
+																				   AuthenticatorController authenticatorController,
+																				   UUID promregatorInstanceIdentifier,
+																				   InstanceCache instanceCache) {
+		return new TestableSingleTargetMetricsEndpoint(promregatorConfiguration, metricsFetcherPool, authenticatorController, promregatorInstanceIdentifier, instanceCache);
+	}
+
 	@Bean
 	public AppInstanceScanner appInstanceScanner() {
 		return new AppInstanceScanner() {
 
 			@Override
-			public List<Instance> determineInstancesFromTargets(List<ResolvedTarget> targets, @Null Predicate<? super String> applicationIdFilter, @Null Predicate<? super Instance> instanceFilter) {
+			public Mono<List<Instance>> determineInstancesFromTargets(List<ResolvedTarget> targets, @Null Predicate<? super String> applicationIdFilter, @Null Predicate<? super Instance> instanceFilter) {
 				LinkedList<Instance> result = new LinkedList<>();
 
 				ResolvedTarget t = new ResolvedTarget();
@@ -76,22 +84,14 @@ public class MockedMetricsEndpointSpringApplication {
 				result.add(new Instance(t, "1142a717-e27d-4028-89d8-b42a0c973300:0", "http://localhost:1235"));
 
 				if (applicationIdFilter != null) {
-					for (Iterator<Instance> it = result.iterator(); it.hasNext();) {
-						Instance instance = it.next();
-						if (!applicationIdFilter.test(instance.getApplicationId()))
-							it.remove();
-					}
+					result.removeIf(instance -> !applicationIdFilter.test(instance.getApplicationId()));
 				}
 				
 				if (instanceFilter != null) {
-					for (Iterator<Instance> it = result.iterator(); it.hasNext();) {
-						Instance instance = it.next();
-						if (!instanceFilter.test(instance))
-							it.remove();
-					}
+					result.removeIf(instance -> !instanceFilter.test(instance));
 				}
 				
-				return result;
+				return Mono.just(result);
 			}
 
 		};
@@ -104,7 +104,9 @@ public class MockedMetricsEndpointSpringApplication {
 	
 	@Bean
 	public TargetResolver targetResolver() {
-		return Mockito.mock(TargetResolver.class);
+		TargetResolver resolver = Mockito.mock(TargetResolver.class);
+		when(resolver.resolveTargets(anyList())).thenReturn(Mono.empty());
+		return resolver;
 	}
 	
 	@Bean

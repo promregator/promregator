@@ -18,6 +18,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 import org.springframework.jms.core.JmsTemplate
+import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toMono
 import java.time.Clock
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -56,12 +58,12 @@ class CFMultiDiscovererTest {
         val resolvedTargets = listOf(resolvedTarget)
 
         every { jmsTemplate.convertAndSend(MessageBusDestination.DISCOVERER_INSTANCE_REMOVED, any<String>()) } just runs
-        every { targetResolver.resolveTargets(any()) } returns resolvedTargets
+        every { targetResolver.resolveTargets(any()) } returns resolvedTargets.toMono()
 
         every {appInstanceScanner.determineInstancesFromTargets(any(), null, null)} returns listOf(
                 Instance(resolvedTarget, CFAccessorMock.UNITTEST_APP1_UUID +":0", "http://url123"),
                 Instance(resolvedTarget, CFAccessorMock.UNITTEST_APP1_UUID +":1", "http://url123")
-        )
+        ).toMono()
 
         val result = cfDiscoverer.discover(null, null)
 

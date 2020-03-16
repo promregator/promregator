@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import org.apache.http.client.methods.HttpGet;
 import org.cloudfoundry.promregator.JUnitTestUtils;
@@ -23,6 +24,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
+import org.springframework.web.reactive.function.client.WebClient;
 
 public class MetricsFetcherTest {
 
@@ -103,6 +105,13 @@ public class MetricsFetcherTest {
 			Assert.assertEquals("/metrics", httpget.getURI().getPath());
 			
 			httpget.addHeader("Authentication", "Bearer abc");
+		}
+
+		@Override
+		public Consumer<WebClient.Builder> lookupEnrichAuthentication() {
+			return builder -> {
+				
+			};
 		}
 
 		public boolean isCalled() {

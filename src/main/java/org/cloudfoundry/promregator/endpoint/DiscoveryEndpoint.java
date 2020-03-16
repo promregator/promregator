@@ -41,6 +41,7 @@ public class DiscoveryEndpoint {
 		private String applicationId;
 		private String instanceNumber;
 		private String instanceId;
+		private String api;
 
 		public DiscoveryLabel(String path) {
 			super();
@@ -56,6 +57,7 @@ public class DiscoveryEndpoint {
 			this.applicationId = instance.getApplicationId();
 			this.instanceNumber = instance.getInstanceNumber();
 			this.instanceId = instance.getInstanceId();
+			this.api = instance.getTarget().getOriginalTarget().getApi();
 		}
 		
 		@JsonGetter("__meta_promregator_target_path")
@@ -92,7 +94,12 @@ public class DiscoveryEndpoint {
 		public String getInstanceId() {
 			return instanceId;
 		}
-		
+
+		@JsonGetter("__meta_promregator_target_api")
+		public String getApi() {
+			return this.api;
+		}
+
 		@JsonGetter("__metrics_path__")
 		public String getMetricsPath() {
 			return this.targetPath;
@@ -138,7 +145,7 @@ public class DiscoveryEndpoint {
 		List<DiscoveryResponse> result = new LinkedList<>();
 		for (Instance instance : instances) {
 			
-			String path = String.format(EndpointConstants.ENDPOINT_PATH_SINGLE_TARGET_SCRAPING+"/%s/%s", instance.getApplicationId(), instance.getInstanceNumber());
+			String path = String.format(EndpointConstants.ENDPOINT_PATH_SINGLE_TARGET_SCRAPING+"/%s", instance.getHash());
 			DiscoveryLabel dl = new DiscoveryLabel(path, instance);
 			
 			DiscoveryResponse dr = new DiscoveryResponse(targets, dl);
