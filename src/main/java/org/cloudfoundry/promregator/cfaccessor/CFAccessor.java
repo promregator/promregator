@@ -22,6 +22,4 @@ public interface CFAccessor {
 	Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String api, String orgId, String spaceId);
 
 	Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String api, String spaceId);
-	
-	void reset(String api);
 }

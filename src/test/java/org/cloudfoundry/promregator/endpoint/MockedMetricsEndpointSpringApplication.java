@@ -140,8 +140,8 @@ public class MockedMetricsEndpointSpringApplication {
 	}
 
 	@Bean
-	public InstanceCache instanceCache(CFDiscoverer discoverer) {
-		return new InstanceCache(discoverer);
+	public InstanceCache instanceCache() {
+		return new InstanceCache();
 	}
 	
 	public static HttpServletRequest mockedHttpServletRequest = Mockito.mock(HttpServletRequest.class);

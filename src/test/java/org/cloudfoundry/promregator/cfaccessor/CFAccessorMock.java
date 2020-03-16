@@ -199,9 +199,4 @@ public class CFAccessorMock implements CFAccessor {
 		
 		return Mono.just(data);
 	}
-
-	@Override
-	public void reset(String api) {
-		// nothing to be done
-	}
 }

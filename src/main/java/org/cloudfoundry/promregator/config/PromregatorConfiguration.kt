@@ -30,6 +30,7 @@ data class PromregatorConfiguration(
 ){
         companion object {
                 const val DEFAULT_ID = "__default__"
+                const val ALL = "__all__"
         }
 }
 
@@ -136,6 +137,3 @@ data class WorkAroundDnsCacheConfig(
         val timeout: Int = -1
 )
 
-data class InternalConfig(
-        val preCheckAPIVersion: Boolean = true
-)
