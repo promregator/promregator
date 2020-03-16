@@ -27,7 +27,7 @@ public class MetricLine {
 		this.line = line;
 	}
 
-	private static class ParseException extends Exception {
+	public static class ParseException extends Exception {
 
 		private static final long serialVersionUID = 291766462453425092L;
 
@@ -41,31 +41,27 @@ public class MetricLine {
 		
 	}
 	
-	public Sample parse() {
+	public Sample parse() throws ParseException {
 		this.rest = line;
 
-		try {
-			final String metricName = this.parseMetricName();
-			this.skipSpacesIfThereAre();
-			
-			// check if the metric has an optional block of labels
-			final Labels labels = this.parseLabels();
-			
-			final double value = this.parseValue();
-			/*
-			 * The timestamp is optional.
-			 * Note that timestamps for metrics are currently not supported by the java Simpleclient!
-			 * Yet it is defined the official protocol specification. 
-			 */
-			final double timestamp = this.parseTimestamp();
-			
-			final List<String> labelNames = labels == null ? new LinkedList<>() : labels.getNames();
-			final List<String> labelValues = labels == null ? new LinkedList<>() : labels.getValues();
-			
-			return new Sample(metricName, labelNames, labelValues, value);
-		} catch (ParseException e) {
-			return null;
-		}
+		final String metricName = this.parseMetricName();
+		this.skipSpacesIfThereAre();
+		
+		// check if the metric has an optional block of labels
+		final Labels labels = this.parseLabels();
+		
+		final double value = this.parseValue();
+		/*
+		 * The timestamp is optional.
+		 * Note that timestamps for metrics are currently not supported by the java Simpleclient!
+		 * Yet it is defined the official protocol specification. 
+		 */
+		final double timestamp = this.parseTimestamp();
+		
+		final List<String> labelNames = labels == null ? new LinkedList<>() : labels.getNames();
+		final List<String> labelValues = labels == null ? new LinkedList<>() : labels.getValues();
+		
+		return new Sample(metricName, labelNames, labelValues, value);
 	}
 	
 	private String parseMetricName() throws ParseException {
