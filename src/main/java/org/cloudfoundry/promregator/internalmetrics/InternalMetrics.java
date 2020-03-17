@@ -162,15 +162,23 @@ public class InternalMetrics {
 	}
 	
 	public void observeRateLimiterDuration(String requestType, double waitTime) {
+		if (!this.enabled)
+			return;
+
 		this.rateLimitWaitTime.labels(requestType).observe(waitTime);
-		
 	}
 	
 	public void increaseRateLimitQueueSize() {
+		if (!this.enabled)
+			return;
+
 		this.rateLimitQueueSize.incrementAndGet();
 	}
 	
 	public void decreaseRateLimitQueueSize() {
+		if (!this.enabled)
+			return;
+
 		this.rateLimitQueueSize.decrementAndGet();
 	}
 
