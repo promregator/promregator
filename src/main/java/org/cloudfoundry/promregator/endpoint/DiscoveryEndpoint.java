@@ -131,7 +131,8 @@ public class DiscoveryEndpoint {
 	public ResponseEntity<DiscoveryResponse[]> getDiscovery(HttpServletRequest request) {
 		
 		List<Instance> instances = this.cfDiscoverer.discover(null, null);
-		if (instances == null || instances.isEmpty()) {
+		// @SonarQube: No, there shall not be any || instances.isEmpty() here! Why? See https://github.com/promregator/promregator/issues/180
+		if (instances == null) {
 			return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
 		}
 		
