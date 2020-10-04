@@ -38,7 +38,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.1.13.RELEASE</version> <!-- see also https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-parent -->
+		<version>2.1.17.RELEASE</version> <!-- see also https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-parent -->
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 
@@ -48,12 +48,9 @@
 		<java.version>1.8</java.version>
 		<spring-cloud.version>Greenwich.SR5</spring-cloud.version>
 		<prometheus.version>0.6.0</prometheus.version>
-		<cloudfoundry.client.version>3.24.0.RELEASE</cloudfoundry.client.version>
+		<cloudfoundry.client.version>3.27.0.RELEASE</cloudfoundry.client.version>
 		<logback.contrib.version>0.1.5</logback.contrib.version>
-		<caffeine.version>2.8.0</caffeine.version>
-		
-		<jackson.version>2.9.10.20200411</jackson.version> <!--  necessary due to security issue - see #179; this is the first BOM version with jackson-databind:2.9.10.4 -->
-		<netty.version>4.1.46.Final</netty.version> <!--  necessary due to security issue - see #179 -->
+		<caffeine.version>2.8.5</caffeine.version>
 	</properties>
 
 	<dependencies>
