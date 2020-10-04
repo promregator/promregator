@@ -55,7 +55,7 @@
 		
 		<spring-cloud.version>Hoxton.SR1</spring-cloud.version>
 		<prometheus.version>0.6.0</prometheus.version>
-		<cloudfoundry.client.version>3.24.0.RELEASE</cloudfoundry.client.version>
+		<cloudfoundry.client.version>3.27.0.RELEASE</cloudfoundry.client.version>
 		<logback.contrib.version>0.1.5</logback.contrib.version>
 
 		<sonar.projectKey>promregator</sonar.projectKey>
@@ -175,7 +175,7 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava-testlib</artifactId>
-			<version>28.1-jre</version>
+			<version>${guava-version}</version>
 			<scope>test</scope>
 		</dependency>
 
