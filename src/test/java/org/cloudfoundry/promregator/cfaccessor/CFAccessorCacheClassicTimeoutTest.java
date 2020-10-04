@@ -46,10 +46,12 @@ public class CFAccessorCacheClassicTimeoutTest {
 	}
 	
 	@Test
-	public void testRetrieveOrgId() {
+	public void testRetrieveOrgId() throws InterruptedException {
 		Mono<ListOrganizationsResponse> response1 = subject.retrieveOrgId("dummy");
 		response1.subscribe();
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveOrgId("dummy");
+		
+		Thread.sleep(300); // required, as we can only raise the timeout after 100ms
 		
 		Mono<ListOrganizationsResponse> response2 = subject.retrieveOrgId("dummy");
 		response2.subscribe();
@@ -58,12 +60,14 @@ public class CFAccessorCacheClassicTimeoutTest {
 	}
 
 	@Test
-	public void testRetrieveSpaceId() {
+	public void testRetrieveSpaceId() throws InterruptedException {
 		
 		Mono<ListSpacesResponse> response1 = subject.retrieveSpaceId("dummy1", "dummy2");
 		response1.subscribe();
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveSpaceId("dummy1", "dummy2");
-		
+
+		Thread.sleep(300); // required, as we can only raise the timeout after 100ms
+
 		Mono<ListSpacesResponse> response2 = subject.retrieveSpaceId("dummy1", "dummy2");
 		response2.subscribe();
 		assertThat(response1).isNotEqualTo(response2);
@@ -71,11 +75,13 @@ public class CFAccessorCacheClassicTimeoutTest {
 	}
 
 	@Test
-	public void testRetrieveAllApplicationIdsInSpace() {
+	public void testRetrieveAllApplicationIdsInSpace() throws InterruptedException {
 		Mono<ListApplicationsResponse> response1 = subject.retrieveAllApplicationIdsInSpace("dummy1", "dummy2");
 		response1.subscribe();
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllApplicationIdsInSpace("dummy1", "dummy2");
 		
+		Thread.sleep(300); // required, as we can only raise the timeout after 100ms
+
 		Mono<ListApplicationsResponse> response2 = subject.retrieveAllApplicationIdsInSpace("dummy1", "dummy2");
 		response2.subscribe();
 		assertThat(response1).isNotEqualTo(response2);
@@ -83,11 +89,13 @@ public class CFAccessorCacheClassicTimeoutTest {
 	}
 
 	@Test
-	public void testRetrieveSpaceSummary() {
+	public void testRetrieveSpaceSummary() throws InterruptedException {
 		Mono<GetSpaceSummaryResponse> response1 = subject.retrieveSpaceSummary("dummy");
 		response1.subscribe();
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveSpaceSummary("dummy");
 		
+		Thread.sleep(300); // required, as we can only raise the timeout after 100ms
+
 		Mono<GetSpaceSummaryResponse> response2 = subject.retrieveSpaceSummary("dummy");
 		response2.subscribe();
 		assertThat(response1).isNotEqualTo(response2);

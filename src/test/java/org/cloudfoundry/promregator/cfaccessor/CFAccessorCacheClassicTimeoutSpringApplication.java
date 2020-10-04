@@ -1,5 +1,6 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
+import java.time.Duration;
 import java.util.concurrent.TimeoutException;
 
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
@@ -23,7 +24,7 @@ public class CFAccessorCacheClassicTimeoutSpringApplication {
 	private static class TimeoutMonoAnswer implements Answer<Mono<?>> {
 		@Override
 		public Mono<?> answer(InvocationOnMock invocation) throws Throwable {
-			return Mono.error(new TimeoutException("Unit test timeout raised"));
+			return Mono.delay(Duration.ofMillis(100)).flatMap(e -> Mono.error(new TimeoutException("Unit test timeout raised")));
 		}
 	}
 	
