@@ -36,3 +36,4 @@ hs_err_pid*
 
 # files for intellij environment
 /.idea/
+*.iml
