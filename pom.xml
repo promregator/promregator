@@ -147,11 +147,12 @@
 			<version>${cloudfoundry.client.version}</version>
 		</dependency>
 
-		<!-- omitted here, as implicitly provided by cloudfoundry-client-reactor -->
-		<!--		<dependency>-->
-		<!--			<groupId>io.projectreactor.ipc</groupId>-->
-		<!--			<artifactId>reactor-netty</artifactId>-->
-		<!--		</dependency>-->
+		<!-- should be omitted here, as implicitly provided by cloudfoundry-client-reactor -->
+		<dependency>
+			<groupId>io.projectreactor.netty</groupId>
+			<artifactId>reactor-netty</artifactId>
+			<version>0.9.14.RELEASE</version> <!--  see also https://github.com/promregator/promregator/issues/188#issuecomment-727550060 -->
+		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/io.projectreactor/reactor-core -->
 		<dependency>
