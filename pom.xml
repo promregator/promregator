@@ -289,6 +289,9 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
+				<configuration> <!-- see also https://stackoverflow.com/a/54323506 -->
+					<javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
+				</configuration>
 				<executions>
 					<execution>
 						<id>attach-javadocs</id>
