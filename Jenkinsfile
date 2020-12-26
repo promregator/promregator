@@ -19,7 +19,7 @@ def runWithGPG(Closure job) {
 	withCredentials([file(credentialsId: 'PROMREGATOR_GPG_KEY', variable: 'GPGKEYFILE')]) {
 		try {
 			sh """
-				export GPG_TTY=\\$(tty) # see also https://wiki.archlinux.org/index.php/GnuPG#Invalid_IPC_response_and_Inappropriate_ioctl_for_device
+				export GPG_TTY=\044(tty) # see also https://wiki.archlinux.org/index.php/GnuPG#Invalid_IPC_response_and_Inappropriate_ioctl_for_device
 				gpg --import ${GPGKEYFILE}
 				echo "C66B4B348F6D4071047318C52483051C0D49EDA0:6:" | gpg --import-ownertrust
 			"""
@@ -29,7 +29,7 @@ def runWithGPG(Closure job) {
 		} finally {
 			// ensure that the valuable signing key is deleted again
 			sh """
-				export GPG_TTY=\\$(tty) # see also https://wiki.archlinux.org/index.php/GnuPG#Invalid_IPC_response_and_Inappropriate_ioctl_for_device
+				export GPG_TTY=\044(tty) # see also https://wiki.archlinux.org/index.php/GnuPG#Invalid_IPC_response_and_Inappropriate_ioctl_for_device
 				gpg --batch --delete-secret-keys C66B4B348F6D4071047318C52483051C0D49EDA0
 				gpg --batch --delete-keys C66B4B348F6D4071047318C52483051C0D49EDA0
 			"""
