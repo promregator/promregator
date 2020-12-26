@@ -1,5 +1,7 @@
 package org.cloudfoundry.promregator.scanner;
 
+import static org.cloudfoundry.promregator.cfaccessor.CFAccessorMassMock.UNITTEST_APP_UUID_PREFIX;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.util.LinkedList;
@@ -10,15 +12,13 @@ import org.cloudfoundry.promregator.config.Target;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import static org.cloudfoundry.promregator.cfaccessor.CFAccessorMassMock.UNITTEST_APP_UUID_PREFIX;
-
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = MockedMassReactiveAppInstanceScannerSpringApplication.class)
 @TestPropertySource(locations="default.properties")
 public class MassReactiveAppInstanceScannerTest {

@@ -1,5 +1,9 @@
 package org.cloudfoundry.promregator.scanner;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.cloudfoundry.promregator.cfaccessor.CFAccessorMock.UNITTEST_APP1_UUID;
+import static org.cloudfoundry.promregator.cfaccessor.CFAccessorMock.UNITTEST_APP2_UUID;
+
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -8,17 +12,13 @@ import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.config.Target;
 import org.junit.AfterClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.cloudfoundry.promregator.cfaccessor.CFAccessorMock.UNITTEST_APP1_UUID;
-import static org.cloudfoundry.promregator.cfaccessor.CFAccessorMock.UNITTEST_APP2_UUID;
-
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = MockedReactiveAppInstanceScannerSpringApplication.class)
 @TestPropertySource(locations="default.properties")
 public class ReactiveAppInstanceScannerTest {

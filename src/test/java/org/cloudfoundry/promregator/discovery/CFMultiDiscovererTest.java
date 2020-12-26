@@ -1,5 +1,8 @@
 package org.cloudfoundry.promregator.discovery;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
 import java.time.Clock;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -17,17 +20,14 @@ import org.cloudfoundry.promregator.springconfig.JMSSpringConfiguration;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = CFDiscovererTestSpringApplication.class)
 @TestPropertySource(locations="default.properties")
 public class CFMultiDiscovererTest {
