@@ -244,8 +244,9 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 					// fall-through is expected!
 				}
 				
+				final long sleepDuration = Math.min(500, Math.min(this.map.expiryDuration.toMillis(), this.map.refreshInterval.toMillis()));
 				try {
-					Thread.sleep(500);
+					Thread.sleep(sleepDuration);
 				} catch (InterruptedException e) {
 					// received signal; check if something has to be done
 					log.info("Stopping RefresherThread");
