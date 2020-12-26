@@ -6,8 +6,8 @@ import java.util.List;
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.config.Target;
 import org.cloudfoundry.promregator.scanner.MockedCachingTargetResolverSpringApplication.MockedTargetResolver;
-import org.junit.After;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,7 +29,7 @@ public class CachingTargetResolverTest {
 	@Autowired
 	private CachingTargetResolver cachingTargetResolver;
 	
-	@After
+	@AfterEach
 	public void resetFlags() {
 		this.cachingTargetResolver.invalidateCache();
 		
