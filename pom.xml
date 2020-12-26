@@ -312,7 +312,7 @@
 					<plugin>
 						<groupId>org.jacoco</groupId>
 						<artifactId>jacoco-maven-plugin</artifactId>
-						<version>0.8.4</version>
+						<version>0.8.6</version>
 						<executions>
 							<!-- Prepares the property pointing to the JaCoCo runtime agent which 
 								is passed as VM argument when Maven the Surefire plugin is executed. -->
@@ -373,7 +373,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-pmd-plugin</artifactId>
-						<version>3.12.0</version>
+						<version>3.14.0</version>
 						<configuration>
 							<linkXRef>false</linkXRef> <!-- see also https://stackoverflow.com/a/18390459 -->
 							<!-- see also https://stackoverflow.com/a/38958480 -->
