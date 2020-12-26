@@ -15,7 +15,7 @@ import org.cloudfoundry.promregator.endpoint.EndpointConstants;
 import org.cloudfoundry.promregator.mockServer.MetricsEndpointMockServer;
 import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.textformat004.Parser;
-import org.cloudfoundry.promregator.textformat004.ParserTest;
+import org.cloudfoundry.promregator.textformat004.ParserCompareUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
 
-public class MetricsFetcherTest {
+class MetricsFetcherTest {
 
 	private static final String DUMMY_METRICS_LIST = "# HELP dummy This is a dummy metric\n"+
 			"# TYPE dummy counter\n"+
@@ -88,7 +88,7 @@ public class MetricsFetcherTest {
 		
 		HashMap<String, MetricFamilySamples> response = subject.call();
 		
-		ParserTest.compareEMFS(this.expectedResult, Collections.enumeration(response.values()));
+		ParserCompareUtils.compareEMFS(this.expectedResult, Collections.enumeration(response.values()));
 		Assertions.assertEquals(instanceId, this.mems.getMetricsEndpointHandler().getHeaders().getFirst("X-CF-APP-INSTANCE"));
 		Assertions.assertEquals(currentUUID.toString(), this.mems.getMetricsEndpointHandler().getHeaders().getFirst(EndpointConstants.HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER));
 	}
@@ -137,7 +137,7 @@ public class MetricsFetcherTest {
 		
 		Assertions.assertTrue(ae.isCalled());
 		
-		ParserTest.compareEMFS(this.expectedResult, Collections.enumeration(response.values()));
+		ParserCompareUtils.compareEMFS(this.expectedResult, Collections.enumeration(response.values()));
 		Assertions.assertEquals(instanceId, this.mems.getMetricsEndpointHandler().getHeaders().getFirst("X-CF-APP-INSTANCE"));
 		Assertions.assertEquals("Bearer abc", this.mems.getMetricsEndpointHandler().getHeaders().getFirst("Authentication"));
 	}

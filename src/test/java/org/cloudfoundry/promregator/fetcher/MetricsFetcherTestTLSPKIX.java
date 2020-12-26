@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
 
-public class MetricsFetcherTestTLSPKIX {
+class MetricsFetcherTestTLSPKIX {
 
 	private static final String DUMMY_METRICS_LIST = "# HELP dummy This is a dummy metric\n"+
 			"# TYPE dummy counter\n"+

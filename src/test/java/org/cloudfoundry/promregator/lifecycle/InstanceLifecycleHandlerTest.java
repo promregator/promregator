@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.CollectorRegistry;
 
-public class InstanceLifecycleHandlerTest {
+class InstanceLifecycleHandlerTest {
 
 	@AfterAll
 	static void cleanUp() {

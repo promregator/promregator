@@ -9,10 +9,8 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
-import org.cloudfoundry.promregator.rewrite.MFSUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -22,31 +20,10 @@ import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Collector.MetricFamilySamples.Sample;
 import io.prometheus.client.Collector.Type;
 
-public class ParserTest {
+class ParserTest {
 	@AfterAll
 	static void cleanupEnvironment() {
 		JUnitTestUtils.cleanUpAll();
-	}
-
-	public static void compareEMFS(Enumeration<MetricFamilySamples> expected, Enumeration<MetricFamilySamples> actual) {
-		HashMap<String, MetricFamilySamples> expectedMap = MFSUtils.convertToEMFSToHashMap(expected);
-		HashMap<String, MetricFamilySamples> actualMap = MFSUtils.convertToEMFSToHashMap(actual);
-		
-		Set<String> actualSet = actualMap.keySet();
-		Set<String> expectedSet = expectedMap.keySet();
-		
-		Assertions.assertNotNull(actualSet);
-		Assertions.assertNotNull(expectedSet);
-		
-		Assertions.assertEquals(expectedSet.size(), actualSet.size());
-		Assertions.assertTrue(expectedSet.containsAll(actualSet));
-		
-		for (String metricName : expectedMap.keySet()) {
-			MetricFamilySamples actualMFS = actualMap.get(metricName);
-			MetricFamilySamples expectedMFS = expectedMap.get(metricName);
-			
-			Assertions.assertTrue(expectedMFS.equals(actualMFS));
-		}
 	}
 	
 	@Test
@@ -71,7 +48,7 @@ public class ParserTest {
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
 		
 		// compare
-		compareEMFS(expected, result);
+		ParserCompareUtils.compareEMFS(expected, result);
 	}
 
 	@Test
@@ -97,7 +74,7 @@ public class ParserTest {
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
 		
 		// compare
-		compareEMFS(expected, result);
+		ParserCompareUtils.compareEMFS(expected, result);
 	}
 	
 	@Test
@@ -123,7 +100,7 @@ public class ParserTest {
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
 		
 		// compare
-		compareEMFS(expected, result);
+		ParserCompareUtils.compareEMFS(expected, result);
 	}
 	
 	@Test
@@ -149,7 +126,7 @@ public class ParserTest {
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
 		
 		// compare
-		compareEMFS(expected, result);
+		ParserCompareUtils.compareEMFS(expected, result);
 	}
 
 	@Test
@@ -175,7 +152,7 @@ public class ParserTest {
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
 		
 		// compare
-		compareEMFS(expected, result);
+		ParserCompareUtils.compareEMFS(expected, result);
 	}
 
 	@Test
@@ -250,7 +227,7 @@ public class ParserTest {
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
 		
 		// compare
-		compareEMFS(expected, result);
+		ParserCompareUtils.compareEMFS(expected, result);
 	}
 	
 	@Test
@@ -277,7 +254,7 @@ public class ParserTest {
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
 		
 		// compare
-		compareEMFS(expected, result);
+		ParserCompareUtils.compareEMFS(expected, result);
 	}
 	
 	@Test
@@ -304,7 +281,7 @@ public class ParserTest {
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
 		
 		// compare
-		compareEMFS(expected, result);
+		ParserCompareUtils.compareEMFS(expected, result);
 	}
 	
 	@Test
@@ -331,7 +308,7 @@ public class ParserTest {
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
 		
 		// compare
-		compareEMFS(expected, result);
+		ParserCompareUtils.compareEMFS(expected, result);
 	}
 	
 	@Test
@@ -362,7 +339,7 @@ public class ParserTest {
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
 		
 		// compare
-		compareEMFS(expected, result);
+		ParserCompareUtils.compareEMFS(expected, result);
 	}
 	
 	@Test
@@ -397,7 +374,7 @@ public class ParserTest {
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
 		
 		// compare
-		compareEMFS(expected, result);
+		ParserCompareUtils.compareEMFS(expected, result);
 	}
 
 	@Test
@@ -428,7 +405,7 @@ public class ParserTest {
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
 		
 		// compare
-		compareEMFS(expected, result);
+		ParserCompareUtils.compareEMFS(expected, result);
 	}
 	
 	@Test
@@ -461,7 +438,7 @@ public class ParserTest {
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
 		
 		// compare
-		compareEMFS(expected, result);
+		ParserCompareUtils.compareEMFS(expected, result);
 	}
 	
 	@Test
@@ -503,7 +480,7 @@ public class ParserTest {
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
 		
 		// compare
-		compareEMFS(expected, result);
+		ParserCompareUtils.compareEMFS(expected, result);
 	}
 	
 	@Test
@@ -544,7 +521,7 @@ public class ParserTest {
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
 		
 		// compare
-		compareEMFS(expected, result);
+		ParserCompareUtils.compareEMFS(expected, result);
 	}
 	
 	private static Sample createSampleForHistogram(String bucketMetricName, String leValue, double value) {
@@ -595,7 +572,7 @@ public class ParserTest {
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
 		
 		// compare
-		compareEMFS(expected, result);
+		ParserCompareUtils.compareEMFS(expected, result);
 	}
 	
 	@Test
@@ -634,7 +611,7 @@ public class ParserTest {
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
 		
 		// compare
-		compareEMFS(expected, result);
+		ParserCompareUtils.compareEMFS(expected, result);
 	}
 	
 	private static Sample createSampleForSummary(String bucketMetricName, String quantileValue, double value) {
@@ -686,7 +663,7 @@ public class ParserTest {
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
 		
 		// compare
-		compareEMFS(expected, result);
+		ParserCompareUtils.compareEMFS(expected, result);
 	}
 	
 	private static Sample createSampleForHistogramWithDummyLabel(String bucketMetricName, String leValue, double value, boolean firstPosition) {
@@ -749,7 +726,7 @@ public class ParserTest {
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
 
 		// compare
-		compareEMFS(expected, result);
+		ParserCompareUtils.compareEMFS(expected, result);
 	}
 
 	@Test
@@ -781,7 +758,7 @@ public class ParserTest {
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
 
 		// compare
-		compareEMFS(expected, result);
+		ParserCompareUtils.compareEMFS(expected, result);
 	}
 
 	private static Sample createSampleForSummaryWithDummyLabel(String bucketMetricName, String quantileValue, double value, boolean firstPosition) {
@@ -894,6 +871,6 @@ public class ParserTest {
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
 		
 		// compare
-		compareEMFS(expected, result);
+		ParserCompareUtils.compareEMFS(expected, result);
 	}
 }

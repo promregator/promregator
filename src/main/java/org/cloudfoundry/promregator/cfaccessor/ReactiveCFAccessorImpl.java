@@ -201,12 +201,19 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 			GetInfoRequest request = GetInfoRequest.builder().build();
 			GetInfoResponse getInfo = this.cloudFoundryClient.info().get(request).block();
 			// NB: This also ensures that the connection has been established properly...
+			
+			if (getInfo == null) {
+				log.warn("unable to get info endpoint of CF platform");
+				return;
+			} 
+
 			String apiVersion = getInfo.getApiVersion();
 			if (apiVersion == null) {
-				log.info("Target CF Platform did not provide a proper API version");
-			} else {
-				log.info(String.format("Target CF platform is running on API version %s", apiVersion));
+				log.warn("Target CF Platform did not provide a proper API version");
+				return;
 			}
+			
+			log.info("Target CF platform is running on API version {}", apiVersion);
 		}
 	}
 
