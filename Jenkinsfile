@@ -48,6 +48,8 @@ timestamps {
 				echo Building with Java version
 				javac -version
 				java -version
+				javadoc --version # Warning! Yes, at javadoc it's a double-hyphen!
+				export | grep JAVA_HOME
 			"""
 			
 			def currentVersion = getVersion()
