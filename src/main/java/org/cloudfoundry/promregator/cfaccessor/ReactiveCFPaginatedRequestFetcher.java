@@ -73,7 +73,7 @@ class ReactiveCFPaginatedRequestFetcher {
 			}
 			
 			return new Object();
-		}).subscribeOn(Schedulers.elastic())
+		}).subscribeOn(Schedulers.boundedElastic())
 		.flatMap(x -> Mono.empty());
 	}
 
