@@ -70,12 +70,6 @@
 	</properties>
 
 	<dependencies>
-		<dependency> <!--  see also https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-2.3-Release-Notes#configuration-properties  -->
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-properties-migrator</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter</artifactId>
