@@ -38,7 +38,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.3.7.RELEASE</version> <!-- see also https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-parent -->
+		<version>2.4.1</version> <!-- see also https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-parent -->
 		<!-- Warning! On bumping also check guava-version below! -->
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
@@ -54,9 +54,9 @@
 			However, it breaks Eclipse debugging, and processes keep hanging on maven 
 			shutdown. See also https://stackoverflow.com/a/58701275/6350762 and https://github.com/spring-projects/spring-boot/issues/18638 -->
 
-		<spring-cloud.version>Hoxton.SR8</spring-cloud.version>
-		<prometheus.version>0.6.0</prometheus.version>
-		<cloudfoundry.client.version>3.29.0.RELEASE</cloudfoundry.client.version>
+		<spring-cloud.version>2020.0.0</spring-cloud.version>
+		<prometheus.version>0.9.0</prometheus.version>
+		<cloudfoundry.client.version>4.12.0.RELEASE</cloudfoundry.client.version>
 		<logback.contrib.version>0.1.5</logback.contrib.version>
 
 		<sonar.projectKey>promregator</sonar.projectKey>
