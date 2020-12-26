@@ -1,8 +1,10 @@
 package org.cloudfoundry.promregator;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.List;
 
-import javax.validation.constraints.Null;
+import javax.annotation.Nullable;
 
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorSimulator;
 import org.cloudfoundry.promregator.discovery.CFDiscoverer;
@@ -16,8 +18,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = { PromregatorApplication.class })
@@ -40,14 +40,14 @@ public class PromregatorApplicationSimulatorTest {
 	
 	@Test
 	public void testDiscoveryWorks() {
-		@Null
+		@Nullable
 		List<Instance> actual = this.cfDiscoverer.discover(null, null);
 		assertThat(200).isEqualTo(actual.size());
 	}
 	
 	@Test
 	public void testSingleInstance() {
-		@Null
+		@Nullable
 		List<Instance> actual = this.cfDiscoverer.discover(appId -> appId.equals(CFAccessorSimulator.APP_UUID_PREFIX+"100"), 
 				instance -> (CFAccessorSimulator.APP_UUID_PREFIX+"100:1").equals(instance.getInstanceId()));
 		assertThat(actual).hasSize(1);

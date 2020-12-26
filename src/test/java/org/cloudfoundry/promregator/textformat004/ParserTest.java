@@ -9,11 +9,10 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.rewrite.MFSUtils;
-import org.cloudfoundry.promregator.textformat004.Parser;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
@@ -33,13 +32,20 @@ public class ParserTest {
 		HashMap<String, MetricFamilySamples> expectedMap = MFSUtils.convertToEMFSToHashMap(expected);
 		HashMap<String, MetricFamilySamples> actualMap = MFSUtils.convertToEMFSToHashMap(actual);
 		
-		Assert.assertTrue(EqualsBuilder.reflectionEquals(actualMap.keySet(), expectedMap.keySet(), false));
+		Set<String> actualSet = actualMap.keySet();
+		Set<String> expectedSet = expectedMap.keySet();
+		
+		Assert.assertNotNull(actualSet);
+		Assert.assertNotNull(expectedSet);
+		
+		Assert.assertEquals(expectedSet.size(), actualSet.size());
+		Assert.assertTrue(expectedSet.containsAll(actualSet));
 		
 		for (String metricName : expectedMap.keySet()) {
 			MetricFamilySamples actualMFS = actualMap.get(metricName);
 			MetricFamilySamples expectedMFS = expectedMap.get(metricName);
 			
-			Assert.assertTrue(EqualsBuilder.reflectionEquals(actualMFS, expectedMFS));
+			Assert.assertTrue(expectedMFS.equals(actualMFS));
 		}
 	}
 	

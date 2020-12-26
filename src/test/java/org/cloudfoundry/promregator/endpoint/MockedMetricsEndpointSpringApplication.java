@@ -9,8 +9,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Predicate;
 
+import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.constraints.Null;
 
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.auth.AuthenticatorController;
@@ -55,7 +55,7 @@ public class MockedMetricsEndpointSpringApplication {
 		return new AppInstanceScanner() {
 
 			@Override
-			public List<Instance> determineInstancesFromTargets(List<ResolvedTarget> targets, @Null Predicate<? super String> applicationIdFilter, @Null Predicate<? super Instance> instanceFilter) {
+			public List<Instance> determineInstancesFromTargets(List<ResolvedTarget> targets, @Nullable Predicate<? super String> applicationIdFilter, @Nullable Predicate<? super Instance> instanceFilter) {
 				LinkedList<Instance> result = new LinkedList<>();
 
 				ResolvedTarget t = new ResolvedTarget();

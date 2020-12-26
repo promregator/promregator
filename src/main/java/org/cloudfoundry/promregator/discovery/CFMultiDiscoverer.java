@@ -11,7 +11,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
-import javax.validation.constraints.Null;
+import javax.annotation.Nullable;
 
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.messagebus.MessageBusDestination;
@@ -57,8 +57,8 @@ public class CFMultiDiscoverer implements CFDiscoverer {
 	 * @param instanceFilter the (pre-)filter based on the Instance instance, allowing to filter the lost if instances to discover
 	 * @return the list of Instances which were discovered (and registered).
 	 */
-	@Null
-	public List<Instance> discover(@Null Predicate<? super String> applicationIdFilter, @Null Predicate<? super Instance> instanceFilter) {
+	@Nullable
+	public List<Instance> discover(@Nullable Predicate<? super String> applicationIdFilter, @Nullable Predicate<? super Instance> instanceFilter) {
 		log.debug(String.format("We have %d targets configured", this.promregatorConfiguration.getTargets().size()));
 		
 		List<ResolvedTarget> resolvedTargets = this.targetResolver.resolveTargets(this.promregatorConfiguration.getTargets());
