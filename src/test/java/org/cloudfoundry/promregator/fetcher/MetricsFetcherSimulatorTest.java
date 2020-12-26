@@ -16,14 +16,14 @@ import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.Gauge.Child;
 
-public class MetricsFetcherSimulatorTest {
+class MetricsFetcherSimulatorTest {
 	@AfterAll
-	public static void cleanUp() {
+	static void cleanUp() {
 		JUnitTestUtils.cleanUpAll();
 	}
 
 	@Test
-	public void testCall() throws Exception {
+	void testCall() throws Exception {
 		AbstractMetricFamilySamplesEnricher mfse = new CFAllLabelsMetricFamilySamplesEnricher("testOrgName", "testSpaceName", "testapp", "testinstance1:0");
 		
 		Gauge up = Gauge.build("up_test", "help test").labelNames(CFAllLabelsMetricFamilySamplesEnricher.getEnrichingLabelNames()).create();

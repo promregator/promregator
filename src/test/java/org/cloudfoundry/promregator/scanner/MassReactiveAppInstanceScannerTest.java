@@ -21,18 +21,18 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = MockedMassReactiveAppInstanceScannerSpringApplication.class)
 @TestPropertySource(locations="default.properties")
-public class MassReactiveAppInstanceScannerTest {
+class MassReactiveAppInstanceScannerTest {
 
 	@Autowired
 	private AppInstanceScanner appInstanceScanner;
 	
 	@AfterAll
-	public static void cleanUp() {
+	static void cleanUp() {
 		JUnitTestUtils.cleanUpAll();
 	}
 	
 	@Test
-	public void testPerformance() {
+	void testPerformance() {
 		List<ResolvedTarget> targets = new LinkedList<>();
 		
 		ResolvedTarget t = null;
@@ -65,7 +65,7 @@ public class MassReactiveAppInstanceScannerTest {
 	}
 
 	@Test
-	public void testPerformanceWithInstanceFilter() {
+	void testPerformanceWithInstanceFilter() {
 		List<ResolvedTarget> targets = new LinkedList<>();
 		
 		ResolvedTarget t = null;
@@ -105,7 +105,7 @@ public class MassReactiveAppInstanceScannerTest {
 	}
 
 	@Test
-	public void testPerformanceWithApplicationIdAndInstanceFilter() {
+	void testPerformanceWithApplicationIdAndInstanceFilter() {
 		List<ResolvedTarget> targets = new LinkedList<>();
 		
 		ResolvedTarget t = null;
@@ -152,7 +152,7 @@ public class MassReactiveAppInstanceScannerTest {
 	}
 	
 	@Test
-	public void testPathsAreNotMixedUpIssue59() {
+	void testPathsAreNotMixedUpIssue59() {
 		// see also https://github.com/promregator/promregator/issues/59#issuecomment-399037194
 		
 		final int numberOfApps = 100;

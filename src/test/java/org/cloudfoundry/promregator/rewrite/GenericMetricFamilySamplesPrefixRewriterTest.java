@@ -14,14 +14,14 @@ import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Collector.MetricFamilySamples.Sample;
 import io.prometheus.client.Collector.Type;
 
-public class GenericMetricFamilySamplesPrefixRewriterTest {
+class GenericMetricFamilySamplesPrefixRewriterTest {
 	@AfterAll
 	public static void cleanupEnvironment() {
 		JUnitTestUtils.cleanUpAll();
 	}
 
 	@Test
-	public void testPrefixesProperly() {
+	void testPrefixesProperly() {
 		GenericMetricFamilySamplesPrefixRewriter subject = new GenericMetricFamilySamplesPrefixRewriter("prefix");
 		
 		List<Sample> samples = new LinkedList<>();
@@ -45,7 +45,7 @@ public class GenericMetricFamilySamplesPrefixRewriterTest {
 	}
 	
 	@Test
-	public void testDoesNotPrefixIfNotNeeded() {
+	void testDoesNotPrefixIfNotNeeded() {
 		GenericMetricFamilySamplesPrefixRewriter subject = new GenericMetricFamilySamplesPrefixRewriter("prefix");
 		
 		List<Sample> samples = new LinkedList<>();

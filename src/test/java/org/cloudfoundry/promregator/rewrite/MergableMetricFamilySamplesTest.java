@@ -21,14 +21,14 @@ import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Collector.MetricFamilySamples.Sample;
 import io.prometheus.client.Collector.Type;
 
-public class MergableMetricFamilySamplesTest {
+class MergableMetricFamilySamplesTest {
 	@AfterAll
 	public static void cleanupEnvironment() {
 		JUnitTestUtils.cleanUpAll();
 	}
 
 	@Test
-	public void testStraightFowardEnumeration() {
+	void testStraightFowardEnumeration() {
 		MergableMetricFamilySamples subject = new MergableMetricFamilySamples();
 		
 		List<Sample> samples = new LinkedList<>();
@@ -56,7 +56,7 @@ public class MergableMetricFamilySamplesTest {
 	}
 	
 	@Test
-	public void testStraightFowardHashMap() {
+	void testStraightFowardHashMap() {
 		MergableMetricFamilySamples subject = new MergableMetricFamilySamples();
 		
 		List<Sample> samples = new LinkedList<>();
@@ -85,7 +85,7 @@ public class MergableMetricFamilySamplesTest {
 	}
 	
 	@Test
-	public void testUntypedMetricEnumeration() {
+	void testUntypedMetricEnumeration() {
 		MergableMetricFamilySamples subject = new MergableMetricFamilySamples();
 		
 		List<Sample> samples = new LinkedList<>();
@@ -105,7 +105,7 @@ public class MergableMetricFamilySamplesTest {
 	}
 
 	@Test
-	public void testIssue104() throws IOException, URISyntaxException {
+	void testIssue104() throws IOException, URISyntaxException {
 		String textToParse = new String(Files.readAllBytes(Paths.get(getClass().getResource("issue104-instance0.text004").toURI())));
 		
 		Parser source0 = new Parser(textToParse);

@@ -28,10 +28,10 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ActiveProfiles(profiles = {"simulation"})
 
 @DirtiesContext(classMode=ClassMode.AFTER_CLASS)
-public class PromregatorApplicationSimulatorTest {
+class PromregatorApplicationSimulatorTest {
 
 	@Test
-	public void contextLoads() {
+	void contextLoads() {
 		assertThat(this.cfDiscoverer).isNotNull(); // Trivial test
 	}
 	
@@ -39,14 +39,14 @@ public class PromregatorApplicationSimulatorTest {
 	private CFDiscoverer cfDiscoverer;
 	
 	@Test
-	public void testDiscoveryWorks() {
+	void testDiscoveryWorks() {
 		@Nullable
 		List<Instance> actual = this.cfDiscoverer.discover(null, null);
 		assertThat(200).isEqualTo(actual.size());
 	}
 	
 	@Test
-	public void testSingleInstance() {
+	void testSingleInstance() {
 		@Nullable
 		List<Instance> actual = this.cfDiscoverer.discover(appId -> appId.equals(CFAccessorSimulator.APP_UUID_PREFIX+"100"), 
 				instance -> (CFAccessorSimulator.APP_UUID_PREFIX+"100:1").equals(instance.getInstanceId()));
@@ -54,7 +54,7 @@ public class PromregatorApplicationSimulatorTest {
 	}
 
 	@AfterAll
-	public static void cleanUp() {
+	static void cleanUp() {
 		JUnitTestUtils.cleanUpAll();
 	}
 }

@@ -17,7 +17,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @SpringBootTest(classes = CFAccessorCacheClassicSpringApplication.class)
 @TestPropertySource(locations="../default.properties")
 @DirtiesContext(classMode=ClassMode.AFTER_CLASS)
-public class CFAccessorCacheClassicInvalidationTest {
+class CFAccessorCacheClassicInvalidationTest {
 	
 	/*
 	 * Warning! Do not try to merge with CFAccessorCacheClassicTest
@@ -33,19 +33,19 @@ public class CFAccessorCacheClassicInvalidationTest {
 	private CFAccessorCacheClassic subject;
 	
 	@BeforeEach
-	public void invalidateCaches() {
+	void invalidateCaches() {
 		this.subject.invalidateCacheApplications();
 		this.subject.invalidateCacheSpace();
 		this.subject.invalidateCacheOrg();
 	}
 	
 	@AfterAll
-	public static void runCleanup() {
+	static void runCleanup() {
 		JUnitTestUtils.cleanUpAll();
 	}
 	
 	@Test
-	public void testInvalidateCacheApplications() {
+	void testInvalidateCacheApplications() {
 		subject.retrieveSpaceSummary("dummy");
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveSpaceSummary("dummy");
 		
@@ -56,7 +56,7 @@ public class CFAccessorCacheClassicInvalidationTest {
 	}
 
 	@Test
-	public void testInvalidateCacheSpace() {
+	void testInvalidateCacheSpace() {
 		subject.retrieveSpaceId("dummy1", "dummy2");
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveSpaceId("dummy1", "dummy2");
 		
@@ -67,7 +67,7 @@ public class CFAccessorCacheClassicInvalidationTest {
 	}
 
 	@Test
-	public void testInvalidateCacheOrg() {
+	void testInvalidateCacheOrg() {
 		subject.retrieveOrgId("dummy");
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveOrgId("dummy");
 		

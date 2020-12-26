@@ -30,7 +30,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = CFDiscovererTestSpringApplication.class)
 @TestPropertySource(locations="default.properties")
-public class CFMultiDiscovererTest {
+class CFMultiDiscovererTest {
 	
 	@AfterAll
 	public static void cleanUp() {
@@ -54,7 +54,7 @@ public class CFMultiDiscovererTest {
 	}
 	
 	@Test
-	public void testDiscoverWithCleanup() throws InterruptedException {
+	void testDiscoverWithCleanup() throws InterruptedException {
 		List<ResolvedTarget> resolvedTargets = new ArrayList<>();
 		ResolvedTarget aTarget = new ResolvedTarget();
 		aTarget.setOrgName("unittestorg");

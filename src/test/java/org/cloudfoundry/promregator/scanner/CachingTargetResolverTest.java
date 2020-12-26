@@ -17,9 +17,9 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = MockedCachingTargetResolverSpringApplication.class)
-public class CachingTargetResolverTest {
+class CachingTargetResolverTest {
 	@AfterAll
-	public static void cleanupEnvironment() {
+	static void cleanupEnvironment() {
 		JUnitTestUtils.cleanUpAll();
 	}
 
@@ -30,14 +30,14 @@ public class CachingTargetResolverTest {
 	private CachingTargetResolver cachingTargetResolver;
 	
 	@AfterEach
-	public void resetFlags() {
+	void resetFlags() {
 		this.cachingTargetResolver.invalidateCache();
 		
 		( (MockedTargetResolver) targetResolver).resetRequestFlags();
 		
 	}
 	@Test
-	public void testTwoPlainTargets() {
+	void testTwoPlainTargets() {
 		List<Target> list = new LinkedList<>();
 		list.add(MockedTargetResolver.target1);
 		list.add(MockedTargetResolver.target2);
@@ -69,7 +69,7 @@ public class CachingTargetResolverTest {
 	}
 	
 	@Test
-	public void testTargetMissingApplicationName() {
+	void testTargetMissingApplicationName() {
 		List<Target> list = new LinkedList<>();
 		list.add(MockedTargetResolver.targetAllInSpace);
 		
@@ -99,7 +99,7 @@ public class CachingTargetResolverTest {
 	}
 	
 	@Test
-	public void testRepeatedRequestIsCached() {
+	void testRepeatedRequestIsCached() {
 		List<Target> list = new LinkedList<>();
 		list.add(MockedTargetResolver.target1);
 		
@@ -133,7 +133,7 @@ public class CachingTargetResolverTest {
 	}
 	
 	@Test
-	public void testRepeatedRequestIsCachedAlsoSelectively() {
+	void testRepeatedRequestIsCachedAlsoSelectively() {
 		List<Target> list = new LinkedList<>();
 		list.add(MockedTargetResolver.target1);
 		
@@ -179,7 +179,7 @@ public class CachingTargetResolverTest {
 	}
 	
 	@Test
-	public void testTargetDuplicateRequestDistincts() {
+	void testTargetDuplicateRequestDistincts() {
 		List<Target> list = new LinkedList<>();
 		list.add(MockedTargetResolver.target1);
 		list.add(MockedTargetResolver.targetRegex);

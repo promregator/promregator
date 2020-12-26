@@ -22,9 +22,9 @@ import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Collector.MetricFamilySamples.Sample;
 import io.prometheus.client.Collector.Type;
 
-public class ParserTest {
+class ParserTest {
 	@AfterAll
-	public static void cleanupEnvironment() {
+	static void cleanupEnvironment() {
 		JUnitTestUtils.cleanUpAll();
 	}
 
@@ -50,7 +50,7 @@ public class ParserTest {
 	}
 	
 	@Test
-	public void testSimple() {
+	void testSimple() {
 		String textToParse = "# Minimalistic line:\n" + 
 				"metric_without_timestamp_and_labels 12.47\n";
 		
@@ -75,7 +75,7 @@ public class ParserTest {
 	}
 
 	@Test
-	public void testSimpleWithTimestampAndEmptyLine() {
+	void testSimpleWithTimestampAndEmptyLine() {
 		String textToParse = "# Minimalistic line:\n" + 
 				"\n"+
 				"metric_without_labels 12.47 123456789012345600\n";
@@ -101,7 +101,7 @@ public class ParserTest {
 	}
 	
 	@Test
-	public void testSimpleWithEFormat() {
+	void testSimpleWithEFormat() {
 		String textToParse = "# Minimalistic line:\n" + 
 				"\n"+
 				"metric_without_labels 1.7560473e+07\n";
@@ -127,7 +127,7 @@ public class ParserTest {
 	}
 	
 	@Test
-	public void testSimplePlusInf() {
+	void testSimplePlusInf() {
 		String textToParse = "# Minimalistic line:\n" + 
 				"\n"+
 				"metric_without_labels +Inf 123456789012345600\n";
@@ -153,7 +153,7 @@ public class ParserTest {
 	}
 
 	@Test
-	public void testSimpleMinusInf() {
+	void testSimpleMinusInf() {
 		String textToParse = "# Minimalistic line:\n" + 
 				"\n"+
 				"metric_without_labels -Inf 123456789012345600\n";
@@ -179,7 +179,7 @@ public class ParserTest {
 	}
 
 	@Test
-	public void testSimpleNaN() {
+	void testSimpleNaN() {
 		String textToParse = "# Minimalistic line:\n" + 
 				"\n"+
 				"metric_without_labels NaN 123456789012345600\n";
@@ -203,7 +203,7 @@ public class ParserTest {
 	}
 	
 	@Test
-	public void testSimpleNan() {
+	void testSimpleNan() {
 		String textToParse = "# Minimalistic line:\n" + 
 				"\n"+
 				"metric_without_labels Nan 123456789012345600\n";
@@ -227,7 +227,7 @@ public class ParserTest {
 	}
 	
 	@Test
-	public void testGaugeWithTimestampAndEmptyLine() {
+	void testGaugeWithTimestampAndEmptyLine() {
 		String textToParse = "# Simple metric without labels:\n" + 
 				"# TYPE metric_without_labels gauge\n" + 
 				"\n"+
@@ -254,7 +254,7 @@ public class ParserTest {
 	}
 	
 	@Test
-	public void testCounterWithTimestampAndEmptyLine() {
+	void testCounterWithTimestampAndEmptyLine() {
 		String textToParse = "# Simple metric without labels:\n" + 
 				"# TYPE metric_without_labels counter\n" + 
 				"\n"+
@@ -281,7 +281,7 @@ public class ParserTest {
 	}
 	
 	@Test
-	public void testHelp() {
+	void testHelp() {
 		String textToParse = "# Simple metric without labels:\n" + 
 				"# TYPE metric_without_labels counter\n" + 
 				"# HELP metric_without_labels this is my help text\n" + 
@@ -308,7 +308,7 @@ public class ParserTest {
 	}
 	
 	@Test
-	public void testHelpEscaping() {
+	void testHelpEscaping() {
 		String textToParse = "# Simple metric without labels:\n" + 
 				"# TYPE metric_without_labels counter\n" + 
 				"# HELP metric_without_labels this is my help text with \\\\ backslashes escaped \\\\ and escaped newline \\n\n" + 
@@ -335,7 +335,7 @@ public class ParserTest {
 	}
 	
 	@Test
-	public void testGaugeWithSingleLabel() {
+	void testGaugeWithSingleLabel() {
 		String textToParse = "# TYPE metric_with_label gauge\n" + 
 				"metric_with_label{name=\"value\"} 12.47\n";
 		
@@ -366,7 +366,7 @@ public class ParserTest {
 	}
 	
 	@Test
-	public void testGaugeWithMultipleLabels() {
+	void testGaugeWithMultipleLabels() {
 		String textToParse = "# TYPE metric_with_label gauge\n" + 
 				"metric_with_label{name=\"value\",second=\"somevalue\",third=\"next value\",} 12.47\n";
 		
@@ -401,7 +401,7 @@ public class ParserTest {
 	}
 
 	@Test
-	public void testGaugeWithSingleLabelEscaping() {
+	void testGaugeWithSingleLabelEscaping() {
 		String textToParse = "# TYPE metric_with_label gauge\n" + 
 				"metric_with_label{name=\"containing \\\" and \\\\ and \\n\"} 12.47\n";
 		
@@ -432,7 +432,7 @@ public class ParserTest {
 	}
 	
 	@Test
-	public void testStandardExampleWithEscapingInLabels() {
+	void testStandardExampleWithEscapingInLabels() {
 		String textToParse = "# Escaping in label values:\n" + 
 				"msdos_file_access_time_seconds{path=\"C:\\\\DIR\\\\FILE.TXT\",error=\"Cannot find file:\\n\\\"FILE.TXT\\\"\"} 1.458255915e9";
 		
@@ -465,7 +465,7 @@ public class ParserTest {
 	}
 	
 	@Test
-	public void testHistogramSpecificationExample() {
+	void testHistogramSpecificationExample() {
 		String textToParse = "# A histogram, which has a pretty complex representation in the text format:\n" + 
 				"# HELP http_request_duration_seconds A histogram of the request duration.\n" + 
 				"# TYPE http_request_duration_seconds histogram\n" + 
@@ -507,7 +507,7 @@ public class ParserTest {
 	}
 	
 	@Test
-	public void testHistogramSpecificationWithoutHelp() { // see also issue #73
+	void testHistogramSpecificationWithoutHelp() { // see also issue #73
 		String textToParse = "# A histogram, which has a pretty complex representation in the text format:\n" + 
 				"# TYPE http_request_duration_seconds histogram\n" + 
 				"http_request_duration_seconds_bucket{le=\"0.05\"} 24054\n" + 
@@ -559,7 +559,7 @@ public class ParserTest {
 	
 
 	@Test
-	public void testSummarySpecificationExample() {
+	void testSummarySpecificationExample() {
 		String textToParse = "# Finally a summary, which has a complex representation, too:\n" + 
 				"# HELP rpc_duration_seconds A summary of the RPC duration in seconds.\n" + 
 				"# TYPE rpc_duration_seconds summary\n" + 
@@ -599,7 +599,7 @@ public class ParserTest {
 	}
 	
 	@Test
-	public void testSummarySpecificationWithoutHelp() { // see also issue #73
+	void testSummarySpecificationWithoutHelp() { // see also issue #73
 		String textToParse = "# Finally a summary, which has a complex representation, too:\n" + 
 				"# TYPE rpc_duration_seconds summary\n" + 
 				"rpc_duration_seconds{quantile=\"0.01\"} 3102\n" + 
@@ -648,7 +648,7 @@ public class ParserTest {
 	}
 	
 	@Test
-	public void testHistogramWithLabels() {
+	void testHistogramWithLabels() {
 		String textToParse = "# A histogram, which has a pretty complex representation in the text format:\n" + 
 				"# HELP http_request_duration_seconds A histogram of the request duration.\n" + 
 				"# TYPE http_request_duration_seconds histogram\n" + 
@@ -713,7 +713,7 @@ public class ParserTest {
 	}
 
 	@Test
-	public void testSummaryWithLabel() {
+	void testSummaryWithLabel() {
 		String textToParse = "# Finally a summary, which has a complex representation, too:\n" +
 				"# HELP rpc_duration_seconds A summary of the RPC duration in seconds.\n" +
 				"# TYPE rpc_duration_seconds summary\n" +
@@ -753,7 +753,7 @@ public class ParserTest {
 	}
 
 	@Test
-	public void testSimpleWithLabelIncludingBraces() {
+	void testSimpleWithLabelIncludingBraces() {
 		String textToParse = "# Finally a summary, which has a complex representation, too:\n" +
 				"rpc_duration_seconds{name=\"val/{ue}\",quantile=\"0.01\",} 3102\n";
 
@@ -807,7 +807,7 @@ public class ParserTest {
 	}
 
 	@Test
-	public void testVariant1() throws IOException, URISyntaxException {
+	void testVariant1() throws IOException, URISyntaxException {
 		String textToParse = new String(Files.readAllBytes(Paths.get(getClass().getResource("text004-variant1.txt").toURI())));
 		
 		Parser subject = new Parser(textToParse);
@@ -821,7 +821,7 @@ public class ParserTest {
 	}
 	
 	@Test
-	public void testLogbackWithMultipleLabelValues() throws IOException, URISyntaxException {
+	void testLogbackWithMultipleLabelValues() throws IOException, URISyntaxException {
 		String textToParse = new String(Files.readAllBytes(Paths.get(getClass().getResource("text004-logback.txt").toURI())));
 		
 		Parser subject = new Parser(textToParse);
@@ -837,7 +837,7 @@ public class ParserTest {
 	}
 	
 	@Test
-	public void testIssue104() throws IOException, URISyntaxException {
+	void testIssue104() throws IOException, URISyntaxException {
 		String textToParse = new String(Files.readAllBytes(Paths.get(getClass().getResource("issue104.txt").toURI())));
 		
 		Parser subject = new Parser(textToParse);
@@ -856,7 +856,7 @@ public class ParserTest {
 	
 	@Test
 	// see also issue #175
-	public void testGaugeNonParsableJunk() {
+	void testGaugeNonParsableJunk() {
 		String textToParse = "# TYPE metric_with_label gauge\n" + 
 				"metric_with_label{name=\"xyz\"} 12.47\n"
 				+ "\n"

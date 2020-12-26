@@ -16,7 +16,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = AuthenticatorControllerSpringApplication.class)
 @TestPropertySource(locations="default.properties")
-public class AuthenticatorControllerTest {
+class AuthenticatorControllerTest {
 
 	@Autowired
 	private AuthenticatorController subject;
@@ -25,7 +25,7 @@ public class AuthenticatorControllerTest {
 	private PromregatorConfiguration promregatorConfiguration;
 	
 	@Test
-	public void testDefaultConfigurationCheck() {
+	void testDefaultConfigurationCheck() {
 		assertThat(subject).isNotNull();
 		
 		AuthenticationEnricher auth0 = subject.getAuthenticationEnricherById("unittestAuth0");

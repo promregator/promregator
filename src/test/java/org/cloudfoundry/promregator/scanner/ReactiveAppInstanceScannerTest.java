@@ -21,18 +21,18 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = MockedReactiveAppInstanceScannerSpringApplication.class)
 @TestPropertySource(locations="default.properties")
-public class ReactiveAppInstanceScannerTest {
+class ReactiveAppInstanceScannerTest {
 
 	@Autowired
 	private AppInstanceScanner appInstanceScanner;
 	
 	@AfterAll
-	public static void cleanUp() {
+	static void cleanUp() {
 		JUnitTestUtils.cleanUpAll();
 	}
 	
 	@Test
-	public void testStraightForward() {
+	void testStraightForward() {
 		List<ResolvedTarget> targets = new LinkedList<>();
 		
 		ResolvedTarget t = new ResolvedTarget();
@@ -69,7 +69,7 @@ public class ReactiveAppInstanceScannerTest {
 	}
 	
 	@Test
-	public void testWithPrefiltering() {
+	void testWithPrefiltering() {
 		List<ResolvedTarget> targets = new LinkedList<>();
 		
 		ResolvedTarget t = new ResolvedTarget();
@@ -109,7 +109,7 @@ public class ReactiveAppInstanceScannerTest {
 	}
 
 	@Test
-	public void testWithWrongCaseIssue76() {
+	void testWithWrongCaseIssue76() {
 		List<ResolvedTarget> targets = new LinkedList<>();
 		
 		ResolvedTarget t = new ResolvedTarget();
@@ -146,7 +146,7 @@ public class ReactiveAppInstanceScannerTest {
 	}
 	
 	@Test
-	public void testEmptyResponseOnOrg() {
+	void testEmptyResponseOnOrg() {
 		List<ResolvedTarget> targets = new LinkedList<>();
 		
 		ResolvedTarget t = new ResolvedTarget();
@@ -192,7 +192,7 @@ public class ReactiveAppInstanceScannerTest {
 	}
 	
 	@Test
-	public void testEmptyResponseOnSpace() {
+	void testEmptyResponseOnSpace() {
 		List<ResolvedTarget> targets = new LinkedList<>();
 		
 		ResolvedTarget t = new ResolvedTarget();
@@ -239,7 +239,7 @@ public class ReactiveAppInstanceScannerTest {
 	
 	
 	@Test
-	public void testEmptyResponseOnApplicationId() {
+	void testEmptyResponseOnApplicationId() {
 		List<ResolvedTarget> targets = new LinkedList<>();
 		
 		ResolvedTarget t = new ResolvedTarget();
@@ -286,7 +286,7 @@ public class ReactiveAppInstanceScannerTest {
 	}
 	
 	@Test
-	public void testEmptyResponseOnSummary() {
+	void testEmptyResponseOnSummary() {
 		List<ResolvedTarget> targets = new LinkedList<>();
 		
 		ResolvedTarget t = new ResolvedTarget();
@@ -332,7 +332,7 @@ public class ReactiveAppInstanceScannerTest {
 	}
 	
 	@Test
-	public void testExceptionOnOrg() {
+	void testExceptionOnOrg() {
 		List<ResolvedTarget> targets = new LinkedList<>();
 		
 		ResolvedTarget t = new ResolvedTarget();
@@ -380,7 +380,7 @@ public class ReactiveAppInstanceScannerTest {
 	}
 
 	@Test
-	public void testExceptionOnSpace() {
+	void testExceptionOnSpace() {
 		List<ResolvedTarget> targets = new LinkedList<>();
 		
 		ResolvedTarget t = new ResolvedTarget();
@@ -426,7 +426,7 @@ public class ReactiveAppInstanceScannerTest {
 	}
 	
 	@Test
-	public void testExceptionOnApplicationId() {
+	void testExceptionOnApplicationId() {
 		List<ResolvedTarget> targets = new LinkedList<>();
 		
 		ResolvedTarget t = new ResolvedTarget();
@@ -472,7 +472,7 @@ public class ReactiveAppInstanceScannerTest {
 	}
 	
 	@Test
-	public void testExceptionOnSummary() {
+	void testExceptionOnSummary() {
 		List<ResolvedTarget> targets = new LinkedList<>();
 		
 		ResolvedTarget t = new ResolvedTarget();
@@ -518,7 +518,7 @@ public class ReactiveAppInstanceScannerTest {
 	}
 
 	@Test
-	public void testMatchPreferredRouteRegex() {
+	void testMatchPreferredRouteRegex() {
 		List<ResolvedTarget> targets = new LinkedList<>();
 		
 		ResolvedTarget t = new ResolvedTarget();
@@ -560,7 +560,7 @@ public class ReactiveAppInstanceScannerTest {
 	}
 	
 	@Test
-	public void testMatchPreferredRouteRegexNotMatched() {
+	void testMatchPreferredRouteRegexNotMatched() {
 		List<ResolvedTarget> targets = new LinkedList<>();
 		
 		ResolvedTarget t = new ResolvedTarget();

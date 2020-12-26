@@ -11,10 +11,10 @@ import org.junit.jupiter.api.Test;
 
 import reactor.core.publisher.Mono;
 
-public class CFAccessorSimulatorTest {
+class CFAccessorSimulatorTest {
 
 	@Test
-	public void testRetrieveOrgId() {
+	void testRetrieveOrgId() {
 		CFAccessorSimulator subject = new CFAccessorSimulator(2);
 		Mono<ListOrganizationsResponse> mono = subject.retrieveOrgId("simorg");
 		ListOrganizationsResponse result = mono.block();
@@ -22,7 +22,7 @@ public class CFAccessorSimulatorTest {
 	}
 
 	@Test
-	public void testRetrieveSpaceId() {
+	void testRetrieveSpaceId() {
 		CFAccessorSimulator subject = new CFAccessorSimulator(2);
 		Mono<ListSpacesResponse> mono = subject.retrieveSpaceId(CFAccessorSimulator.ORG_UUID, "simspace");
 		ListSpacesResponse result = mono.block();
@@ -30,7 +30,7 @@ public class CFAccessorSimulatorTest {
 	}
 
 	@Test
-	public void testRetrieveSpaceSummary() {
+	void testRetrieveSpaceSummary() {
 		CFAccessorSimulator subject = new CFAccessorSimulator(2);
 		
 		Mono<GetSpaceSummaryResponse> mono = subject.retrieveSpaceSummary(CFAccessorSimulator.SPACE_UUID);
@@ -62,7 +62,5 @@ public class CFAccessorSimulatorTest {
 			Assertions.assertTrue(tests[i]);
 		}
 	}
-
-	
 
 }

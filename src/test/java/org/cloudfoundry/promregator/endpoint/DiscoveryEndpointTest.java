@@ -20,10 +20,10 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = MockedMetricsEndpointSpringApplication.class)
 @TestPropertySource(locations="default.properties")
-public class DiscoveryEndpointTest {
+class DiscoveryEndpointTest {
 
 	@AfterAll
-	public static void cleanupEnvironment() {
+	static void cleanupEnvironment() {
 		JUnitTestUtils.cleanUpAll();
 	}
 
@@ -31,7 +31,7 @@ public class DiscoveryEndpointTest {
 	private DiscoveryEndpoint subject;
 	
 	@Test
-	public void testStraightForward() {
+	void testStraightForward() {
 		HttpServletRequest requestMock = Mockito.mock(HttpServletRequest.class);
 		
 		ResponseEntity<DiscoveryResponse[]> responseE = this.subject.getDiscovery(requestMock);

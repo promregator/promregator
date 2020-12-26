@@ -8,10 +8,10 @@ import org.cloudfoundry.promregator.config.Target;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class PreferredRouteRegexMustBeCompilableTest {
+class PreferredRouteRegexMustBeCompilableTest {
 
 	@Test
-	public void testNullPreferredRouteRegexDoesNotCrash() {
+	void testNullPreferredRouteRegexDoesNotCrash() {
 		PreferredRouteRegexMustBeCompilable subject = new PreferredRouteRegexMustBeCompilable();
 		PromregatorConfiguration promregatorConfiguration = new PromregatorConfiguration();
 		List<Target> targets = new LinkedList<>();
@@ -24,7 +24,7 @@ public class PreferredRouteRegexMustBeCompilableTest {
 	}
 	
 	@Test
-	public void testValidDoesNotBreak() {
+	void testValidDoesNotBreak() {
 		PreferredRouteRegexMustBeCompilable subject = new PreferredRouteRegexMustBeCompilable();
 		PromregatorConfiguration promregatorConfiguration = new PromregatorConfiguration();
 		List<Target> targets = new LinkedList<>();
@@ -39,7 +39,7 @@ public class PreferredRouteRegexMustBeCompilableTest {
 	}
 	
 	@Test
-	public void testInvalidRaisesError() {
+	void testInvalidRaisesError() {
 		PreferredRouteRegexMustBeCompilable subject = new PreferredRouteRegexMustBeCompilable();
 		PromregatorConfiguration promregatorConfiguration = new PromregatorConfiguration();
 		List<Target> targets = new LinkedList<>();

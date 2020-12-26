@@ -20,7 +20,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = MockedMetricsEndpointSpringApplication.class)
 @TestPropertySource(locations="no_promregator_metrics.properties")
-public class DiscoveryEndpointNoPromregatorMetricsTest {
+class DiscoveryEndpointNoPromregatorMetricsTest {
 
 	@Autowired
 	private DiscoveryEndpoint subject;
@@ -31,7 +31,7 @@ public class DiscoveryEndpointNoPromregatorMetricsTest {
 	}
 	
 	@Test
-	public void testStraightForward() {
+	void testStraightForward() {
 		HttpServletRequest requestMock = Mockito.mock(HttpServletRequest.class);
 		
 		ResponseEntity<DiscoveryResponse[]> responseEntity = this.subject.getDiscovery(requestMock);

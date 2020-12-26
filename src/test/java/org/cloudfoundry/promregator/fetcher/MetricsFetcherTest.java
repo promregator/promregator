@@ -38,18 +38,18 @@ public class MetricsFetcherTest {
 	}
 	
 	@BeforeEach
-	public void startUpMetricsEndpointServer() throws IOException {
+	void startUpMetricsEndpointServer() throws IOException {
 		this.mems = new MetricsEndpointMockServer();
 		this.mems.start();
 	}
 	
 	@AfterEach
-	public void tearDownMetricsEndpointServer() {
+	void tearDownMetricsEndpointServer() {
 		this.mems.stop();
 	}
 
 	@AfterAll
-	public static void cleanupEnvironment() {
+	static void cleanupEnvironment() {
 		JUnitTestUtils.cleanUpAll();
 	}
 	
@@ -66,7 +66,7 @@ public class MetricsFetcherTest {
 	}
 	
 	@Test
-	public void testStraightForward() throws Exception {
+	void testStraightForward() throws Exception {
 		String instanceId = "abcd:4";
 		NullMetricFamilySamplesEnricher dummymfse = new NullMetricFamilySamplesEnricher("dummy", "dummy", "dummy", "dummy:0");
 		List<String> labelValues = dummymfse.getEnrichedLabelValues(new LinkedList<>());
@@ -111,7 +111,7 @@ public class MetricsFetcherTest {
 	}
 	
 	@Test
-	public void testAEIsCalled() throws Exception {
+	void testAEIsCalled() throws Exception {
 		String instanceId = "abcd:2";
 		TestAuthenticationEnricher ae = new TestAuthenticationEnricher();
 		NullMetricFamilySamplesEnricher dummymfse = new NullMetricFamilySamplesEnricher("dummy", "dummy", "dummy", "dummy:0");
@@ -143,7 +143,7 @@ public class MetricsFetcherTest {
 	}
 	
 	@Test
-	public void testSocketReadTimeoutTriggered() throws Exception {
+	void testSocketReadTimeoutTriggered() throws Exception {
 		String instanceId = "abcd:7";
 		NullMetricFamilySamplesEnricher dummymfse = new NullMetricFamilySamplesEnricher("dummy", "dummy", "dummy", "dummy:0");
 		List<String> labelValues = dummymfse.getEnrichedLabelValues(new LinkedList<>());
@@ -170,7 +170,7 @@ public class MetricsFetcherTest {
 	}
 	
 	@Test
-	public void testInvalidEndpointURL() throws Exception {
+	void testInvalidEndpointURL() throws Exception {
 		String instanceId = "abcd:8";
 		NullMetricFamilySamplesEnricher dummymfse = new NullMetricFamilySamplesEnricher("dummy", "dummy", "dummy", "dummy:0");
 		List<String> labelValues = dummymfse.getEnrichedLabelValues(new LinkedList<>());

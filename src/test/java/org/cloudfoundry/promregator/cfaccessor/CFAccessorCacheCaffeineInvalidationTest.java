@@ -17,7 +17,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @SpringBootTest(classes = CFAccessorCacheCaffeineSpringApplication.class)
 @TestPropertySource(locations="../default.properties")
 @DirtiesContext(classMode=ClassMode.AFTER_CLASS)
-public class CFAccessorCacheCaffeineInvalidationTest {
+class CFAccessorCacheCaffeineInvalidationTest {
 	
 	/*
 	 * Warning! Do not try to merge with CFAccessorCacheCaffeineTest
@@ -45,7 +45,7 @@ public class CFAccessorCacheCaffeineInvalidationTest {
 	}
 	
 	@Test
-	public void testInvalidateCacheApplications() {
+	void testInvalidateCacheApplications() {
 		subject.retrieveSpaceSummary("dummy");
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveSpaceSummary("dummy");
 		
@@ -56,7 +56,7 @@ public class CFAccessorCacheCaffeineInvalidationTest {
 	}
 
 	@Test
-	public void testInvalidateCacheSpace() {
+	void testInvalidateCacheSpace() {
 		subject.retrieveSpaceId("dummy1", "dummy2");
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveSpaceId("dummy1", "dummy2");
 		
@@ -67,7 +67,7 @@ public class CFAccessorCacheCaffeineInvalidationTest {
 	}
 
 	@Test
-	public void testInvalidateCacheOrg() {
+	void testInvalidateCacheOrg() {
 		subject.retrieveOrgId("dummy");
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveOrgId("dummy");
 		

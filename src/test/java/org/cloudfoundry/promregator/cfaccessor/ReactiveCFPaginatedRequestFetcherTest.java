@@ -17,7 +17,7 @@ import com.google.common.util.concurrent.RateLimiter;
 import reactor.core.Exceptions;
 import reactor.core.publisher.Mono;
 
-public class ReactiveCFPaginatedRequestFetcherTest {
+class ReactiveCFPaginatedRequestFetcherTest {
 	
 	private InternalMetrics internalMetricsMocked = Mockito.mock(InternalMetrics.class);
 	
@@ -42,7 +42,7 @@ public class ReactiveCFPaginatedRequestFetcherTest {
 	}
 	
 	@Test
-	public void testEmptyResponse() {
+	void testEmptyResponse() {
 		ReactiveCFPaginatedRequestFetcher subject = new ReactiveCFPaginatedRequestFetcher(this.internalMetricsMocked, Double.MAX_VALUE, Duration.ofMillis(100));
 		
 		Mono<ListOrganizationsResponse> subjectResponseMono = subject.performGenericPagedRetrieval(RequestType.OTHER, "nokey", requestGenerator, request -> {
@@ -63,7 +63,7 @@ public class ReactiveCFPaginatedRequestFetcherTest {
 	}
 	
 	@Test
-	public void testWithContentOnePage() {
+	void testWithContentOnePage() {
 		ReactiveCFPaginatedRequestFetcher subject = new ReactiveCFPaginatedRequestFetcher(this.internalMetricsMocked, Double.MAX_VALUE, Duration.ofMillis(100));
 		
 		Mono<ListOrganizationsResponse> subjectResponseMono = subject.performGenericPagedRetrieval(RequestType.OTHER, "nokey", requestGenerator, request -> {
@@ -88,7 +88,7 @@ public class ReactiveCFPaginatedRequestFetcherTest {
 	}
 	
 	@Test
-	public void testWithContentTwoPages() {
+	void testWithContentTwoPages() {
 		ReactiveCFPaginatedRequestFetcher subject = new ReactiveCFPaginatedRequestFetcher(this.internalMetricsMocked, 0, Duration.ofMillis(100));
 		
 		Mono<ListOrganizationsResponse> subjectResponseMono = subject.performGenericPagedRetrieval(RequestType.OTHER, "nokey", requestGenerator, request -> {
@@ -115,7 +115,7 @@ public class ReactiveCFPaginatedRequestFetcherTest {
 	}
 	
 	@Test
-	public void testWithContentTwoPagesSecondWithoutItems() {
+	void testWithContentTwoPagesSecondWithoutItems() {
 		ReactiveCFPaginatedRequestFetcher subject = new ReactiveCFPaginatedRequestFetcher(this.internalMetricsMocked, Double.MAX_VALUE, Duration.ofMillis(100));
 		
 		Mono<ListOrganizationsResponse> subjectResponseMono = subject.performGenericPagedRetrieval(RequestType.OTHER, "nokey", requestGenerator, request -> {
@@ -144,7 +144,7 @@ public class ReactiveCFPaginatedRequestFetcherTest {
 	}
 	
 	@Test
-	public void testWithContentTimeoutOnFirstPage() {
+	void testWithContentTimeoutOnFirstPage() {
 		ReactiveCFPaginatedRequestFetcher subject = new ReactiveCFPaginatedRequestFetcher(this.internalMetricsMocked, Double.MAX_VALUE, Duration.ofMillis(100));
 		
 		Mono<ListOrganizationsResponse> subjectResponseMono = subject.performGenericPagedRetrieval(RequestType.OTHER, "nokey", requestGenerator, request ->
@@ -159,7 +159,7 @@ public class ReactiveCFPaginatedRequestFetcherTest {
 	}
 	
 	@Test
-	public void testWithContentTimeoutOnSecondPage() {
+	void testWithContentTimeoutOnSecondPage() {
 		ReactiveCFPaginatedRequestFetcher subject = new ReactiveCFPaginatedRequestFetcher(this.internalMetricsMocked, Double.MAX_VALUE, Duration.ofMillis(100));
 		
 		Mono<ListOrganizationsResponse> subjectResponseMono = subject.performGenericPagedRetrieval(RequestType.OTHER, "nokey", requestGenerator, request -> {
@@ -193,7 +193,7 @@ public class ReactiveCFPaginatedRequestFetcherTest {
 	}
 
 	@Test
-	public void testWithContentGeneralException() {
+	void testWithContentGeneralException() {
 		ReactiveCFPaginatedRequestFetcher subject = new ReactiveCFPaginatedRequestFetcher(this.internalMetricsMocked, Double.MAX_VALUE, Duration.ofMillis(100));
 		
 		Mono<ListOrganizationsResponse> subjectResponseMono = subject.performGenericPagedRetrieval(RequestType.OTHER, "nokey", requestGenerator, request ->
@@ -208,7 +208,7 @@ public class ReactiveCFPaginatedRequestFetcherTest {
 	}
 	
 	@Test
-	public void testInfiniteRateLimitPossible() {
+	void testInfiniteRateLimitPossible() {
 		RateLimiter rl = RateLimiter.create(Double.POSITIVE_INFINITY);
 		
 		boolean acquired = rl.tryAcquire(10000, Duration.ofMillis(100));

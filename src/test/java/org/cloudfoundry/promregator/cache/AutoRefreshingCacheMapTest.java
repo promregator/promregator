@@ -13,11 +13,11 @@ import org.slf4j.LoggerFactory;
 
 import reactor.core.publisher.Mono;
 
-public class AutoRefreshingCacheMapTest {
+class AutoRefreshingCacheMapTest {
 	private static final Logger log = LoggerFactory.getLogger(AutoRefreshingCacheMapTest.class);
 
 	@Test
-	public void testPutAndGet() {
+	void testPutAndGet() {
 		AutoRefreshingCacheMap<String, String> subject = new AutoRefreshingCacheMap<>("test", null, Duration.ofSeconds(1), Duration.ofSeconds(1), key -> {
 			Assertions.fail("should not be reached");
 			return null;
@@ -30,7 +30,7 @@ public class AutoRefreshingCacheMapTest {
 	}
 	
 	@Test
-	public void testAutoLoad() {
+	void testAutoLoad() {
 		AutoRefreshingCacheMap<String, String> subject = new AutoRefreshingCacheMap<>("test", null, Duration.ofSeconds(1), Duration.ofSeconds(1), key -> {
 			char[] source = key.toCharArray();
 			char[] target = new char[source.length];
@@ -45,7 +45,7 @@ public class AutoRefreshingCacheMapTest {
 	}
 	
 	@Test
-	public void testExpiry() throws InterruptedException {
+	void testExpiry() throws InterruptedException {
 		AutoRefreshingCacheMap<String, String> subject = new AutoRefreshingCacheMap<>("test", null, Duration.ofMillis(100), Duration.ofSeconds(10), key -> {
 			char[] source = key.toCharArray();
 			char[] target = new char[source.length];
@@ -77,7 +77,7 @@ public class AutoRefreshingCacheMapTest {
 	}
 
 	@Test
-	public void testAutoRefresh() {
+	void testAutoRefresh() {
 		final Counter counter = new Counter();
 		final String testKey = "key";
 		AutoRefreshingCacheMap<String, String> subject = new AutoRefreshingCacheMap<>("test", null, Duration.ofSeconds(10), Duration.ofMillis(500), key -> {
@@ -147,7 +147,7 @@ public class AutoRefreshingCacheMapTest {
 	}
 	
 	@Test
-	public void testMassRun() throws InterruptedException {
+	void testMassRun() throws InterruptedException {
 		AutoRefreshingCacheMap<String, String> subject = new AutoRefreshingCacheMap<>("test", null, Duration.ofMillis(200), Duration.ofMillis(200), key -> {
 			char[] source = key.toCharArray();
 			char[] target = new char[source.length];
@@ -195,7 +195,7 @@ public class AutoRefreshingCacheMapTest {
 	}
 	
 	@Test
-	public void testLockObjectStringWorks() throws InterruptedException {
+	void testLockObjectStringWorks() throws InterruptedException {
 		AutoRefreshingCacheMap<String, Mono<String>> subject = new AutoRefreshingCacheMap<>("test",null, Duration.ofSeconds(10), Duration.ofSeconds(10), key -> {
 			lockObjectStringWorksCalls++;
 			try {
@@ -302,7 +302,7 @@ public class AutoRefreshingCacheMapTest {
 	private int lockObjectCompositeWorksCalls = 0;
 	
 	@Test
-	public void testLockObjectCompositeWorks() throws InterruptedException {
+	void testLockObjectCompositeWorks() throws InterruptedException {
 		log.info("Start of testLockObjectCompositeWorks");
 		
 		AutoRefreshingCacheMap<CompositeKey, Mono<String>> subject = new AutoRefreshingCacheMap<>("test",null, Duration.ofSeconds(10), Duration.ofSeconds(10), key -> {

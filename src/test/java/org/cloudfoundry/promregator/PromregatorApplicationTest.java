@@ -29,18 +29,18 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 })
 @TestPropertySource(locations="default.properties")
 @DirtiesContext(classMode=ClassMode.AFTER_CLASS)
-public class PromregatorApplicationTest {
+class PromregatorApplicationTest {
 
 	@Autowired
 	private CFAccessor cfAccessor;
 	
 	@Test
-	public void contextLoads() {
+	void contextLoads() {
 		assertThat(cfAccessor).isNotNull(); // Trivial test to ensure that the Unit test has at least some assertion
 	}
 
 	@AfterAll
-	public static void cleanUp() {
+	static void cleanUp() {
 		JUnitTestUtils.cleanUpAll();
 	}
 }

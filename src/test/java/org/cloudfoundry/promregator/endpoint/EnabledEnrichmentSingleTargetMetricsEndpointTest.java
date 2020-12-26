@@ -25,12 +25,12 @@ import io.prometheus.client.Collector.MetricFamilySamples.Sample;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = LabelEnrichmentMockedMetricsEndpointSpringApplication.class)
 @TestPropertySource(locations="enabledLabelEnrichment.properties")
-public class EnabledEnrichmentSingleTargetMetricsEndpointTest {
+class EnabledEnrichmentSingleTargetMetricsEndpointTest {
 
 	private static MetricsEndpointMockServer mockServer;
 
 	@BeforeAll
-	public static void startMockedTargetMetricsEndpoint() throws IOException {
+	static void startMockedTargetMetricsEndpoint() throws IOException {
 		mockServer = new MetricsEndpointMockServer();
 		DefaultMetricsEndpointHttpHandler meh = mockServer.getMetricsEndpointHandler();
 		meh.setResponse("# HELP dummy This is a dummy metric\n"+
@@ -41,12 +41,12 @@ public class EnabledEnrichmentSingleTargetMetricsEndpointTest {
 	}
 	
 	@AfterAll
-	public static void stopMockedTargetMetricsEndpoint() {
+	static void stopMockedTargetMetricsEndpoint() {
 		mockServer.stop();
 	}
 	
 	@AfterAll
-	public static void cleanupEnvironment() {
+	static void cleanupEnvironment() {
 		JUnitTestUtils.cleanUpAll();
 	}
 
@@ -56,7 +56,7 @@ public class EnabledEnrichmentSingleTargetMetricsEndpointTest {
 	private SingleTargetMetricsEndpoint subject;
 	
 	@Test
-	public void testGetMetricsLabelsAreCorrectIfLabelEnrichmentIsEnabled() {
+	void testGetMetricsLabelsAreCorrectIfLabelEnrichmentIsEnabled() {
 		Assertions.assertNotNull(subject);
 		
 		String response = subject.getMetrics("faedbb0a-2273-4cb4-a659-bd31331f7daf", "0").getBody();

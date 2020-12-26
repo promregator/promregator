@@ -19,7 +19,7 @@ import com.google.common.testing.FakeTicker;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-public class CaffeineAsyncLoadingTest {
+class CaffeineAsyncLoadingTest {
 	private static final Logger log = LoggerFactory.getLogger(CaffeineAsyncLoadingTest.class);
 
 	private final class AsyncCacheLoaderTimingImplementation implements AsyncCacheLoader<String, Integer> {
@@ -56,7 +56,7 @@ public class CaffeineAsyncLoadingTest {
 	}
 
 	@Test
-	public void testRefreshIsAsynchronous() throws InterruptedException {
+	void testRefreshIsAsynchronous() throws InterruptedException {
 		FakeTicker ticker = new FakeTicker();
 		
 		AsyncLoadingCache<String, Integer> subject = Caffeine.newBuilder()
@@ -117,7 +117,7 @@ public class CaffeineAsyncLoadingTest {
 		}
 	}
 	@Test
-	public void testFailureOnAsynchronous() {
+	void testFailureOnAsynchronous() {
 		FakeTicker ticker = new FakeTicker();
 		
 		AsyncLoadingCache<String, Integer> subject = Caffeine.newBuilder()

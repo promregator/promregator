@@ -28,18 +28,18 @@ public class MetricsFetcherTestTLSPKIX {
 	}
 	
 	@BeforeEach
-	public void startUpMetricsEndpointServer() throws IOException {
+	void startUpMetricsEndpointServer() throws IOException {
 		this.mems = new MetricsEndpointMockServerTLS();
 		this.mems.start();
 	}
 	
 	@AfterEach
-	public void tearDownMetricsEndpointServer() {
+	void tearDownMetricsEndpointServer() {
 		this.mems.stop();
 	}
 
 	@AfterAll
-	public static void cleanupEnvironment() {
+	static void cleanupEnvironment() {
 		JUnitTestUtils.cleanUpAll();
 	}
 	
@@ -56,7 +56,7 @@ public class MetricsFetcherTestTLSPKIX {
 	}
 	
 	@Test
-	public void testPKIXErrorOnSelfSignedCertificateInDefaultMode() throws Exception {
+	void testPKIXErrorOnSelfSignedCertificateInDefaultMode() throws Exception {
 		String instanceId = "abcd:4";
 		NullMetricFamilySamplesEnricher dummymfse = new NullMetricFamilySamplesEnricher("dummy", "dummy", "dummy", "dummy:0");
 		List<String> labelValues = dummymfse.getEnrichedLabelValues(new LinkedList<>());

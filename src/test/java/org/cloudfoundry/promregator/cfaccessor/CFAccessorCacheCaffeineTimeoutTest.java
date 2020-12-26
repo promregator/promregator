@@ -29,7 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(classes = CFAccessorCacheCaffeineTimeoutSpringApplication.class)
 @TestPropertySource(locations= { "../default.properties" })
 @DirtiesContext(classMode=ClassMode.AFTER_CLASS)
-public class CFAccessorCacheCaffeineTimeoutTest {
+class CFAccessorCacheCaffeineTimeoutTest {
 
 	@Autowired
 	private CFAccessor parentMock;
@@ -38,14 +38,14 @@ public class CFAccessorCacheCaffeineTimeoutTest {
 	private CFAccessorCacheCaffeine subject;
 
 	@BeforeEach
-	public void clearCaches() {
+	void clearCaches() {
 		this.subject.invalidateCacheApplications();
 		this.subject.invalidateCacheSpace();
 		this.subject.invalidateCacheOrg();
 	}
 	
 	@BeforeEach
-	public void setupMocks() {
+	void setupMocks() {
 		Mockito.reset(this.parentMock);
 		Mockito.when(this.parentMock.retrieveOrgId("dummy")).then(new TimeoutMonoAnswer());
 		Mockito.when(this.parentMock.retrieveSpaceId("dummy1", "dummy2")).then(new TimeoutMonoAnswer());
@@ -62,12 +62,12 @@ public class CFAccessorCacheCaffeineTimeoutTest {
 
 
 	@AfterAll
-	public static void runCleanup() {
+	static void runCleanup() {
 		JUnitTestUtils.cleanUpAll();
 	}
 	
 	@Test
-	public void testRetrieveOrgId() throws InterruptedException {
+	void testRetrieveOrgId() throws InterruptedException {
 		Mono<ListOrganizationsResponse> response1 = subject.retrieveOrgId("dummy");
 		response1.subscribe();
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveOrgId("dummy");
@@ -82,7 +82,7 @@ public class CFAccessorCacheCaffeineTimeoutTest {
 	}
 
 	@Test
-	public void testRetrieveSpaceId() throws InterruptedException {
+	void testRetrieveSpaceId() throws InterruptedException {
 		
 		Mono<ListSpacesResponse> response1 = subject.retrieveSpaceId("dummy1", "dummy2");
 		response1.subscribe();
@@ -98,7 +98,7 @@ public class CFAccessorCacheCaffeineTimeoutTest {
 	}
 
 	@Test
-	public void testRetrieveAllApplicationIdsInSpace() throws InterruptedException {
+	void testRetrieveAllApplicationIdsInSpace() throws InterruptedException {
 		Mono<ListApplicationsResponse> response1 = subject.retrieveAllApplicationIdsInSpace("dummy1", "dummy2");
 		response1.subscribe();
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllApplicationIdsInSpace("dummy1", "dummy2");
@@ -113,7 +113,7 @@ public class CFAccessorCacheCaffeineTimeoutTest {
 	}
 
 	@Test
-	public void testRetrieveSpaceSummary() throws InterruptedException {
+	void testRetrieveSpaceSummary() throws InterruptedException {
 		Mono<GetSpaceSummaryResponse> response1 = subject.retrieveSpaceSummary("dummy");
 		response1.subscribe();
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveSpaceSummary("dummy");

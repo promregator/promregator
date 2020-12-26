@@ -10,7 +10,7 @@ import org.mockito.Mockito;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class BasicAuthenticationEnricherTest {
+class BasicAuthenticationEnricherTest {
 
 	@AfterAll
 	public static void cleanupEnvironment() {
@@ -18,7 +18,7 @@ public class BasicAuthenticationEnricherTest {
 	}
 
 	@Test
-	public void testStraightForward() {
+	void testStraightForward() {
 		BasicAuthenticationConfiguration config = new BasicAuthenticationConfiguration();
 		config.setUsername("dummyuser");
 		config.setPassword("unittestpassword");

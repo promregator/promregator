@@ -10,10 +10,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 
-public class TargetsHaveConsistentAuthenticatorIdTest {
+class TargetsHaveConsistentAuthenticatorIdTest {
 
 	@Test
-	public void testValidateConfigBrokenNotExistingAtAll() {
+	void testValidateConfigBrokenNotExistingAtAll() {
 		Target t = new Target();
 		t.setAuthenticatorId("unittest");
 		
@@ -30,7 +30,7 @@ public class TargetsHaveConsistentAuthenticatorIdTest {
 	}
 	
 	@Test
-	public void testValidateConfigBrokenWithWrongTAC() {
+	void testValidateConfigBrokenWithWrongTAC() {
 		Target t = new Target();
 		t.setAuthenticatorId("unittest");
 		
@@ -54,7 +54,7 @@ public class TargetsHaveConsistentAuthenticatorIdTest {
 	}
 	
 	@Test
-	public void testValidateConfigOk() {
+	void testValidateConfigOk() {
 		Target t = new Target();
 		t.setAuthenticatorId("unittest");
 		

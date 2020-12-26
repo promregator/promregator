@@ -3,10 +3,10 @@ package org.cloudfoundry.promregator.scanner;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class ResolvedTargetTest {
+class ResolvedTargetTest {
 
 	@Test
-	public void testToString() {
+	void testToString() {
 		ResolvedTarget subject = new ResolvedTarget();
 		
 		subject.setOrgName("testOrgName");

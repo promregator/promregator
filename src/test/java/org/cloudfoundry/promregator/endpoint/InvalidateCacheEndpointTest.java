@@ -19,10 +19,10 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = MockedAppInstanceScannerEndpointSpringApplication.class)
 @TestPropertySource(locations="default.properties")
-public class InvalidateCacheEndpointTest {
+class InvalidateCacheEndpointTest {
 
 	@AfterAll
-	public static void cleanupEnvironment() {
+	static void cleanupEnvironment() {
 		JUnitTestUtils.cleanUpAll();
 	}
 
@@ -37,7 +37,7 @@ public class InvalidateCacheEndpointTest {
 	private TargetResolver targetResolver;
 	
 	@Test
-	public void testInvalidateCacheAll() {
+	void testInvalidateCacheAll() {
 		Assertions.assertNotNull(subject);
 		
 		ResponseEntity<String> response = subject.invalidateCache(true, true, true, true);

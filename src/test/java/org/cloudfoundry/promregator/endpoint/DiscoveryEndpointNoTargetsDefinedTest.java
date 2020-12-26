@@ -21,7 +21,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = NoTargetsConfiguredSpringApplication.class)
 @TestPropertySource(locations="default.properties")
-public class DiscoveryEndpointNoTargetsDefinedTest {
+class DiscoveryEndpointNoTargetsDefinedTest {
 
 	@AfterAll
 	public static void cleanupEnvironment() {
@@ -32,7 +32,7 @@ public class DiscoveryEndpointNoTargetsDefinedTest {
 	private DiscoveryEndpoint subject;
 	
 	@Test
-	public void testIssue180() {
+	void testIssue180() {
 		HttpServletRequest requestMock = Mockito.mock(HttpServletRequest.class);
 		
 		ResponseEntity<DiscoveryResponse[]> responseE = this.subject.getDiscovery(requestMock);

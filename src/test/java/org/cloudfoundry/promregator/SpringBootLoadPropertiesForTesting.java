@@ -20,24 +20,24 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ContextConfiguration(initializers = { ConfigFileApplicationContextInitializer.class })
 @ActiveProfiles(profiles= {"springBootLoadPropertiesForTesting", "springBootLoadPropertiesForEncryptionTesting"})
 @TestPropertySource(properties = "encrypt.key=mySecretKey")
-public class SpringBootLoadPropertiesForTesting {
+class SpringBootLoadPropertiesForTesting {
 
 	@Autowired
 	private SpringBootLoadPropertiesForTestingSpringApplication springBootLoadPropertiesForTestingSpringApplication;
 
 	@AfterAll
-	public static void cleanupEnvironment() {
+	static void cleanupEnvironment() {
 		JUnitTestUtils.cleanUpAll();
 	}
 	
 	@Test
-	public void testContextLoads() {
+	void testContextLoads() {
 		springBootLoadPropertiesForTestingSpringApplication.check();
 		assertThat(true).as("context loads").isTrue();
 	}
 
 	@Test
-	public void testContextLoadsWithEncryptedValue() {
+	void testContextLoadsWithEncryptedValue() {
 		String secretValue = springBootLoadPropertiesForTestingSpringApplication.getSecretValue();
 		assertThat(secretValue).as("passwords do not match but should").isEqualTo("mysecret");
 	}

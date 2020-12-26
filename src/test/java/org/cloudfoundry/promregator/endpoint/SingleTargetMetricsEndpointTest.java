@@ -27,15 +27,15 @@ import io.prometheus.client.Collector.MetricFamilySamples.Sample;
 @SpringBootTest(classes = MockedMetricsEndpointSpringApplication.class)
 @TestPropertySource(locations="default.properties")
 @ActiveProfiles("SingleTargetMetricsEndpointTest")
-public class SingleTargetMetricsEndpointTest {
+class SingleTargetMetricsEndpointTest {
 
 	@AfterEach
-	public void resetMockedHTTPServletRequest() {
+	void resetMockedHTTPServletRequest() {
 		Mockito.reset(MockedMetricsEndpointSpringApplication.mockedHttpServletRequest);
 	}
 	
 	@AfterAll
-	public static void cleanupEnvironment() {
+	static void cleanupEnvironment() {
 		JUnitTestUtils.cleanUpAll();
 	}
 	
@@ -43,7 +43,7 @@ public class SingleTargetMetricsEndpointTest {
 	private TestableSingleTargetMetricsEndpoint subject;
 	
 	@Test
-	public void testGetMetrics() {
+	void testGetMetrics() {
 		Assertions.assertNotNull(subject);
 		
 		String response = subject.getMetrics("faedbb0a-2273-4cb4-a659-bd31331f7daf", "0").getBody();
@@ -59,7 +59,7 @@ public class SingleTargetMetricsEndpointTest {
 	}
 	
 	@Test
-	public void testIssue52() {
+	void testIssue52() {
 		Assertions.assertNotNull(subject);
 		
 		String response = subject.getMetrics("faedbb0a-2273-4cb4-a659-bd31331f7daf", "0").getBody();
@@ -83,7 +83,7 @@ public class SingleTargetMetricsEndpointTest {
 	}
 	
 	@Test
-	public void testIssue51() {
+	void testIssue51() {
 		Assertions.assertNotNull(subject);
 		
 		String response = subject.getMetrics("faedbb0a-2273-4cb4-a659-bd31331f7daf", "0").getBody();
@@ -104,7 +104,7 @@ public class SingleTargetMetricsEndpointTest {
 	}
 	
 	@Test
-	public void testNegativeIsLoopbackScrapingRequest() {
+	void testNegativeIsLoopbackScrapingRequest() {
 		Mockito.when(MockedMetricsEndpointSpringApplication.mockedHttpServletRequest.getHeader(EndpointConstants.HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER))
 		.thenReturn(MockedMetricsEndpointSpringApplication.currentPromregatorInstanceIdentifier.toString());
 
@@ -114,7 +114,7 @@ public class SingleTargetMetricsEndpointTest {
 	}
 	
 	@Test
-	public void testPositiveIsNotALoopbackScrapingRequest() {
+	void testPositiveIsNotALoopbackScrapingRequest() {
 		Mockito.when(MockedMetricsEndpointSpringApplication.mockedHttpServletRequest.getHeader(EndpointConstants.HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER))
 		.thenReturn(UUID.randomUUID().toString());
 		

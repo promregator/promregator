@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(classes = CFAccessorCacheCaffeineSpringApplication.class)
 @TestPropertySource(locations="../default.properties")
 @DirtiesContext(classMode=ClassMode.AFTER_CLASS)
-public class CFAccessorCacheCaffeineTest {
+class CFAccessorCacheCaffeineTest {
 
 	@Autowired
 	private CFAccessor parentMock;
@@ -45,7 +45,7 @@ public class CFAccessorCacheCaffeineTest {
 	}
 	
 	@Test
-	public void testRetrieveOrgId() throws InterruptedException {
+	void testRetrieveOrgId() throws InterruptedException {
 		Mono<ListOrganizationsResponse> response1 = subject.retrieveOrgId("dummy");
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveOrgId("dummy");
 		
@@ -57,7 +57,7 @@ public class CFAccessorCacheCaffeineTest {
 	}
 
 	@Test
-	public void testRetrieveSpaceId() {
+	void testRetrieveSpaceId() {
 		
 		Mono<ListSpacesResponse> response1 = subject.retrieveSpaceId("dummy1", "dummy2");
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveSpaceId("dummy1", "dummy2");
@@ -68,7 +68,7 @@ public class CFAccessorCacheCaffeineTest {
 	}
 
 	@Test
-	public void testRetrieveAllApplicationIdsInSpace() {
+	void testRetrieveAllApplicationIdsInSpace() {
 		subject.retrieveAllApplicationIdsInSpace("dummy1", "dummy2");
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllApplicationIdsInSpace("dummy1", "dummy2");
 		
@@ -77,13 +77,13 @@ public class CFAccessorCacheCaffeineTest {
 	}
 
 	@Test
-	public void testRetrieveAllOrgIds() {
+	void testRetrieveAllOrgIds() {
 		subject.retrieveAllOrgIds();
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllOrgIds();
 	}
 	
 	@Test
-	public void testRetrieveSpaceSummary() {
+	void testRetrieveSpaceSummary() {
 		Mono<GetSpaceSummaryResponse> response1 = subject.retrieveSpaceSummary("dummy");
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveSpaceSummary("dummy");
 		

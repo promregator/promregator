@@ -19,14 +19,14 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = MockedReactiveTargetResolverSpringApplication.class)
-public class ReactiveTargetResolverTest {
+class ReactiveTargetResolverTest {
 	@AfterAll
-	public static void cleanupEnvironment() {
+	static void cleanupEnvironment() {
 		JUnitTestUtils.cleanUpAll();
 	}
 	
 	@AfterEach
-	public void resetCFAccessorMock() {
+	void resetCFAccessorMock() {
 		Mockito.reset(this.cfAccessor);
 	}
 
@@ -37,7 +37,7 @@ public class ReactiveTargetResolverTest {
 	private CFAccessor cfAccessor;
 
 	@Test
-	public void testFullyResolvedAlready() {
+	void testFullyResolvedAlready() {
 		
 		List<Target> list = new LinkedList<>();
 		
@@ -67,7 +67,7 @@ public class ReactiveTargetResolverTest {
 	}
 	
 	@Test
-	public void testMissingApplicationName() {
+	void testMissingApplicationName() {
 		List<Target> list = new LinkedList<>();
 		
 		Target t = new Target();
@@ -101,7 +101,7 @@ public class ReactiveTargetResolverTest {
 	}
 
 	@Test
-	public void testWithApplicationRegex() {
+	void testWithApplicationRegex() {
 		List<Target> list = new LinkedList<>();
 		
 		Target t = new Target();
@@ -128,7 +128,7 @@ public class ReactiveTargetResolverTest {
 	}
 	
 	@Test
-	public void testWithApplicationRegexCaseInsensitiveIssue76() {
+	void testWithApplicationRegexCaseInsensitiveIssue76() {
 		List<Target> list = new LinkedList<>();
 		
 		Target t = new Target();
@@ -155,7 +155,7 @@ public class ReactiveTargetResolverTest {
 	}
 	
 	@Test
-	public void testEmpty() {
+	void testEmpty() {
 		
 		List<Target> list = new LinkedList<>();
 		
@@ -166,7 +166,7 @@ public class ReactiveTargetResolverTest {
 	}
 
 	@Test
-	public void testSummaryDoesnotExist() {
+	void testSummaryDoesnotExist() {
 		List<Target> list = new LinkedList<>();
 		
 		Target t = new Target();
@@ -184,7 +184,7 @@ public class ReactiveTargetResolverTest {
 	}
 	
 	@Test
-	public void testRetrieveAllApplicationIdsInSpaceThrowsException() {
+	void testRetrieveAllApplicationIdsInSpaceThrowsException() {
 		List<Target> list = new LinkedList<>();
 		
 		Target t = new Target();
@@ -202,7 +202,7 @@ public class ReactiveTargetResolverTest {
 	}
 	
 	@Test
-	public void testInvalidOrgNameToResolve() {
+	void testInvalidOrgNameToResolve() {
 		List<Target> list = new LinkedList<>();
 		
 		Target t = new Target();
@@ -234,7 +234,7 @@ public class ReactiveTargetResolverTest {
 	}
 	
 	@Test
-	public void testExceptionOrgNameToResolve() {
+	void testExceptionOrgNameToResolve() {
 		List<Target> list = new LinkedList<>();
 		
 		Target t = new Target();
@@ -266,7 +266,7 @@ public class ReactiveTargetResolverTest {
 	}
 	
 	@Test
-	public void testInvalidSpaceNameToResolve() {
+	void testInvalidSpaceNameToResolve() {
 		List<Target> list = new LinkedList<>();
 		
 		Target t = new Target();
@@ -298,7 +298,7 @@ public class ReactiveTargetResolverTest {
 	}
 	
 	@Test
-	public void testExceptionSpaceNameToResolve() {
+	void testExceptionSpaceNameToResolve() {
 		List<Target> list = new LinkedList<>();
 		
 		Target t = new Target();
@@ -330,7 +330,7 @@ public class ReactiveTargetResolverTest {
 	}
 
 	@Test
-	public void testDistinctResolvedTargets() {
+	void testDistinctResolvedTargets() {
 		List<Target> list = new LinkedList<>();
 		
 		Target t = new Target();
@@ -377,7 +377,7 @@ public class ReactiveTargetResolverTest {
 	}
 
 	@Test
-	public void testMissingOrgName() {
+	void testMissingOrgName() {
 		List<Target> list = new LinkedList<>();
 		
 		Target t = new Target();
@@ -404,7 +404,7 @@ public class ReactiveTargetResolverTest {
 	}
 
 	@Test
-	public void testWithOrgRegex() {
+	void testWithOrgRegex() {
 		List<Target> list = new LinkedList<>();
 		
 		Target t = new Target();
@@ -432,7 +432,7 @@ public class ReactiveTargetResolverTest {
 	}
 	
 	@Test
-	public void testWithOrgRegexCaseInsensitive() {
+	void testWithOrgRegexCaseInsensitive() {
 		List<Target> list = new LinkedList<>();
 		
 		Target t = new Target();
@@ -459,7 +459,7 @@ public class ReactiveTargetResolverTest {
 	}
 	
 	@Test
-	public void testMissingSpaceName() {
+	void testMissingSpaceName() {
 		List<Target> list = new LinkedList<>();
 		
 		Target t = new Target();
@@ -486,7 +486,7 @@ public class ReactiveTargetResolverTest {
 	}
 
 	@Test
-	public void testWithSpaceRegex() {
+	void testWithSpaceRegex() {
 		List<Target> list = new LinkedList<>();
 		
 		Target t = new Target();
@@ -514,7 +514,7 @@ public class ReactiveTargetResolverTest {
 	}
 	
 	@Test
-	public void testWithSpaceRegexCaseInsensitive() {
+	void testWithSpaceRegexCaseInsensitive() {
 		List<Target> list = new LinkedList<>();
 		
 		Target t = new Target();
@@ -542,7 +542,7 @@ public class ReactiveTargetResolverTest {
 	}
 	
 	@Test
-	public void testCorrectingCaseOnNamesIssue77() {
+	void testCorrectingCaseOnNamesIssue77() {
 		
 		List<Target> list = new LinkedList<>();
 		
@@ -569,7 +569,7 @@ public class ReactiveTargetResolverTest {
 	}
 	
 	@Test
-	public void testInvalidOrgNameDoesNotRaiseExceptionIssue109() {
+	void testInvalidOrgNameDoesNotRaiseExceptionIssue109() {
 		List<Target> list = new LinkedList<>();
 		
 		Target t = new Target();
@@ -583,7 +583,7 @@ public class ReactiveTargetResolverTest {
 	}
 
 	@Test
-	public void testInvalidSpaceNameDoesNotRaiseExceptionIssue109() {
+	void testInvalidSpaceNameDoesNotRaiseExceptionIssue109() {
 		
 		List<Target> list = new LinkedList<>();
 		

@@ -31,12 +31,12 @@ import io.prometheus.client.Collector.MetricFamilySamples.Sample;
 @TestPropertySource(locations="disabledLabelEnrichment.properties")
 @DirtiesContext(classMode=ClassMode.AFTER_CLASS)
 @ActiveProfiles(profiles= {"MetricsEndpointTest"})
-public class DisabledEnrichmentMetricsEndpointTest {
+class DisabledEnrichmentMetricsEndpointTest {
 
 	private static MetricsEndpointMockServer mockServer;
 
 	@BeforeAll
-	public static void startMockedTargetMetricsEndpoint() throws IOException {
+	static void startMockedTargetMetricsEndpoint() throws IOException {
 		mockServer = new MetricsEndpointMockServer();
 		DefaultMetricsEndpointHttpHandler meh = mockServer.getMetricsEndpointHandler();
 		meh.setResponse("# HELP dummy This is a dummy metric\n"+
@@ -47,12 +47,12 @@ public class DisabledEnrichmentMetricsEndpointTest {
 	}
 	
 	@AfterAll
-	public static void stopMockedTargetMetricsEndpoint() {
+	static void stopMockedTargetMetricsEndpoint() {
 		mockServer.stop();
 	}
 	
 	@AfterEach
-	public void resetMockedHTTPServletRequest() {
+	void resetMockedHTTPServletRequest() {
 		Mockito.reset(MockedMetricsEndpointSpringApplication.mockedHttpServletRequest);
 	}
 	
@@ -61,12 +61,12 @@ public class DisabledEnrichmentMetricsEndpointTest {
 	private MetricsEndpoint subject;
 	
 	@AfterAll
-	public static void cleanupEnvironment() {
+	static void cleanupEnvironment() {
 		JUnitTestUtils.cleanUpAll();
 	}
 	
 	@Test
-	public void testEnrichmentStillTakesPlaceForSingleEndpointScrapingEvenIfDisabledInConfig() {
+	void testEnrichmentStillTakesPlaceForSingleEndpointScrapingEvenIfDisabledInConfig() {
 		Assertions.assertNotNull(subject);
 		
 		String response = subject.getMetrics().getBody();

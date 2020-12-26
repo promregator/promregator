@@ -14,14 +14,14 @@ import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Collector.MetricFamilySamples.Sample;
 import io.prometheus.client.Collector.Type;
 
-public class MetricFamilySamplesEnricherTest {
+class MetricFamilySamplesEnricherTest {
 	@AfterAll
-	public static void cleanupEnvironment() {
+	static void cleanupEnvironment() {
 		JUnitTestUtils.cleanUpAll();
 	}
 
 	@Test
-	public void testAllLabelsSimple() {
+	void testAllLabelsSimple() {
 		AbstractMetricFamilySamplesEnricher subject = new CFAllLabelsMetricFamilySamplesEnricher("testOrgName", "testSpaceName", "testComponent", "testInstance:42");
 
 		List<Sample> samples = new LinkedList<>();
@@ -67,7 +67,7 @@ public class MetricFamilySamplesEnricherTest {
 	}
 
 	@Test
-	public void testNullEnricherSimple() {
+	void testNullEnricherSimple() {
 		AbstractMetricFamilySamplesEnricher subject = new NullMetricFamilySamplesEnricher();
 
 		List<Sample> samples = new LinkedList<>();

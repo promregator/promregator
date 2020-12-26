@@ -18,7 +18,7 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-public class OAuth2XSUAAEnricherTest {
+class OAuth2XSUAAEnricherTest {
 	private String oAuthServerResponse = "{\n" + 
 			"    \"access_token\": \"someAccessToken\",\n" + 
 			"    \"token_type\": \"bearer\",\n" + 
@@ -46,7 +46,7 @@ public class OAuth2XSUAAEnricherTest {
 	}
 
 	@Test
-	public void testAppropriateJWTCall() {
+	void testAppropriateJWTCall() {
 		this.ams.getOauthTokenHandler().setResponse(this.oAuthServerResponse);
 		
 		OAuth2XSUAAAuthenticationConfiguration authenticatorConfig = new OAuth2XSUAAAuthenticationConfiguration();
@@ -65,7 +65,7 @@ public class OAuth2XSUAAEnricherTest {
 	}
 
 	@Test
-	public void testJWTCallIsBuffered() {
+	void testJWTCallIsBuffered() {
 		this.ams.getOauthTokenHandler().setResponse(this.oAuthServerResponse);
 		
 		OAuth2XSUAAAuthenticationConfiguration authenticatorConfig = new OAuth2XSUAAAuthenticationConfiguration();

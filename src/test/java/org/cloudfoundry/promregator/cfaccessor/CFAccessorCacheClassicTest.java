@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(classes = CFAccessorCacheClassicSpringApplication.class)
 @TestPropertySource(locations="../default.properties")
 @DirtiesContext(classMode=ClassMode.AFTER_CLASS)
-public class CFAccessorCacheClassicTest {
+class CFAccessorCacheClassicTest {
 
 	@Autowired
 	private CFAccessor parentMock;
@@ -33,19 +33,19 @@ public class CFAccessorCacheClassicTest {
 	private CFAccessorCacheClassic subject;
 	
 	@BeforeEach
-	public void invalidateCaches() {
+	void invalidateCaches() {
 		this.subject.invalidateCacheApplications();
 		this.subject.invalidateCacheSpace();
 		this.subject.invalidateCacheOrg();
 	}
 	
 	@AfterAll
-	public static void runCleanup() {
+	static void runCleanup() {
 		JUnitTestUtils.cleanUpAll();
 	}
 	
 	@Test
-	public void testRetrieveOrgId() {
+	void testRetrieveOrgId() {
 		Mono<ListOrganizationsResponse> response1 = subject.retrieveOrgId("dummy");
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveOrgId("dummy");
 		
@@ -55,7 +55,7 @@ public class CFAccessorCacheClassicTest {
 	}
 
 	@Test
-	public void testRetrieveSpaceId() {
+	void testRetrieveSpaceId() {
 		
 		Mono<ListSpacesResponse> response1 = subject.retrieveSpaceId("dummy1", "dummy2");
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveSpaceId("dummy1", "dummy2");
@@ -66,7 +66,7 @@ public class CFAccessorCacheClassicTest {
 	}
 
 	@Test
-	public void testRetrieveAllApplicationIdsInSpace() {
+	void testRetrieveAllApplicationIdsInSpace() {
 		subject.retrieveAllApplicationIdsInSpace("dummy1", "dummy2");
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllApplicationIdsInSpace("dummy1", "dummy2");
 		
@@ -75,7 +75,7 @@ public class CFAccessorCacheClassicTest {
 	}
 
 	@Test
-	public void testRetrieveSpaceSummary() {
+	void testRetrieveSpaceSummary() {
 		Mono<GetSpaceSummaryResponse> response1 = subject.retrieveSpaceSummary("dummy");
 		Mono<GetSpaceSummaryResponse> response2 = subject.retrieveSpaceSummary("dummy");
 		assertThat(response1).isEqualTo(response2);
