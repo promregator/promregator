@@ -85,10 +85,10 @@ class MetricsEndpointTest {
 
 	@Test
 	void testNegativeIsLoopbackScrapingRequest() {
+		Mockito.when(MockedMetricsEndpointSpringApplication.mockedHttpServletRequest.getHeader(EndpointConstants.HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER))
+		.thenReturn(MockedMetricsEndpointSpringApplication.currentPromregatorInstanceIdentifier.toString());
+		
 		Assertions.assertThrows(LoopbackScrapingDetectedException.class, () -> {
-			Mockito.when(MockedMetricsEndpointSpringApplication.mockedHttpServletRequest.getHeader(EndpointConstants.HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER))
-			.thenReturn(MockedMetricsEndpointSpringApplication.currentPromregatorInstanceIdentifier.toString());
-			
 			subject.getMetrics();
 		});
 	}
