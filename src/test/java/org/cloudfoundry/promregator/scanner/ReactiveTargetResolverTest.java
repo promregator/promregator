@@ -7,10 +7,10 @@ import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorMock;
 import org.cloudfoundry.promregator.config.Target;
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,12 +20,12 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = MockedReactiveTargetResolverSpringApplication.class)
 public class ReactiveTargetResolverTest {
-	@AfterClass
+	@AfterAll
 	public static void cleanupEnvironment() {
 		JUnitTestUtils.cleanUpAll();
 	}
 	
-	@After
+	@AfterEach
 	public void resetCFAccessorMock() {
 		Mockito.reset(this.cfAccessor);
 	}

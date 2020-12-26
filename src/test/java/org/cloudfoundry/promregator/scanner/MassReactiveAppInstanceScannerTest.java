@@ -9,9 +9,9 @@ import java.util.List;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.config.Target;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,7 +26,7 @@ public class MassReactiveAppInstanceScannerTest {
 	@Autowired
 	private AppInstanceScanner appInstanceScanner;
 	
-	@AfterClass
+	@AfterAll
 	public static void cleanUp() {
 		JUnitTestUtils.cleanUpAll();
 	}

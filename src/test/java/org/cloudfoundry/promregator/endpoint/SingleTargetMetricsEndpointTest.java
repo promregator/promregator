@@ -7,10 +7,11 @@ import java.util.regex.Pattern;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.textformat004.Parser;
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,12 +30,12 @@ import io.prometheus.client.Collector.MetricFamilySamples.Sample;
 @ActiveProfiles("SingleTargetMetricsEndpointTest")
 public class SingleTargetMetricsEndpointTest {
 
-	@After
+	@AfterEach
 	public void resetMockedHTTPServletRequest() {
 		Mockito.reset(MockedMetricsEndpointSpringApplication.mockedHttpServletRequest);
 	}
 	
-	@AfterClass
+	@AfterAll
 	public static void cleanupEnvironment() {
 		JUnitTestUtils.cleanUpAll();
 	}
@@ -103,12 +104,14 @@ public class SingleTargetMetricsEndpointTest {
 		Assert.assertTrue(atLeastOneFound);
 	}
 	
-	@Test(expected=LoopbackScrapingDetectedException.class)
+	@Test
 	public void testNegativeIsLoopbackScrapingRequest() {
 		Mockito.when(MockedMetricsEndpointSpringApplication.mockedHttpServletRequest.getHeader(EndpointConstants.HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER))
 		.thenReturn(MockedMetricsEndpointSpringApplication.currentPromregatorInstanceIdentifier.toString());
-		
-		subject.getMetrics("faedbb0a-2273-4cb4-a659-bd31331f7daf", "0");
+
+		Assertions.assertThrows(LoopbackScrapingDetectedException.class, () -> {
+			subject.getMetrics("faedbb0a-2273-4cb4-a659-bd31331f7daf", "0");
+		});
 	}
 	
 	@Test

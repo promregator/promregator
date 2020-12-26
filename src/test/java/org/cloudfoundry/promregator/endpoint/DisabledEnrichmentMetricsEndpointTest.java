@@ -7,11 +7,11 @@ import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.mockServer.DefaultMetricsEndpointHttpHandler;
 import org.cloudfoundry.promregator.mockServer.MetricsEndpointMockServer;
 import org.cloudfoundry.promregator.textformat004.Parser;
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +35,7 @@ public class DisabledEnrichmentMetricsEndpointTest {
 
 	private static MetricsEndpointMockServer mockServer;
 
-	@BeforeClass
+	@BeforeAll
 	public static void startMockedTargetMetricsEndpoint() throws IOException {
 		mockServer = new MetricsEndpointMockServer();
 		DefaultMetricsEndpointHttpHandler meh = mockServer.getMetricsEndpointHandler();
@@ -46,12 +46,12 @@ public class DisabledEnrichmentMetricsEndpointTest {
 		mockServer.start();
 	}
 	
-	@AfterClass
+	@AfterAll
 	public static void stopMockedTargetMetricsEndpoint() {
 		mockServer.stop();
 	}
 	
-	@After
+	@AfterEach
 	public void resetMockedHTTPServletRequest() {
 		Mockito.reset(MockedMetricsEndpointSpringApplication.mockedHttpServletRequest);
 	}
@@ -60,7 +60,7 @@ public class DisabledEnrichmentMetricsEndpointTest {
 	@Qualifier("metricsEndpoint") // NB: Otherwise ambiguity with TestableMetricsEndpoint would be a problem - we want "the real one"
 	private MetricsEndpoint subject;
 	
-	@AfterClass
+	@AfterAll
 	public static void cleanupEnvironment() {
 		JUnitTestUtils.cleanUpAll();
 	}

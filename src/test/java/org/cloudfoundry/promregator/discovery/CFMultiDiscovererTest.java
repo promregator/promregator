@@ -17,9 +17,9 @@ import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
 import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.cloudfoundry.promregator.springconfig.JMSSpringConfiguration;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -32,7 +32,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @TestPropertySource(locations="default.properties")
 public class CFMultiDiscovererTest {
 	
-	@AfterClass
+	@AfterAll
 	public static void cleanUp() {
 		JUnitTestUtils.cleanUpAll();
 	}
@@ -69,7 +69,7 @@ public class CFMultiDiscovererTest {
 
 		List<Instance> result = this.cfDiscoverer.discover(null, null);
 		
-		Assert.assertEquals(2, result.size());
+		Assertions.assertEquals(2, result.size());
 		
 		boolean testapp1_instance1 = false;
 		boolean testapp1_instance2 = false;
@@ -82,30 +82,30 @@ public class CFMultiDiscovererTest {
 			
 			if (instanceId.equals(CFAccessorMock.UNITTEST_APP1_UUID+":0")) {
 				testapp1_instance1 = true;
-				Assert.assertEquals("https://hostapp1.shared.domain.example.org/metrics", instance.getAccessUrl());
+				Assertions.assertEquals("https://hostapp1.shared.domain.example.org/metrics", instance.getAccessUrl());
 				i1 = instance;
 			} else if (instanceId.equals(CFAccessorMock.UNITTEST_APP1_UUID+":1")) {
 				testapp1_instance2 = true;
-				Assert.assertEquals("https://hostapp1.shared.domain.example.org/metrics", instance.getAccessUrl());
+				Assertions.assertEquals("https://hostapp1.shared.domain.example.org/metrics", instance.getAccessUrl());
 				i2 = instance;
 			} else if (instanceId.equals(CFAccessorMock.UNITTEST_APP2_UUID+":0")) {
-				Assert.fail("Should not have been returned");
+				Assertions.fail("Should not have been returned");
 			}
 		}
-		Assert.assertTrue(testapp1_instance1);
-		Assert.assertTrue(testapp1_instance2);
+		Assertions.assertTrue(testapp1_instance1);
+		Assertions.assertTrue(testapp1_instance2);
 		
-		Assert.assertNotNull(i1);
-		Assert.assertNotNull(i2);
+		Assertions.assertNotNull(i1);
+		Assertions.assertNotNull(i2);
 		
-		Assert.assertTrue(this.cfDiscoverer.isInstanceRegistered(i1));
-		Assert.assertTrue(this.cfDiscoverer.isInstanceRegistered(i2));
-		Assert.assertTrue(this.removerTriggerForInstances.isEmpty());
+		Assertions.assertTrue(this.cfDiscoverer.isInstanceRegistered(i1));
+		Assertions.assertTrue(this.cfDiscoverer.isInstanceRegistered(i2));
+		Assertions.assertTrue(this.removerTriggerForInstances.isEmpty());
 		
 		// early cleaning does not change anything
 		this.cfDiscoverer.cleanup();
-		Assert.assertTrue(this.cfDiscoverer.isInstanceRegistered(i1));
-		Assert.assertTrue(this.cfDiscoverer.isInstanceRegistered(i2));
+		Assertions.assertTrue(this.cfDiscoverer.isInstanceRegistered(i1));
+		Assertions.assertTrue(this.cfDiscoverer.isInstanceRegistered(i2));
 		
 		// Wait a little to allow JMX do its job... (if it really did something)
 		for (int i = 0;i<10;i++) {
@@ -113,7 +113,7 @@ public class CFMultiDiscovererTest {
 				Thread.sleep(100);
 				continue;
 			}
-			Assert.assertTrue(this.removerTriggerForInstances.isEmpty());
+			Assertions.assertTrue(this.removerTriggerForInstances.isEmpty());
 		}
 		
 		// later cleaning does...
@@ -121,15 +121,15 @@ public class CFMultiDiscovererTest {
 		
 		this.cfDiscoverer.cleanup();
 		
-		Assert.assertFalse(this.cfDiscoverer.isInstanceRegistered(i1));
-		Assert.assertFalse(this.cfDiscoverer.isInstanceRegistered(i2));
+		Assertions.assertFalse(this.cfDiscoverer.isInstanceRegistered(i1));
+		Assertions.assertFalse(this.cfDiscoverer.isInstanceRegistered(i2));
 		
 		for (int i = 0;i<10;i++) {
 			if (this.removerTriggerForInstances.isEmpty()) {
 				Thread.sleep(400);
 				continue;
 			}
-			Assert.assertEquals(2, this.removerTriggerForInstances.size());
+			Assertions.assertEquals(2, this.removerTriggerForInstances.size());
 		}
 	}
 

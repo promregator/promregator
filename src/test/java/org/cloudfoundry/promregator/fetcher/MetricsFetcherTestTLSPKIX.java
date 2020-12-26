@@ -9,11 +9,11 @@ import java.util.UUID;
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.mockServer.MetricsEndpointMockServerTLS;
 import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
 
@@ -27,18 +27,18 @@ public class MetricsFetcherTestTLSPKIX {
 	public MetricsFetcherTestTLSPKIX() {
 	}
 	
-	@Before
+	@BeforeEach
 	public void startUpMetricsEndpointServer() throws IOException {
 		this.mems = new MetricsEndpointMockServerTLS();
 		this.mems.start();
 	}
 	
-	@After
+	@AfterEach
 	public void tearDownMetricsEndpointServer() {
 		this.mems.stop();
 	}
 
-	@AfterClass
+	@AfterAll
 	public static void cleanupEnvironment() {
 		JUnitTestUtils.cleanUpAll();
 	}

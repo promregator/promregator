@@ -4,7 +4,7 @@ import java.util.function.Predicate;
 
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
 
 public class SingleTargetMetricsEndpointInternalTestPositive extends SingleTargetMetricsEndpoint {

@@ -7,7 +7,7 @@ import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.config.Target;
 import org.cloudfoundry.promregator.config.TargetAuthenticatorConfiguration;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 
 public class TargetsHaveConsistentAuthenticatorIdTest {

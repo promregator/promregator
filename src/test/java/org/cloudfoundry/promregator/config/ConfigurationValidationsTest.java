@@ -2,7 +2,7 @@ package org.cloudfoundry.promregator.config;
 
 import org.cloudfoundry.promregator.config.validations.ConfigurationValidation;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ConfigurationValidationsTest {
 	private class TestableConfigurationValidations extends ConfigurationValidations {

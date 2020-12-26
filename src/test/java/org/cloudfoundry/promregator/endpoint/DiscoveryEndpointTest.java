@@ -5,9 +5,9 @@ import javax.servlet.http.HttpServletRequest;
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.endpoint.DiscoveryEndpoint.DiscoveryLabel;
 import org.cloudfoundry.promregator.endpoint.DiscoveryEndpoint.DiscoveryResponse;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +22,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @TestPropertySource(locations="default.properties")
 public class DiscoveryEndpointTest {
 
-	@AfterClass
+	@AfterAll
 	public static void cleanupEnvironment() {
 		JUnitTestUtils.cleanUpAll();
 	}

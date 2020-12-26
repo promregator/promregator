@@ -8,10 +8,10 @@ import org.cloudfoundry.promregator.mockServer.DefaultMetricsEndpointHttpHandler
 import org.cloudfoundry.promregator.mockServer.MetricsEndpointMockServer;
 import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.textformat004.Parser;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -29,7 +29,7 @@ public class EnabledEnrichmentSingleTargetMetricsEndpointTest {
 
 	private static MetricsEndpointMockServer mockServer;
 
-	@BeforeClass
+	@BeforeAll
 	public static void startMockedTargetMetricsEndpoint() throws IOException {
 		mockServer = new MetricsEndpointMockServer();
 		DefaultMetricsEndpointHttpHandler meh = mockServer.getMetricsEndpointHandler();
@@ -40,12 +40,12 @@ public class EnabledEnrichmentSingleTargetMetricsEndpointTest {
 		mockServer.start();
 	}
 	
-	@AfterClass
+	@AfterAll
 	public static void stopMockedTargetMetricsEndpoint() {
 		mockServer.stop();
 	}
 	
-	@AfterClass
+	@AfterAll
 	public static void cleanupEnvironment() {
 		JUnitTestUtils.cleanUpAll();
 	}

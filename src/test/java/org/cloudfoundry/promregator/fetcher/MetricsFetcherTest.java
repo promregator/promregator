@@ -16,11 +16,11 @@ import org.cloudfoundry.promregator.mockServer.MetricsEndpointMockServer;
 import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.textformat004.Parser;
 import org.cloudfoundry.promregator.textformat004.ParserTest;
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
 
@@ -37,18 +37,18 @@ public class MetricsFetcherTest {
 		this.expectedResult = Collections.enumeration(new Parser(DUMMY_METRICS_LIST).parse().values());
 	}
 	
-	@Before
+	@BeforeEach
 	public void startUpMetricsEndpointServer() throws IOException {
 		this.mems = new MetricsEndpointMockServer();
 		this.mems.start();
 	}
 	
-	@After
+	@AfterEach
 	public void tearDownMetricsEndpointServer() {
 		this.mems.stop();
 	}
 
-	@AfterClass
+	@AfterAll
 	public static void cleanupEnvironment() {
 		JUnitTestUtils.cleanUpAll();
 	}

@@ -7,9 +7,9 @@ import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.auth.NullEnricher;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterAll;
 import org.mockito.Mockito;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
@@ -17,7 +17,7 @@ import io.prometheus.client.Gauge;
 import io.prometheus.client.Gauge.Child;
 
 public class MetricsFetcherSimulatorTest {
-	@AfterClass
+	@AfterAll
 	public static void cleanUp() {
 		JUnitTestUtils.cleanUpAll();
 	}
