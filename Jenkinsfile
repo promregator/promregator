@@ -44,6 +44,12 @@ timestamps {
 		dir("build") {
 			checkout scm
 			
+			sh """
+				echo Building with Java version
+				javac -version
+				java -version
+			"""
+			
 			def currentVersion = getVersion()
 			println "Current version is ${currentVersion}"
 			
