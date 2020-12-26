@@ -9,11 +9,11 @@ import java.util.UUID;
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.mockServer.MetricsEndpointMockServerTLS;
 import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
-import org.junit.Assert;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
 
@@ -78,7 +78,7 @@ public class MetricsFetcherTestTLSPKIX {
 		
 		HashMap<String, MetricFamilySamples> response = subject.call();
 		
-		Assert.assertNull(response);
+		Assertions.assertNull(response);
 	}
 	
 

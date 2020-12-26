@@ -13,8 +13,8 @@ import java.util.Set;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.rewrite.MFSUtils;
-import org.junit.Assert;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import io.prometheus.client.Collector;
@@ -35,17 +35,17 @@ public class ParserTest {
 		Set<String> actualSet = actualMap.keySet();
 		Set<String> expectedSet = expectedMap.keySet();
 		
-		Assert.assertNotNull(actualSet);
-		Assert.assertNotNull(expectedSet);
+		Assertions.assertNotNull(actualSet);
+		Assertions.assertNotNull(expectedSet);
 		
-		Assert.assertEquals(expectedSet.size(), actualSet.size());
-		Assert.assertTrue(expectedSet.containsAll(actualSet));
+		Assertions.assertEquals(expectedSet.size(), actualSet.size());
+		Assertions.assertTrue(expectedSet.containsAll(actualSet));
 		
 		for (String metricName : expectedMap.keySet()) {
 			MetricFamilySamples actualMFS = actualMap.get(metricName);
 			MetricFamilySamples expectedMFS = expectedMap.get(metricName);
 			
-			Assert.assertTrue(expectedMFS.equals(actualMFS));
+			Assertions.assertTrue(expectedMFS.equals(actualMFS));
 		}
 	}
 	
@@ -192,14 +192,14 @@ public class ParserTest {
 		// Thus, we have to check this explicitly here
 		
 		MetricFamilySamples mfs = result.nextElement();
-		Assert.assertFalse(result.hasMoreElements());
+		Assertions.assertFalse(result.hasMoreElements());
 		
-		Assert.assertEquals("metric_without_labels", mfs.name);
+		Assertions.assertEquals("metric_without_labels", mfs.name);
 		
-		Assert.assertEquals(1, mfs.samples.size());
+		Assertions.assertEquals(1, mfs.samples.size());
 		Sample actualSample = mfs.samples.get(0);
-		Assert.assertEquals("metric_without_labels", actualSample.name);
-		Assert.assertTrue(Double.isNaN(actualSample.value));
+		Assertions.assertEquals("metric_without_labels", actualSample.name);
+		Assertions.assertTrue(Double.isNaN(actualSample.value));
 	}
 	
 	@Test
@@ -216,14 +216,14 @@ public class ParserTest {
 		// Thus, we have to check this explicitly here
 		
 		MetricFamilySamples mfs = result.nextElement();
-		Assert.assertFalse(result.hasMoreElements());
+		Assertions.assertFalse(result.hasMoreElements());
 		
-		Assert.assertEquals("metric_without_labels", mfs.name);
+		Assertions.assertEquals("metric_without_labels", mfs.name);
 		
-		Assert.assertEquals(1, mfs.samples.size());
+		Assertions.assertEquals(1, mfs.samples.size());
 		Sample actualSample = mfs.samples.get(0);
-		Assert.assertEquals("metric_without_labels", actualSample.name);
-		Assert.assertTrue(Double.isNaN(actualSample.value));
+		Assertions.assertEquals("metric_without_labels", actualSample.name);
+		Assertions.assertTrue(Double.isNaN(actualSample.value));
 	}
 	
 	@Test
@@ -815,7 +815,7 @@ public class ParserTest {
 		
 		// ensure that all metrics are understood
 		for (MetricFamilySamples mfs : resultMap.values()) {
-			Assert.assertNotEquals(Type.UNTYPED, mfs.type);
+			Assertions.assertNotEquals(Type.UNTYPED, mfs.type);
 		}
 		
 	}
@@ -827,13 +827,13 @@ public class ParserTest {
 		Parser subject = new Parser(textToParse);
 		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		
-		Assert.assertEquals(1, resultMap.keySet().size());
+		Assertions.assertEquals(1, resultMap.keySet().size());
 		
 		MetricFamilySamples mfs = resultMap.get("logback_events_total");
-		Assert.assertNotNull(mfs);
+		Assertions.assertNotNull(mfs);
 		
 		// this file contains multiple samples for the same metric
-		Assert.assertEquals(5, mfs.samples.size());
+		Assertions.assertEquals(5, mfs.samples.size());
 	}
 	
 	@Test
@@ -843,15 +843,15 @@ public class ParserTest {
 		Parser subject = new Parser(textToParse);
 		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
 		
-		Assert.assertEquals(1, resultMap.keySet().size());
+		Assertions.assertEquals(1, resultMap.keySet().size());
 		
 		MetricFamilySamples mfs = resultMap.get("http_server_requests_seconds");
-		Assert.assertNotNull(mfs);
+		Assertions.assertNotNull(mfs);
 		
 		// this file contains multiple samples for the same metric
-		Assert.assertEquals(66, mfs.samples.size());
+		Assertions.assertEquals(66, mfs.samples.size());
 		
-		Assert.assertEquals(0.034350549,  mfs.samples.get(65).value, 0.001);
+		Assertions.assertEquals(0.034350549,  mfs.samples.get(65).value, 0.001);
 	}
 	
 	@Test

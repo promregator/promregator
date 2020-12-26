@@ -16,11 +16,11 @@ import org.cloudfoundry.promregator.mockServer.MetricsEndpointMockServer;
 import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.textformat004.Parser;
 import org.cloudfoundry.promregator.textformat004.ParserTest;
-import org.junit.Assert;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
 
@@ -89,8 +89,8 @@ public class MetricsFetcherTest {
 		HashMap<String, MetricFamilySamples> response = subject.call();
 		
 		ParserTest.compareEMFS(this.expectedResult, Collections.enumeration(response.values()));
-		Assert.assertEquals(instanceId, this.mems.getMetricsEndpointHandler().getHeaders().getFirst("X-CF-APP-INSTANCE"));
-		Assert.assertEquals(currentUUID.toString(), this.mems.getMetricsEndpointHandler().getHeaders().getFirst(EndpointConstants.HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER));
+		Assertions.assertEquals(instanceId, this.mems.getMetricsEndpointHandler().getHeaders().getFirst("X-CF-APP-INSTANCE"));
+		Assertions.assertEquals(currentUUID.toString(), this.mems.getMetricsEndpointHandler().getHeaders().getFirst(EndpointConstants.HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER));
 	}
 	
 	private static class TestAuthenticationEnricher implements AuthenticationEnricher {
@@ -100,7 +100,7 @@ public class MetricsFetcherTest {
 		public void enrichWithAuthentication(HttpGet httpget) {
 			this.called = true;
 			
-			Assert.assertEquals("/metrics", httpget.getURI().getPath());
+			Assertions.assertEquals("/metrics", httpget.getURI().getPath());
 			
 			httpget.addHeader("Authentication", "Bearer abc");
 		}
@@ -135,11 +135,11 @@ public class MetricsFetcherTest {
 		
 		HashMap<String, MetricFamilySamples> response = subject.call();
 		
-		Assert.assertTrue(ae.isCalled());
+		Assertions.assertTrue(ae.isCalled());
 		
 		ParserTest.compareEMFS(this.expectedResult, Collections.enumeration(response.values()));
-		Assert.assertEquals(instanceId, this.mems.getMetricsEndpointHandler().getHeaders().getFirst("X-CF-APP-INSTANCE"));
-		Assert.assertEquals("Bearer abc", this.mems.getMetricsEndpointHandler().getHeaders().getFirst("Authentication"));
+		Assertions.assertEquals(instanceId, this.mems.getMetricsEndpointHandler().getHeaders().getFirst("X-CF-APP-INSTANCE"));
+		Assertions.assertEquals("Bearer abc", this.mems.getMetricsEndpointHandler().getHeaders().getFirst("Authentication"));
 	}
 	
 	@Test
@@ -166,7 +166,7 @@ public class MetricsFetcherTest {
 		
 		HashMap<String, MetricFamilySamples> response = subject.call();
 		
-		Assert.assertNull(response);
+		Assertions.assertNull(response);
 	}
 	
 	@Test
@@ -193,7 +193,7 @@ public class MetricsFetcherTest {
 		
 		HashMap<String, MetricFamilySamples> response = subject.call();
 		
-		Assert.assertNull(response);
+		Assertions.assertNull(response);
 	}
 
 

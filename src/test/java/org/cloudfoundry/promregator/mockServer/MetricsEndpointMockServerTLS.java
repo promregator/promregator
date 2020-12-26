@@ -13,7 +13,7 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 import com.sun.net.httpserver.HttpsConfigurator;
 import com.sun.net.httpserver.HttpsParameters;
@@ -52,49 +52,49 @@ public class MetricsEndpointMockServerTLS {
 		try {
 			ks = KeyStore.getInstance("JKS");
 		} catch (KeyStoreException e) {
-			Assert.fail("Unable to set up JKS Keystore");
+			Assertions.fail("Unable to set up JKS Keystore");
 		}
 		try {
 			ks.load(this.getClass().getResourceAsStream("selfsigned.jks"), passphrase);
 		} catch (NoSuchAlgorithmException | CertificateException | IOException e) {
-			Assert.fail("Unable to load selfsigned keystore");
+			Assertions.fail("Unable to load selfsigned keystore");
 		}
 
 		KeyManagerFactory kmf = null;
 		try {
 			kmf = KeyManagerFactory.getInstance("SunX509");
 		} catch (NoSuchAlgorithmException e) {
-			Assert.fail("Unable to retrieve KeyManagerFactory");
+			Assertions.fail("Unable to retrieve KeyManagerFactory");
 		}
 		try {
 			kmf.init(ks, passphrase);
 		} catch (UnrecoverableKeyException | KeyStoreException | NoSuchAlgorithmException e) {
-			Assert.fail("Unable to initialize KeyManagerFactory");
+			Assertions.fail("Unable to initialize KeyManagerFactory");
 		}
 
 		TrustManagerFactory tmf = null;
 		try {
 			tmf = TrustManagerFactory.getInstance("SunX509");
 		} catch (NoSuchAlgorithmException e) {
-			Assert.fail("Unable to retrieve TrustManagerFactory");
+			Assertions.fail("Unable to retrieve TrustManagerFactory");
 		}
 		
 		try {
 			tmf.init(ks);
 		} catch (KeyStoreException e) {
-			Assert.fail("Unable to initialize TrustManagerFactory");
+			Assertions.fail("Unable to initialize TrustManagerFactory");
 		}
 		
 		SSLContext ssl = null;
 		try {
 			ssl = SSLContext.getInstance("TLS");
 		} catch (NoSuchAlgorithmException e) {
-			Assert.fail("Unable to retrieve SSLContext");
+			Assertions.fail("Unable to retrieve SSLContext");
 		}
 		try {
 			ssl.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
 		} catch (KeyManagementException e) {
-			Assert.fail("Unable to initialize SSLContext");
+			Assertions.fail("Unable to initialize SSLContext");
 		}
 		
 		return ssl;

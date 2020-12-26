@@ -7,10 +7,10 @@ import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.mockServer.DefaultMetricsEndpointHttpHandler;
 import org.cloudfoundry.promregator.mockServer.MetricsEndpointMockServer;
 import org.cloudfoundry.promregator.textformat004.Parser;
-import org.junit.Assert;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -55,33 +55,33 @@ public class DisabledEnrichmentSingleTargetMetricsEndpointTest {
 	
 	@Test
 	public void testGetMetricsLabelsAreCorrectIfLabelEnrichmentIsDisabled() {
-		Assert.assertNotNull(subject);
+		Assertions.assertNotNull(subject);
 		
 		String response = subject.getMetrics("faedbb0a-2273-4cb4-a659-bd31331f7daf", "0").getBody();
 		
-		Assert.assertNotNull(response);
-		Assert.assertNotEquals("", response);
+		Assertions.assertNotNull(response);
+		Assertions.assertNotEquals("", response);
 		
 		Parser parser = new Parser(response);
 		HashMap<String, MetricFamilySamples> mapMFS = parser.parse();
 		
 		MetricFamilySamples dummyMFS = mapMFS.get("dummy");
-		Assert.assertNotNull(dummyMFS);
+		Assertions.assertNotNull(dummyMFS);
 		
-		Assert.assertEquals(1, dummyMFS.samples.size());
+		Assertions.assertEquals(1, dummyMFS.samples.size());
 		
 		Sample dummySample = dummyMFS.samples.get(0);
-		Assert.assertNotNull(dummySample);
+		Assertions.assertNotNull(dummySample);
 		
-		Assert.assertEquals(1, dummySample.labelNames.size());
-		Assert.assertEquals(1, dummySample.labelValues.size());
+		Assertions.assertEquals(1, dummySample.labelNames.size());
+		Assertions.assertEquals(1, dummySample.labelValues.size());
 		
 		int indexOfLabel = dummySample.labelNames.indexOf("label");
-		Assert.assertNotEquals(-1, indexOfLabel);
-		Assert.assertEquals("xyz", dummySample.labelValues.get(indexOfLabel));
+		Assertions.assertNotEquals(-1, indexOfLabel);
+		Assertions.assertEquals("xyz", dummySample.labelValues.get(indexOfLabel));
 
 		int indexOfInstance = dummySample.labelNames.indexOf("instance");
-		Assert.assertEquals(-1, indexOfInstance);
+		Assertions.assertEquals(-1, indexOfInstance);
 		/* Note:
 		 * Prometheus does not permit to set the instance as label via scraping.
 		 * The label value may only be changed by rewriting.
@@ -89,23 +89,23 @@ public class DisabledEnrichmentSingleTargetMetricsEndpointTest {
 		 */
 		
 		MetricFamilySamples upMFS = mapMFS.get("promregator_up");
-		Assert.assertNotNull(upMFS);
-		Assert.assertEquals(1, upMFS.samples.size());
+		Assertions.assertNotNull(upMFS);
+		Assertions.assertEquals(1, upMFS.samples.size());
 		
 		Sample upSample = upMFS.samples.get(0);
-		Assert.assertEquals(0, upSample.labelNames.size());
-		Assert.assertEquals(0, upSample.labelValues.size());
+		Assertions.assertEquals(0, upSample.labelNames.size());
+		Assertions.assertEquals(0, upSample.labelValues.size());
 		
 		MetricFamilySamples scrapeDurationMFS = mapMFS.get("promregator_scrape_duration_seconds");
-		Assert.assertNotNull(scrapeDurationMFS);
-		Assert.assertEquals(1, scrapeDurationMFS.samples.size());
+		Assertions.assertNotNull(scrapeDurationMFS);
+		Assertions.assertEquals(1, scrapeDurationMFS.samples.size());
 		
 		Sample scrapeDurationSample = scrapeDurationMFS.samples.get(0);
 		
 		// NB: as the duration is part of the usual scraping response, it also must comply to the rules
 		// if labelEnrichment is disabled.
-		Assert.assertEquals(0, scrapeDurationSample.labelNames.size());
-		Assert.assertEquals(0, scrapeDurationSample.labelValues.size());
+		Assertions.assertEquals(0, scrapeDurationSample.labelNames.size());
+		Assertions.assertEquals(0, scrapeDurationSample.labelValues.size());
 	}
 	
 }

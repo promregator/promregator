@@ -8,7 +8,7 @@ import org.cloudfoundry.client.v2.organizations.ListOrganizationsRequest;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.organizations.OrganizationResource;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -56,10 +56,10 @@ public class ReactiveCFPaginatedRequestFetcherTest {
 		}, 100, responseGenerator);
 		
 		ListOrganizationsResponse subjectResponse = subjectResponseMono.block();
-		Assert.assertEquals(1, subjectResponse.getTotalPages().intValue());
-		Assert.assertEquals(0, subjectResponse.getTotalResults().intValue());
-		Assert.assertNotNull(subjectResponse.getResources());
-		Assert.assertTrue (subjectResponse.getResources().isEmpty());
+		Assertions.assertEquals(1, subjectResponse.getTotalPages().intValue());
+		Assertions.assertEquals(0, subjectResponse.getTotalResults().intValue());
+		Assertions.assertNotNull(subjectResponse.getResources());
+		Assertions.assertTrue (subjectResponse.getResources().isEmpty());
 	}
 	
 	@Test
@@ -81,10 +81,10 @@ public class ReactiveCFPaginatedRequestFetcherTest {
 		}, 100, responseGenerator);
 		
 		ListOrganizationsResponse subjectResponse = subjectResponseMono.block();
-		Assert.assertEquals(1, subjectResponse.getTotalPages().intValue());
-		Assert.assertEquals(2, subjectResponse.getTotalResults().intValue());
-		Assert.assertNotNull (subjectResponse.getResources());
-		Assert.assertEquals(2, subjectResponse.getResources().size());
+		Assertions.assertEquals(1, subjectResponse.getTotalPages().intValue());
+		Assertions.assertEquals(2, subjectResponse.getTotalResults().intValue());
+		Assertions.assertNotNull (subjectResponse.getResources());
+		Assertions.assertEquals(2, subjectResponse.getResources().size());
 	}
 	
 	@Test
@@ -108,10 +108,10 @@ public class ReactiveCFPaginatedRequestFetcherTest {
 		}, 100, responseGenerator);
 		
 		ListOrganizationsResponse subjectResponse = subjectResponseMono.block();
-		Assert.assertEquals(2, subjectResponse.getTotalPages().intValue());
-		Assert.assertEquals(2*100, subjectResponse.getTotalResults().intValue());
-		Assert.assertNotNull(subjectResponse.getResources());
-		Assert.assertEquals(2*100, subjectResponse.getResources().size());
+		Assertions.assertEquals(2, subjectResponse.getTotalPages().intValue());
+		Assertions.assertEquals(2*100, subjectResponse.getTotalResults().intValue());
+		Assertions.assertNotNull(subjectResponse.getResources());
+		Assertions.assertEquals(2*100, subjectResponse.getResources().size());
 	}
 	
 	@Test
@@ -137,10 +137,10 @@ public class ReactiveCFPaginatedRequestFetcherTest {
 		}, 100, responseGenerator);
 		
 		ListOrganizationsResponse subjectResponse = subjectResponseMono.block();
-		Assert.assertEquals(2, subjectResponse.getTotalPages().intValue());
-		Assert.assertEquals(1*100, subjectResponse.getTotalResults().intValue());
-		Assert.assertNotNull (subjectResponse.getResources());
-		Assert.assertEquals(1*100, subjectResponse.getResources().size());
+		Assertions.assertEquals(2, subjectResponse.getTotalPages().intValue());
+		Assertions.assertEquals(1*100, subjectResponse.getTotalResults().intValue());
+		Assertions.assertNotNull (subjectResponse.getResources());
+		Assertions.assertEquals(1*100, subjectResponse.getResources().size());
 	}
 	
 	@Test
@@ -153,9 +153,9 @@ public class ReactiveCFPaginatedRequestFetcherTest {
 		ListOrganizationsResponse fallback = ListOrganizationsResponse.builder().build();
 		
 		ListOrganizationsResponse subjectResponse = subjectResponseMono.doOnError(e ->
-			Assert.assertTrue(Exceptions.unwrap(e) instanceof TimeoutException)
+			Assertions.assertTrue(Exceptions.unwrap(e) instanceof TimeoutException)
 		).onErrorReturn(fallback).block();
-		Assert.assertEquals(fallback, subjectResponse);
+		Assertions.assertEquals(fallback, subjectResponse);
 	}
 	
 	@Test
@@ -187,9 +187,9 @@ public class ReactiveCFPaginatedRequestFetcherTest {
 		ListOrganizationsResponse fallback = ListOrganizationsResponse.builder().build();
 		
 		ListOrganizationsResponse subjectResponse = subjectResponseMono.doOnError(e ->
-			Assert.assertTrue(Exceptions.unwrap(e) instanceof TimeoutException)
+			Assertions.assertTrue(Exceptions.unwrap(e) instanceof TimeoutException)
 		).onErrorReturn(fallback).block();
-		Assert.assertEquals(fallback, subjectResponse);
+		Assertions.assertEquals(fallback, subjectResponse);
 	}
 
 	@Test
@@ -202,9 +202,9 @@ public class ReactiveCFPaginatedRequestFetcherTest {
 		ListOrganizationsResponse fallback = ListOrganizationsResponse.builder().build();
 		
 		ListOrganizationsResponse subjectResponse = subjectResponseMono.doOnError(e ->
-			Assert.assertTrue(Exceptions.unwrap(e) instanceof Exception)
+			Assertions.assertTrue(Exceptions.unwrap(e) instanceof Exception)
 		).onErrorReturn(fallback).block();
-		Assert.assertEquals(fallback, subjectResponse);
+		Assertions.assertEquals(fallback, subjectResponse);
 	}
 	
 	@Test
@@ -212,6 +212,6 @@ public class ReactiveCFPaginatedRequestFetcherTest {
 		RateLimiter rl = RateLimiter.create(Double.POSITIVE_INFINITY);
 		
 		boolean acquired = rl.tryAcquire(10000, Duration.ofMillis(100));
-		Assert.assertTrue(acquired);
+		Assertions.assertTrue(acquired);
 	}
 }

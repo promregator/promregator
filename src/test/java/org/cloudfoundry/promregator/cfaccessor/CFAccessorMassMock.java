@@ -19,7 +19,7 @@ import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v2.spaces.SpaceEntity;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 import reactor.core.publisher.Mono;
 
@@ -64,7 +64,7 @@ public class CFAccessorMassMock implements CFAccessor {
 			
 			return Mono.just(resp).delayElement(this.getSleepRandomDuration());
 		}
-		Assert.fail("Invalid OrgId request");
+		Assertions.fail("Invalid OrgId request");
 		return null;
 	}
 
@@ -83,7 +83,7 @@ public class CFAccessorMassMock implements CFAccessor {
 			return Mono.just(resp).delayElement(this.getSleepRandomDuration());
 		}
 		
-		Assert.fail("Invalid SpaceId request");
+		Assertions.fail("Invalid SpaceId request");
 		return null;
 	}
 
@@ -107,7 +107,7 @@ public class CFAccessorMassMock implements CFAccessor {
 			ListApplicationsResponse resp = ListApplicationsResponse.builder().addAllResources(list).build();
 			return Mono.just(resp).delayElement(this.getSleepRandomDuration());
 		}
-		Assert.fail("Invalid retrieveAllApplicationIdsInSpace request");
+		Assertions.fail("Invalid retrieveAllApplicationIdsInSpace request");
 		return null;
 	}
 	
@@ -132,7 +132,7 @@ public class CFAccessorMassMock implements CFAccessor {
 			return Mono.just(resp).delayElement(this.getSleepRandomDuration());
 		}
 		
-		Assert.fail("Invalid retrieveSpaceSummary request");
+		Assertions.fail("Invalid retrieveSpaceSummary request");
 		return null;
 	}
 

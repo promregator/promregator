@@ -10,9 +10,9 @@ import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
-import org.junit.Assert;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.CollectorRegistry;
@@ -63,7 +63,7 @@ public class InstanceLifecycleHandlerTest {
 			MetricFamilySamples metric = mfs.nextElement();
 			
 			for (MetricFamilySamples.Sample sample : metric.samples) {
-				Assert.assertFalse(sample.labelValues.contains("testapp"));
+				Assertions.assertFalse(sample.labelValues.contains("testapp"));
 			}
 		}
 		

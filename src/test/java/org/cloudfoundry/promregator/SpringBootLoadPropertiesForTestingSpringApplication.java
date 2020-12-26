@@ -1,6 +1,6 @@
 package org.cloudfoundry.promregator;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,12 +17,12 @@ public class SpringBootLoadPropertiesForTestingSpringApplication {
 	
 	@Bean
 	public Object anything() {
-		Assert.assertTrue(dummyValue);
+		Assertions.assertTrue(dummyValue);
 		return new Object();
 	}
 	
 	public void check() {
-		Assert.assertTrue(dummyValue);
+		Assertions.assertTrue(dummyValue);
 	}
 
 	public String getSecretValue() {

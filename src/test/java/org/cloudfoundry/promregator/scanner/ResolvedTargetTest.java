@@ -1,6 +1,6 @@
 package org.cloudfoundry.promregator.scanner;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class ResolvedTargetTest {
@@ -18,11 +18,11 @@ public class ResolvedTargetTest {
 		
 		String answer = subject.toString();
 		
-		Assert.assertTrue(answer.contains("testOrgName"));
-		Assert.assertTrue(answer.contains("testSpaceName"));
-		Assert.assertTrue(answer.contains("testapp"));
-		Assert.assertTrue(answer.contains("/path/test"));
-		Assert.assertTrue(answer.contains("https"));
+		Assertions.assertTrue(answer.contains("testOrgName"));
+		Assertions.assertTrue(answer.contains("testSpaceName"));
+		Assertions.assertTrue(answer.contains("testapp"));
+		Assertions.assertTrue(answer.contains("/path/test"));
+		Assertions.assertTrue(answer.contains("https"));
 	}
 
 }

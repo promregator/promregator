@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.config.Target;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class PreferredRouteRegexMustBeCompilableTest {
@@ -20,7 +20,7 @@ public class PreferredRouteRegexMustBeCompilableTest {
 		targets.add(target);
 		promregatorConfiguration.setTargets(targets);
 		
-		Assert.assertNull(subject.validate(promregatorConfiguration));
+		Assertions.assertNull(subject.validate(promregatorConfiguration));
 	}
 	
 	@Test
@@ -35,7 +35,7 @@ public class PreferredRouteRegexMustBeCompilableTest {
 		targets.add(target);
 		promregatorConfiguration.setTargets(targets);
 		
-		Assert.assertNull(subject.validate(promregatorConfiguration));
+		Assertions.assertNull(subject.validate(promregatorConfiguration));
 	}
 	
 	@Test
@@ -50,7 +50,7 @@ public class PreferredRouteRegexMustBeCompilableTest {
 		targets.add(target);
 		promregatorConfiguration.setTargets(targets);
 		
-		Assert.assertNotNull(subject.validate(promregatorConfiguration));
+		Assertions.assertNotNull(subject.validate(promregatorConfiguration));
 	}
 
 }

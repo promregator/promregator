@@ -1,7 +1,7 @@
 package org.cloudfoundry.promregator.config;
 
 import org.cloudfoundry.promregator.config.validations.ConfigurationValidation;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class ConfigurationValidationsTest {
@@ -45,7 +45,7 @@ public class ConfigurationValidationsTest {
 		
 		subject.validateConfiguration();
 		
-		Assert.assertFalse(subject.called);
+		Assertions.assertFalse(subject.called);
 	}
 
 	@Test
@@ -58,7 +58,7 @@ public class ConfigurationValidationsTest {
 		
 		subject.validateConfiguration();
 		
-		Assert.assertTrue(subject.called);
+		Assertions.assertTrue(subject.called);
 	}
 
 }

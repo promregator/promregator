@@ -1,17 +1,17 @@
 package org.cloudfoundry.promregator.cache;
 
 
-import java.time.Duration;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.Test;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Mono;
-
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
+
+import java.time.Duration;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import reactor.core.publisher.Mono;
 
 public class AutoRefreshingCacheMapTest {
 	private static final Logger log = LoggerFactory.getLogger(AutoRefreshingCacheMapTest.class);
@@ -19,14 +19,14 @@ public class AutoRefreshingCacheMapTest {
 	@Test
 	public void testPutAndGet() {
 		AutoRefreshingCacheMap<String, String> subject = new AutoRefreshingCacheMap<>("test", null, Duration.ofSeconds(1), Duration.ofSeconds(1), key -> {
-			Assert.fail("should not be reached");
+			Assertions.fail("should not be reached");
 			return null;
 		});
 		
 		subject.put("test", "value");
 		String value = subject.get("test");
 		
-		Assert.assertEquals("value", value);
+		Assertions.assertEquals("value", value);
 	}
 	
 	@Test
@@ -41,7 +41,7 @@ public class AutoRefreshingCacheMapTest {
 		});
 		
 		String value = subject.get("autoload");
-		Assert.assertEquals("daolotua", value);
+		Assertions.assertEquals("daolotua", value);
 	}
 	
 	@Test
@@ -56,13 +56,13 @@ public class AutoRefreshingCacheMapTest {
 		});
 		
 		String value = subject.get("autoload");
-		Assert.assertEquals("daolotua", value);
+		Assertions.assertEquals("daolotua", value);
 		
 		// we have to wait until the thread has been called to clean up
 		Thread.sleep(1000);
 		
 		boolean exists = subject.containsKey("autoload");
-		Assert.assertFalse(exists);
+		Assertions.assertFalse(exists);
 	}
 	
 	private static class Counter {
@@ -91,13 +91,13 @@ public class AutoRefreshingCacheMapTest {
 
 		subject.put(testKey, "initial");
 
-		Assert.assertTrue(subject.containsKey(testKey));
-		Assert.assertEquals("initial", subject.get(testKey));
+		Assertions.assertTrue(subject.containsKey(testKey));
+		Assertions.assertEquals("initial", subject.get(testKey));
 		
 		// we have to wait until the thread had a chance to refresh
-		await().atMost(3, SECONDS).untilAsserted(() -> Assert.assertEquals(1, counter.getCounter()));
-		Assert.assertTrue(subject.containsKey(testKey));
-		Assert.assertEquals("refreshed", subject.get(testKey));
+		await().atMost(3, SECONDS).untilAsserted(() -> Assertions.assertEquals(1, counter.getCounter()));
+		Assertions.assertTrue(subject.containsKey(testKey));
+		Assertions.assertEquals("refreshed", subject.get(testKey));
 	}
 	
 	private static class MassOperationTestThread extends Thread {
@@ -121,20 +121,20 @@ public class AutoRefreshingCacheMapTest {
 				subject.put(deleteKey, "entry-to-be-deleted");
 				
 				String value = subject.get("global");
-				Assert.assertEquals("labolg", value);
+				Assertions.assertEquals("labolg", value);
 
 				Thread.sleep(1500);
 				
 				// check that a cleanup has taken place
 				value = subject.get(deleteKey);
-				Assert.assertNotEquals("entry-to-be-deleted", value);
+				Assertions.assertNotEquals("entry-to-be-deleted", value);
 				
 				// verify that "global" wasn't touched
 				value = subject.get("global");
-				Assert.assertEquals("labolg", value);
+				Assertions.assertEquals("labolg", value);
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
-				Assert.fail("Thread was interrupted");
+				Assertions.fail("Thread was interrupted");
 			}
 			
 			this.terminatedProperly = true;
@@ -172,8 +172,8 @@ public class AutoRefreshingCacheMapTest {
 		}
 		
 		for (int i = 0;i<threads.length;i++) {
-			Assert.assertFalse(threads[i].isAlive());
-			Assert.assertTrue(threads[i].isTerminatedProperly()); // if this check fails, check on the console log!
+			Assertions.assertFalse(threads[i].isAlive());
+			Assertions.assertTrue(threads[i].isTerminatedProperly()); // if this check fails, check on the console log!
 		}
 	}
 
@@ -202,7 +202,7 @@ public class AutoRefreshingCacheMapTest {
 				Thread.sleep(200);
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
-				Assert.fail("Interrupted");
+				Assertions.fail("Interrupted");
 			}
 			return Mono.just(key+"*");
 		});
@@ -218,11 +218,11 @@ public class AutoRefreshingCacheMapTest {
 		}
 		
 		for (int i = 0;i<threads.length;i++) {
-			Assert.assertFalse(threads[i].isAlive());
+			Assertions.assertFalse(threads[i].isAlive());
 		}
 		
 		// there shall only be one call to the loader function!
-		Assert.assertEquals(1, this.lockObjectStringWorksCalls);
+		Assertions.assertEquals(1, this.lockObjectStringWorksCalls);
 	}
 	
 	private static class CompositeKey {
@@ -311,7 +311,7 @@ public class AutoRefreshingCacheMapTest {
 				Thread.sleep(200);
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
-				Assert.fail("Interrupted");
+				Assertions.fail("Interrupted");
 			}
 			return Mono.just(key.getA() + key.getB() +"*");
 		});
@@ -327,11 +327,11 @@ public class AutoRefreshingCacheMapTest {
 		}
 		
 		for (int i = 0;i<threads.length;i++) {
-			Assert.assertFalse(threads[i].isAlive());
+			Assertions.assertFalse(threads[i].isAlive());
 		}
 		
 		// there shall only be one call to the loader function!
-		Assert.assertEquals(1, this.lockObjectCompositeWorksCalls);
+		Assertions.assertEquals(1, this.lockObjectCompositeWorksCalls);
 	}
 	
 }

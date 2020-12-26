@@ -7,9 +7,9 @@ import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.config.Target;
 import org.cloudfoundry.promregator.scanner.MockedCachingTargetResolverSpringApplication.MockedTargetResolver;
 import org.junit.After;
-import org.junit.Assert;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -45,12 +45,12 @@ public class CachingTargetResolverTest {
 		List<ResolvedTarget> actualList = this.cachingTargetResolver.resolveTargets(list);
 		
 		MockedTargetResolver mtr = (MockedTargetResolver) targetResolver;
-		Assert.assertTrue(mtr.isRequestForTarget1());
-		Assert.assertTrue(mtr.isRequestForTarget2());
-		Assert.assertFalse(mtr.isRequestForTargetAllInSpace());
-		Assert.assertFalse(mtr.isRequestForTargetWithRegex());
+		Assertions.assertTrue(mtr.isRequestForTarget1());
+		Assertions.assertTrue(mtr.isRequestForTarget2());
+		Assertions.assertFalse(mtr.isRequestForTargetAllInSpace());
+		Assertions.assertFalse(mtr.isRequestForTargetWithRegex());
 		
-		Assert.assertEquals(2, actualList.size());
+		Assertions.assertEquals(2, actualList.size());
 		
 		
 		boolean target1Found = false;
@@ -61,11 +61,11 @@ public class CachingTargetResolverTest {
 			} else if (rt == MockedTargetResolver.rTarget2) {
 				target2Found = true;
 			} else {
-				Assert.fail("Unexpected target provided");
+				Assertions.fail("Unexpected target provided");
 			}
 		}
-		Assert.assertTrue(target1Found);
-		Assert.assertTrue(target2Found);
+		Assertions.assertTrue(target1Found);
+		Assertions.assertTrue(target2Found);
 	}
 	
 	@Test
@@ -76,12 +76,12 @@ public class CachingTargetResolverTest {
 		List<ResolvedTarget> actualList = this.cachingTargetResolver.resolveTargets(list);
 		
 		MockedTargetResolver mtr = (MockedTargetResolver) targetResolver;
-		Assert.assertFalse(mtr.isRequestForTarget1());
-		Assert.assertFalse(mtr.isRequestForTarget2());
-		Assert.assertTrue(mtr.isRequestForTargetAllInSpace());
-		Assert.assertFalse(mtr.isRequestForTargetWithRegex());
+		Assertions.assertFalse(mtr.isRequestForTarget1());
+		Assertions.assertFalse(mtr.isRequestForTarget2());
+		Assertions.assertTrue(mtr.isRequestForTargetAllInSpace());
+		Assertions.assertFalse(mtr.isRequestForTargetWithRegex());
 		
-		Assert.assertEquals(2, actualList.size());
+		Assertions.assertEquals(2, actualList.size());
 		
 		boolean target1Found = false;
 		boolean target2Found = false;
@@ -91,11 +91,11 @@ public class CachingTargetResolverTest {
 			} else if (rt == MockedTargetResolver.rTarget2) {
 				target2Found = true;
 			} else {
-				Assert.fail("Unexpected target provided");
+				Assertions.fail("Unexpected target provided");
 			}
 		}
-		Assert.assertTrue(target1Found);
-		Assert.assertTrue(target2Found);
+		Assertions.assertTrue(target1Found);
+		Assertions.assertTrue(target2Found);
 	}
 	
 	@Test
@@ -107,28 +107,28 @@ public class CachingTargetResolverTest {
 		List<ResolvedTarget> actualList = this.cachingTargetResolver.resolveTargets(list);
 		
 		MockedTargetResolver mtr = (MockedTargetResolver) targetResolver;
-		Assert.assertTrue(mtr.isRequestForTarget1());
-		Assert.assertFalse(mtr.isRequestForTarget2());
-		Assert.assertFalse(mtr.isRequestForTargetAllInSpace());
-		Assert.assertFalse(mtr.isRequestForTargetWithRegex());
+		Assertions.assertTrue(mtr.isRequestForTarget1());
+		Assertions.assertFalse(mtr.isRequestForTarget2());
+		Assertions.assertFalse(mtr.isRequestForTargetAllInSpace());
+		Assertions.assertFalse(mtr.isRequestForTargetWithRegex());
 		
-		Assert.assertEquals(1, actualList.size());
+		Assertions.assertEquals(1, actualList.size());
 		
 		ResolvedTarget rt = actualList.get(0);
-		Assert.assertEquals(MockedTargetResolver.rTarget1, rt);
+		Assertions.assertEquals(MockedTargetResolver.rTarget1, rt);
 		
 		
 		mtr.resetRequestFlags();
 		
 		actualList = this.cachingTargetResolver.resolveTargets(list);
-		Assert.assertFalse(mtr.isRequestForTarget1());
-		Assert.assertFalse(mtr.isRequestForTarget2());
-		Assert.assertFalse(mtr.isRequestForTargetAllInSpace());
+		Assertions.assertFalse(mtr.isRequestForTarget1());
+		Assertions.assertFalse(mtr.isRequestForTarget2());
+		Assertions.assertFalse(mtr.isRequestForTargetAllInSpace());
 		
-		Assert.assertEquals(1, actualList.size());
+		Assertions.assertEquals(1, actualList.size());
 		
 		rt = actualList.get(0);
-		Assert.assertEquals(MockedTargetResolver.rTarget1, rt);
+		Assertions.assertEquals(MockedTargetResolver.rTarget1, rt);
 
 	}
 	
@@ -141,15 +141,15 @@ public class CachingTargetResolverTest {
 		List<ResolvedTarget> actualList = this.cachingTargetResolver.resolveTargets(list);
 		
 		MockedTargetResolver mtr = (MockedTargetResolver) targetResolver;
-		Assert.assertTrue(mtr.isRequestForTarget1());
-		Assert.assertFalse(mtr.isRequestForTarget2());
-		Assert.assertFalse(mtr.isRequestForTargetAllInSpace());
-		Assert.assertFalse(mtr.isRequestForTargetWithRegex());
+		Assertions.assertTrue(mtr.isRequestForTarget1());
+		Assertions.assertFalse(mtr.isRequestForTarget2());
+		Assertions.assertFalse(mtr.isRequestForTargetAllInSpace());
+		Assertions.assertFalse(mtr.isRequestForTargetWithRegex());
 		
-		Assert.assertEquals(1, actualList.size());
+		Assertions.assertEquals(1, actualList.size());
 		
 		ResolvedTarget rt = actualList.get(0);
-		Assert.assertEquals(MockedTargetResolver.rTarget1, rt);
+		Assertions.assertEquals(MockedTargetResolver.rTarget1, rt);
 		
 		
 		mtr.resetRequestFlags();
@@ -157,11 +157,11 @@ public class CachingTargetResolverTest {
 		list.add(MockedTargetResolver.target2);
 		
 		actualList = this.cachingTargetResolver.resolveTargets(list);
-		Assert.assertFalse(mtr.isRequestForTarget1());
-		Assert.assertTrue(mtr.isRequestForTarget2());
-		Assert.assertFalse(mtr.isRequestForTargetAllInSpace());
+		Assertions.assertFalse(mtr.isRequestForTarget1());
+		Assertions.assertTrue(mtr.isRequestForTarget2());
+		Assertions.assertFalse(mtr.isRequestForTargetAllInSpace());
 		
-		Assert.assertEquals(2, actualList.size());
+		Assertions.assertEquals(2, actualList.size());
 		
 		boolean target1Found = false;
 		boolean target2Found = false;
@@ -171,11 +171,11 @@ public class CachingTargetResolverTest {
 			} else if (rt2 == MockedTargetResolver.rTarget2) {
 				target2Found = true;
 			} else {
-				Assert.fail("Unexpected target provided");
+				Assertions.fail("Unexpected target provided");
 			}
 		}
-		Assert.assertTrue(target1Found);
-		Assert.assertTrue(target2Found);
+		Assertions.assertTrue(target1Found);
+		Assertions.assertTrue(target2Found);
 	}
 	
 	@Test
@@ -187,12 +187,12 @@ public class CachingTargetResolverTest {
 		List<ResolvedTarget> actualList = this.cachingTargetResolver.resolveTargets(list);
 		
 		MockedTargetResolver mtr = (MockedTargetResolver) targetResolver;
-		Assert.assertTrue(mtr.isRequestForTarget1());
-		Assert.assertFalse(mtr.isRequestForTarget2());
-		Assert.assertFalse(mtr.isRequestForTargetAllInSpace());
-		Assert.assertTrue(mtr.isRequestForTargetWithRegex());
+		Assertions.assertTrue(mtr.isRequestForTarget1());
+		Assertions.assertFalse(mtr.isRequestForTarget2());
+		Assertions.assertFalse(mtr.isRequestForTargetAllInSpace());
+		Assertions.assertTrue(mtr.isRequestForTargetWithRegex());
 		
-		Assert.assertEquals(2, actualList.size());
+		Assertions.assertEquals(2, actualList.size());
 		
 		boolean target1Found = false;
 		boolean target2Found = false;
@@ -202,10 +202,10 @@ public class CachingTargetResolverTest {
 			} else if (rt == MockedTargetResolver.rTarget2) {
 				target2Found = true;
 			} else {
-				Assert.fail("Unexpected target provided");
+				Assertions.fail("Unexpected target provided");
 			}
 		}
-		Assert.assertTrue(target1Found);
-		Assert.assertTrue(target2Found);
+		Assertions.assertTrue(target1Found);
+		Assertions.assertTrue(target2Found);
 	}
 }

@@ -7,11 +7,11 @@ import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.mockServer.DefaultMetricsEndpointHttpHandler;
 import org.cloudfoundry.promregator.mockServer.MetricsEndpointMockServer;
 import org.cloudfoundry.promregator.textformat004.Parser;
-import org.junit.Assert;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,38 +67,38 @@ public class DisabledEnrichmentMetricsEndpointTest {
 	
 	@Test
 	public void testEnrichmentStillTakesPlaceForSingleEndpointScrapingEvenIfDisabledInConfig() {
-		Assert.assertNotNull(subject);
+		Assertions.assertNotNull(subject);
 		
 		String response = subject.getMetrics().getBody();
 		
-		Assert.assertNotNull(response);
-		Assert.assertNotEquals("", response);
+		Assertions.assertNotNull(response);
+		Assertions.assertNotEquals("", response);
 		
 		Parser parser = new Parser(response);
 		HashMap<String, MetricFamilySamples> mapMFS = parser.parse();
 		
 		MetricFamilySamples dummyMFS = mapMFS.get("dummy");
-		Assert.assertNotNull(dummyMFS);
+		Assertions.assertNotNull(dummyMFS);
 		
-		Assert.assertEquals(1, dummyMFS.samples.size());
+		Assertions.assertEquals(1, dummyMFS.samples.size());
 		
 		Sample dummySample = dummyMFS.samples.get(0);
-		Assert.assertNotNull(dummySample);
+		Assertions.assertNotNull(dummySample);
 		
-		Assert.assertEquals(6, dummySample.labelNames.size());
-		Assert.assertEquals(6, dummySample.labelValues.size());
+		Assertions.assertEquals(6, dummySample.labelNames.size());
+		Assertions.assertEquals(6, dummySample.labelValues.size());
 		
 		int indexOfLabel = dummySample.labelNames.indexOf("label");
-		Assert.assertNotEquals(-1, indexOfLabel);
-		Assert.assertEquals("xyz", dummySample.labelValues.get(indexOfLabel));
+		Assertions.assertNotEquals(-1, indexOfLabel);
+		Assertions.assertEquals("xyz", dummySample.labelValues.get(indexOfLabel));
 		
 		MetricFamilySamples upMFS = mapMFS.get("promregator_up");
-		Assert.assertNotNull(upMFS);
-		Assert.assertEquals(1, upMFS.samples.size());
+		Assertions.assertNotNull(upMFS);
+		Assertions.assertEquals(1, upMFS.samples.size());
 		
 		Sample upSample = upMFS.samples.get(0);
-		Assert.assertEquals(5, upSample.labelNames.size());
-		Assert.assertEquals(5, upSample.labelValues.size());
+		Assertions.assertEquals(5, upSample.labelNames.size());
+		Assertions.assertEquals(5, upSample.labelValues.size());
 	}
 
 }

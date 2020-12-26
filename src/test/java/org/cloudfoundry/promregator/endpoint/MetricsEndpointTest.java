@@ -5,7 +5,6 @@ import java.util.UUID;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.textformat004.Parser;
-import org.junit.Assert;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -46,42 +45,42 @@ public class MetricsEndpointTest {
 	
 	@Test
 	public void testGetMetrics() {
-		Assert.assertNotNull(subject);
+		Assertions.assertNotNull(subject);
 		
 		String response = subject.getMetrics().getBody();
 		
-		Assert.assertNotNull(response);
-		Assert.assertNotEquals("", response);
+		Assertions.assertNotNull(response);
+		Assertions.assertNotEquals("", response);
 		
 		Parser parser = new Parser(response);
 		HashMap<String, MetricFamilySamples> mapMFS = parser.parse();
 		
-		Assert.assertNotNull(mapMFS.get("metric_unittestapp"));
-		Assert.assertNotNull(mapMFS.get("metric_unittestapp2"));
+		Assertions.assertNotNull(mapMFS.get("metric_unittestapp"));
+		Assertions.assertNotNull(mapMFS.get("metric_unittestapp2"));
 	}
 	
 	@Test
 	public void testIssue52() {
-		Assert.assertNotNull(subject);
+		Assertions.assertNotNull(subject);
 		
 		String response = subject.getMetrics().getBody();
 		
-		Assert.assertNotNull(response);
-		Assert.assertNotEquals("", response);
+		Assertions.assertNotNull(response);
+		Assertions.assertNotEquals("", response);
 		
 		Parser parser = new Parser(response);
 		HashMap<String, MetricFamilySamples> mapMFS = parser.parse();
 		
-		Assert.assertNotNull(mapMFS.get("metric_unittestapp"));
-		Assert.assertNotNull(mapMFS.get("metric_unittestapp2"));
+		Assertions.assertNotNull(mapMFS.get("metric_unittestapp"));
+		Assertions.assertNotNull(mapMFS.get("metric_unittestapp2"));
 		
 		MetricFamilySamples mfs = mapMFS.get("promregator_scrape_duration_seconds");
-		Assert.assertNotNull(mfs);
-		Assert.assertEquals(1, mfs.samples.size());
+		Assertions.assertNotNull(mfs);
+		Assertions.assertEquals(1, mfs.samples.size());
 		
 		Sample sample = mfs.samples.get(0);
-		Assert.assertTrue(sample.labelNames.isEmpty());
-		Assert.assertTrue(sample.labelValues.isEmpty());
+		Assertions.assertTrue(sample.labelNames.isEmpty());
+		Assertions.assertTrue(sample.labelValues.isEmpty());
 	}
 
 	@Test
@@ -101,6 +100,6 @@ public class MetricsEndpointTest {
 		
 		ResponseEntity<String> result = subject.getMetrics(); // real test: no exception is raised
 		
-		Assert.assertNotNull(result); // trivial assertion to ensure that unit test is providing an assertion
+		Assertions.assertNotNull(result); // trivial assertion to ensure that unit test is providing an assertion
 	}
 }

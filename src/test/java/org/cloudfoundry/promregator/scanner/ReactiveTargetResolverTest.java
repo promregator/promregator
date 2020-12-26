@@ -7,10 +7,10 @@ import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorMock;
 import org.cloudfoundry.promregator.config.Target;
-import org.junit.Assert;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,15 +51,15 @@ public class ReactiveTargetResolverTest {
 		
 		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
 		
-		Assert.assertEquals(1, actualList.size());
+		Assertions.assertEquals(1, actualList.size());
 		
 		ResolvedTarget rt = actualList.get(0);
-		Assert.assertEquals(t, rt.getOriginalTarget());
-		Assert.assertEquals(t.getOrgName(), rt.getOrgName());
-		Assert.assertEquals(t.getSpaceName(), rt.getSpaceName());
-		Assert.assertEquals(t.getApplicationName(), rt.getApplicationName());
-		Assert.assertEquals(t.getPath(), rt.getPath());
-		Assert.assertEquals(t.getProtocol(), rt.getProtocol());
+		Assertions.assertEquals(t, rt.getOriginalTarget());
+		Assertions.assertEquals(t.getOrgName(), rt.getOrgName());
+		Assertions.assertEquals(t.getSpaceName(), rt.getSpaceName());
+		Assertions.assertEquals(t.getApplicationName(), rt.getApplicationName());
+		Assertions.assertEquals(t.getPath(), rt.getPath());
+		Assertions.assertEquals(t.getProtocol(), rt.getProtocol());
 		
 		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID);
 		Mockito.verify(this.cfAccessor, Mockito.times(0)).retrieveSpaceSummary(CFAccessorMock.UNITTEST_SPACE_UUID);
@@ -79,23 +79,23 @@ public class ReactiveTargetResolverTest {
 		
 		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
 		
-		Assert.assertEquals(2, actualList.size());
+		Assertions.assertEquals(2, actualList.size());
 		
 		ResolvedTarget rt = actualList.get(0);
-		Assert.assertEquals(t, rt.getOriginalTarget());
-		Assert.assertEquals(t.getOrgName(), rt.getOrgName());
-		Assert.assertEquals(t.getSpaceName(), rt.getSpaceName());
-		Assert.assertEquals("testapp", rt.getApplicationName());
-		Assert.assertEquals(t.getPath(), rt.getPath());
-		Assert.assertEquals(t.getProtocol(), rt.getProtocol());
+		Assertions.assertEquals(t, rt.getOriginalTarget());
+		Assertions.assertEquals(t.getOrgName(), rt.getOrgName());
+		Assertions.assertEquals(t.getSpaceName(), rt.getSpaceName());
+		Assertions.assertEquals("testapp", rt.getApplicationName());
+		Assertions.assertEquals(t.getPath(), rt.getPath());
+		Assertions.assertEquals(t.getProtocol(), rt.getProtocol());
 		
 		rt = actualList.get(1);
-		Assert.assertEquals(t, rt.getOriginalTarget());
-		Assert.assertEquals(t.getOrgName(), rt.getOrgName());
-		Assert.assertEquals(t.getSpaceName(), rt.getSpaceName());
-		Assert.assertEquals("testapp2", rt.getApplicationName());
-		Assert.assertEquals(t.getPath(), rt.getPath());
-		Assert.assertEquals(t.getProtocol(), rt.getProtocol());
+		Assertions.assertEquals(t, rt.getOriginalTarget());
+		Assertions.assertEquals(t.getOrgName(), rt.getOrgName());
+		Assertions.assertEquals(t.getSpaceName(), rt.getSpaceName());
+		Assertions.assertEquals("testapp2", rt.getApplicationName());
+		Assertions.assertEquals(t.getPath(), rt.getPath());
+		Assertions.assertEquals(t.getProtocol(), rt.getProtocol());
 		
 		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID);
 	}
@@ -114,15 +114,15 @@ public class ReactiveTargetResolverTest {
 		
 		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
 		
-		Assert.assertEquals(1, actualList.size());
+		Assertions.assertEquals(1, actualList.size());
 		
 		ResolvedTarget rt = actualList.get(0);
-		Assert.assertEquals(t, rt.getOriginalTarget());
-		Assert.assertEquals(t.getOrgName(), rt.getOrgName());
-		Assert.assertEquals(t.getSpaceName(), rt.getSpaceName());
-		Assert.assertEquals("testapp2", rt.getApplicationName());
-		Assert.assertEquals(t.getPath(), rt.getPath());
-		Assert.assertEquals(t.getProtocol(), rt.getProtocol());
+		Assertions.assertEquals(t, rt.getOriginalTarget());
+		Assertions.assertEquals(t.getOrgName(), rt.getOrgName());
+		Assertions.assertEquals(t.getSpaceName(), rt.getSpaceName());
+		Assertions.assertEquals("testapp2", rt.getApplicationName());
+		Assertions.assertEquals(t.getPath(), rt.getPath());
+		Assertions.assertEquals(t.getProtocol(), rt.getProtocol());
 		
 		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID);
 	}
@@ -141,15 +141,15 @@ public class ReactiveTargetResolverTest {
 		
 		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
 		
-		Assert.assertEquals(1, actualList.size());
+		Assertions.assertEquals(1, actualList.size());
 		
 		ResolvedTarget rt = actualList.get(0);
-		Assert.assertEquals(t, rt.getOriginalTarget());
-		Assert.assertEquals(t.getOrgName(), rt.getOrgName());
-		Assert.assertEquals(t.getSpaceName(), rt.getSpaceName());
-		Assert.assertEquals("testapp2", rt.getApplicationName());
-		Assert.assertEquals(t.getPath(), rt.getPath());
-		Assert.assertEquals(t.getProtocol(), rt.getProtocol());
+		Assertions.assertEquals(t, rt.getOriginalTarget());
+		Assertions.assertEquals(t.getOrgName(), rt.getOrgName());
+		Assertions.assertEquals(t.getSpaceName(), rt.getSpaceName());
+		Assertions.assertEquals("testapp2", rt.getApplicationName());
+		Assertions.assertEquals(t.getPath(), rt.getPath());
+		Assertions.assertEquals(t.getProtocol(), rt.getProtocol());
 		
 		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID);
 	}
@@ -161,8 +161,8 @@ public class ReactiveTargetResolverTest {
 		
 		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
 		
-		Assert.assertNotNull(actualList);
-		Assert.assertEquals(0, actualList.size());
+		Assertions.assertNotNull(actualList);
+		Assertions.assertEquals(0, actualList.size());
 	}
 
 	@Test
@@ -178,7 +178,7 @@ public class ReactiveTargetResolverTest {
 		
 		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
 		
-		Assert.assertEquals(0, actualList.size());
+		Assertions.assertEquals(0, actualList.size());
 		
 		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID_DOESNOTEXIST);
 	}
@@ -196,7 +196,7 @@ public class ReactiveTargetResolverTest {
 		
 		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
 		
-		Assert.assertEquals(0, actualList.size());
+		Assertions.assertEquals(0, actualList.size());
 		
 		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID_EXCEPTION);
 	}
@@ -222,15 +222,15 @@ public class ReactiveTargetResolverTest {
 		
 		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
 		
-		Assert.assertEquals(1, actualList.size());
+		Assertions.assertEquals(1, actualList.size());
 		
 		ResolvedTarget rt = actualList.get(0);
-		Assert.assertEquals(t, rt.getOriginalTarget());
-		Assert.assertEquals(t.getOrgName(), rt.getOrgName());
-		Assert.assertEquals(t.getSpaceName(), rt.getSpaceName());
-		Assert.assertEquals(t.getApplicationName(), rt.getApplicationName());
-		Assert.assertEquals(t.getPath(), rt.getPath());
-		Assert.assertEquals(t.getProtocol(), rt.getProtocol());
+		Assertions.assertEquals(t, rt.getOriginalTarget());
+		Assertions.assertEquals(t.getOrgName(), rt.getOrgName());
+		Assertions.assertEquals(t.getSpaceName(), rt.getSpaceName());
+		Assertions.assertEquals(t.getApplicationName(), rt.getApplicationName());
+		Assertions.assertEquals(t.getPath(), rt.getPath());
+		Assertions.assertEquals(t.getProtocol(), rt.getProtocol());
 	}
 	
 	@Test
@@ -254,15 +254,15 @@ public class ReactiveTargetResolverTest {
 		
 		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
 		
-		Assert.assertEquals(1, actualList.size());
+		Assertions.assertEquals(1, actualList.size());
 		
 		ResolvedTarget rt = actualList.get(0);
-		Assert.assertEquals(t, rt.getOriginalTarget());
-		Assert.assertEquals(t.getOrgName(), rt.getOrgName());
-		Assert.assertEquals(t.getSpaceName(), rt.getSpaceName());
-		Assert.assertEquals(t.getApplicationName(), rt.getApplicationName());
-		Assert.assertEquals(t.getPath(), rt.getPath());
-		Assert.assertEquals(t.getProtocol(), rt.getProtocol());
+		Assertions.assertEquals(t, rt.getOriginalTarget());
+		Assertions.assertEquals(t.getOrgName(), rt.getOrgName());
+		Assertions.assertEquals(t.getSpaceName(), rt.getSpaceName());
+		Assertions.assertEquals(t.getApplicationName(), rt.getApplicationName());
+		Assertions.assertEquals(t.getPath(), rt.getPath());
+		Assertions.assertEquals(t.getProtocol(), rt.getProtocol());
 	}
 	
 	@Test
@@ -286,15 +286,15 @@ public class ReactiveTargetResolverTest {
 		
 		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
 		
-		Assert.assertEquals(1, actualList.size());
+		Assertions.assertEquals(1, actualList.size());
 		
 		ResolvedTarget rt = actualList.get(0);
-		Assert.assertEquals(t, rt.getOriginalTarget());
-		Assert.assertEquals(t.getOrgName(), rt.getOrgName());
-		Assert.assertEquals(t.getSpaceName(), rt.getSpaceName());
-		Assert.assertEquals(t.getApplicationName(), rt.getApplicationName());
-		Assert.assertEquals(t.getPath(), rt.getPath());
-		Assert.assertEquals(t.getProtocol(), rt.getProtocol());
+		Assertions.assertEquals(t, rt.getOriginalTarget());
+		Assertions.assertEquals(t.getOrgName(), rt.getOrgName());
+		Assertions.assertEquals(t.getSpaceName(), rt.getSpaceName());
+		Assertions.assertEquals(t.getApplicationName(), rt.getApplicationName());
+		Assertions.assertEquals(t.getPath(), rt.getPath());
+		Assertions.assertEquals(t.getProtocol(), rt.getProtocol());
 	}
 	
 	@Test
@@ -318,15 +318,15 @@ public class ReactiveTargetResolverTest {
 		
 		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
 		
-		Assert.assertEquals(1, actualList.size());
+		Assertions.assertEquals(1, actualList.size());
 		
 		ResolvedTarget rt = actualList.get(0);
-		Assert.assertEquals(t, rt.getOriginalTarget());
-		Assert.assertEquals(t.getOrgName(), rt.getOrgName());
-		Assert.assertEquals(t.getSpaceName(), rt.getSpaceName());
-		Assert.assertEquals(t.getApplicationName(), rt.getApplicationName());
-		Assert.assertEquals(t.getPath(), rt.getPath());
-		Assert.assertEquals(t.getProtocol(), rt.getProtocol());
+		Assertions.assertEquals(t, rt.getOriginalTarget());
+		Assertions.assertEquals(t.getOrgName(), rt.getOrgName());
+		Assertions.assertEquals(t.getSpaceName(), rt.getSpaceName());
+		Assertions.assertEquals(t.getApplicationName(), rt.getApplicationName());
+		Assertions.assertEquals(t.getPath(), rt.getPath());
+		Assertions.assertEquals(t.getProtocol(), rt.getProtocol());
 	}
 
 	@Test
@@ -353,27 +353,27 @@ public class ReactiveTargetResolverTest {
 		
 		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
 		
-		Assert.assertEquals(2, actualList.size()); // and not 3!
+		Assertions.assertEquals(2, actualList.size()); // and not 3!
 		
 		boolean testappFound = false;
 		boolean testapp2Found = false;
 		for (ResolvedTarget rt : actualList) {
-			Assert.assertEquals(t.getOrgName(), rt.getOrgName());
-			Assert.assertEquals(t.getSpaceName(), rt.getSpaceName());
-			Assert.assertEquals(t.getPath(), rt.getPath());
-			Assert.assertEquals(t.getProtocol(), rt.getProtocol());
+			Assertions.assertEquals(t.getOrgName(), rt.getOrgName());
+			Assertions.assertEquals(t.getSpaceName(), rt.getSpaceName());
+			Assertions.assertEquals(t.getPath(), rt.getPath());
+			Assertions.assertEquals(t.getProtocol(), rt.getProtocol());
 			
 			if (rt.getApplicationName().equals("testapp2")) {
 				testapp2Found = true;
 			} else if (rt.getApplicationName().equals("testapp")) {
 				testappFound = true;
 			} else {
-				Assert.fail("Unknown application name returned");
+				Assertions.fail("Unknown application name returned");
 			}
 		}
 		
-		Assert.assertTrue(testappFound);
-		Assert.assertTrue(testapp2Found);
+		Assertions.assertTrue(testappFound);
+		Assertions.assertTrue(testapp2Found);
 	}
 
 	@Test
@@ -389,15 +389,15 @@ public class ReactiveTargetResolverTest {
 		
 		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
 		
-		Assert.assertEquals(1, actualList.size());
+		Assertions.assertEquals(1, actualList.size());
 		
 		ResolvedTarget rt = actualList.get(0);
-		Assert.assertEquals(t, rt.getOriginalTarget());
-		Assert.assertEquals("unittestorg", rt.getOrgName());
-		Assert.assertEquals(t.getSpaceName(), rt.getSpaceName());
-		Assert.assertEquals("testapp", rt.getApplicationName());
-		Assert.assertEquals(t.getPath(), rt.getPath());
-		Assert.assertEquals(t.getProtocol(), rt.getProtocol());
+		Assertions.assertEquals(t, rt.getOriginalTarget());
+		Assertions.assertEquals("unittestorg", rt.getOrgName());
+		Assertions.assertEquals(t.getSpaceName(), rt.getSpaceName());
+		Assertions.assertEquals("testapp", rt.getApplicationName());
+		Assertions.assertEquals(t.getPath(), rt.getPath());
+		Assertions.assertEquals(t.getProtocol(), rt.getProtocol());
 		
 		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllOrgIds();
 		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID);
@@ -417,15 +417,15 @@ public class ReactiveTargetResolverTest {
 		
 		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
 		
-		Assert.assertEquals(1, actualList.size());
+		Assertions.assertEquals(1, actualList.size());
 		
 		ResolvedTarget rt = actualList.get(0);
-		Assert.assertEquals(t, rt.getOriginalTarget());
-		Assert.assertEquals("unittestorg", rt.getOrgName());
-		Assert.assertEquals(t.getSpaceName(), rt.getSpaceName());
-		Assert.assertEquals("testapp2", rt.getApplicationName());
-		Assert.assertEquals(t.getPath(), rt.getPath());
-		Assert.assertEquals(t.getProtocol(), rt.getProtocol());
+		Assertions.assertEquals(t, rt.getOriginalTarget());
+		Assertions.assertEquals("unittestorg", rt.getOrgName());
+		Assertions.assertEquals(t.getSpaceName(), rt.getSpaceName());
+		Assertions.assertEquals("testapp2", rt.getApplicationName());
+		Assertions.assertEquals(t.getPath(), rt.getPath());
+		Assertions.assertEquals(t.getProtocol(), rt.getProtocol());
 		
 		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllOrgIds();
 		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID);
@@ -445,15 +445,15 @@ public class ReactiveTargetResolverTest {
 		
 		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
 		
-		Assert.assertEquals(1, actualList.size());
+		Assertions.assertEquals(1, actualList.size());
 		
 		ResolvedTarget rt = actualList.get(0);
-		Assert.assertEquals(t, rt.getOriginalTarget());
-		Assert.assertEquals("unittestorg", rt.getOrgName());
-		Assert.assertEquals(t.getSpaceName(), rt.getSpaceName());
-		Assert.assertEquals("testapp2", rt.getApplicationName());
-		Assert.assertEquals(t.getPath(), rt.getPath());
-		Assert.assertEquals(t.getProtocol(), rt.getProtocol());
+		Assertions.assertEquals(t, rt.getOriginalTarget());
+		Assertions.assertEquals("unittestorg", rt.getOrgName());
+		Assertions.assertEquals(t.getSpaceName(), rt.getSpaceName());
+		Assertions.assertEquals("testapp2", rt.getApplicationName());
+		Assertions.assertEquals(t.getPath(), rt.getPath());
+		Assertions.assertEquals(t.getProtocol(), rt.getProtocol());
 		
 		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID);
 	}
@@ -471,15 +471,15 @@ public class ReactiveTargetResolverTest {
 		
 		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
 		
-		Assert.assertEquals(1, actualList.size());
+		Assertions.assertEquals(1, actualList.size());
 		
 		ResolvedTarget rt = actualList.get(0);
-		Assert.assertEquals(t, rt.getOriginalTarget());
-		Assert.assertEquals("unittestorg", rt.getOrgName());
-		Assert.assertEquals("unittestspace", rt.getSpaceName());
-		Assert.assertEquals("testapp", rt.getApplicationName());
-		Assert.assertEquals(t.getPath(), rt.getPath());
-		Assert.assertEquals(t.getProtocol(), rt.getProtocol());
+		Assertions.assertEquals(t, rt.getOriginalTarget());
+		Assertions.assertEquals("unittestorg", rt.getOrgName());
+		Assertions.assertEquals("unittestspace", rt.getSpaceName());
+		Assertions.assertEquals("testapp", rt.getApplicationName());
+		Assertions.assertEquals(t.getPath(), rt.getPath());
+		Assertions.assertEquals(t.getProtocol(), rt.getProtocol());
 		
 		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveSpaceIdsInOrg(CFAccessorMock.UNITTEST_ORG_UUID);
 		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID);
@@ -499,15 +499,15 @@ public class ReactiveTargetResolverTest {
 		
 		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
 		
-		Assert.assertEquals(1, actualList.size());
+		Assertions.assertEquals(1, actualList.size());
 		
 		ResolvedTarget rt = actualList.get(0);
-		Assert.assertEquals(t, rt.getOriginalTarget());
-		Assert.assertEquals("unittestorg", rt.getOrgName());
-		Assert.assertEquals("unittestspace", rt.getSpaceName());
-		Assert.assertEquals("testapp2", rt.getApplicationName());
-		Assert.assertEquals(t.getPath(), rt.getPath());
-		Assert.assertEquals(t.getProtocol(), rt.getProtocol());
+		Assertions.assertEquals(t, rt.getOriginalTarget());
+		Assertions.assertEquals("unittestorg", rt.getOrgName());
+		Assertions.assertEquals("unittestspace", rt.getSpaceName());
+		Assertions.assertEquals("testapp2", rt.getApplicationName());
+		Assertions.assertEquals(t.getPath(), rt.getPath());
+		Assertions.assertEquals(t.getProtocol(), rt.getProtocol());
 		
 		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveSpaceIdsInOrg(CFAccessorMock.UNITTEST_ORG_UUID);
 		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID);
@@ -527,15 +527,15 @@ public class ReactiveTargetResolverTest {
 		
 		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
 		
-		Assert.assertEquals(1, actualList.size());
+		Assertions.assertEquals(1, actualList.size());
 		
 		ResolvedTarget rt = actualList.get(0);
-		Assert.assertEquals(t, rt.getOriginalTarget());
-		Assert.assertEquals("unittestorg", rt.getOrgName());
-		Assert.assertEquals("unittestspace", rt.getSpaceName());
-		Assert.assertEquals("testapp2", rt.getApplicationName());
-		Assert.assertEquals(t.getPath(), rt.getPath());
-		Assert.assertEquals(t.getProtocol(), rt.getProtocol());
+		Assertions.assertEquals(t, rt.getOriginalTarget());
+		Assertions.assertEquals("unittestorg", rt.getOrgName());
+		Assertions.assertEquals("unittestspace", rt.getSpaceName());
+		Assertions.assertEquals("testapp2", rt.getApplicationName());
+		Assertions.assertEquals(t.getPath(), rt.getPath());
+		Assertions.assertEquals(t.getProtocol(), rt.getProtocol());
 		
 		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveSpaceIdsInOrg(CFAccessorMock.UNITTEST_ORG_UUID);
 		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID);
@@ -556,15 +556,15 @@ public class ReactiveTargetResolverTest {
 		
 		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
 		
-		Assert.assertEquals(1, actualList.size());
+		Assertions.assertEquals(1, actualList.size());
 		
 		ResolvedTarget rt = actualList.get(0);
-		Assert.assertEquals(t, rt.getOriginalTarget());
-		Assert.assertEquals("unittestorg", rt.getOrgName());
-		Assert.assertEquals("unittestspace", rt.getSpaceName());
-		Assert.assertEquals("testapp", rt.getApplicationName());
-		Assert.assertEquals(t.getPath(), rt.getPath());
-		Assert.assertEquals(t.getProtocol(), rt.getProtocol());
+		Assertions.assertEquals(t, rt.getOriginalTarget());
+		Assertions.assertEquals("unittestorg", rt.getOrgName());
+		Assertions.assertEquals("unittestspace", rt.getSpaceName());
+		Assertions.assertEquals("testapp", rt.getApplicationName());
+		Assertions.assertEquals(t.getPath(), rt.getPath());
+		Assertions.assertEquals(t.getProtocol(), rt.getProtocol());
 
 	}
 	
@@ -578,7 +578,7 @@ public class ReactiveTargetResolverTest {
 		
 		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
 		
-		Assert.assertEquals(0, actualList.size());
+		Assertions.assertEquals(0, actualList.size());
 		
 	}
 
@@ -594,7 +594,7 @@ public class ReactiveTargetResolverTest {
 		
 		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
 		
-		Assert.assertEquals(0, actualList.size());
+		Assertions.assertEquals(0, actualList.size());
 	}
 
 }

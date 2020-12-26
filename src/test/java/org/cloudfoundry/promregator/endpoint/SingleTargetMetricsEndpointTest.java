@@ -7,7 +7,6 @@ import java.util.regex.Pattern;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.textformat004.Parser;
-import org.junit.Assert;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -45,52 +44,52 @@ public class SingleTargetMetricsEndpointTest {
 	
 	@Test
 	public void testGetMetrics() {
-		Assert.assertNotNull(subject);
+		Assertions.assertNotNull(subject);
 		
 		String response = subject.getMetrics("faedbb0a-2273-4cb4-a659-bd31331f7daf", "0").getBody();
 		
-		Assert.assertNotNull(response);
-		Assert.assertNotEquals("", response);
+		Assertions.assertNotNull(response);
+		Assertions.assertNotEquals("", response);
 		
 		Parser parser = new Parser(response);
 		HashMap<String, MetricFamilySamples> mapMFS = parser.parse();
 		
-		Assert.assertNotNull(mapMFS.get("metric_unittestapp"));
-		Assert.assertNull(mapMFS.get("metric_unittestapp2"));
+		Assertions.assertNotNull(mapMFS.get("metric_unittestapp"));
+		Assertions.assertNull(mapMFS.get("metric_unittestapp2"));
 	}
 	
 	@Test
 	public void testIssue52() {
-		Assert.assertNotNull(subject);
+		Assertions.assertNotNull(subject);
 		
 		String response = subject.getMetrics("faedbb0a-2273-4cb4-a659-bd31331f7daf", "0").getBody();
 		
-		Assert.assertNotNull(response);
-		Assert.assertNotEquals("", response);
+		Assertions.assertNotNull(response);
+		Assertions.assertNotEquals("", response);
 		
 		Parser parser = new Parser(response);
 		HashMap<String, MetricFamilySamples> mapMFS = parser.parse();
 		
-		Assert.assertNotNull(mapMFS.get("metric_unittestapp"));
-		Assert.assertNull(mapMFS.get("metric_unittestapp2"));
+		Assertions.assertNotNull(mapMFS.get("metric_unittestapp"));
+		Assertions.assertNull(mapMFS.get("metric_unittestapp2"));
 		
 		MetricFamilySamples mfs = mapMFS.get("promregator_scrape_duration_seconds");
-		Assert.assertNotNull(mfs);
-		Assert.assertEquals(1, mfs.samples.size());
+		Assertions.assertNotNull(mfs);
+		Assertions.assertEquals(1, mfs.samples.size());
 		
 		Sample sample = mfs.samples.get(0);
-		Assert.assertEquals("[org_name, space_name, app_name, cf_instance_id, cf_instance_number]", sample.labelNames.toString()); 
-		Assert.assertEquals("[unittestorg, unittestspace, unittestapp, faedbb0a-2273-4cb4-a659-bd31331f7daf:0, 0]", sample.labelValues.toString()); 
+		Assertions.assertEquals("[org_name, space_name, app_name, cf_instance_id, cf_instance_number]", sample.labelNames.toString()); 
+		Assertions.assertEquals("[unittestorg, unittestspace, unittestapp, faedbb0a-2273-4cb4-a659-bd31331f7daf:0, 0]", sample.labelValues.toString()); 
 	}
 	
 	@Test
 	public void testIssue51() {
-		Assert.assertNotNull(subject);
+		Assertions.assertNotNull(subject);
 		
 		String response = subject.getMetrics("faedbb0a-2273-4cb4-a659-bd31331f7daf", "0").getBody();
 		
-		Assert.assertNotNull(response);
-		Assert.assertNotEquals("", response);
+		Assertions.assertNotNull(response);
+		Assertions.assertNotEquals("", response);
 
 		final Pattern p = Pattern.compile("cf_instance_id=\"([^\"]+)\"");
 		
@@ -99,9 +98,9 @@ public class SingleTargetMetricsEndpointTest {
 		while(m.find()) {
 			atLeastOneFound = true;
 			String instanceId = m.group(1);
-			Assert.assertEquals("faedbb0a-2273-4cb4-a659-bd31331f7daf:0", instanceId);
+			Assertions.assertEquals("faedbb0a-2273-4cb4-a659-bd31331f7daf:0", instanceId);
 		}
-		Assert.assertTrue(atLeastOneFound);
+		Assertions.assertTrue(atLeastOneFound);
 	}
 	
 	@Test
@@ -121,7 +120,7 @@ public class SingleTargetMetricsEndpointTest {
 		
 		ResponseEntity<String> result = subject.getMetrics("faedbb0a-2273-4cb4-a659-bd31331f7daf", "0"); // real test: no exception is raised
 		
-		Assert.assertNotNull(result); // trivial assertion to ensure that unit test is providing an assertion
+		Assertions.assertNotNull(result); // trivial assertion to ensure that unit test is providing an assertion
 	}
 
 }

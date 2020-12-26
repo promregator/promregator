@@ -12,9 +12,9 @@ import java.util.Vector;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.textformat004.Parser;
-import org.junit.Assert;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import io.prometheus.client.Collector;
 import io.prometheus.client.Collector.MetricFamilySamples;
@@ -43,15 +43,15 @@ public class MergableMetricFamilySamplesTest {
 		
 		Enumeration<MetricFamilySamples> returnedEMFS = subject.getEnumerationMetricFamilySamples();
 		
-		Assert.assertTrue(returnedEMFS.hasMoreElements());
+		Assertions.assertTrue(returnedEMFS.hasMoreElements());
 		MetricFamilySamples element = returnedEMFS.nextElement();
-		Assert.assertFalse(returnedEMFS.hasMoreElements());
+		Assertions.assertFalse(returnedEMFS.hasMoreElements());
 		
-		Assert.assertEquals(mfs, element);
+		Assertions.assertEquals(mfs, element);
 		
 		HashMap<String, MetricFamilySamples> returnedHMMFS = subject.getEnumerationMetricFamilySamplesInHashMap();
-		Assert.assertEquals(1, returnedHMMFS.size());
-		Assert.assertEquals(mfs, returnedHMMFS.get("dummy"));
+		Assertions.assertEquals(1, returnedHMMFS.size());
+		Assertions.assertEquals(mfs, returnedHMMFS.get("dummy"));
 		
 	}
 	
@@ -72,15 +72,15 @@ public class MergableMetricFamilySamplesTest {
 		
 		Enumeration<MetricFamilySamples> returnedEMFS = subject.getEnumerationMetricFamilySamples();
 		
-		Assert.assertTrue(returnedEMFS.hasMoreElements());
+		Assertions.assertTrue(returnedEMFS.hasMoreElements());
 		MetricFamilySamples element = returnedEMFS.nextElement();
-		Assert.assertFalse(returnedEMFS.hasMoreElements());
+		Assertions.assertFalse(returnedEMFS.hasMoreElements());
 		
-		Assert.assertEquals(mfs, element);
+		Assertions.assertEquals(mfs, element);
 		
 		HashMap<String, MetricFamilySamples> returnedHMMFS = subject.getEnumerationMetricFamilySamplesInHashMap();
-		Assert.assertEquals(1, returnedHMMFS.size());
-		Assert.assertEquals(mfs, returnedHMMFS.get("dummy"));
+		Assertions.assertEquals(1, returnedHMMFS.size());
+		Assertions.assertEquals(mfs, returnedHMMFS.get("dummy"));
 
 	}
 	
@@ -101,7 +101,7 @@ public class MergableMetricFamilySamplesTest {
 		
 		Enumeration<MetricFamilySamples> returnedEMFS = subject.getEnumerationMetricFamilySamples();
 		
-		Assert.assertFalse(returnedEMFS.hasMoreElements());
+		Assertions.assertFalse(returnedEMFS.hasMoreElements());
 	}
 
 	@Test
@@ -110,14 +110,14 @@ public class MergableMetricFamilySamplesTest {
 		
 		Parser source0 = new Parser(textToParse);
 		HashMap<String, Collector.MetricFamilySamples> map0 = source0.parse();
-		Assert.assertEquals(50, map0.size());
+		Assertions.assertEquals(50, map0.size());
 		
 		
 		textToParse = new String(Files.readAllBytes(Paths.get(getClass().getResource("issue104-instance1.text004").toURI())));
 		
 		Parser source1 = new Parser(textToParse);
 		HashMap<String, Collector.MetricFamilySamples> map1 = source1.parse();
-		Assert.assertEquals(50, map1.size());
+		Assertions.assertEquals(50, map1.size());
 		
 		MergableMetricFamilySamples subject = new MergableMetricFamilySamples();
 		
@@ -127,7 +127,7 @@ public class MergableMetricFamilySamplesTest {
 		String result = subject.toType004String();
 		
 		String expectedResult = new String(Files.readAllBytes(Paths.get(getClass().getResource("issue104-result.text004").toURI())));
-		Assert.assertEquals(expectedResult, result);
+		Assertions.assertEquals(expectedResult, result);
 	}
 
 

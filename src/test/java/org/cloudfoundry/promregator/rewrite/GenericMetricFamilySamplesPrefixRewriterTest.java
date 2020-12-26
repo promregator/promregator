@@ -6,9 +6,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
-import org.junit.Assert;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Collector.MetricFamilySamples.Sample;
@@ -36,12 +36,12 @@ public class GenericMetricFamilySamplesPrefixRewriterTest {
 		HashMap<String,MetricFamilySamples> result = subject.determineEnumerationOfMetricFamilySamples(map);
 		
 		MetricFamilySamples mfsResult = result.get("prefix_metricName");
-		Assert.assertNotNull(mfsResult);
-		Assert.assertEquals("prefix_dummyname", mfsResult.name);
+		Assertions.assertNotNull(mfsResult);
+		Assertions.assertEquals("prefix_dummyname", mfsResult.name);
 		
-		Assert.assertEquals(1, mfsResult.samples.size());
+		Assertions.assertEquals(1, mfsResult.samples.size());
 		Sample sampleResult = mfsResult.samples.get(0);
-		Assert.assertEquals("prefix_dummyname", sampleResult.name);
+		Assertions.assertEquals("prefix_dummyname", sampleResult.name);
 	}
 	
 	@Test
@@ -60,12 +60,12 @@ public class GenericMetricFamilySamplesPrefixRewriterTest {
 		HashMap<String,MetricFamilySamples> result = subject.determineEnumerationOfMetricFamilySamples(map);
 		
 		MetricFamilySamples mfsResult = result.get("prefix_metricName");
-		Assert.assertNotNull(mfsResult);
-		Assert.assertEquals("prefix_dummyname", mfsResult.name);
+		Assertions.assertNotNull(mfsResult);
+		Assertions.assertEquals("prefix_dummyname", mfsResult.name);
 		
-		Assert.assertEquals(1, mfsResult.samples.size());
+		Assertions.assertEquals(1, mfsResult.samples.size());
 		Sample sampleResult = mfsResult.samples.get(0);
-		Assert.assertEquals("prefix_dummyname", sampleResult.name);
+		Assertions.assertEquals("prefix_dummyname", sampleResult.name);
 	}
 
 }

@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
@@ -22,14 +22,14 @@ public class DefaultMetricsEndpointHttpHandler implements HttpHandler {
 		URI requestedUri = he.getRequestURI();
 		this.headers = he.getRequestHeaders();
 		
-		Assert.assertEquals("/metrics", requestedUri.getPath());
+		Assertions.assertEquals("/metrics", requestedUri.getPath());
 		
 		if (this.delayInMillis > 0) {
 			try {
 				Thread.sleep(this.delayInMillis);
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
-				Assert.fail("Unexpected interruption of mocking environment");
+				Assertions.fail("Unexpected interruption of mocking environment");
 			}
 		}
 		

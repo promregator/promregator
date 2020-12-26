@@ -9,9 +9,9 @@ import java.util.List;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.config.Target;
-import org.junit.Assert;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -57,11 +57,11 @@ public class MassReactiveAppInstanceScannerTest {
 		
 		Instant stop = Instant.now();
 		
-		Assert.assertEquals(numberOfApps*10, result.size());
+		Assertions.assertEquals(numberOfApps*10, result.size());
 		
 		// test to be faster than 6 seconds
 		Duration d = Duration.between(start, stop);
-		Assert.assertTrue(d.minusSeconds(6).isNegative());
+		Assertions.assertTrue(d.minusSeconds(6).isNegative());
 	}
 
 	@Test
@@ -97,11 +97,11 @@ public class MassReactiveAppInstanceScannerTest {
 		
 		Instant stop = Instant.now();
 		
-		Assert.assertEquals(numberOfApps*1, result.size());
+		Assertions.assertEquals(numberOfApps*1, result.size());
 		
 		// test to be faster than 6 seconds
 		Duration d = Duration.between(start, stop);
-		Assert.assertTrue(d.minusSeconds(6).isNegative());
+		Assertions.assertTrue(d.minusSeconds(6).isNegative());
 	}
 
 	@Test
@@ -144,11 +144,11 @@ public class MassReactiveAppInstanceScannerTest {
 		
 		Instant stop = Instant.now();
 		
-		Assert.assertEquals(1, result.size());
+		Assertions.assertEquals(1, result.size());
 		
 		// test to be faster than 3 seconds
 		Duration d = Duration.between(start, stop);
-		Assert.assertTrue(d.minusSeconds(3).isNegative());
+		Assertions.assertTrue(d.minusSeconds(3).isNegative());
 	}
 	
 	@Test
@@ -175,13 +175,13 @@ public class MassReactiveAppInstanceScannerTest {
 		
 		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, null, null);
 		
-		Assert.assertEquals(numberOfApps*10, result.size());
+		Assertions.assertEquals(numberOfApps*10, result.size());
 
 		for (Instance instance : result) {
 			String targetNumber = instance.getTarget().getApplicationName().substring(7);
 			
-			Assert.assertEquals("/testpath"+targetNumber, instance.getTarget().getPath());
-			Assert.assertTrue(instance.getAccessUrl().endsWith(targetNumber));
+			Assertions.assertEquals("/testpath"+targetNumber, instance.getTarget().getPath());
+			Assertions.assertTrue(instance.getAccessUrl().endsWith(targetNumber));
 		}
 	}
 }

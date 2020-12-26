@@ -18,7 +18,7 @@ import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v2.spaces.SpaceEntity;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 import reactor.core.publisher.Mono;
 
@@ -63,7 +63,7 @@ public class CFAccessorMock implements CFAccessor {
 			return Mono.just(org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse.builder().build())
 					.map(x -> {throw new Error("exception org name provided");});
 		}
-		Assert.fail("Invalid OrgId request");
+		Assertions.fail("Invalid OrgId request");
 		return null;
 	}
 
@@ -107,7 +107,7 @@ public class CFAccessorMock implements CFAccessor {
 			}
 		}
 		
-		Assert.fail("Invalid SpaceId request");
+		Assertions.fail("Invalid SpaceId request");
 		return null;
 	}
 
@@ -138,7 +138,7 @@ public class CFAccessorMock implements CFAccessor {
 			return Mono.just(ListApplicationsResponse.builder().build()).map( x-> { throw new Error("exception on AllAppIdsInSpace"); });
 		}
 		
-		Assert.fail("Invalid process request");
+		Assertions.fail("Invalid process request");
 		return null;
 	}
 	
@@ -175,7 +175,7 @@ public class CFAccessorMock implements CFAccessor {
 			return Mono.just(GetSpaceSummaryResponse.builder().build()).map( x-> { throw new Error("exception on application summary"); });
 		}
 		
-		Assert.fail("Invalid retrieveSpaceSummary request");
+		Assertions.fail("Invalid retrieveSpaceSummary request");
 		return null;
 	}
 

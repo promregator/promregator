@@ -6,7 +6,7 @@ import java.util.List;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.config.Target;
 import org.cloudfoundry.promregator.config.TargetAuthenticatorConfiguration;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 
@@ -26,7 +26,7 @@ public class TargetsHaveConsistentAuthenticatorIdTest {
 		TargetsHaveConsistentAuthenticatorId subject = new TargetsHaveConsistentAuthenticatorId();
 		String result = subject.validate(pc);
 		
-		Assert.assertNotNull(result);
+		Assertions.assertNotNull(result);
 	}
 	
 	@Test
@@ -50,7 +50,7 @@ public class TargetsHaveConsistentAuthenticatorIdTest {
 		TargetsHaveConsistentAuthenticatorId subject = new TargetsHaveConsistentAuthenticatorId();
 		String result = subject.validate(pc);
 		
-		Assert.assertNotNull(result);
+		Assertions.assertNotNull(result);
 	}
 	
 	@Test
@@ -74,7 +74,7 @@ public class TargetsHaveConsistentAuthenticatorIdTest {
 		TargetsHaveConsistentAuthenticatorId subject = new TargetsHaveConsistentAuthenticatorId();
 		String result = subject.validate(pc);
 		
-		Assert.assertNull(result);
+		Assertions.assertNull(result);
 	}
 
 }
