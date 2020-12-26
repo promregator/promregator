@@ -22,6 +22,7 @@ import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+import reactor.util.retry.Retry;
 
 class ReactiveCFPaginatedRequestFetcher {
 	private static final Logger log = LoggerFactory.getLogger(ReactiveCFPaginatedRequestFetcher.class);
@@ -34,13 +35,11 @@ class ReactiveCFPaginatedRequestFetcher {
 	private final RateLimiter cfccRateLimiter;
 
 	private final Duration initialBackoffDelay;
-	private final Duration maxBackoffDelay;
 
 	public ReactiveCFPaginatedRequestFetcher(InternalMetrics internalMetrics, double requestRateLimit, Duration backoffDelay) {
 		super();
 		this.internalMetrics = internalMetrics;
 		this.initialBackoffDelay = backoffDelay;
-		this.maxBackoffDelay = Duration.ofMillis((long) (backoffDelay.toMillis() * 1.5));
 		
 		if (requestRateLimit <= 0.0f) {
 			this.cfccRateLimiter = RateLimiter.create(Double.POSITIVE_INFINITY);
@@ -161,7 +160,7 @@ class ReactiveCFPaginatedRequestFetcher {
 						timer.start();
 						return Mono.just(0 /* any value will just do; will be ignored */); // Cannot use Mono.empty() here!
 					}).flatMap(nothing -> enrichedRequestFunction)
-					.retryBackoff(2, this.initialBackoffDelay, this.maxBackoffDelay)
+					.retryWhen(Retry.backoff(2, this.initialBackoffDelay))
 					/*
 					 * Note: Don't push the retry attempts above into enrichedRequestFunction!
 					 * It would change the semantics of the metric behind the timer.

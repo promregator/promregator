@@ -3,7 +3,7 @@ package org.cloudfoundry.promregator.discovery;
 import java.util.List;
 import java.util.function.Predicate;
 
-import javax.validation.constraints.Null;
+import javax.annotation.Nullable;
 
 import org.cloudfoundry.promregator.scanner.Instance;
 
@@ -16,5 +16,5 @@ public interface CFDiscoverer {
 	 * @param instanceFilter the (pre-)filter based on the Instance instance, allowing to filter the lost if instances to discover
 	 * @return the list of Instances which were discovered (and registered).
 	 */
-	List<Instance> discover(@Null Predicate<? super String> applicationIdFilter, @Null Predicate<? super Instance> instanceFilter);
+	List<Instance> discover(@Nullable Predicate<? super String> applicationIdFilter, @Nullable Predicate<? super Instance> instanceFilter);
 }
