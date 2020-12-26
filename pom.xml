@@ -38,9 +38,8 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.2.11.RELEASE</version> <!-- see also https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-parent -->
+		<version>2.3.7.RELEASE</version> <!-- see also https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-parent -->
 		<!-- Warning! On bumping also check guava-version below! -->
-		<!-- Warning! On bunping also consider removing enforced upgrade of patch version for reactor-netty -->
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 
@@ -48,12 +47,13 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>1.8</java.version>
-		
+
 		<spring-boot.run.fork>false</spring-boot.run.fork>
-		<!-- Why that here? Since spring-boot 2.2, the default is "spring-boot.run.fork=true", which makes spring-boot:run and others 
-		being executed in a forked process. However, it breaks Eclipse debugging, and processes keep hanging on maven shutdown.
-		See also https://stackoverflow.com/a/58701275/6350762 and https://github.com/spring-projects/spring-boot/issues/18638 -->
-		
+		<!-- Why that here? Since spring-boot 2.2, the default is "spring-boot.run.fork=true", 
+			which makes spring-boot:run and others being executed in a forked process. 
+			However, it breaks Eclipse debugging, and processes keep hanging on maven 
+			shutdown. See also https://stackoverflow.com/a/58701275/6350762 and https://github.com/spring-projects/spring-boot/issues/18638 -->
+
 		<spring-cloud.version>Hoxton.SR8</spring-cloud.version>
 		<prometheus.version>0.6.0</prometheus.version>
 		<cloudfoundry.client.version>3.29.0.RELEASE</cloudfoundry.client.version>
@@ -63,18 +63,19 @@
 		<sonar.organization>promregator</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 		<sonar.coverage.jacoco.xmlReportPaths>${project.reporting.outputDirectory}/jacoco-ut/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
-		
-		<!-- Warning! This should be in line to what spring-framework uses.
-		Unfortunately, there is no global constant provided by spring-boot for
-		the version. -->
-		<guava-version>28.2-jre</guava-version>
+
+		<!-- Warning! This should be in line to what spring-framework uses. Unfortunately, 
+			there is no global constant provided by spring-boot for the version. -->
+		<guava-version>29.0-jre</guava-version>
 	</properties>
 
 	<dependencies>
-		<dependency>
+		<dependency> <!--  see also https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-2.3-Release-Notes#configuration-properties  -->
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-cloud-connectors</artifactId>
+			<artifactId>spring-boot-properties-migrator</artifactId>
+			<scope>runtime</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter</artifactId>
@@ -152,7 +153,6 @@
 		<dependency>
 			<groupId>io.projectreactor.netty</groupId>
 			<artifactId>reactor-netty</artifactId>
-			<version>0.9.14.RELEASE</version> <!--  see also https://github.com/promregator/promregator/issues/188#issuecomment-727550060 -->
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/io.projectreactor/reactor-core -->
