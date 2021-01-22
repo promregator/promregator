@@ -18,6 +18,8 @@ import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v2.spaces.SpaceEntity;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
+import org.cloudfoundry.client.v3.domains.DomainResource;
+import org.cloudfoundry.client.v3.domains.ListDomainsResponse;
 import org.junit.jupiter.api.Assertions;
 
 import reactor.core.publisher.Mono;
@@ -202,5 +204,13 @@ public class CFAccessorMock implements CFAccessor {
 	@Override
 	public void reset() {
 		// nothing to be done
+	}
+
+	@Override
+	public Mono<ListDomainsResponse> retrieveDomains() {    
+    ListDomainsResponse response = ListDomainsResponse.builder().resource(
+      DomainResource.builder().name("my.domain.com").build()
+    ).build();
+		return Mono.just(response);
 	}
 }

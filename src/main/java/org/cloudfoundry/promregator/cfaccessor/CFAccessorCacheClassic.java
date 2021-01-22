@@ -26,7 +26,7 @@ public class CFAccessorCacheClassic implements CFAccessorCache {
 	private AutoRefreshingCacheMap<String, Mono<ListOrganizationsResponse>> orgCache;
 	private AutoRefreshingCacheMap<CacheKeySpace, Mono<ListSpacesResponse>> spaceCache;
 	private AutoRefreshingCacheMap<CacheKeyAppsInSpace, Mono<ListApplicationsResponse>> appsInSpaceCache;
-	private AutoRefreshingCacheMap<String, Mono<GetSpaceSummaryResponse>> spaceSummaryCache;
+  private AutoRefreshingCacheMap<String, Mono<GetSpaceSummaryResponse>> spaceSummaryCache;
 
 	@Value("${cf.cache.timeout.org:3600}")
 	private int refreshCacheOrgLevelInSeconds;
@@ -68,7 +68,7 @@ public class CFAccessorCacheClassic implements CFAccessorCache {
 		this.orgCache = new AutoRefreshingCacheMap<>("org", this.internalMetrics, Duration.ofSeconds(this.expiryCacheOrgLevelInSeconds), Duration.ofSeconds(this.refreshCacheOrgLevelInSeconds), this::orgCacheLoader);
 		this.spaceCache = new AutoRefreshingCacheMap<>("space", this.internalMetrics, Duration.ofSeconds(this.expiryCacheSpaceLevelInSeconds), Duration.ofSeconds(refreshCacheSpaceLevelInSeconds), this::spaceCacheLoader);
 		this.appsInSpaceCache = new AutoRefreshingCacheMap<>("appsInSpace", this.internalMetrics, Duration.ofSeconds(this.expiryCacheApplicationLevelInSeconds), Duration.ofSeconds(refreshCacheApplicationLevelInSeconds), this::appsInSpaceCacheLoader);
-		this.spaceSummaryCache = new AutoRefreshingCacheMap<>("spaceSummary", this.internalMetrics, Duration.ofSeconds(this.expiryCacheApplicationLevelInSeconds), Duration.ofSeconds(refreshCacheApplicationLevelInSeconds), this::spaceSummaryCacheLoader);
+    this.spaceSummaryCache = new AutoRefreshingCacheMap<>("spaceSummary", this.internalMetrics, Duration.ofSeconds(this.expiryCacheApplicationLevelInSeconds), Duration.ofSeconds(refreshCacheApplicationLevelInSeconds), this::spaceSummaryCacheLoader);
 	}
 
 	private Mono<ListOrganizationsResponse> orgCacheLoader(String orgName) {
@@ -324,7 +324,7 @@ public class CFAccessorCacheClassic implements CFAccessorCache {
 		 */
 		
 		return mono;
-	}
+  }
 
 	@Override
 	public Mono<GetInfoResponse> getInfo() {
@@ -380,7 +380,7 @@ public class CFAccessorCacheClassic implements CFAccessorCache {
 	@Override
 	public Mono<ListDomainsResponse> retrieveDomains() {		
     /*
-		 * not implemented cache here yet
+		 * not implemented cache here 
 		 */
 		return this.parent.retrieveDomains();
 	}
@@ -408,5 +408,4 @@ public class CFAccessorCacheClassic implements CFAccessorCache {
 	public void reset() {
 		this.parent.reset();
 	}
-
 }
