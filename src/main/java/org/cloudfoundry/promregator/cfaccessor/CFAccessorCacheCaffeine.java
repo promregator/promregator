@@ -13,6 +13,7 @@ import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
+import org.cloudfoundry.client.v3.domains.ListDomainsResponse;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +36,8 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	private AsyncLoadingCache<CacheKeySpace, ListSpacesResponse> spaceCache;
 	private AsyncLoadingCache<String, ListSpacesResponse> spaceIdInOrgCache;
 	private AsyncLoadingCache<CacheKeyAppsInSpace, ListApplicationsResponse> appsInSpaceCache;
-	private AsyncLoadingCache<String, GetSpaceSummaryResponse> spaceSummaryCache;
+  private AsyncLoadingCache<String, GetSpaceSummaryResponse> spaceSummaryCache;
+  private AsyncLoadingCache<String, ListDomainsResponse> domainsCache;
 	
 	@Value("${cf.cache.timeout.org:3600}")
 	private int refreshCacheOrgLevelInSeconds;
@@ -132,6 +134,17 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 					.cache();
 			return mono.toFuture();
 		}
+  }
+  
+  private class DomainCacheLoader implements AsyncCacheLoader<String, ListDomainsResponse> {
+		@Override
+		public @NonNull CompletableFuture<ListDomainsResponse> asyncLoad(@NonNull String key,
+				@NonNull Executor executor) {
+			Mono<ListDomainsResponse> mono = parent.retrieveDomains()
+					.subscribeOn(Schedulers.fromExecutor(executor))
+					.cache();
+			return mono.toFuture();
+		}
 	}
 	
 	@PostConstruct
@@ -189,7 +202,15 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 				.recordStats()
 				.scheduler(caffeineScheduler)
 				.buildAsync(new SpaceSummaryCacheLoader());
-		this.internalMetrics.addCaffeineCache("spaceSummary", this.spaceSummaryCache);
+    this.internalMetrics.addCaffeineCache("spaceSummary", this.spaceSummaryCache);
+    
+    this.domainsCache = Caffeine.newBuilder()
+				.expireAfterAccess(this.expiryCacheApplicationLevelInSeconds, TimeUnit.SECONDS)
+				.refreshAfterWrite(this.refreshCacheApplicationLevelInSeconds, TimeUnit.SECONDS)
+				.recordStats()
+				.scheduler(caffeineScheduler)
+				.buildAsync(new DomainCacheLoader());
+		this.internalMetrics.addCaffeineCache("domainCache", this.domainsCache);
 	}
 
 	@Override
@@ -233,6 +254,11 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	@Override
 	public Mono<ListSpacesResponse> retrieveSpaceIdsInOrg(String orgId) {
 		return Mono.fromFuture(this.spaceIdInOrgCache.get(orgId));
+  }
+  
+  @Override
+	public Mono<ListDomainsResponse> retrieveDomains() {
+    return Mono.fromFuture(this.domainsCache.get(""));
 	}
 
 

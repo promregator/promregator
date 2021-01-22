@@ -10,6 +10,7 @@ import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
+import org.cloudfoundry.client.v3.domains.ListDomainsResponse;
 import org.cloudfoundry.promregator.cache.AutoRefreshingCacheMap;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.slf4j.Logger;
@@ -373,6 +374,15 @@ public class CFAccessorCacheClassic implements CFAccessorCache {
 	@Override
 	public Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId) {
 		return this.spaceSummaryCache.get(spaceId);
+  }
+  
+  
+	@Override
+	public Mono<ListDomainsResponse> retrieveDomains() {		
+    /*
+		 * not implemented cache here yet
+		 */
+		return this.parent.retrieveDomains();
 	}
 
 	@Override

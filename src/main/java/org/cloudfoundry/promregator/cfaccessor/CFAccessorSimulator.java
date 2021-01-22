@@ -10,6 +10,7 @@ import org.cloudfoundry.client.v2.Metadata;
 import org.cloudfoundry.client.v2.applications.ApplicationEntity;
 import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
+import org.cloudfoundry.client.v2.domains.DomainEntity;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.organizations.OrganizationEntity;
@@ -19,7 +20,8 @@ import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v2.spaces.SpaceEntity;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
-
+import org.cloudfoundry.client.v3.domains.DomainResource;
+import org.cloudfoundry.client.v3.domains.ListDomainsResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
@@ -156,7 +158,24 @@ public class CFAccessorSimulator implements CFAccessor {
 		
 		log.error("Invalid retrieveSpaceSummary request");
 		return null;
+  }
+  
+  @Override
+	public Mono<ListDomainsResponse> retrieveDomains() {    
+			List<DomainResource> list = new LinkedList<>();
+			
+			for (int i = 1;i<=100;i++) {				
+				list.add(
+          DomainResource.builder()
+          .name("cf.test.com")
+          .build());
+			}
+			
+			ListDomainsResponse resp = ListDomainsResponse.builder().addAllResources(list).build();
+			
+			return Mono.just(resp).delayElement(this.getSleepRandomDuration());
 	}
+
 
 	@Override
 	public Mono<GetInfoResponse> getInfo() {

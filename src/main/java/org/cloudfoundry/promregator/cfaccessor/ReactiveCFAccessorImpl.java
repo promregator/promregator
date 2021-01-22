@@ -13,6 +13,8 @@ import org.cloudfoundry.client.v2.applications.ListApplicationsRequest;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.info.GetInfoRequest;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
+import org.cloudfoundry.client.v3.domains.ListDomainsRequest;
+import org.cloudfoundry.client.v3.domains.ListDomainsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsRequest;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.organizations.OrganizationResource;
@@ -377,6 +379,13 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.SPACE_SUMMARY, spaceId, 
 				request, r -> this.cloudFoundryClient.spaces().getSummary(r), this.requestTimeoutAppSummary);
 
+  }
+  
+	@Override
+	public Mono<ListDomainsResponse> retrieveDomains() {
+		ListDomainsRequest request = ListDomainsRequest.builder().build();
+		
+		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.DOMAINS, "(empty)", 
+				request, r -> this.cloudFoundryClient.domainsV3().list(request), this.requestTimeoutAppSummary);
 	}
-
 }
