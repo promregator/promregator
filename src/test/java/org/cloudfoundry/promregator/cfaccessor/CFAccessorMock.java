@@ -18,6 +18,8 @@ import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v2.spaces.SpaceEntity;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
+import org.cloudfoundry.client.v3.ToOneRelationship;
+import org.cloudfoundry.client.v3.domains.DomainRelationships;
 import org.cloudfoundry.client.v3.domains.DomainResource;
 import org.cloudfoundry.client.v3.domains.ListDomainsResponse;
 import org.junit.jupiter.api.Assertions;
@@ -36,7 +38,13 @@ public class CFAccessorMock implements CFAccessor {
 	public static final String UNITTEST_APP1_HOST = "hostapp1";
 	public static final String UNITTEST_APP2_HOST = "hostapp2";
 	public static final String UNITTEST_SHARED_DOMAIN_UUID = "be9b8696-2fa6-11e8-b467-0ed5f89f718b";
-	public static final String UNITTEST_SHARED_DOMAIN = "shared.domain.example.org";
+  public static final String UNITTEST_SHARED_DOMAIN = "shared.domain.example.org";
+
+  public static final String UNITTEST_INTERNAL_DOMAIN_UUID = "49225c7e-b4c3-45b2-b796-7bb9c64dc79d";
+  public static final String UNITTEST_INTERNAL_DOMAIN = "apps.internal";
+  
+  public static final String UNITTEST_APP_INTERNAL_UUID = "a8762694-95ce-4c3c-a4fb-250e28187a0a";
+  public static final String UNITTEST_APP_INTERNAL_HOST = "interna-app";
 	
 	public static final String CREATED_AT_TIMESTAMP = "2014-11-24T19:32:49+00:00";
 	public static final String UPDATED_AT_TIMESTAMP = "2014-11-24T19:32:49+00:00";
@@ -130,11 +138,18 @@ public class CFAccessorMock implements CFAccessor {
 				).metadata(
 						Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP2_UUID).build()
 				).build();
-			list.add(ar);
+      list.add(ar);
+      
+      ar = ApplicationResource.builder().entity(
+					ApplicationEntity.builder().name("internalapp").state("STARTED").build()
+				).metadata(
+						Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP_INTERNAL_UUID).build()
+				).build();
+			list.add(ar);			
 			
 			ListApplicationsResponse resp = ListApplicationsResponse.builder().addAllResources(list).build();
 			return Mono.just(resp);
-		} else if (UNITTEST_SPACE_UUID_DOESNOTEXIST.equals(spaceId)) {
+    } else if (UNITTEST_SPACE_UUID_DOESNOTEXIST.equals(spaceId)) {
 			return Mono.just(ListApplicationsResponse.builder().build());
 		} else if (UNITTEST_SPACE_UUID_EXCEPTION.equals(spaceId)) {
 			return Mono.just(ListApplicationsResponse.builder().build()).map( x-> { throw new Error("exception on AllAppIdsInSpace"); });
@@ -165,6 +180,15 @@ public class CFAccessorMock implements CFAccessor {
 					.name("testapp2")
 					.addAllUrls(Arrays.asList(urls2))
 					.instances(1)
+					.build();
+      list.add(sas);
+      
+      final String[] urls3 = { UNITTEST_APP_INTERNAL_HOST + "." + UNITTEST_INTERNAL_DOMAIN }; 
+			sas = SpaceApplicationSummary.builder()
+					.id(UNITTEST_APP_INTERNAL_UUID)
+					.name("internalapp")
+					.addAllUrls(Arrays.asList(urls3))
+					.instances(2)
 					.build();
 			list.add(sas);
 			
@@ -208,8 +232,33 @@ public class CFAccessorMock implements CFAccessor {
 
 	@Override
 	public Mono<ListDomainsResponse> retrieveDomains() {    
-    ListDomainsResponse response = ListDomainsResponse.builder().resource(
-      DomainResource.builder().name("my.domain.com").build()
+    ListDomainsResponse response = ListDomainsResponse.builder().resources(
+      DomainResource.builder()
+        .name(UNITTEST_SHARED_DOMAIN)
+        .id(UNITTEST_SHARED_DOMAIN_UUID)
+        .createdAt(CREATED_AT_TIMESTAMP)
+        .isInternal(false)
+        .relationships(
+            DomainRelationships.builder()
+            .organization(
+              ToOneRelationship.builder()
+              .data(null).build()
+            ).build()
+          )
+        .build(),
+      DomainResource.builder()
+        .name(UNITTEST_INTERNAL_DOMAIN)
+        .id(UNITTEST_INTERNAL_DOMAIN_UUID)
+        .createdAt(CREATED_AT_TIMESTAMP)
+        .isInternal(true)
+        .relationships(
+            DomainRelationships.builder()
+            .organization(
+              ToOneRelationship.builder()
+              .data(null).build()
+            ).build()
+          )
+        .build()
     ).build();
 		return Mono.just(response);
 	}

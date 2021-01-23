@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -15,6 +16,8 @@ import org.cloudfoundry.client.v2.organizations.OrganizationResource;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
+import org.cloudfoundry.client.v3.domains.ListDomainsResponse;
+import org.cloudfoundry.client.v3.domains.DomainResource;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +33,8 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	private static final Logger log = LoggerFactory.getLogger(ReactiveAppInstanceScanner.class);
 	private static final String INVALID_ORG_ID = "***invalid***";
 	private static final String INVALID_SPACE_ID = "***invalid***";
-	private static final Map<String, SpaceApplicationSummary> INVALID_SUMMARY = new HashMap<>();
+  private static final Map<String, SpaceApplicationSummary> INVALID_SUMMARY = new HashMap<>();
+  private static final List<DomainResource> INVALID_DOMAINS = null;
 
 	@Value("${cf.cache.timeout.application:300}")
 	private int timeoutCacheApplicationLevel;
@@ -56,12 +60,20 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		private String applicationId;
 		
 		private String accessURL;
-		private int numberOfInstances;
+    private int numberOfInstances;
+    private boolean isInternal;
+    private int internalPort;
 		/**
 		 * @return the target
 		 */
 		public ResolvedTarget getTarget() {
 			return target;
+		}
+		public int getInternalPort() {
+			return internalPort;
+		}
+		public void setInternalPort(int internalPort) {
+			this.internalPort = internalPort;
 		}
 		/**
 		 * @param target the target to set
@@ -116,6 +128,18 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		 */
 		public void setAccessURL(String accessURL) {
 			this.accessURL = accessURL;
+    }
+    /**
+		 * @return the isInternal
+		 */
+		public boolean getIsInternal() {
+			return isInternal;
+		}
+		/**
+		 * @param isInternal the isInternal to set
+		 */
+		public void setIsInternal(boolean isInternal) {
+			this.isInternal = isInternal;
 		}
 		/**
 		 * @return the numberOfInstances
@@ -193,8 +217,20 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			List<String> urls = sas.getUrls();
 			if (urls != null && !urls.isEmpty()) {
 				v.setAccessURL(this.determineAccessURL(v.getTarget().getProtocol(), urls, v.getTarget().getOriginalTarget().getPreferredRouteRegexPatterns(), v.getTarget().getPath()));
-			}
-			
+      }      
+      
+      // TODO deterimine if access URL is on an internal route.
+      List<DomainResource> domains = this.getDomains();      
+      DomainResource dr = domains.stream()
+      .filter(s -> v.getAccessURL().contains(s.getName()))
+      .findFirst()
+      .get();
+
+      v.setIsInternal(dr.isInternal());      
+      if (dr.isInternal()) {      
+        // TODO Get the route object and append the port number from the route to the URL
+      }
+
 			v.setNumberOfInstances(sas.getInstances());
 			
 			return Mono.just(v);
@@ -208,7 +244,9 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		Flux<Instance> instancesFlux = osaVectorApplicationFlux.flatMapSequential(v -> {
 			List<Instance> instances = new ArrayList<>(v.getNumberOfInstances());
 			for (int i = 0; i<v.numberOfInstances; i++) {
-				Instance inst = new Instance(v.getTarget(), String.format("%s:%d", v.getApplicationId(), i), v.getAccessURL());
+        // TODO if instance route is internal, prepend the instance number to the url
+        Instance inst = new Instance(v.getTarget(), String.format("%s:%d", v.getApplicationId(), i), v.getAccessURL());
+        inst.setInternal(v.isInternal);
 				instances.add(inst);
 			}
 			
@@ -276,6 +314,22 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			return Mono.just(INVALID_SPACE_ID);
 		}).cache();
 
+  }
+  
+  private List<DomainResource> getDomains() {
+		ListDomainsResponse listDomainResponse = this.cfAccessor.retrieveDomains().block();
+    List<DomainResource> resources = listDomainResponse.getResources();
+    
+    if (resources == null) {
+      return INVALID_DOMAINS;
+    }
+    
+    if (resources.isEmpty()) {
+      log.warn(String.format("Received empty result on requesting domains"));
+      return INVALID_DOMAINS;
+    }
+
+    return resources;
 	}
 	
 	private Mono<Map<String, SpaceApplicationSummary>> getSpaceSummary(String spaceIdString) {

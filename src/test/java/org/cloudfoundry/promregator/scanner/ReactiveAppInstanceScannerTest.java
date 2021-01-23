@@ -3,6 +3,7 @@ package org.cloudfoundry.promregator.scanner;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.cloudfoundry.promregator.cfaccessor.CFAccessorMock.UNITTEST_APP1_UUID;
 import static org.cloudfoundry.promregator.cfaccessor.CFAccessorMock.UNITTEST_APP2_UUID;
+import static org.cloudfoundry.promregator.cfaccessor.CFAccessorMock.UNITTEST_APP_INTERNAL_UUID;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -599,5 +600,28 @@ class ReactiveAppInstanceScannerTest {
 
 		assertThat(result).filteredOn( instance -> instance.getInstanceId().equals(UNITTEST_APP2_UUID+":0") )
 				.extracting("accessUrl").containsOnly("https://hostapp2.shared.domain.example.org/additionalPath/testpath2");
+  }
+  
+
+  @Test
+	void testStraightForwardInternalRoute() {
+		List<ResolvedTarget> targets = new LinkedList<>();
+		
+		ResolvedTarget t = new ResolvedTarget();
+		t.setOrgName("unittestorg");
+		t.setSpaceName("unittestspace");
+		t.setApplicationName("internalapp");		
+		t.setProtocol("http");
+		t.setApplicationId(UNITTEST_APP_INTERNAL_UUID);
+		final Target emptyTarget = new Target();
+		t.setOriginalTarget(emptyTarget);
+		targets.add(t);
+		
+
+		
+    List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, null, null);
+    
+    assertThat(result).filteredOn( instance -> instance.getInstanceId().equals(UNITTEST_APP_INTERNAL_UUID+":0") )
+    .extracting("isInternal").containsOnly(true);
 	}
 }

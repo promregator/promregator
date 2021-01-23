@@ -8,10 +8,19 @@ package org.cloudfoundry.promregator.scanner;
 public class Instance {
 	private ResolvedTarget target;
 	private String instanceId;
-	private String accessUrl;
+  private String accessUrl;
+  private boolean isInternal;
 	
 	public Instance() {
 		super();
+	}
+
+	public boolean isInternal() {
+		return isInternal;
+	}
+
+	public void setInternal(boolean isInternal) {
+		this.isInternal = isInternal;
 	}
 
 	public Instance(ResolvedTarget target, String instanceId, String accessUrl) {

@@ -6,6 +6,7 @@ import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
+import org.cloudfoundry.client.v3.domains.ListDomainsResponse;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -61,6 +62,17 @@ class CFAccessorSimulatorTest {
 		for (int i = 1;i<=10;i++) {
 			Assertions.assertTrue(tests[i]);
 		}
+  }
+  
+  @Test
+	void testRetrieveDomains() {
+		CFAccessorSimulator subject = new CFAccessorSimulator(2);
+		
+		Mono<ListDomainsResponse> mono = subject.retrieveDomains();
+		ListDomainsResponse result = mono.block();
+		
+		Assertions.assertNotNull(result);
+		Assertions.assertNotNull(result.getResources());
+		Assertions.assertEquals(10, result.getResources().size());	
 	}
-
 }
