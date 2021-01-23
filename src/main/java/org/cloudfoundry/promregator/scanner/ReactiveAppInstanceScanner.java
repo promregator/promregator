@@ -1,6 +1,9 @@
 package org.cloudfoundry.promregator.scanner;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -35,6 +38,8 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	private static final String INVALID_SPACE_ID = "***invalid***";
   private static final Map<String, SpaceApplicationSummary> INVALID_SUMMARY = new HashMap<>();
   private static final List<DomainResource> INVALID_DOMAINS = null;
+
+  private static final int DEFAULT_INTERNAL_METRICS_PORT = 9090;
 
 	@Value("${cf.cache.timeout.application:300}")
 	private int timeoutCacheApplicationLevel;
@@ -247,6 +252,20 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
         // TODO if instance route is internal, prepend the instance number to the url
         Instance inst = new Instance(v.getTarget(), String.format("%s:%d", v.getApplicationId(), i), v.getAccessURL());
         inst.setInternal(v.isInternal);
+        
+        if (v.isInternal) {
+          URL url = null; 
+          try {
+            url = new URL(inst.getAccessUrl());            
+          } catch (MalformedURLException e) {
+            // this should not happen!
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+          }
+          
+          List<String> urls = Arrays.asList(new String[]{ i + "." + url.getHost() + ":" + DEFAULT_INTERNAL_METRICS_PORT });  
+          inst.setAccessUrl(this.determineAccessURL(v.getTarget().getProtocol(), urls, v.getTarget().getOriginalTarget().getPreferredRouteRegexPatterns(), v.getTarget().getPath()));
+        }
 				instances.add(inst);
 			}
 			

@@ -616,12 +616,16 @@ class ReactiveAppInstanceScannerTest {
 		final Target emptyTarget = new Target();
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
-		
-
-		
+				
     List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, null, null);
     
     assertThat(result).filteredOn( instance -> instance.getInstanceId().equals(UNITTEST_APP_INTERNAL_UUID+":0") )
     .extracting("isInternal").containsOnly(true);
+
+    assertThat(result).filteredOn( instance -> instance.getInstanceId().equals(UNITTEST_APP_INTERNAL_UUID+":0") )
+    .extracting("accessUrl").containsOnly("http://0.internal-app.apps.internal:9090/metrics");
+
+    assertThat(result).filteredOn( instance -> instance.getInstanceId().equals(UNITTEST_APP_INTERNAL_UUID+":1") )
+    .extracting("accessUrl").containsOnly("http://1.internal-app.apps.internal:9090/metrics");    
 	}
 }

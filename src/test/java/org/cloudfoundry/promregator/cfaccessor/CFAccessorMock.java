@@ -44,7 +44,7 @@ public class CFAccessorMock implements CFAccessor {
   public static final String UNITTEST_INTERNAL_DOMAIN = "apps.internal";
   
   public static final String UNITTEST_APP_INTERNAL_UUID = "a8762694-95ce-4c3c-a4fb-250e28187a0a";
-  public static final String UNITTEST_APP_INTERNAL_HOST = "interna-app";
+  public static final String UNITTEST_APP_INTERNAL_HOST = "internal-app";
 	
 	public static final String CREATED_AT_TIMESTAMP = "2014-11-24T19:32:49+00:00";
 	public static final String UPDATED_AT_TIMESTAMP = "2014-11-24T19:32:49+00:00";
