@@ -21,6 +21,7 @@ import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v2.spaces.SpaceEntity;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
 import org.cloudfoundry.client.v3.ToOneRelationship;
+import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
 import org.cloudfoundry.client.v3.domains.DomainRelationships;
 import org.cloudfoundry.client.v3.domains.DomainResource;
 import org.cloudfoundry.client.v3.domains.ListDomainsResponse;
@@ -205,6 +206,12 @@ public class CFAccessorSimulator implements CFAccessor {
 	@Override
 	public void reset() {
 		// nothing to do
+	}
+
+	@Override
+	public Mono<ListApplicationRoutesResponse> retrieveAppRoutes(String appId) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 

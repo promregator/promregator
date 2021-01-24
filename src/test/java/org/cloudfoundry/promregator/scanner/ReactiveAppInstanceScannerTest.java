@@ -623,9 +623,9 @@ class ReactiveAppInstanceScannerTest {
     .extracting("isInternal").containsOnly(true);
 
     assertThat(result).filteredOn( instance -> instance.getInstanceId().equals(UNITTEST_APP_INTERNAL_UUID+":0") )
-    .extracting("accessUrl").containsOnly("http://0.internal-app.apps.internal:9090/metrics");
+    .extracting("accessUrl").containsOnly("http://0.internal-app.apps.internal:8080/metrics");
 
     assertThat(result).filteredOn( instance -> instance.getInstanceId().equals(UNITTEST_APP_INTERNAL_UUID+":1") )
-    .extracting("accessUrl").containsOnly("http://1.internal-app.apps.internal:9090/metrics");    
+    .extracting("accessUrl").containsOnly("http://1.internal-app.apps.internal:8080/metrics");    
 	}
 }

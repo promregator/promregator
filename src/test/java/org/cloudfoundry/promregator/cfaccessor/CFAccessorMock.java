@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.management.relation.Relation;
+
 import org.cloudfoundry.client.v2.Metadata;
 import org.cloudfoundry.client.v2.applications.ApplicationEntity;
 import org.cloudfoundry.client.v2.applications.ApplicationResource;
@@ -18,10 +20,17 @@ import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v2.spaces.SpaceEntity;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
+import org.cloudfoundry.client.v3.Relationship;
 import org.cloudfoundry.client.v3.ToOneRelationship;
+import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
 import org.cloudfoundry.client.v3.domains.DomainRelationships;
 import org.cloudfoundry.client.v3.domains.DomainResource;
 import org.cloudfoundry.client.v3.domains.ListDomainsResponse;
+import org.cloudfoundry.client.v3.routes.Application;
+import org.cloudfoundry.client.v3.routes.Destination;
+import org.cloudfoundry.client.v3.routes.Process;
+import org.cloudfoundry.client.v3.routes.RouteRelationships;
+import org.cloudfoundry.client.v3.routes.RouteResource;
 import org.junit.jupiter.api.Assertions;
 
 import reactor.core.publisher.Mono;
@@ -261,5 +270,47 @@ public class CFAccessorMock implements CFAccessor {
         .build()
     ).build();
 		return Mono.just(response);
+	}
+
+	@Override
+	public Mono<ListApplicationRoutesResponse> retrieveAppRoutes(String appId) {
+    List<RouteResource> routes = new LinkedList<>();
+    
+    if(appId.equals(UNITTEST_APP_INTERNAL_UUID)) {
+      RouteResource res = RouteResource.builder()
+      .id("id")
+      .createdAt(CREATED_AT_TIMESTAMP)
+      .host(UNITTEST_APP_INTERNAL_HOST)    
+      .path("path")
+      .url( UNITTEST_APP_INTERNAL_HOST + "." + UNITTEST_INTERNAL_DOMAIN)
+      .relationships(
+        RouteRelationships.builder()
+        .domain(
+          ToOneRelationship.builder().data(
+            Relationship.builder().id(UNITTEST_INTERNAL_DOMAIN).build()
+            ).build()
+          )
+          .space(
+            ToOneRelationship.builder().data(
+              Relationship.builder().id(UNITTEST_SPACE_UUID).build()
+            ).build()
+          ).build())      
+      .destination(
+        Destination.builder()
+        .port(8080)
+        .application(
+          Application.builder()
+          .applicationId(UNITTEST_APP_INTERNAL_UUID)
+          .process(
+            Process.builder().type("web").build()
+          ).build())
+        .build()
+      ).build();
+    
+      routes.add(res);
+    }
+
+    ListApplicationRoutesResponse resp = ListApplicationRoutesResponse.builder().addAllResources(routes).build();
+		return Mono.just(resp);
 	}
 }

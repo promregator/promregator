@@ -20,6 +20,8 @@ import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
 import org.cloudfoundry.client.v3.domains.ListDomainsResponse;
+import org.cloudfoundry.client.v3.routes.Destination;
+import org.cloudfoundry.client.v3.routes.RouteResource;
 import org.cloudfoundry.client.v3.domains.DomainResource;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.slf4j.Logger;
@@ -37,6 +39,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	private static final String INVALID_ORG_ID = "***invalid***";
 	private static final String INVALID_SPACE_ID = "***invalid***";
   private static final Map<String, SpaceApplicationSummary> INVALID_SUMMARY = new HashMap<>();
+  private static final List<RouteResource> INVALID_ROUTES = null;
   private static final List<DomainResource> INVALID_DOMAINS = null;
 
   private static final int DEFAULT_INTERNAL_METRICS_PORT = 9090;
@@ -62,7 +65,9 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		
 		private String orgId;
 		private String spaceId;
-		private String applicationId;
+    private String applicationId;
+    private String routeId;
+    private String domainId;
 		
 		private String accessURL;
     private int numberOfInstances;
@@ -73,6 +78,18 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		 */
 		public ResolvedTarget getTarget() {
 			return target;
+		}
+		public String getDomainId() {
+			return domainId;
+		}
+		public void setDomainId(String domainId) {
+			this.domainId = domainId;
+		}
+		public String getRouteId() {
+			return routeId;
+		}
+		public void setRouteId(String routeId) {
+			this.routeId = routeId;
 		}
 		public int getInternalPort() {
 			return internalPort;
@@ -239,14 +256,47 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			v.setNumberOfInstances(sas.getInstances());
 			
 			return Mono.just(v);
-		});
+    });
+    
+
+    // TODO Merge in the routes with the apps to get the available ports
+    Flux<List<RouteResource>> routeApplicationFlux = osaVectorSpaceFlux.flatMapSequential(v -> this.getAppRoutes(v.getApplicationId()));
+		Flux<OSAVector> osaVectorApplicationRouteFlux = Flux.zip(osaVectorApplicationFlux, routeApplicationFlux).flatMap(tuple -> {
+			OSAVector v = tuple.getT1();
+			
+			if (INVALID_ROUTES == tuple.getT2()) {
+				// NB: This drops the current target!
+				return Mono.empty();
+			}
+			
+      List<RouteResource> routes = tuple.getT2();
+      
+      // Get the route for the chosen url
+      RouteResource metricsRoute = routes.stream()
+      .filter(r -> v.getAccessURL().contains(r.getUrl()))
+      .findFirst()
+      .get();
+
+      // get the destination based on the appid so we can use the port.
+      Destination dest = metricsRoute.getDestinations()
+      .stream()
+      .filter(d -> d.getApplication().getApplicationId().equals(v.getApplicationId()))
+      .findFirst()
+      .get();
+            
+      v.setInternalPort(dest.getPort());
+      v.setRouteId(metricsRoute.getId());
+      v.setDomainId(metricsRoute.getRelationships().getDomain().getData().getId());
+      
+      return Mono.just(v);
+    });
 		
 		// perform pre-filtering, if available
 		if (applicationIdFilter != null) {
-			osaVectorApplicationFlux = osaVectorApplicationFlux.filter(v -> applicationIdFilter.test(v.getApplicationId()));
+			osaVectorApplicationRouteFlux = osaVectorApplicationRouteFlux.filter(v -> applicationIdFilter.test(v.getApplicationId()));
 		}
 		
-		Flux<Instance> instancesFlux = osaVectorApplicationFlux.flatMapSequential(v -> {
+		Flux<Instance> instancesFlux = osaVectorApplicationRouteFlux.flatMapSequential(v -> {
 			List<Instance> instances = new ArrayList<>(v.getNumberOfInstances());
 			for (int i = 0; i<v.numberOfInstances; i++) {
         // TODO if instance route is internal, prepend the instance number to the url
@@ -263,7 +313,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
             e.printStackTrace();
           }
           
-          List<String> urls = Arrays.asList(new String[]{ i + "." + url.getHost() + ":" + DEFAULT_INTERNAL_METRICS_PORT });  
+          List<String> urls = Arrays.asList(new String[]{ i + "." + url.getHost() + ":" + v.getInternalPort() });  
           inst.setAccessUrl(this.determineAccessURL(v.getTarget().getProtocol(), urls, v.getTarget().getOriginalTarget().getPreferredRouteRegexPatterns(), v.getTarget().getPath()));
         }
 				instances.add(inst);
@@ -368,6 +418,20 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			}).onErrorResume(e -> {
 				log.error(String.format("retrieving summary for space id '%s' resulted in an exception", spaceIdString), e);
 				return Mono.just(INVALID_SUMMARY);
+			});
+  }
+  
+  private Mono<List<RouteResource>> getAppRoutes(String appId) {
+		return this.cfAccessor.retrieveAppRoutes(appId)
+			.flatMap(response -> {
+				List<RouteResource> routes = response.getResources();
+				if (routes == null) {
+					return Mono.just(INVALID_ROUTES);
+				}								
+				return Mono.just(routes);
+			}).onErrorResume(e -> {
+				log.error(String.format("retrieving routes for app '%s' resulted in an exception", appId), e);
+				return Mono.just(INVALID_ROUTES);
 			});
 	}
 	

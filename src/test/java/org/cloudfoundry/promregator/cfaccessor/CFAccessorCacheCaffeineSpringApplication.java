@@ -5,6 +5,7 @@ import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
+import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
 import org.cloudfoundry.client.v3.domains.ListDomainsResponse;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.mockito.Mockito;
@@ -66,8 +67,12 @@ public class CFAccessorCacheCaffeineSpringApplication {
 
 		@Override
 		public Mono<ListDomainsResponse> retrieveDomains() {
-			// TODO Auto-generated method stub
-			return null;
+			return Mono.just(ListDomainsResponse.builder().build());
+		}
+
+		@Override
+		public Mono<ListApplicationRoutesResponse> retrieveAppRoutes(String appId) {
+			return Mono.just(ListApplicationRoutesResponse.builder().build());
 		}
 		
 	}

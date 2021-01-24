@@ -13,6 +13,7 @@ import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
+import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
 import org.cloudfoundry.client.v3.domains.ListDomainsResponse;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.slf4j.Logger;
@@ -287,6 +288,12 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	@Override
 	public void reset() {
 		this.parent.reset();
+	}
+
+	@Override
+	public Mono<ListApplicationRoutesResponse> retrieveAppRoutes(String appId) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

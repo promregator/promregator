@@ -13,8 +13,12 @@ import org.cloudfoundry.client.v2.applications.ListApplicationsRequest;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.info.GetInfoRequest;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
+import org.cloudfoundry.client.v3.applications.ListApplicationRoutesRequest;
+import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
 import org.cloudfoundry.client.v3.domains.ListDomainsRequest;
 import org.cloudfoundry.client.v3.domains.ListDomainsResponse;
+import org.cloudfoundry.client.v3.routes.ListRoutesRequest;
+import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsRequest;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.organizations.OrganizationResource;
@@ -87,7 +91,13 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	private int requestTimeoutAppInSpace;
 	
 	@Value("${cf.request.timeout.appSummary:4000}")
-	private int requestTimeoutAppSummary;
+  private int requestTimeoutAppSummary;
+  
+  @Value("${cf.request.timeout.domains:4000}")
+  private int requestTimeoutDomains;
+
+  @Value("${cf.request.timeout.appRoutes:4000}")
+	private int requestTimeoutAppRoutes;
 	
 	@Value("${cf.connectionPool.size:#{null}}")
 	private Integer connectionPoolSize;
@@ -386,6 +396,14 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		ListDomainsRequest request = ListDomainsRequest.builder().build();
 		
 		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.DOMAINS, "(empty)", 
-				request, r -> this.cloudFoundryClient.domainsV3().list(request), this.requestTimeoutAppSummary);
+				request, r -> this.cloudFoundryClient.domainsV3().list(request), this.requestTimeoutDomains);
+	}
+
+	@Override
+	public Mono<ListApplicationRoutesResponse> retrieveAppRoutes(String appId) {
+    ListApplicationRoutesRequest request = ListApplicationRoutesRequest.builder().applicationId(appId).build();
+
+    return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.APP_ROUTES, appId, 
+      request, r -> this.cloudFoundryClient.applicationsV3().listRoutes(request), this.requestTimeoutAppRoutes);
 	}
 }
