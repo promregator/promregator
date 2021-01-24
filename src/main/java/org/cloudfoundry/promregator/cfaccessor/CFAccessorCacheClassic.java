@@ -11,7 +11,7 @@ import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
-import org.cloudfoundry.client.v3.domains.ListDomainsResponse;
+import org.cloudfoundry.client.v3.domains.GetDomainResponse;
 import org.cloudfoundry.promregator.cache.AutoRefreshingCacheMap;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.slf4j.Logger;
@@ -379,11 +379,11 @@ public class CFAccessorCacheClassic implements CFAccessorCache {
   
   
 	@Override
-	public Mono<ListDomainsResponse> retrieveDomains() {		
+	public Mono<GetDomainResponse> retrieveDomain(String domainId) {		
     /*
 		 * not implemented cache here 
 		 */
-		return this.parent.retrieveDomains();
+		return this.parent.retrieveDomain(domainId);
 	}
 
 	@Override

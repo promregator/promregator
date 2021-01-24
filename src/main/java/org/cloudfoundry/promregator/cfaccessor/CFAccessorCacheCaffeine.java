@@ -14,7 +14,7 @@ import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
-import org.cloudfoundry.client.v3.domains.ListDomainsResponse;
+import org.cloudfoundry.client.v3.domains.GetDomainResponse;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +38,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	private AsyncLoadingCache<String, ListSpacesResponse> spaceIdInOrgCache;
 	private AsyncLoadingCache<CacheKeyAppsInSpace, ListApplicationsResponse> appsInSpaceCache;
   private AsyncLoadingCache<String, GetSpaceSummaryResponse> spaceSummaryCache;
-  private AsyncLoadingCache<String, ListDomainsResponse> domainsCache;
+  private AsyncLoadingCache<String, GetDomainResponse> domainsCache;
 	
 	@Value("${cf.cache.timeout.org:3600}")
 	private int refreshCacheOrgLevelInSeconds;
@@ -137,11 +137,11 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 		}
   }
   
-  private class DomainCacheLoader implements AsyncCacheLoader<String, ListDomainsResponse> {
+  private class DomainCacheLoader implements AsyncCacheLoader<String, GetDomainResponse> {
 		@Override
-		public @NonNull CompletableFuture<ListDomainsResponse> asyncLoad(@NonNull String key,
+		public @NonNull CompletableFuture<GetDomainResponse> asyncLoad(@NonNull String key,
 				@NonNull Executor executor) {
-			Mono<ListDomainsResponse> mono = parent.retrieveDomains()
+			Mono<GetDomainResponse> mono = parent.retrieveDomain(key)
 					.subscribeOn(Schedulers.fromExecutor(executor))
 					.cache();
 			return mono.toFuture();
@@ -258,8 +258,8 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
   }
   
   @Override
-	public Mono<ListDomainsResponse> retrieveDomains() {
-    return Mono.fromFuture(this.domainsCache.get(""));
+	public Mono<GetDomainResponse> retrieveDomain(String domainId) {
+    return Mono.fromFuture(this.domainsCache.get(domainId));
 	}
 
 

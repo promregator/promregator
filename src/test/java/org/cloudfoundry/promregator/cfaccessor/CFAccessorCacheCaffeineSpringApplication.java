@@ -6,7 +6,7 @@ import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
-import org.cloudfoundry.client.v3.domains.ListDomainsResponse;
+import org.cloudfoundry.client.v3.domains.GetDomainResponse;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -66,8 +66,8 @@ public class CFAccessorCacheCaffeineSpringApplication {
 		}
 
 		@Override
-		public Mono<ListDomainsResponse> retrieveDomains() {
-			return Mono.just(ListDomainsResponse.builder().build());
+		public Mono<GetDomainResponse> retrieveDomain(String domainId) {
+			return Mono.just(GetDomainResponse.builder().build());
 		}
 
 		@Override

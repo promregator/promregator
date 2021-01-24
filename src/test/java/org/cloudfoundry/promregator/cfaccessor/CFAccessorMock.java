@@ -5,8 +5,6 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.management.relation.Relation;
-
 import org.cloudfoundry.client.v2.Metadata;
 import org.cloudfoundry.client.v2.applications.ApplicationEntity;
 import org.cloudfoundry.client.v2.applications.ApplicationResource;
@@ -24,8 +22,7 @@ import org.cloudfoundry.client.v3.Relationship;
 import org.cloudfoundry.client.v3.ToOneRelationship;
 import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
 import org.cloudfoundry.client.v3.domains.DomainRelationships;
-import org.cloudfoundry.client.v3.domains.DomainResource;
-import org.cloudfoundry.client.v3.domains.ListDomainsResponse;
+import org.cloudfoundry.client.v3.domains.GetDomainResponse;
 import org.cloudfoundry.client.v3.routes.Application;
 import org.cloudfoundry.client.v3.routes.Destination;
 import org.cloudfoundry.client.v3.routes.Process;
@@ -240,35 +237,42 @@ public class CFAccessorMock implements CFAccessor {
 	}
 
 	@Override
-	public Mono<ListDomainsResponse> retrieveDomains() {    
-    ListDomainsResponse response = ListDomainsResponse.builder().resources(
-      DomainResource.builder()
-        .name(UNITTEST_SHARED_DOMAIN)
-        .id(UNITTEST_SHARED_DOMAIN_UUID)
-        .createdAt(CREATED_AT_TIMESTAMP)
-        .isInternal(false)
-        .relationships(
-            DomainRelationships.builder()
-            .organization(
-              ToOneRelationship.builder()
-              .data(null).build()
-            ).build()
-          )
-        .build(),
-      DomainResource.builder()
-        .name(UNITTEST_INTERNAL_DOMAIN)
-        .id(UNITTEST_INTERNAL_DOMAIN_UUID)
-        .createdAt(CREATED_AT_TIMESTAMP)
-        .isInternal(true)
-        .relationships(
-            DomainRelationships.builder()
-            .organization(
-              ToOneRelationship.builder()
-              .data(null).build()
-            ).build()
-          )
-        .build()
-    ).build();
+	public Mono<GetDomainResponse> retrieveDomain(String domainId) {    
+    GetDomainResponse response;
+
+    if(domainId.equals(UNITTEST_INTERNAL_DOMAIN_UUID)) {  
+      response = GetDomainResponse.builder()
+      .name(UNITTEST_INTERNAL_DOMAIN)
+      .id(UNITTEST_INTERNAL_DOMAIN_UUID)
+      .createdAt(CREATED_AT_TIMESTAMP)
+      .isInternal(true)
+      .relationships(
+        DomainRelationships.builder()
+        .organization(
+          ToOneRelationship.builder()
+          .data(
+            Relationship.builder().id(UNITTEST_ORG_UUID).build()
+          ).build()
+        ).build()
+      )
+      .build();      
+    } else {
+      response = GetDomainResponse.builder()
+      .name(UNITTEST_SHARED_DOMAIN)
+      .id(UNITTEST_SHARED_DOMAIN_UUID)
+      .createdAt(CREATED_AT_TIMESTAMP)
+      .isInternal(false)
+      .relationships(
+        DomainRelationships.builder()
+        .organization(
+          ToOneRelationship.builder()
+          .data(
+            Relationship.builder().id(UNITTEST_ORG_UUID).build()
+          ).build()
+        ).build()
+      )
+      .build();      
+    }
 		return Mono.just(response);
 	}
 
@@ -282,12 +286,12 @@ public class CFAccessorMock implements CFAccessor {
       .createdAt(CREATED_AT_TIMESTAMP)
       .host(UNITTEST_APP_INTERNAL_HOST)    
       .path("path")
-      .url( UNITTEST_APP_INTERNAL_HOST + "." + UNITTEST_INTERNAL_DOMAIN)
+      .url(UNITTEST_APP_INTERNAL_HOST + "." + UNITTEST_INTERNAL_DOMAIN)
       .relationships(
         RouteRelationships.builder()
         .domain(
           ToOneRelationship.builder().data(
-            Relationship.builder().id(UNITTEST_INTERNAL_DOMAIN).build()
+            Relationship.builder().id(UNITTEST_INTERNAL_DOMAIN_UUID).build()
             ).build()
           )
           .space(
@@ -301,6 +305,70 @@ public class CFAccessorMock implements CFAccessor {
         .application(
           Application.builder()
           .applicationId(UNITTEST_APP_INTERNAL_UUID)
+          .process(
+            Process.builder().type("web").build()
+          ).build())
+        .build()
+      ).build();
+    
+      routes.add(res);
+    } else {
+      RouteResource res = RouteResource.builder()
+      .id("id")
+      .createdAt(CREATED_AT_TIMESTAMP)
+      .host(UNITTEST_APP1_HOST)    
+      .path("path")
+      .url(UNITTEST_APP1_HOST + "." + UNITTEST_SHARED_DOMAIN)
+      .relationships(
+        RouteRelationships.builder()
+        .domain(
+          ToOneRelationship.builder().data(
+            Relationship.builder().id(UNITTEST_SHARED_DOMAIN_UUID).build()
+            ).build()
+          )
+          .space(
+            ToOneRelationship.builder().data(
+              Relationship.builder().id(UNITTEST_SPACE_UUID).build()
+            ).build()
+          ).build())      
+      .destination(
+        Destination.builder()
+        .port(8080)
+        .application(
+          Application.builder()
+          .applicationId(UNITTEST_APP1_UUID)
+          .process(
+            Process.builder().type("web").build()
+          ).build())
+        .build()
+      ).build();
+    
+      routes.add(res);
+
+      res = RouteResource.builder()
+      .id("id")
+      .createdAt(CREATED_AT_TIMESTAMP)
+      .host(UNITTEST_APP2_HOST)    
+      .path("path")
+      .url(UNITTEST_APP2_HOST + "." + UNITTEST_SHARED_DOMAIN)
+      .relationships(
+        RouteRelationships.builder()
+        .domain(
+          ToOneRelationship.builder().data(
+            Relationship.builder().id(UNITTEST_SHARED_DOMAIN_UUID).build()
+            ).build()
+          )
+          .space(
+            ToOneRelationship.builder().data(
+              Relationship.builder().id(UNITTEST_SPACE_UUID).build()
+            ).build()
+          ).build())      
+      .destination(
+        Destination.builder()
+        .port(8080)
+        .application(
+          Application.builder()
+          .applicationId(UNITTEST_APP2_UUID)
           .process(
             Process.builder().type("web").build()
           ).build())

@@ -20,7 +20,7 @@ import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v2.spaces.SpaceEntity;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
 import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
-import org.cloudfoundry.client.v3.domains.ListDomainsResponse;
+import org.cloudfoundry.client.v3.domains.GetDomainResponse;
 import org.junit.jupiter.api.Assertions;
 
 import reactor.core.publisher.Mono;
@@ -164,7 +164,7 @@ public class CFAccessorMassMock implements CFAccessor {
 	}
 
 	@Override
-	public Mono<ListDomainsResponse> retrieveDomains() {
+	public Mono<GetDomainResponse> retrieveDomain(String domainId) {
     // TODO Auto-generated method stub    
 		return null;
 	}

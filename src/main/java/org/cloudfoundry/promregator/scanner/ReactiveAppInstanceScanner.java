@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -19,10 +18,9 @@ import org.cloudfoundry.client.v2.organizations.OrganizationResource;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
-import org.cloudfoundry.client.v3.domains.ListDomainsResponse;
 import org.cloudfoundry.client.v3.routes.Destination;
 import org.cloudfoundry.client.v3.routes.RouteResource;
-import org.cloudfoundry.client.v3.domains.DomainResource;
+import org.cloudfoundry.client.v3.domains.GetDomainResponse;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +38,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	private static final String INVALID_SPACE_ID = "***invalid***";
   private static final Map<String, SpaceApplicationSummary> INVALID_SUMMARY = new HashMap<>();
   private static final List<RouteResource> INVALID_ROUTES = null;
-  private static final List<DomainResource> INVALID_DOMAINS = null;
+  private static final GetDomainResponse INVALID_DOMAIN = null;
 
   private static final int DEFAULT_INTERNAL_METRICS_PORT = 9090;
 
@@ -240,26 +238,12 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			if (urls != null && !urls.isEmpty()) {
 				v.setAccessURL(this.determineAccessURL(v.getTarget().getProtocol(), urls, v.getTarget().getOriginalTarget().getPreferredRouteRegexPatterns(), v.getTarget().getPath()));
       }      
-      
-      // TODO deterimine if access URL is on an internal route.
-      List<DomainResource> domains = this.getDomains();      
-      DomainResource dr = domains.stream()
-      .filter(s -> v.getAccessURL().contains(s.getName()))
-      .findFirst()
-      .get();
-
-      v.setIsInternal(dr.isInternal());      
-      if (dr.isInternal()) {      
-        // TODO Get the route object and append the port number from the route to the URL
-      }
-
+           
 			v.setNumberOfInstances(sas.getInstances());
 			
 			return Mono.just(v);
     });
-    
-
-    // TODO Merge in the routes with the apps to get the available ports
+        
     Flux<List<RouteResource>> routeApplicationFlux = osaVectorSpaceFlux.flatMapSequential(v -> this.getAppRoutes(v.getApplicationId()));
 		Flux<OSAVector> osaVectorApplicationRouteFlux = Flux.zip(osaVectorApplicationFlux, routeApplicationFlux).flatMap(tuple -> {
 			OSAVector v = tuple.getT1();
@@ -272,12 +256,14 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
       List<RouteResource> routes = tuple.getT2();
       
       // Get the route for the chosen url
+      // TODO add error handling here
       RouteResource metricsRoute = routes.stream()
       .filter(r -> v.getAccessURL().contains(r.getUrl()))
       .findFirst()
       .get();
 
       // get the destination based on the appid so we can use the port.
+      // TODO add error handling here
       Destination dest = metricsRoute.getDestinations()
       .stream()
       .filter(d -> d.getApplication().getApplicationId().equals(v.getApplicationId()))
@@ -290,19 +276,33 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
       
       return Mono.just(v);
     });
+    
+    Flux<GetDomainResponse> domainFlux = osaVectorApplicationRouteFlux.flatMapSequential(v -> this.cfAccessor.retrieveDomain(v.getDomainId()));
+		Flux<OSAVector> osaVectorApplicationRouteDomainFlux = Flux.zip(osaVectorApplicationRouteFlux, domainFlux).flatMap(tuple -> {
+			OSAVector v = tuple.getT1();
+			
+			if (INVALID_DOMAIN == tuple.getT2()) {
+				// NB: This drops the current target!
+				return Mono.empty();
+			}
+			
+      GetDomainResponse domain = tuple.getT2();      
+      v.setIsInternal(domain.isInternal());      
+      return Mono.just(v);
+    });
 		
 		// perform pre-filtering, if available
 		if (applicationIdFilter != null) {
-			osaVectorApplicationRouteFlux = osaVectorApplicationRouteFlux.filter(v -> applicationIdFilter.test(v.getApplicationId()));
+			osaVectorApplicationRouteDomainFlux = osaVectorApplicationRouteDomainFlux.filter(v -> applicationIdFilter.test(v.getApplicationId()));
 		}
 		
-		Flux<Instance> instancesFlux = osaVectorApplicationRouteFlux.flatMapSequential(v -> {
+		Flux<Instance> instancesFlux = osaVectorApplicationRouteDomainFlux.flatMapSequential(v -> {
 			List<Instance> instances = new ArrayList<>(v.getNumberOfInstances());
-			for (int i = 0; i<v.numberOfInstances; i++) {
-        // TODO if instance route is internal, prepend the instance number to the url
+			for (int i = 0; i<v.numberOfInstances; i++) {        
         Instance inst = new Instance(v.getTarget(), String.format("%s:%d", v.getApplicationId(), i), v.getAccessURL());
         inst.setInternal(v.isInternal);
         
+        // TODO this needs a refactor to make determineaccessurl intenal aware and invoke it here only
         if (v.isInternal) {
           URL url = null; 
           try {
@@ -385,21 +385,24 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 
   }
   
-  private List<DomainResource> getDomains() {
-		ListDomainsResponse listDomainResponse = this.cfAccessor.retrieveDomains().block();
-    List<DomainResource> resources = listDomainResponse.getResources();
-    
-    if (resources == null) {
-      return INVALID_DOMAINS;
-    }
-    
-    if (resources.isEmpty()) {
-      log.warn(String.format("Received empty result on requesting domains"));
-      return INVALID_DOMAINS;
-    }
-
-    return resources;
-	}
+  // private Mono<DomainResource> getDomain(String domainId) {
+	// 	return this.cfAccessor.retrieveDomain(domainId).flatMap(response -> {
+		
+	// 		if (response == null) {
+	// 			return Mono.just(INVALID_DOMAIN);
+	// 		}
+			
+	// 		if (response.getId().isEmpty()) {
+	// 			log.warn(String.format("Received empty result on requesting org %s", domainId));
+	// 			return Mono.just(INVALID_DOMAIN);
+	// 		}
+						
+	// 		return Mono.just(response);
+	// 	}).onErrorResume(e -> {
+	// 		log.error(String.format("retrieving Org Id for org Name '%s' resulted in an exception", domainId), e);
+	// 		return Mono.just(INVALID_DOMAIN);
+	// 	}).cache();
+	// }
 	
 	private Mono<Map<String, SpaceApplicationSummary>> getSpaceSummary(String spaceIdString) {
 		return this.cfAccessor.retrieveSpaceSummary(spaceIdString)

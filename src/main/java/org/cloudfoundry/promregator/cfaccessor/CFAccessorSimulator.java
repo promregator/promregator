@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
-import java.util.UUID;
 
 import org.cloudfoundry.client.v2.Metadata;
 import org.cloudfoundry.client.v2.applications.ApplicationEntity;
@@ -20,11 +19,11 @@ import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v2.spaces.SpaceEntity;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
+import org.cloudfoundry.client.v3.Relationship;
 import org.cloudfoundry.client.v3.ToOneRelationship;
 import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
 import org.cloudfoundry.client.v3.domains.DomainRelationships;
-import org.cloudfoundry.client.v3.domains.DomainResource;
-import org.cloudfoundry.client.v3.domains.ListDomainsResponse;
+import org.cloudfoundry.client.v3.domains.GetDomainResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
@@ -34,7 +33,8 @@ public class CFAccessorSimulator implements CFAccessor {
 	public static final String SPACE_UUID = "db08be9a-2fa4-11e8-b467-0ed5f89f718b";
 	public static final String APP_UUID_PREFIX = "55820b2c-2fa5-11e8-b467-";
 	public static final String APP_HOST_PREFIX = "hostapp";
-	public static final String SHARED_DOMAIN = "shared.domain.example.org";
+  public static final String SHARED_DOMAIN = "shared.domain.example.org";
+  public static final String SHARED_DOMAIN_UUID = "be9b8696-2fa6-11e8-b467-0ed5f89f718b";  
 	
 	private static final Logger log = LoggerFactory.getLogger(CFAccessorSimulator.class);
 	
@@ -164,28 +164,22 @@ public class CFAccessorSimulator implements CFAccessor {
   }
   
   @Override
-	public Mono<ListDomainsResponse> retrieveDomains() {    
-			List<DomainResource> list = new LinkedList<>();
-			
-			for (int i = 1;i<=10;i++) {				
-				list.add(
-          DomainResource.builder() 
-          .id(UUID.randomUUID().toString())       
-          .isInternal(false)
-          .createdAt(CFAccessorSimulator.CREATED_AT_TIMESTAMP)
-          .relationships(
-            DomainRelationships.builder()
-            .organization(
-              ToOneRelationship.builder()
-              .data(null).build()
-            ).build()
-          )
-          .name("cf.test"+i+".com")                    
-          .build());
-			}
-			
-      ListDomainsResponse resp = ListDomainsResponse.builder()      
-      .addAllResources(list)
+	public Mono<GetDomainResponse> retrieveDomain(String domainId) {    
+    
+      GetDomainResponse resp = GetDomainResponse.builder()
+      .id(domainId)       
+      .isInternal(false)
+      .createdAt(CREATED_AT_TIMESTAMP)
+      .relationships(
+        DomainRelationships.builder()
+        .organization(
+          ToOneRelationship.builder()
+          .data(
+            Relationship.builder().id(ORG_UUID).build()
+          ).build()
+        ).build()
+      )
+      .name(SHARED_DOMAIN)    
       .build();
 			
 			return Mono.just(resp).delayElement(this.getSleepRandomDuration());

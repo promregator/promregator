@@ -15,10 +15,8 @@ import org.cloudfoundry.client.v2.info.GetInfoRequest;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationRoutesRequest;
 import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
-import org.cloudfoundry.client.v3.domains.ListDomainsRequest;
-import org.cloudfoundry.client.v3.domains.ListDomainsResponse;
-import org.cloudfoundry.client.v3.routes.ListRoutesRequest;
-import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
+import org.cloudfoundry.client.v3.domains.GetDomainRequest;
+import org.cloudfoundry.client.v3.domains.GetDomainResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsRequest;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.organizations.OrganizationResource;
@@ -392,11 +390,13 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
   }
   
 	@Override
-	public Mono<ListDomainsResponse> retrieveDomains() {
-		ListDomainsRequest request = ListDomainsRequest.builder().build();
+	public Mono<GetDomainResponse> retrieveDomain(String domainId) {
+    // ListDomainsRequest request = ListDomainsRequest.builder().build();
+    
+    GetDomainRequest request = GetDomainRequest.builder().domainId(domainId).build();
 		
 		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.DOMAINS, "(empty)", 
-				request, r -> this.cloudFoundryClient.domainsV3().list(request), this.requestTimeoutDomains);
+				request, r -> this.cloudFoundryClient.domainsV3().get(request), this.requestTimeoutDomains);
 	}
 
 	@Override
