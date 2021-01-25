@@ -9,18 +9,18 @@ public class Instance {
 	private ResolvedTarget target;
 	private String instanceId;
   private String accessUrl;
-  private boolean isInternal;
+  private boolean internal;
 	
 	public Instance() {
 		super();
 	}
 
 	public boolean isInternal() {
-		return isInternal;
+		return internal;
 	}
 
 	public void setInternal(boolean isInternal) {
-		this.isInternal = isInternal;
+		this.internal = isInternal;
 	}
 
 	public Instance(ResolvedTarget target, String instanceId, String accessUrl) {

@@ -152,13 +152,13 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
     /**
 		 * @return the isInternal
 		 */
-		public boolean getIsInternal() {
+		public boolean isInternal() {
 			return isInternal;
 		}
 		/**
 		 * @param isInternal the isInternal to set
 		 */
-		public void setIsInternal(boolean isInternal) {
+		public void setInternal(boolean isInternal) {
 			this.isInternal = isInternal;
 		}
 		/**
@@ -287,7 +287,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			}
 			
       GetDomainResponse domain = tuple.getT2();      
-      v.setIsInternal(domain.isInternal());      
+      v.setInternal(domain.isInternal());      
       return Mono.just(v);
     });
 		
