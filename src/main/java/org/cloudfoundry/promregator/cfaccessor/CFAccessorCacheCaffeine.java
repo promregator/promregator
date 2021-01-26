@@ -37,8 +37,8 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	private AsyncLoadingCache<CacheKeySpace, ListSpacesResponse> spaceCache;
 	private AsyncLoadingCache<String, ListSpacesResponse> spaceIdInOrgCache;
 	private AsyncLoadingCache<CacheKeyAppsInSpace, ListApplicationsResponse> appsInSpaceCache;
-  private AsyncLoadingCache<String, GetSpaceSummaryResponse> spaceSummaryCache;
-  private AsyncLoadingCache<String, GetDomainResponse> domainsCache;
+	private AsyncLoadingCache<String, GetSpaceSummaryResponse> spaceSummaryCache;
+	private AsyncLoadingCache<String, GetDomainResponse> domainsCache;
 	
 	@Value("${cf.cache.timeout.org:3600}")
 	private int refreshCacheOrgLevelInSeconds;

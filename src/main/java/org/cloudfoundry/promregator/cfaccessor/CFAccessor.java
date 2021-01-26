@@ -22,12 +22,12 @@ public interface CFAccessor {
 	Mono<ListSpacesResponse> retrieveSpaceIdsInOrg(String orgId);
 
 	Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String orgId, String spaceId);
+	
+	Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId);
+		
+	Mono<GetDomainResponse> retrieveDomain(String domainId);
 
-  Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId);
-  
-  Mono<GetDomainResponse> retrieveDomain(String domainId);
-
-  Mono<ListApplicationRoutesResponse> retrieveAppRoutes(String appId);
+	Mono<ListApplicationRoutesResponse> retrieveAppRoutes(String appId);
 	
 	void reset();
 }
