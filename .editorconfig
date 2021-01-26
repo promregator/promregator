@@ -8,4 +8,4 @@ insert_final_newline = true
 
 [*.java]
 indent_style = tab
-indent_size = 1
+indent_size = 2

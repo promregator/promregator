@@ -277,7 +277,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
       return Mono.just(v);
     });
     
-    Flux<GetDomainResponse> domainFlux = osaVectorApplicationRouteFlux.flatMapSequential(v -> this.cfAccessor.retrieveDomain(v.getDomainId()));
+		Flux<GetDomainResponse> domainFlux = osaVectorApplicationRouteFlux.flatMapSequential(v -> this.cfAccessor.retrieveDomain(v.getDomainId()));
 		Flux<OSAVector> osaVectorApplicationRouteDomainFlux = Flux.zip(osaVectorApplicationRouteFlux, domainFlux).flatMap(tuple -> {
 			OSAVector v = tuple.getT1();
 			
@@ -286,11 +286,11 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				return Mono.empty();
 			}
 			
-      GetDomainResponse domain = tuple.getT2();      
-      v.setInternal(domain.isInternal());      
-      return Mono.just(v);
-    });
-		
+			GetDomainResponse domain = tuple.getT2();      
+			v.setInternal(domain.isInternal());      
+			return Mono.just(v);
+		});
+	
 		// perform pre-filtering, if available
 		if (applicationIdFilter != null) {
 			osaVectorApplicationRouteDomainFlux = osaVectorApplicationRouteDomainFlux.filter(v -> applicationIdFilter.test(v.getApplicationId()));
