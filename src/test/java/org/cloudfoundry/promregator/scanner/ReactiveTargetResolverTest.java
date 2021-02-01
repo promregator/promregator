@@ -79,7 +79,7 @@ class ReactiveTargetResolverTest {
 		
 		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
 		
-		Assertions.assertEquals(2, actualList.size());
+		Assertions.assertEquals(3, actualList.size());
 		
 		ResolvedTarget rt = actualList.get(0);
 		Assertions.assertEquals(t, rt.getOriginalTarget());

@@ -45,6 +45,7 @@ class MassReactiveAppInstanceScannerTest {
 			t.setOrgName("unittestorg");
 			t.setSpaceName("unittestspace");
 			t.setApplicationName("testapp"+i);
+			t.setApplicationId(UNITTEST_APP_UUID_PREFIX+i);
 			t.setPath("/testpath");
 			t.setProtocol("http");
 			t.setOriginalTarget(emptyTarget);
@@ -78,6 +79,7 @@ class MassReactiveAppInstanceScannerTest {
 			t.setOrgName("unittestorg");
 			t.setSpaceName("unittestspace");
 			t.setApplicationName("testapp"+i);
+			t.setApplicationId(UNITTEST_APP_UUID_PREFIX+i);
 			t.setPath("/testpath");
 			t.setProtocol("http");
 			t.setOriginalTarget(emptyTarget);
@@ -167,6 +169,7 @@ class MassReactiveAppInstanceScannerTest {
 			t.setOrgName("unittestorg");
 			t.setSpaceName("unittestspace");
 			t.setApplicationName("testapp"+i);
+			t.setApplicationId(UNITTEST_APP_UUID_PREFIX+i);
 			t.setPath("/testpath"+i);
 			t.setProtocol("http");
 			t.setOriginalTarget(emptyTarget);
