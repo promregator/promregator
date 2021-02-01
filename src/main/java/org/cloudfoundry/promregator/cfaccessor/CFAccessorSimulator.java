@@ -24,6 +24,11 @@ import org.cloudfoundry.client.v3.ToOneRelationship;
 import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
 import org.cloudfoundry.client.v3.domains.DomainRelationships;
 import org.cloudfoundry.client.v3.domains.GetDomainResponse;
+import org.cloudfoundry.client.v3.routes.Application;
+import org.cloudfoundry.client.v3.routes.Destination;
+import org.cloudfoundry.client.v3.routes.Process;
+import org.cloudfoundry.client.v3.routes.RouteRelationships;
+import org.cloudfoundry.client.v3.routes.RouteResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
@@ -204,8 +209,44 @@ public class CFAccessorSimulator implements CFAccessor {
 
 	@Override
 	public Mono<ListApplicationRoutesResponse> retrieveAppRoutes(String appId) {
-		// TODO Auto-generated method stub
-		return null;
+		List<RouteResource> routes = new LinkedList<>();
+
+		String instanceId = appId.replace(APP_UUID_PREFIX, "");
+
+		RouteResource res = RouteResource.builder()
+      .id("id")
+      .createdAt(CREATED_AT_TIMESTAMP)
+      .host(APP_HOST_PREFIX+instanceId) 
+      .path("path")
+      .url(APP_HOST_PREFIX + instanceId + "." + SHARED_DOMAIN)
+      .relationships(
+        RouteRelationships.builder()
+        .domain(
+          ToOneRelationship.builder().data(
+            Relationship.builder().id(SHARED_DOMAIN_UUID).build()
+            ).build()
+          )
+          .space(
+            ToOneRelationship.builder().data(
+              Relationship.builder().id(SPACE_UUID).build()
+            ).build()
+          ).build())      
+      .destination(
+        Destination.builder()
+        .port(8080)
+        .application(
+          Application.builder()
+          .applicationId(appId)
+          .process(
+            Process.builder().type("web").build()
+          ).build())
+        .build()
+      ).build();
+    
+		routes.add(res);
+
+		ListApplicationRoutesResponse resp = ListApplicationRoutesResponse.builder().addAllResources(routes).build();
+		return Mono.just(resp);
 	}
 
 

@@ -412,7 +412,21 @@ public class CFAccessorCacheClassic implements CFAccessorCache {
 
 	@Override
 	public Mono<ListApplicationRoutesResponse> retrieveAppRoutes(String appId) {
+		    /*
+		 * not implemented cache here 
+		 */
+		return this.parent.retrieveAppRoutes(appId);
+	}
+
+	@Override
+	public void invalidateCacheDomain() {
 		// TODO Auto-generated method stub
-		return null;
+		// Nothing to do here as not cached
+	}
+
+	@Override
+	public void invalidateCacheRoutes() {
+		// TODO Auto-generated method stub
+		// Nothing to do here as not cached
 	}
 }

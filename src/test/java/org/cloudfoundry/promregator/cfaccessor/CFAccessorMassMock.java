@@ -19,8 +19,16 @@ import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v2.spaces.SpaceEntity;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
+import org.cloudfoundry.client.v3.Relationship;
+import org.cloudfoundry.client.v3.ToOneRelationship;
+import org.cloudfoundry.client.v3.routes.Application;
+import org.cloudfoundry.client.v3.routes.Destination;
+import org.cloudfoundry.client.v3.routes.Process;
 import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
+import org.cloudfoundry.client.v3.domains.DomainRelationships;
 import org.cloudfoundry.client.v3.domains.GetDomainResponse;
+import org.cloudfoundry.client.v3.routes.RouteRelationships;
+import org.cloudfoundry.client.v3.routes.RouteResource;
 import org.junit.jupiter.api.Assertions;
 
 import reactor.core.publisher.Mono;
@@ -29,6 +37,7 @@ public class CFAccessorMassMock implements CFAccessor {
 	public static final String UNITTEST_ORG_UUID = "eb51aa9c-2fa3-11e8-b467-0ed5f89f718b";
 	public static final String UNITTEST_SPACE_UUID = "db08be9a-2fa4-11e8-b467-0ed5f89f718b";
 	public static final String UNITTEST_APP_UUID_PREFIX = "55820b2c-2fa5-11e8-b467-";
+	public static final String UNITTEST_SHARED_DOMAIN_UUID = "be9b8696-2fa6-11e8-b467-0ed5f89f718b";
 	public static final String UNITTEST_SHARED_DOMAIN = "shared.domain.example.org";
 	
 	public static final String CREATED_AT_TIMESTAMP = "2014-11-24T19:32:49+00:00";
@@ -165,13 +174,64 @@ public class CFAccessorMassMock implements CFAccessor {
 
 	@Override
 	public Mono<GetDomainResponse> retrieveDomain(String domainId) {
-    // TODO Auto-generated method stub    
-		return null;
+		GetDomainResponse response = GetDomainResponse.builder()
+		.createdAt(CREATED_AT_TIMESTAMP) // required createdAt
+    .id(domainId) // required id            
+    .name(UNITTEST_SHARED_DOMAIN) // required name
+    .relationships(
+        DomainRelationships.builder()
+        .organization(
+          ToOneRelationship.builder()
+          .data(
+            Relationship.builder().id(UNITTEST_ORG_UUID).build()
+          ).build()
+        ).build()
+      )  
+    .isInternal(false) // required isInternal
+    .build();
+		
+		return Mono.just(response);
 	}
 
 	@Override
 	public Mono<ListApplicationRoutesResponse> retrieveAppRoutes(String appId) {
-		// TODO Auto-generated method stub
-		return null;
+		List<RouteResource> routes = new LinkedList<>();
+
+		String instanceId = appId.replace(UNITTEST_APP_UUID_PREFIX, "");
+
+		RouteResource res = RouteResource.builder()
+      .id("id")
+      .createdAt(CREATED_AT_TIMESTAMP)
+      .host("hostapp"+instanceId)    
+      .path("path")
+      .url("hostapp" + instanceId + "." + UNITTEST_SHARED_DOMAIN)
+      .relationships(
+        RouteRelationships.builder()
+        .domain(
+          ToOneRelationship.builder().data(
+            Relationship.builder().id(UNITTEST_SHARED_DOMAIN_UUID).build()
+            ).build()
+          )
+          .space(
+            ToOneRelationship.builder().data(
+              Relationship.builder().id(UNITTEST_SPACE_UUID).build()
+            ).build()
+          ).build())      
+      .destination(
+        Destination.builder()
+        .port(8080)
+        .application(
+          Application.builder()
+          .applicationId(appId)
+          .process(
+            Process.builder().type("web").build()
+          ).build())
+        .build()
+      ).build();
+    
+		routes.add(res);
+
+		ListApplicationRoutesResponse resp = ListApplicationRoutesResponse.builder().addAllResources(routes).build();
+		return Mono.just(resp);
 	}
 }

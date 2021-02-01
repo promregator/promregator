@@ -432,25 +432,6 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				return Mono.just(INVALID_ROUTES);
 			});
 	}
-	
-	private String determineAccessURL(final String protocol, final List<String> urls, final List<Pattern> preferredRouteRegex, final String path) {
-		
-		final String url = determineApplicationRoute(urls, preferredRouteRegex);
-		final String applicationUrl = String.format("%s://%s", protocol, url);
-		log.debug (String.format("Using Application URL: '%s'", applicationUrl));
-		
-		String applUrl = applicationUrl;
-		if (!applicationUrl.endsWith("/")) {
-			applUrl += '/';
-		}
-		
-		String internalPath = path;
-		while (internalPath.startsWith("/")) {
-			internalPath = internalPath.substring(1);
-		}
-		
-		return applUrl + internalPath;
-	}
 
 	private String formatAccessURL(final String protocol, final String url, final String path) {		
 		final String applicationUrl = String.format("%s://%s", protocol, url);

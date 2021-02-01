@@ -39,6 +39,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	private AsyncLoadingCache<CacheKeyAppsInSpace, ListApplicationsResponse> appsInSpaceCache;
 	private AsyncLoadingCache<String, GetSpaceSummaryResponse> spaceSummaryCache;
 	private AsyncLoadingCache<String, GetDomainResponse> domainsCache;
+	private AsyncLoadingCache<String, ListApplicationRoutesResponse> appRoutesCache;
 	
 	@Value("${cf.cache.timeout.org:3600}")
 	private int refreshCacheOrgLevelInSeconds;
@@ -48,6 +49,12 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	
 	@Value("${cf.cache.timeout.application:300}")
 	private int refreshCacheApplicationLevelInSeconds;
+
+	@Value("${cf.cache.timeout.domain:300}")
+	private int refreshCacheDomainLevelInSeconds;
+
+	@Value("${cf.cache.timeout.routes:300}")
+	private int refreshCacheRouteLevelInSeconds;
 		
 	@Value("${cf.cache.expiry.org:120}")
 	private int expiryCacheOrgLevelInSeconds;
@@ -58,6 +65,11 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	@Value("${cf.cache.expiry.application:120}")
 	private int expiryCacheApplicationLevelInSeconds;
 	
+	@Value("${cf.cache.expiry.domain:120}")
+	private int expiryCacheDomainLevelInSeconds;
+
+	@Value("${cf.cache.expiry.routes:120}")
+	private int expiryCacheRoutesLevelInSeconds;
 	
 	@Autowired
 	private InternalMetrics internalMetrics;
@@ -147,6 +159,17 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 			return mono.toFuture();
 		}
 	}
+
+	private class AppRouteCacheLoader implements AsyncCacheLoader<String, ListApplicationRoutesResponse> {
+		@Override
+		public @NonNull CompletableFuture<ListApplicationRoutesResponse> asyncLoad(@NonNull String key,
+				@NonNull Executor executor) {
+			Mono<ListApplicationRoutesResponse> mono = parent.retrieveAppRoutes(key)
+					.subscribeOn(Schedulers.fromExecutor(executor))
+					.cache();
+			return mono.toFuture();
+		}
+	}
 	
 	@PostConstruct
 	public void setupCaches() {
@@ -206,12 +229,20 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
     this.internalMetrics.addCaffeineCache("spaceSummary", this.spaceSummaryCache);
     
     this.domainsCache = Caffeine.newBuilder()
-				.expireAfterAccess(this.expiryCacheApplicationLevelInSeconds, TimeUnit.SECONDS)
-				.refreshAfterWrite(this.refreshCacheApplicationLevelInSeconds, TimeUnit.SECONDS)
+				.expireAfterAccess(this.expiryCacheDomainLevelInSeconds, TimeUnit.SECONDS)
+				.refreshAfterWrite(this.refreshCacheDomainLevelInSeconds, TimeUnit.SECONDS)
 				.recordStats()
 				.scheduler(caffeineScheduler)
 				.buildAsync(new DomainCacheLoader());
 		this.internalMetrics.addCaffeineCache("domainCache", this.domainsCache);
+
+		this.appRoutesCache = Caffeine.newBuilder()
+		.expireAfterAccess(this.expiryCacheRoutesLevelInSeconds, TimeUnit.SECONDS)
+		.refreshAfterWrite(this.refreshCacheRouteLevelInSeconds, TimeUnit.SECONDS)
+		.recordStats()
+		.scheduler(caffeineScheduler)
+		.buildAsync(new AppRouteCacheLoader());
+		this.internalMetrics.addCaffeineCache("routeCache", this.appRoutesCache);
 	}
 
 	@Override
@@ -232,8 +263,6 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 		return Mono.fromFuture(this.spaceCache.get(key));
 	}
 
-
-
 	@Override
 	public Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String orgId, String spaceId) {
 		final CacheKeyAppsInSpace key = new CacheKeyAppsInSpace(orgId, spaceId);
@@ -246,7 +275,6 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 		return Mono.fromFuture(this.spaceSummaryCache.get(spaceId));
 	}
 
-	
 	@Override
 	public Mono<ListOrganizationsResponse> retrieveAllOrgIds() {
 		return Mono.fromFuture(this.allOrgIdCache.get("all"));
@@ -262,6 +290,10 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
     return Mono.fromFuture(this.domainsCache.get(domainId));
 	}
 
+	@Override
+	public Mono<ListApplicationRoutesResponse> retrieveAppRoutes(String appId) {
+		return Mono.fromFuture(this.appRoutesCache.get(appId));
+	}
 
 	@Override
 	public void invalidateCacheApplications() {
@@ -286,14 +318,19 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	}
 
 	@Override
-	public void reset() {
-		this.parent.reset();
+	public void invalidateCacheDomain() {
+		log.info("Invalidating domain cache");
+		this.domainsCache.synchronous().invalidateAll();		
 	}
 
 	@Override
-	public Mono<ListApplicationRoutesResponse> retrieveAppRoutes(String appId) {
-		// TODO Auto-generated method stub
-		return null;
+	public void invalidateCacheRoutes() {
+		log.info("Invalidating route cache");
+		this.appRoutesCache.synchronous().invalidateAll();
 	}
 
+	@Override
+	public void reset() {
+		this.parent.reset();
+	}
 }
