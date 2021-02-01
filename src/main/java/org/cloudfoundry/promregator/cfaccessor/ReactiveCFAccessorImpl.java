@@ -390,9 +390,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
   }
   
 	@Override
-	public Mono<GetDomainResponse> retrieveDomain(String domainId) {
-    // ListDomainsRequest request = ListDomainsRequest.builder().build();
-    
+	public Mono<GetDomainResponse> retrieveDomain(String domainId) {       
     GetDomainRequest request = GetDomainRequest.builder().domainId(domainId).build();
 		
 		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.DOMAINS, "(empty)", 

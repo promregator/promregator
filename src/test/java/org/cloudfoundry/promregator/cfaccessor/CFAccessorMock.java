@@ -238,7 +238,12 @@ public class CFAccessorMock implements CFAccessor {
 
 	@Override
 	public Mono<GetDomainResponse> retrieveDomain(String domainId) {    
-    GetDomainResponse response;
+		GetDomainResponse response;
+				
+		if(domainId == null)
+		{									
+			return Mono.empty();
+		}
 
     if(domainId.equals(UNITTEST_INTERNAL_DOMAIN_UUID)) {  
       response = GetDomainResponse.builder()
@@ -278,7 +283,11 @@ public class CFAccessorMock implements CFAccessor {
 
 	@Override
 	public Mono<ListApplicationRoutesResponse> retrieveAppRoutes(String appId) {
-    List<RouteResource> routes = new LinkedList<>();
+		List<RouteResource> routes = new LinkedList<>();
+		
+		if (appId == null) {			
+			return Mono.empty();
+		}
     
     if(appId.equals(UNITTEST_APP_INTERNAL_UUID)) {
       RouteResource res = RouteResource.builder()
@@ -312,7 +321,7 @@ public class CFAccessorMock implements CFAccessor {
       ).build();
     
       routes.add(res);
-    } else {
+		} else {
       RouteResource res = RouteResource.builder()
       .id("id")
       .createdAt(CREATED_AT_TIMESTAMP)
@@ -351,6 +360,38 @@ public class CFAccessorMock implements CFAccessor {
       .host(UNITTEST_APP2_HOST)    
       .path("path")
       .url(UNITTEST_APP2_HOST + "." + UNITTEST_SHARED_DOMAIN)
+      .relationships(
+        RouteRelationships.builder()
+        .domain(
+          ToOneRelationship.builder().data(
+            Relationship.builder().id(UNITTEST_SHARED_DOMAIN_UUID).build()
+            ).build()
+          )
+          .space(
+            ToOneRelationship.builder().data(
+              Relationship.builder().id(UNITTEST_SPACE_UUID).build()
+            ).build()
+          ).build())      
+      .destination(
+        Destination.builder()
+        .port(8080)
+        .application(
+          Application.builder()
+          .applicationId(UNITTEST_APP2_UUID)
+          .process(
+            Process.builder().type("web").build()
+          ).build())
+        .build()
+      ).build();
+    
+			routes.add(res);
+			
+			res = RouteResource.builder()
+      .id("id")
+      .createdAt(CREATED_AT_TIMESTAMP)
+      .host(UNITTEST_APP2_HOST)    
+      .path("path")
+      .url(UNITTEST_APP2_HOST + ".additionalSubdomain." + UNITTEST_SHARED_DOMAIN)
       .relationships(
         RouteRelationships.builder()
         .domain(

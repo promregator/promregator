@@ -236,7 +236,8 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 
 			List<String> urls = sas.getUrls();
 			if (urls != null && !urls.isEmpty()) {
-				v.setAccessURL(this.determineAccessURL(v.getTarget().getProtocol(), urls, v.getTarget().getOriginalTarget().getPreferredRouteRegexPatterns(), v.getTarget().getPath()));
+				// Set the access url to the selected route (without any protocol or path yet)
+				v.setAccessURL(this.determineApplicationRoute(urls, v.getTarget().getOriginalTarget().getPreferredRouteRegexPatterns()));				
       }      
            
 			v.setNumberOfInstances(sas.getInstances());
@@ -254,26 +255,28 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			}
 			
       List<RouteResource> routes = tuple.getT2();
-      
-      // Get the route for the chosen url
-      // TODO add error handling here
+            
       RouteResource metricsRoute = routes.stream()
       .filter(r -> v.getAccessURL().contains(r.getUrl()))
       .findFirst()
-      .get();
+			.orElse(null);
 
-      // get the destination based on the appid so we can use the port.
-      // TODO add error handling here
-      Destination dest = metricsRoute.getDestinations()
-      .stream()
-      .filter(d -> d.getApplication().getApplicationId().equals(v.getApplicationId()))
-      .findFirst()
-      .get();
+			if (metricsRoute == null) {
+				return Mono.just(v);
+			}
+
+			Destination dest = metricsRoute.getDestinations()
+			.stream()
+			.filter(d -> d.getApplication().getApplicationId().equals(v.getApplicationId()))
+			.findFirst()
+			.orElse(null);
+						
+			if (dest != null) {
+				v.setInternalPort(dest.getPort());
+				v.setRouteId(metricsRoute.getId());
+				v.setDomainId(metricsRoute.getRelationships().getDomain().getData().getId());					
+			}
             
-      v.setInternalPort(dest.getPort());
-      v.setRouteId(metricsRoute.getId());
-      v.setDomainId(metricsRoute.getRelationships().getDomain().getData().getId());
-      
       return Mono.just(v);
     });
     
@@ -295,27 +298,19 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		if (applicationIdFilter != null) {
 			osaVectorApplicationRouteDomainFlux = osaVectorApplicationRouteDomainFlux.filter(v -> applicationIdFilter.test(v.getApplicationId()));
 		}
-		
+
 		Flux<Instance> instancesFlux = osaVectorApplicationRouteDomainFlux.flatMapSequential(v -> {
 			List<Instance> instances = new ArrayList<>(v.getNumberOfInstances());
 			for (int i = 0; i<v.numberOfInstances; i++) {        
         Instance inst = new Instance(v.getTarget(), String.format("%s:%d", v.getApplicationId(), i), v.getAccessURL());
         inst.setInternal(v.isInternal);
+				
+				if (v.isInternal) {
+					inst.setAccessUrl(this.formatInternalAccessURL(v.getAccessURL(), v.getTarget().getPath(), v.getInternalPort(), i));
+				} else {
+					inst.setAccessUrl(this.formatAccessURL(v.getTarget().getProtocol(), v.getAccessURL(), v.getTarget().getPath()));
+				}				
         
-        // TODO this needs a refactor to make determineaccessurl intenal aware and invoke it here only
-        if (v.isInternal) {
-          URL url = null; 
-          try {
-            url = new URL(inst.getAccessUrl());            
-          } catch (MalformedURLException e) {
-            // this should not happen!
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-          }
-          
-          List<String> urls = Arrays.asList(new String[]{ i + "." + url.getHost() + ":" + v.getInternalPort() });  
-          inst.setAccessUrl(this.determineAccessURL(v.getTarget().getProtocol(), urls, v.getTarget().getOriginalTarget().getPreferredRouteRegexPatterns(), v.getTarget().getPath()));
-        }
 				instances.add(inst);
 			}
 			
@@ -455,6 +450,30 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		}
 		
 		return applUrl + internalPath;
+	}
+
+	private String formatAccessURL(final String protocol, final String url, final String path) {		
+		final String applicationUrl = String.format("%s://%s", protocol, url);
+		log.debug (String.format("Using Application URL: '%s'", applicationUrl));
+		
+		String applUrl = applicationUrl;
+		if (!applicationUrl.endsWith("/")) {
+			applUrl += '/';
+		}
+		
+		String internalPath = path;
+		while (internalPath.startsWith("/")) {
+			internalPath = internalPath.substring(1);
+		}
+		
+		return applUrl + internalPath;
+	}
+
+	private String formatInternalAccessURL(final String url, final String path, final int internalPort, final int instanceId) {		
+		String internalURL = String.format("%s.%s:%s", instanceId , url, internalPort);
+		log.debug (String.format("Using internal Application URL: '%s'", internalURL));
+
+		return formatAccessURL("http", internalURL, path);
 	}
 
 	private String determineApplicationRoute(final List<String> urls, final List<Pattern> patterns) {

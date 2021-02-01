@@ -620,7 +620,7 @@ class ReactiveAppInstanceScannerTest {
     List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, null, null);
     
     assertThat(result).filteredOn( instance -> instance.getInstanceId().equals(UNITTEST_APP_INTERNAL_UUID+":0") )
-    .extracting("isInternal").containsOnly(true);
+    .extracting("internal").containsOnly(true);
 
     assertThat(result).filteredOn( instance -> instance.getInstanceId().equals(UNITTEST_APP_INTERNAL_UUID+":0") )
     .extracting("accessUrl").containsOnly("http://0.internal-app.apps.internal:8080/metrics");
