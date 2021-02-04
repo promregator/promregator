@@ -63,7 +63,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		private String domainId;			
 		private String accessURL;
 		private int numberOfInstances;
-		private boolean isInternal;
+		private boolean internal;
 		private int internalPort;
 		/**
 		 * @return the target
@@ -142,18 +142,18 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		 */
 		public void setAccessURL(String accessURL) {
 			this.accessURL = accessURL;
-    }
-    /**
+		}
+	    /**
 		 * @return the isInternal
 		 */
 		public boolean isInternal() {
-			return isInternal;
+			return internal;
 		}
 		/**
 		 * @param isInternal the isInternal to set
 		 */
 		public void setInternal(boolean isInternal) {
-			this.isInternal = isInternal;
+			this.internal = isInternal;
 		}
 		/**
 		 * @return the numberOfInstances
@@ -232,14 +232,14 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			if (urls != null && !urls.isEmpty()) {
 				// Set the access url to the selected route (without any protocol or path yet)
 				v.setAccessURL(this.determineApplicationRoute(urls, v.getTarget().getOriginalTarget().getPreferredRouteRegexPatterns()));				
-      }      
-           
-			v.setNumberOfInstances(sas.getInstances());
+			}      
 			
-			return Mono.just(v);
-    });
-        
-    Flux<List<RouteResource>> routeApplicationFlux = osaVectorSpaceFlux.flatMapSequential(v -> this.getAppRoutes(v.getApplicationId()));
+				v.setNumberOfInstances(sas.getInstances());
+				
+				return Mono.just(v);
+		});
+			
+		Flux<List<RouteResource>> routeApplicationFlux = osaVectorSpaceFlux.flatMapSequential(v -> this.getAppRoutes(v.getApplicationId()));
 		Flux<OSAVector> osaVectorApplicationRouteFlux = Flux.zip(osaVectorApplicationFlux, routeApplicationFlux).flatMap(tuple -> {
 			OSAVector v = tuple.getT1();
 			
@@ -247,32 +247,32 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				// NB: This drops the current target!
 				return Mono.empty();
 			}
-			
-      List<RouteResource> routes = tuple.getT2();
-            
-      RouteResource metricsRoute = routes.stream()
-      .filter(r -> v.getAccessURL().contains(r.getUrl()))
-      .findFirst()
-			.orElse(null);
+				
+			List<RouteResource> routes = tuple.getT2();
+					
+			RouteResource metricsRoute = routes.stream()
+				.filter(r -> v.getAccessURL().contains(r.getUrl()))
+				.findFirst()
+				.orElse(null);
 
 			if (metricsRoute == null) {
 				return Mono.just(v);
 			}
 
 			Destination dest = metricsRoute.getDestinations()
-			.stream()
-			.filter(d -> d.getApplication().getApplicationId().equals(v.getApplicationId()))
-			.findFirst()
-			.orElse(null);
+				.stream()
+				.filter(d -> d.getApplication().getApplicationId().equals(v.getApplicationId()))
+				.findFirst()
+				.orElse(null);
 						
 			if (dest != null) {
 				v.setInternalPort(dest.getPort());
 				v.setRouteId(metricsRoute.getId());
 				v.setDomainId(metricsRoute.getRelationships().getDomain().getData().getId());					
 			}
-            
-      return Mono.just(v);
-    });
+				
+			return Mono.just(v);
+		});
     
 		Flux<GetDomainResponse> domainFlux = osaVectorApplicationRouteFlux.flatMapSequential(v -> this.cfAccessor.retrieveDomain(v.getDomainId()));
 		Flux<OSAVector> osaVectorApplicationRouteDomainFlux = Flux.zip(osaVectorApplicationRouteFlux, domainFlux).flatMap(tuple -> {
@@ -297,9 +297,9 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			List<Instance> instances = new ArrayList<>(v.getNumberOfInstances());
 			for (int i = 0; i<v.numberOfInstances; i++) {        
 				Instance inst = new Instance(v.getTarget(), String.format("%s:%d", v.getApplicationId(), i), v.getAccessURL());
-				inst.setInternal(v.isInternal);
+				inst.setInternal(v.internal);
 				
-				if (v.isInternal) {
+				if (v.internal) {
 					inst.setAccessUrl(this.formatInternalAccessURL(v.getAccessURL(), v.getTarget().getPath(), v.getInternalPort(), i));
 				} else {
 					inst.setAccessUrl(this.formatAccessURL(v.getTarget().getProtocol(), v.getAccessURL(), v.getTarget().getPath()));
@@ -372,27 +372,8 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			return Mono.just(INVALID_SPACE_ID);
 		}).cache();
 
-  }
+  	}
   
-  // private Mono<DomainResource> getDomain(String domainId) {
-	// 	return this.cfAccessor.retrieveDomain(domainId).flatMap(response -> {
-		
-	// 		if (response == null) {
-	// 			return Mono.just(INVALID_DOMAIN);
-	// 		}
-			
-	// 		if (response.getId().isEmpty()) {
-	// 			log.warn(String.format("Received empty result on requesting org %s", domainId));
-	// 			return Mono.just(INVALID_DOMAIN);
-	// 		}
-						
-	// 		return Mono.just(response);
-	// 	}).onErrorResume(e -> {
-	// 		log.error(String.format("retrieving Org Id for org Name '%s' resulted in an exception", domainId), e);
-	// 		return Mono.just(INVALID_DOMAIN);
-	// 	}).cache();
-	// }
-	
 	private Mono<Map<String, SpaceApplicationSummary>> getSpaceSummary(String spaceIdString) {
 		return this.cfAccessor.retrieveSpaceSummary(spaceIdString)
 			.flatMap(response -> {
@@ -411,9 +392,9 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				log.error(String.format("retrieving summary for space id '%s' resulted in an exception", spaceIdString), e);
 				return Mono.just(INVALID_SUMMARY);
 			});
-  }
+  	}
   
-  private Mono<List<RouteResource>> getAppRoutes(String appId) {
+  	private Mono<List<RouteResource>> getAppRoutes(String appId) {
 		return this.cfAccessor.retrieveAppRoutes(appId)
 			.flatMap(response -> {
 				List<RouteResource> routes = response.getResources();
