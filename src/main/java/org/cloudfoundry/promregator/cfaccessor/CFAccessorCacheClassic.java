@@ -419,14 +419,12 @@ public class CFAccessorCacheClassic implements CFAccessorCache {
 	}
 
 	@Override
-	public void invalidateCacheDomain() {
-		// TODO Auto-generated method stub
+	public void invalidateCacheDomain() {		
 		// Nothing to do here as not cached
 	}
 
 	@Override
-	public void invalidateCacheRoutes() {
-		// TODO Auto-generated method stub
+	public void invalidateCacheRoutes() {		
 		// Nothing to do here as not cached
 	}
 }

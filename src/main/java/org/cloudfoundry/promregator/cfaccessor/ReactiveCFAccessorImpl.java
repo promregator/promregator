@@ -89,12 +89,12 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	private int requestTimeoutAppInSpace;
 	
 	@Value("${cf.request.timeout.appSummary:4000}")
-  private int requestTimeoutAppSummary;
-  
-  @Value("${cf.request.timeout.domains:4000}")
-  private int requestTimeoutDomains;
+	private int requestTimeoutAppSummary;
+	
+	@Value("${cf.request.timeout.domains:4000}")
+	private int requestTimeoutDomains;
 
-  @Value("${cf.request.timeout.appRoutes:4000}")
+	@Value("${cf.request.timeout.appRoutes:4000}")
 	private int requestTimeoutAppRoutes;
 	
 	@Value("${cf.connectionPool.size:#{null}}")

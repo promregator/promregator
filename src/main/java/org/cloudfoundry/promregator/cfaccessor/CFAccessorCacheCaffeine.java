@@ -65,7 +65,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	@Value("${cf.cache.expiry.application:120}")
 	private int expiryCacheApplicationLevelInSeconds;
 	
-	@Value("${cf.cache.expiry.domain:120}")
+	@Value("${cf.cache.expiry.domain:3600}")
 	private int expiryCacheDomainLevelInSeconds;
 
 	@Value("${cf.cache.expiry.routes:120}")
@@ -237,11 +237,11 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 		this.internalMetrics.addCaffeineCache("domainCache", this.domainsCache);
 
 		this.appRoutesCache = Caffeine.newBuilder()
-		.expireAfterAccess(this.expiryCacheRoutesLevelInSeconds, TimeUnit.SECONDS)
-		.refreshAfterWrite(this.refreshCacheRouteLevelInSeconds, TimeUnit.SECONDS)
-		.recordStats()
-		.scheduler(caffeineScheduler)
-		.buildAsync(new AppRouteCacheLoader());
+				.expireAfterAccess(this.expiryCacheRoutesLevelInSeconds, TimeUnit.SECONDS)
+				.refreshAfterWrite(this.refreshCacheRouteLevelInSeconds, TimeUnit.SECONDS)
+				.recordStats()
+				.scheduler(caffeineScheduler)
+				.buildAsync(new AppRouteCacheLoader());
 		this.internalMetrics.addCaffeineCache("routeCache", this.appRoutesCache);
 	}
 
