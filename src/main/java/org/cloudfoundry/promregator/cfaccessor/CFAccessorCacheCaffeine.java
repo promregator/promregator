@@ -50,7 +50,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	@Value("${cf.cache.timeout.application:300}")
 	private int refreshCacheApplicationLevelInSeconds;
 
-	@Value("${cf.cache.timeout.domain:300}")
+	@Value("${cf.cache.timeout.domain:3600}")
 	private int refreshCacheDomainLevelInSeconds;
 
 	@Value("${cf.cache.timeout.routes:300}")
@@ -65,7 +65,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	@Value("${cf.cache.expiry.application:120}")
 	private int expiryCacheApplicationLevelInSeconds;
 	
-	@Value("${cf.cache.expiry.domain:3600}")
+	@Value("${cf.cache.expiry.domain:120}")
 	private int expiryCacheDomainLevelInSeconds;
 
 	@Value("${cf.cache.expiry.routes:120}")
@@ -283,11 +283,11 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	@Override
 	public Mono<ListSpacesResponse> retrieveSpaceIdsInOrg(String orgId) {
 		return Mono.fromFuture(this.spaceIdInOrgCache.get(orgId));
-  }
+	}
   
-  @Override
+ 	@Override
 	public Mono<GetDomainResponse> retrieveDomain(String domainId) {
-    return Mono.fromFuture(this.domainsCache.get(domainId));
+    	return Mono.fromFuture(this.domainsCache.get(domainId));
 	}
 
 	@Override
