@@ -38,8 +38,10 @@ public class CFAccessorSimulator implements CFAccessor {
 	public static final String SPACE_UUID = "db08be9a-2fa4-11e8-b467-0ed5f89f718b";
 	public static final String APP_UUID_PREFIX = "55820b2c-2fa5-11e8-b467-";
 	public static final String APP_HOST_PREFIX = "hostapp";
-  public static final String SHARED_DOMAIN = "shared.domain.example.org";
-  public static final String SHARED_DOMAIN_UUID = "be9b8696-2fa6-11e8-b467-0ed5f89f718b";  
+	public static final String SHARED_DOMAIN = "shared.domain.example.org";
+	public static final String SHARED_DOMAIN_UUID = "be9b8696-2fa6-11e8-b467-0ed5f89f718b";  
+	public static final String APP_ROUTE_UUID = "676fe9a7-2f41-4b71-8a10-22294af1e81e";  
+	public static final String APP_ROUTE_PATH = "path";  
 	
 	private static final Logger log = LoggerFactory.getLogger(CFAccessorSimulator.class);
 	
@@ -214,34 +216,33 @@ public class CFAccessorSimulator implements CFAccessor {
 		String instanceId = appId.replace(APP_UUID_PREFIX, "");
 
 		RouteResource res = RouteResource.builder()
-      .id("id")
-      .createdAt(CREATED_AT_TIMESTAMP)
-      .host(APP_HOST_PREFIX+instanceId) 
-      .path("path")
-      .url(APP_HOST_PREFIX + instanceId + "." + SHARED_DOMAIN)
-      .relationships(
-        RouteRelationships.builder()
-        .domain(
-          ToOneRelationship.builder().data(
-            Relationship.builder().id(SHARED_DOMAIN_UUID).build()
-            ).build()
-          )
-          .space(
-            ToOneRelationship.builder().data(
-              Relationship.builder().id(SPACE_UUID).build()
-            ).build()
-          ).build())      
-      .destination(
-        Destination.builder()
-        .port(8080)
-        .application(
-          Application.builder()
-          .applicationId(appId)
-          .process(
-            Process.builder().type("web").build()
-          ).build())
-        .build()
-      ).build();
+			.id(APP_ROUTE_UUID)
+			.createdAt(CREATED_AT_TIMESTAMP)
+			.host(APP_HOST_PREFIX+instanceId) 
+			.path(APP_ROUTE_PATH)
+			.url(APP_HOST_PREFIX + instanceId + "." + SHARED_DOMAIN)
+			.relationships(
+				RouteRelationships.builder()
+				.domain(
+					ToOneRelationship.builder().data(
+						Relationship.builder().id(SHARED_DOMAIN_UUID).build()
+					).build())
+					.space(
+						ToOneRelationship.builder().data(
+							Relationship.builder().id(SPACE_UUID).build()
+						).build()
+					).build())      
+			.destination(
+				Destination.builder()
+				.port(8080)
+				.application(
+					Application.builder()
+					.applicationId(appId)
+					.process(
+						Process.builder().type("web").build()
+					).build())
+				.build()
+			).build();
     
 		routes.add(res);
 

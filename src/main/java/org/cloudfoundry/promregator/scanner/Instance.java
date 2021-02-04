@@ -8,8 +8,8 @@ package org.cloudfoundry.promregator.scanner;
 public class Instance {
 	private ResolvedTarget target;
 	private String instanceId;
-  private String accessUrl;
-  private boolean internal;
+	private String accessUrl;
+	private boolean internal;
 	
 	public Instance() {
 		super();
@@ -84,6 +84,7 @@ public class Instance {
 		result = prime * result + ((accessUrl == null) ? 0 : accessUrl.hashCode());
 		result = prime * result + ((instanceId == null) ? 0 : instanceId.hashCode());
 		result = prime * result + ((target == null) ? 0 : target.hashCode());
+		result = prime * result + (internal ? 1 : 0);
 		return result;
 	}
 
@@ -123,6 +124,9 @@ public class Instance {
 		} else if (!target.equals(other.target)) {
 			return false;
 		}
+		if (internal != other.internal) {
+			return false;
+		}
 		return true;
 	}
 
@@ -138,6 +142,8 @@ public class Instance {
 		builder.append(instanceId);
 		builder.append(", accessUrl=");
 		builder.append(accessUrl);
+		builder.append(", internal=");
+		builder.append(internal);
 		builder.append("]");
 		return builder.toString();
 	}

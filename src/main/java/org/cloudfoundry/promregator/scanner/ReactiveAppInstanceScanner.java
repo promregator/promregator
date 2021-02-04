@@ -1,9 +1,6 @@
 package org.cloudfoundry.promregator.scanner;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -36,11 +33,9 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	private static final Logger log = LoggerFactory.getLogger(ReactiveAppInstanceScanner.class);
 	private static final String INVALID_ORG_ID = "***invalid***";
 	private static final String INVALID_SPACE_ID = "***invalid***";
-  private static final Map<String, SpaceApplicationSummary> INVALID_SUMMARY = new HashMap<>();
-  private static final List<RouteResource> INVALID_ROUTES = null;
-  private static final GetDomainResponse INVALID_DOMAIN = null;
-
-  private static final int DEFAULT_INTERNAL_METRICS_PORT = 9090;
+	private static final Map<String, SpaceApplicationSummary> INVALID_SUMMARY = new HashMap<>();
+	private static final List<RouteResource> INVALID_ROUTES = null;
+	private static final GetDomainResponse INVALID_DOMAIN = null;	
 
 	@Value("${cf.cache.timeout.application:300}")
 	private int timeoutCacheApplicationLevel;
@@ -63,14 +58,13 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		
 		private String orgId;
 		private String spaceId;
-    private String applicationId;
-    private String routeId;
-    private String domainId;
-		
+		private String applicationId;
+		private String routeId;
+		private String domainId;			
 		private String accessURL;
-    private int numberOfInstances;
-    private boolean isInternal;
-    private int internalPort;
+		private int numberOfInstances;
+		private boolean isInternal;
+		private int internalPort;
 		/**
 		 * @return the target
 		 */
@@ -450,7 +444,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		return applUrl + internalPath;
 	}
 
-	private String formatInternalAccessURL(final String url, final String path, final int internalPort, final int instanceId) {		
+	private String formatInternalAccessURL(final String url, final String path, final int internalPort, final int instanceId) {				
 		String internalURL = String.format("%s.%s:%s", instanceId , url, internalPort);
 		log.debug (String.format("Using internal Application URL: '%s'", internalURL));
 
