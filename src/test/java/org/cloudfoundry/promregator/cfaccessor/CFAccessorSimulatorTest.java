@@ -62,9 +62,9 @@ class CFAccessorSimulatorTest {
 		for (int i = 1;i<=10;i++) {
 			Assertions.assertTrue(tests[i]);
 		}
-  }
-  
-  @Test
+	}
+	
+	@Test
 	void testRetrieveDomains() {
 		CFAccessorSimulator subject = new CFAccessorSimulator(2);
 		

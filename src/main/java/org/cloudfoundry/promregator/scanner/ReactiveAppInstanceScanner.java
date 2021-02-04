@@ -249,7 +249,8 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			}
 				
 			List<RouteResource> routes = tuple.getT2();
-					
+
+			// multiple routes for the app can be returned, lets find the matching one.
 			RouteResource metricsRoute = routes.stream()
 				.filter(r -> v.getAccessURL().contains(r.getUrl()))
 				.findFirst()
@@ -259,6 +260,9 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				return Mono.just(v);
 			}
 
+			// from the matching route lets find the destination matching our app
+			// a route can have many different destinations
+			// once we get this we can use the routeID and the domainID
 			Destination dest = metricsRoute.getDestinations()
 				.stream()
 				.filter(d -> d.getApplication().getApplicationId().equals(v.getApplicationId()))
