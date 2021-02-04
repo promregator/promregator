@@ -34,7 +34,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	private static final String INVALID_ORG_ID = "***invalid***";
 	private static final String INVALID_SPACE_ID = "***invalid***";
 	private static final Map<String, SpaceApplicationSummary> INVALID_SUMMARY = new HashMap<>();
-	private static final List<RouteResource> INVALID_ROUTES = null;
+	private static final List<RouteResource> INVALID_ROUTES = new ArrayList<RouteResource>();
 	private static final GetDomainResponse INVALID_DOMAIN = null;	
 
 	@Value("${cf.cache.timeout.application:300}")
@@ -239,17 +239,17 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				return Mono.just(v);
 		});
 			
-		Flux<List<RouteResource>> routeApplicationFlux = osaVectorSpaceFlux.flatMapSequential(v -> this.getAppRoutes(v.getApplicationId()));
+		Flux<List<RouteResource>> routeApplicationFlux = initialOSAVectorFlux.flatMapSequential(v -> this.getAppRoutes(v.getApplicationId()));
 		Flux<OSAVector> osaVectorApplicationRouteFlux = Flux.zip(osaVectorApplicationFlux, routeApplicationFlux).flatMap(tuple -> {
 			OSAVector v = tuple.getT1();
 			
-			if (INVALID_ROUTES == tuple.getT2()) {
+			List<RouteResource> routes = tuple.getT2();
+
+			if (routes.size() == 0) {
 				// NB: This drops the current target!
 				return Mono.empty();
 			}
-				
-			List<RouteResource> routes = tuple.getT2();
-
+		
 			// multiple routes for the app can be returned, lets find the matching one.
 			RouteResource metricsRoute = routes.stream()
 				.filter(r -> v.getAccessURL().contains(r.getUrl()))
@@ -281,11 +281,6 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		Flux<GetDomainResponse> domainFlux = osaVectorApplicationRouteFlux.flatMapSequential(v -> this.cfAccessor.retrieveDomain(v.getDomainId()));
 		Flux<OSAVector> osaVectorApplicationRouteDomainFlux = Flux.zip(osaVectorApplicationRouteFlux, domainFlux).flatMap(tuple -> {
 			OSAVector v = tuple.getT1();
-			
-			if (INVALID_DOMAIN == tuple.getT2()) {
-				// NB: This drops the current target!
-				return Mono.empty();
-			}
 			
 			GetDomainResponse domain = tuple.getT2();      
 			v.setInternal(domain.isInternal());      
