@@ -40,10 +40,13 @@ public class CFAccessorMock implements CFAccessor {
 	public static final String UNITTEST_APP2_UUID = "5a0ead6c-2fa5-11e8-b467-0ed5f89f718b";
 	public static final String UNITTEST_APP1_ROUTE_UUID = "57ac2ada-2fa6-11e8-b467-0ed5f89f718b";
 	public static final String UNITTEST_APP2_ROUTE_UUID = "5c5b464c-2fa6-11e8-b467-0ed5f89f718b";
+	public static final String UNITTEST_APP2_ADDITIONAL_ROUTE_UUID = "efa7710e-c8e2-42c7-ac50-b0a7837c517a";
 	public static final String UNITTEST_APP1_HOST = "hostapp1";
 	public static final String UNITTEST_APP2_HOST = "hostapp2";
 	public static final String UNITTEST_SHARED_DOMAIN_UUID = "be9b8696-2fa6-11e8-b467-0ed5f89f718b";
 	public static final String UNITTEST_SHARED_DOMAIN = "shared.domain.example.org";
+	public static final String UNITTEST_ADDITIONAL_SHARED_DOMAIN_UUID = "48ae5bb3-a625-4c16-9e30-e9a6b10ca1be";
+	public static final String UNITTEST_ADDITIONAL_SHARED_DOMAIN = "additionalSubdomain.shared.domain.example.org";	
 
 	public static final String UNITTEST_INTERNAL_DOMAIN_UUID = "49225c7e-b4c3-45b2-b796-7bb9c64dc79d";
 	public static final String UNITTEST_INTERNAL_DOMAIN = "apps.internal";
@@ -250,6 +253,18 @@ public class CFAccessorMock implements CFAccessor {
 
 		domains.add(domain);
 
+		domain = DomainResource.builder()
+				.entity(
+					DomainEntity.builder()
+					.name(UNITTEST_ADDITIONAL_SHARED_DOMAIN)
+					.internal(false)
+					.build())
+				.metadata(
+					Metadata.builder().id(UNITTEST_ADDITIONAL_SHARED_DOMAIN_UUID).createdAt(CREATED_AT_TIMESTAMP).build())    
+				.build();
+
+		domains.add(domain);
+
 		ListOrganizationDomainsResponse response = ListOrganizationDomainsResponse.builder().addAllResources(domains).build();
 		return Mono.just(response);
 	}
@@ -290,8 +305,7 @@ public class CFAccessorMock implements CFAccessor {
 			.entity(
 				RouteEntity.builder()
 				.host(UNITTEST_APP1_HOST)			
-				.path("path")				
-				.applicationsUrl(UNITTEST_APP1_HOST + "." + UNITTEST_SHARED_DOMAIN)
+				.path("path")								
 				.domainId(UNITTEST_SHARED_DOMAIN_UUID)
 				.spaceId(UNITTEST_SPACE_UUID)
 				.build()
@@ -309,8 +323,7 @@ public class CFAccessorMock implements CFAccessor {
 			.entity(
 				RouteEntity.builder()
 				.host(UNITTEST_APP2_HOST)			
-				.path("path")				
-				.applicationsUrl(UNITTEST_APP2_HOST + "." + UNITTEST_SHARED_DOMAIN)
+				.path("path")								
 				.domainId(UNITTEST_SHARED_DOMAIN_UUID)
 				.spaceId(UNITTEST_SPACE_UUID)
 				.build()
@@ -322,15 +335,14 @@ public class CFAccessorMock implements CFAccessor {
 		res = RouteResource.builder()
 			.metadata(
 				Metadata.builder()
-				.id(UNITTEST_APP2_ROUTE_UUID)
+				.id(UNITTEST_APP2_ADDITIONAL_ROUTE_UUID)
 				.createdAt(CREATED_AT_TIMESTAMP)
 				.build())
 			.entity(
 				RouteEntity.builder()
 				.host(UNITTEST_APP2_HOST)			
-				.path("path")				
-				.applicationsUrl(UNITTEST_APP2_HOST + ".additionalSubdomain." + UNITTEST_SHARED_DOMAIN)
-				.domainId(UNITTEST_SHARED_DOMAIN_UUID)
+				.path("path")								
+				.domainId(UNITTEST_ADDITIONAL_SHARED_DOMAIN_UUID)
 				.spaceId(UNITTEST_SPACE_UUID)
 				.build()
 				)
@@ -374,6 +386,18 @@ public class CFAccessorMock implements CFAccessor {
 				.applicationId(UNITTEST_APP2_UUID)
 				.applicationPort(0)									
 				.routeId(UNITTEST_APP2_ROUTE_UUID)			
+				.build())
+			.build();
+		
+		routes.add(res);
+
+
+		res = RouteMappingResource.builder()
+			.metadata(Metadata.builder().id("id").createdAt(CREATED_AT_TIMESTAMP).build())
+			.entity(RouteMappingEntity.builder()
+				.applicationId(UNITTEST_APP2_UUID)
+				.applicationPort(0)									
+				.routeId(UNITTEST_APP2_ADDITIONAL_ROUTE_UUID)			
 				.build())
 			.build();
 		
