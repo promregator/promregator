@@ -10,24 +10,23 @@ import org.cloudfoundry.client.v2.applications.ApplicationEntity;
 import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
+import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.organizations.OrganizationEntity;
 import org.cloudfoundry.client.v2.organizations.OrganizationResource;
+import org.cloudfoundry.client.v2.routemappings.ListRouteMappingsResponse;
+import org.cloudfoundry.client.v2.routemappings.RouteMappingEntity;
+import org.cloudfoundry.client.v2.routemappings.RouteMappingResource;
+import org.cloudfoundry.client.v2.routes.RouteEntity;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
+import org.cloudfoundry.client.v2.spaces.ListSpaceRoutesResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v2.spaces.SpaceEntity;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
-import org.cloudfoundry.client.v3.Relationship;
-import org.cloudfoundry.client.v3.ToOneRelationship;
-import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
-import org.cloudfoundry.client.v3.domains.DomainRelationships;
-import org.cloudfoundry.client.v3.domains.GetDomainResponse;
-import org.cloudfoundry.client.v3.routes.Application;
-import org.cloudfoundry.client.v3.routes.Destination;
-import org.cloudfoundry.client.v3.routes.Process;
-import org.cloudfoundry.client.v3.routes.RouteRelationships;
-import org.cloudfoundry.client.v3.routes.RouteResource;
+import org.cloudfoundry.client.v2.domains.DomainEntity;
+import org.cloudfoundry.client.v2.domains.DomainResource;
+import org.cloudfoundry.client.v2.routes.RouteResource;
 import org.junit.jupiter.api.Assertions;
 
 import reactor.core.publisher.Mono;
@@ -48,12 +47,13 @@ public class CFAccessorMock implements CFAccessor {
 
 	public static final String UNITTEST_INTERNAL_DOMAIN_UUID = "49225c7e-b4c3-45b2-b796-7bb9c64dc79d";
 	public static final String UNITTEST_INTERNAL_DOMAIN = "apps.internal";
+	public static final String UNITTEST_INTERNAL_ROUTE_UUID = "d1aac229-cc4a-4332-89a7-2efa2378000a";
 
 	public static final String UNITTEST_APP_INTERNAL_UUID = "a8762694-95ce-4c3c-a4fb-250e28187a0a";
 	public static final String UNITTEST_APP_INTERNAL_HOST = "internal-app";
 
 	public static final String CREATED_AT_TIMESTAMP = "2014-11-24T19:32:49+00:00";
-	public static final String UPDATED_AT_TIMESTAMP = "2014-11-24T19:32:49+00:00";
+	public static final String UPDATED_AT_TIMESTAMP = "2014-11-24T19:32:49+00:00";	
 
 	@Override
 	public Mono<ListOrganizationsResponse> retrieveOrgId(String orgName) {
@@ -224,106 +224,163 @@ public class CFAccessorMock implements CFAccessor {
 	}
 
 	@Override
-	public Mono<GetDomainResponse> retrieveDomain(String domainId) {
-		GetDomainResponse response;
+	public Mono<ListOrganizationDomainsResponse> retrieveAllDomains(String orgId) {		
+		List<DomainResource> domains = new ArrayList<DomainResource>();
+		DomainResource domain = DomainResource.builder()
+				.entity(
+					DomainEntity.builder()
+					.name(UNITTEST_INTERNAL_DOMAIN)
+					.internal(true)
+					.build())
+				.metadata(
+					Metadata.builder().id(UNITTEST_INTERNAL_DOMAIN_UUID).createdAt(CREATED_AT_TIMESTAMP).build())    
+				.build();
 
-		if (domainId == null) {
-			return Mono.empty();
-		}
+		domains.add(domain);
 
-		if (domainId.equals(UNITTEST_INTERNAL_DOMAIN_UUID)) {
-			response = GetDomainResponse.builder().name(UNITTEST_INTERNAL_DOMAIN).id(UNITTEST_INTERNAL_DOMAIN_UUID)
-					.createdAt(CREATED_AT_TIMESTAMP).isInternal(true)
-					.relationships(DomainRelationships.builder()
-							.organization(ToOneRelationship.builder()
-									.data(Relationship.builder().id(UNITTEST_ORG_UUID).build()).build())
-							.build())
-					.build();
-		} else {
-			response = GetDomainResponse.builder().name(UNITTEST_SHARED_DOMAIN).id(UNITTEST_SHARED_DOMAIN_UUID)
-					.createdAt(CREATED_AT_TIMESTAMP).isInternal(false)
-					.relationships(DomainRelationships.builder()
-							.organization(ToOneRelationship.builder()
-									.data(Relationship.builder().id(UNITTEST_ORG_UUID).build()).build())
-							.build())
-					.build();
-		}
+		domain = DomainResource.builder()
+				.entity(
+					DomainEntity.builder()
+					.name(UNITTEST_SHARED_DOMAIN)
+					.internal(false)
+					.build())
+				.metadata(
+					Metadata.builder().id(UNITTEST_SHARED_DOMAIN_UUID).createdAt(CREATED_AT_TIMESTAMP).build())    
+				.build();
+
+		domains.add(domain);
+
+		ListOrganizationDomainsResponse response = ListOrganizationDomainsResponse.builder().addAllResources(domains).build();
 		return Mono.just(response);
 	}
 
 	@Override
-	public Mono<ListApplicationRoutesResponse> retrieveAppRoutes(String appId) {
-		List<RouteResource> routes = new LinkedList<>();
-
-		if (appId == null) {
+	public Mono<ListSpaceRoutesResponse> retrieveSpaceRoutes(String spaceId) {		
+		if (spaceId == null) {
 			return Mono.empty();
 		}
+		
+		List<RouteResource> routes = new LinkedList<>();
+		
+		RouteResource res = RouteResource.builder()
+			.metadata(
+				Metadata.builder()
+				.id(UNITTEST_INTERNAL_ROUTE_UUID)
+				.createdAt(CREATED_AT_TIMESTAMP)
+				.build())
+			.entity(
+				RouteEntity.builder()
+				.host(UNITTEST_APP_INTERNAL_HOST)			
+				.path("path")				
+				.applicationsUrl(UNITTEST_APP_INTERNAL_HOST + "." + UNITTEST_SHARED_DOMAIN)
+				.domainId(UNITTEST_INTERNAL_DOMAIN_UUID)
+				.spaceId(UNITTEST_SPACE_UUID)
+				.build()
+				)
+			.build();
 
-		if (appId.equals(UNITTEST_APP_INTERNAL_UUID)) {
-			RouteResource res = RouteResource.builder().id("id").createdAt(CREATED_AT_TIMESTAMP)
-					.host(UNITTEST_APP_INTERNAL_HOST).path("path")
-					.url(UNITTEST_APP_INTERNAL_HOST + "." + UNITTEST_INTERNAL_DOMAIN)
-					.relationships(RouteRelationships.builder()
-							.domain(ToOneRelationship.builder()
-									.data(Relationship.builder().id(UNITTEST_INTERNAL_DOMAIN_UUID).build()).build())
-							.space(ToOneRelationship.builder()
-									.data(Relationship.builder().id(UNITTEST_SPACE_UUID).build()).build())
-							.build())
-					.destination(Destination.builder().port(8080)
-							.application(Application.builder().applicationId(UNITTEST_APP_INTERNAL_UUID)
-									.process(Process.builder().type("web").build()).build())
-							.build())
-					.build();
+		routes.add(res);
 
-			routes.add(res);
-		} else {
-			RouteResource res = RouteResource.builder().id("id").createdAt(CREATED_AT_TIMESTAMP)
-					.host(UNITTEST_APP1_HOST).path("path").url(UNITTEST_APP1_HOST + "." + UNITTEST_SHARED_DOMAIN)
-					.relationships(RouteRelationships.builder()
-							.domain(ToOneRelationship.builder()
-									.data(Relationship.builder().id(UNITTEST_SHARED_DOMAIN_UUID).build()).build())
-							.space(ToOneRelationship.builder()
-									.data(Relationship.builder().id(UNITTEST_SPACE_UUID).build()).build())
-							.build())
-					.destination(Destination.builder().port(8080).application(Application.builder()
-							.applicationId(UNITTEST_APP1_UUID).process(Process.builder().type("web").build()).build())
-							.build())
-					.build();
+		res = RouteResource.builder()
+			.metadata(
+				Metadata.builder()
+				.id(UNITTEST_APP1_ROUTE_UUID)
+				.createdAt(CREATED_AT_TIMESTAMP)
+				.build())
+			.entity(
+				RouteEntity.builder()
+				.host(UNITTEST_APP1_HOST)			
+				.path("path")				
+				.applicationsUrl(UNITTEST_APP1_HOST + "." + UNITTEST_SHARED_DOMAIN)
+				.domainId(UNITTEST_SHARED_DOMAIN_UUID)
+				.spaceId(UNITTEST_SPACE_UUID)
+				.build()
+				)
+			.build();
 
-			routes.add(res);
+		routes.add(res);
 
-			res = RouteResource.builder().id("id").createdAt(CREATED_AT_TIMESTAMP).host(UNITTEST_APP2_HOST).path("path")
-					.url(UNITTEST_APP2_HOST + "." + UNITTEST_SHARED_DOMAIN)
-					.relationships(RouteRelationships.builder()
-							.domain(ToOneRelationship.builder()
-									.data(Relationship.builder().id(UNITTEST_SHARED_DOMAIN_UUID).build()).build())
-							.space(ToOneRelationship.builder()
-									.data(Relationship.builder().id(UNITTEST_SPACE_UUID).build()).build())
-							.build())
-					.destination(Destination.builder().port(8080).application(Application.builder()
-							.applicationId(UNITTEST_APP2_UUID).process(Process.builder().type("web").build()).build())
-							.build())
-					.build();
+		res = RouteResource.builder()
+			.metadata(
+				Metadata.builder()
+				.id(UNITTEST_APP2_ROUTE_UUID)
+				.createdAt(CREATED_AT_TIMESTAMP)
+				.build())
+			.entity(
+				RouteEntity.builder()
+				.host(UNITTEST_APP2_HOST)			
+				.path("path")				
+				.applicationsUrl(UNITTEST_APP2_HOST + "." + UNITTEST_SHARED_DOMAIN)
+				.domainId(UNITTEST_SHARED_DOMAIN_UUID)
+				.spaceId(UNITTEST_SPACE_UUID)
+				.build()
+				)
+			.build();
 
-			routes.add(res);
+		routes.add(res);
 
-			res = RouteResource.builder().id("id").createdAt(CREATED_AT_TIMESTAMP).host(UNITTEST_APP2_HOST).path("path")
-					.url(UNITTEST_APP2_HOST + ".additionalSubdomain." + UNITTEST_SHARED_DOMAIN)
-					.relationships(RouteRelationships.builder()
-							.domain(ToOneRelationship.builder()
-									.data(Relationship.builder().id(UNITTEST_SHARED_DOMAIN_UUID).build()).build())
-							.space(ToOneRelationship.builder()
-									.data(Relationship.builder().id(UNITTEST_SPACE_UUID).build()).build())
-							.build())
-					.destination(Destination.builder().port(8080).application(Application.builder()
-							.applicationId(UNITTEST_APP2_UUID).process(Process.builder().type("web").build()).build())
-							.build())
-					.build();
+		res = RouteResource.builder()
+			.metadata(
+				Metadata.builder()
+				.id(UNITTEST_APP2_ROUTE_UUID)
+				.createdAt(CREATED_AT_TIMESTAMP)
+				.build())
+			.entity(
+				RouteEntity.builder()
+				.host(UNITTEST_APP2_HOST)			
+				.path("path")				
+				.applicationsUrl(UNITTEST_APP2_HOST + ".additionalSubdomain." + UNITTEST_SHARED_DOMAIN)
+				.domainId(UNITTEST_SHARED_DOMAIN_UUID)
+				.spaceId(UNITTEST_SPACE_UUID)
+				.build()
+				)
+			.build();
 
-			routes.add(res);
-		}
+		routes.add(res);
 
-		ListApplicationRoutesResponse resp = ListApplicationRoutesResponse.builder().addAllResources(routes).build();
+		ListSpaceRoutesResponse resp = ListSpaceRoutesResponse.builder().addAllResources(routes).build();
 		return Mono.just(resp);
+	}
+
+	@Override
+	public Mono<ListRouteMappingsResponse> retrieveRouteMappings() {
+		List<RouteMappingResource> routes = new LinkedList<>();
+				
+		RouteMappingResource res = RouteMappingResource.builder()
+			.metadata(Metadata.builder().id("id").createdAt(CREATED_AT_TIMESTAMP).build())
+			.entity(RouteMappingEntity.builder()
+				.applicationId(UNITTEST_APP_INTERNAL_UUID)
+				.applicationPort(8080)									
+				.routeId(UNITTEST_INTERNAL_ROUTE_UUID)			
+				.build())
+			.build();
+		
+		routes.add(res);
+
+		 res = RouteMappingResource.builder()
+			.metadata(Metadata.builder().id("id").createdAt(CREATED_AT_TIMESTAMP).build())
+			.entity(RouteMappingEntity.builder()
+				.applicationId(UNITTEST_APP1_UUID)
+				.applicationPort(0)									
+				.routeId(UNITTEST_APP1_ROUTE_UUID)			
+				.build())
+			.build();
+		
+		routes.add(res);
+
+		 res = RouteMappingResource.builder()
+			.metadata(Metadata.builder().id("id").createdAt(CREATED_AT_TIMESTAMP).build())
+			.entity(RouteMappingEntity.builder()
+				.applicationId(UNITTEST_APP2_UUID)
+				.applicationPort(0)									
+				.routeId(UNITTEST_APP2_ROUTE_UUID)			
+				.build())
+			.build();
+		
+		routes.add(res);
+
+		ListRouteMappingsResponse response = ListRouteMappingsResponse.builder().addAllResources(routes).build();
+
+		return Mono.just(response);
 	}
 }

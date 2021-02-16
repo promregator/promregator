@@ -2,11 +2,12 @@ package org.cloudfoundry.promregator.cfaccessor;
 
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
+import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
+import org.cloudfoundry.client.v2.routemappings.ListRouteMappingsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
+import org.cloudfoundry.client.v2.spaces.ListSpaceRoutesResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
-import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
-import org.cloudfoundry.client.v3.domains.GetDomainResponse;
 
 import reactor.core.publisher.Mono;
 
@@ -23,11 +24,13 @@ public interface CFAccessor {
 
 	Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String orgId, String spaceId);
 	
-	Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId);
-		
-	Mono<GetDomainResponse> retrieveDomain(String domainId);
+	Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId);	
 
-	Mono<ListApplicationRoutesResponse> retrieveAppRoutes(String appId);
+	Mono<ListOrganizationDomainsResponse> retrieveAllDomains(String orgId);
+
+	Mono<ListSpaceRoutesResponse> retrieveSpaceRoutes(String spaceId);
+
+	Mono<ListRouteMappingsResponse> retrieveRouteMappings();
 	
 	void reset();
 }

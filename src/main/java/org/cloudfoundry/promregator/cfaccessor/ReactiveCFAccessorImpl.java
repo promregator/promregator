@@ -13,15 +13,17 @@ import org.cloudfoundry.client.v2.applications.ListApplicationsRequest;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.info.GetInfoRequest;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
-import org.cloudfoundry.client.v3.applications.ListApplicationRoutesRequest;
-import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
-import org.cloudfoundry.client.v3.domains.GetDomainRequest;
-import org.cloudfoundry.client.v3.domains.GetDomainResponse;
+import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsRequest;
+import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsRequest;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.organizations.OrganizationResource;
+import org.cloudfoundry.client.v2.routemappings.ListRouteMappingsRequest;
+import org.cloudfoundry.client.v2.routemappings.ListRouteMappingsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryRequest;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
+import org.cloudfoundry.client.v2.spaces.ListSpaceRoutesRequest;
+import org.cloudfoundry.client.v2.spaces.ListSpaceRoutesResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesRequest;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
@@ -388,20 +390,29 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 				request, r -> this.cloudFoundryClient.spaces().getSummary(r), this.requestTimeoutAppSummary);
 
   }
-  
+
 	@Override
-	public Mono<GetDomainResponse> retrieveDomain(String domainId) {       
-    GetDomainRequest request = GetDomainRequest.builder().domainId(domainId).build();
-		
-		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.DOMAINS, "(empty)", 
-				request, r -> this.cloudFoundryClient.domainsV3().get(request), this.requestTimeoutDomains);
+	public Mono<ListOrganizationDomainsResponse> retrieveAllDomains(String orgId) {
+
+		ListOrganizationDomainsRequest request = ListOrganizationDomainsRequest.builder().organizationId(orgId).build();
+
+		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.APP_ROUTES, orgId, 
+		request, r -> this.cloudFoundryClient.organizations().listDomains(request), this.requestTimeoutAppRoutes);
 	}
 
 	@Override
-	public Mono<ListApplicationRoutesResponse> retrieveAppRoutes(String appId) {
-		ListApplicationRoutesRequest request = ListApplicationRoutesRequest.builder().applicationId(appId).build();
+	public Mono<ListSpaceRoutesResponse> retrieveSpaceRoutes(String spaceId) {
+		ListSpaceRoutesRequest request = ListSpaceRoutesRequest.builder().spaceId(spaceId).build();
 
-		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.APP_ROUTES, appId, 
-		request, r -> this.cloudFoundryClient.applicationsV3().listRoutes(request), this.requestTimeoutAppRoutes);
+		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.APP_ROUTES, spaceId, 
+		request, r -> this.cloudFoundryClient.spaces().listRoutes(request), this.requestTimeoutAppRoutes);
+	}
+
+	@Override
+	public Mono<ListRouteMappingsResponse> retrieveRouteMappings() {
+		ListRouteMappingsRequest request = ListRouteMappingsRequest.builder().build();
+
+		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.APP_ROUTES, "(empty)", 
+		request, r -> this.cloudFoundryClient.routeMappings().list(request), this.requestTimeoutAppRoutes);
 	}
 }

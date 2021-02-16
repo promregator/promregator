@@ -1,6 +1,7 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -11,24 +12,23 @@ import org.cloudfoundry.client.v2.applications.ApplicationEntity;
 import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
+import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.organizations.OrganizationEntity;
 import org.cloudfoundry.client.v2.organizations.OrganizationResource;
+import org.cloudfoundry.client.v2.routemappings.ListRouteMappingsResponse;
+import org.cloudfoundry.client.v2.routemappings.RouteMappingEntity;
+import org.cloudfoundry.client.v2.routemappings.RouteMappingResource;
+import org.cloudfoundry.client.v2.routes.RouteEntity;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
+import org.cloudfoundry.client.v2.spaces.ListSpaceRoutesResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v2.spaces.SpaceEntity;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
-import org.cloudfoundry.client.v3.Relationship;
-import org.cloudfoundry.client.v3.ToOneRelationship;
-import org.cloudfoundry.client.v3.routes.Application;
-import org.cloudfoundry.client.v3.routes.Destination;
-import org.cloudfoundry.client.v3.routes.Process;
-import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
-import org.cloudfoundry.client.v3.domains.DomainRelationships;
-import org.cloudfoundry.client.v3.domains.GetDomainResponse;
-import org.cloudfoundry.client.v3.routes.RouteRelationships;
-import org.cloudfoundry.client.v3.routes.RouteResource;
+import org.cloudfoundry.client.v2.domains.DomainEntity;
+import org.cloudfoundry.client.v2.domains.DomainResource;
+import org.cloudfoundry.client.v2.routes.RouteResource;
 import org.junit.jupiter.api.Assertions;
 
 import reactor.core.publisher.Mono;
@@ -39,6 +39,7 @@ public class CFAccessorMassMock implements CFAccessor {
 	public static final String UNITTEST_APP_UUID_PREFIX = "55820b2c-2fa5-11e8-b467-";
 	public static final String UNITTEST_SHARED_DOMAIN_UUID = "be9b8696-2fa6-11e8-b467-0ed5f89f718b";
 	public static final String UNITTEST_SHARED_DOMAIN = "shared.domain.example.org";
+	public static final String UNITTEST_ROUTE_UUID = "b79d2d45-6f6c-4f9e-bd5b-1a7b3ccac247";
 	
 	public static final String CREATED_AT_TIMESTAMP = "2014-11-24T19:32:49+00:00";
 	public static final String UPDATED_AT_TIMESTAMP = "2014-11-24T19:32:49+00:00";
@@ -170,68 +171,85 @@ public class CFAccessorMassMock implements CFAccessor {
 	@Override
 	public void reset() {
 		// nothing to be done
-	}
+	}	
 
 	@Override
-	public Mono<GetDomainResponse> retrieveDomain(String domainId) {
-		GetDomainResponse response = GetDomainResponse.builder()
-				.createdAt(CREATED_AT_TIMESTAMP) 
-				.id(domainId)
-				.name(UNITTEST_SHARED_DOMAIN) 
-				.relationships(
-					DomainRelationships.builder()
-					.organization(
-					ToOneRelationship.builder()
-					.data(
-						Relationship.builder().id(UNITTEST_ORG_UUID).build()
-					).build()
-					).build()
-				)  
-				.isInternal(false)
+	public Mono<ListOrganizationDomainsResponse> retrieveAllDomains(String orgId) {		
+		List<DomainResource> domains = new ArrayList<DomainResource>();
+
+
+		for (int i = 0;i<100;i++) {
+							
+			DomainResource domain = DomainResource.builder()
+				.entity(
+					DomainEntity.builder()
+					.name(UNITTEST_SHARED_DOMAIN)
+					.internal(false)
+					.build())
+				.metadata(
+					Metadata.builder().id(UNITTEST_SHARED_DOMAIN_UUID+i).createdAt(CREATED_AT_TIMESTAMP).build())    
 				.build();
-		
+
+			domains.add(domain);			
+		}			
+
+		ListOrganizationDomainsResponse response = ListOrganizationDomainsResponse.builder().addAllResources(domains).build();
 		return Mono.just(response);
 	}
 
 	@Override
-	public Mono<ListApplicationRoutesResponse> retrieveAppRoutes(String appId) {
+	public Mono<ListSpaceRoutesResponse> retrieveSpaceRoutes(String spaceId) {		
+		if (spaceId == null) {
+			return Mono.empty();
+		}
+		
 		List<RouteResource> routes = new LinkedList<>();
 
-		String instanceId = appId.replace(UNITTEST_APP_UUID_PREFIX, "");
-
-		RouteResource res = RouteResource.builder()
-				.id("id")
+		for (int i = 0;i<100;i++) {
+							
+			RouteResource res = RouteResource.builder()
+			.metadata(
+				Metadata.builder()
+				.id(UNITTEST_ROUTE_UUID+i)
 				.createdAt(CREATED_AT_TIMESTAMP)
-				.host("hostapp"+instanceId)    
-				.path("path")
-				.url("hostapp" + instanceId + "." + UNITTEST_SHARED_DOMAIN)
-				.relationships(
-					RouteRelationships.builder()
-						.domain(
-							ToOneRelationship.builder().data(
-								Relationship.builder().id(UNITTEST_SHARED_DOMAIN_UUID).build()
-								).build()
-						)
-						.space(
-							ToOneRelationship.builder().data(
-								Relationship.builder().id(UNITTEST_SPACE_UUID).build()
-								).build()
-						).build())      
-				.destination(
-					Destination.builder()
-						.port(8080)
-						.application(
-							Application.builder()
-								.applicationId(appId)
-								.process(
-									Process.builder().type("web").build()
-								).build())
-						.build()
-				).build();
-			
-		routes.add(res);
+				.build())
+			.entity(
+				RouteEntity.builder()
+				.host("hostapp"+i)			
+				.path("path")								
+				.domainId(UNITTEST_SHARED_DOMAIN_UUID+i)
+				.spaceId(UNITTEST_SPACE_UUID)
+				.build()
+				)
+			.build();
 
-		ListApplicationRoutesResponse resp = ListApplicationRoutesResponse.builder().addAllResources(routes).build();
+			routes.add(res);			
+		}				
+
+		ListSpaceRoutesResponse resp = ListSpaceRoutesResponse.builder().addAllResources(routes).build();
 		return Mono.just(resp);
+	}
+
+	@Override
+	public Mono<ListRouteMappingsResponse> retrieveRouteMappings() {
+		List<RouteMappingResource> routes = new LinkedList<>();
+
+		for (int i = 0;i<100;i++) {
+							
+			RouteMappingResource res = RouteMappingResource.builder()
+			.metadata(Metadata.builder().id("id").createdAt(CREATED_AT_TIMESTAMP).build())
+			.entity(RouteMappingEntity.builder()
+				.applicationId(UNITTEST_APP_UUID_PREFIX+i)
+				.applicationPort(0)									
+				.routeId(UNITTEST_ROUTE_UUID+i)			
+				.build())
+			.build();
+
+			routes.add(res);			
+		}
+		
+		ListRouteMappingsResponse response = ListRouteMappingsResponse.builder().addAllResources(routes).build();
+
+		return Mono.just(response);
 	}
 }

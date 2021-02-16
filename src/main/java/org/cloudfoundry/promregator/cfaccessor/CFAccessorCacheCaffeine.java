@@ -10,11 +10,14 @@ import javax.annotation.PostConstruct;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
+import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
+import org.cloudfoundry.client.v2.routemappings.ListRouteMappingsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
+import org.cloudfoundry.client.v2.spaces.ListSpaceRoutesResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
-import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
-import org.cloudfoundry.client.v3.domains.GetDomainResponse;
+import org.cloudfoundry.client.v2.applications.ListApplicationRoutesResponse;
+import org.cloudfoundry.client.v2.domains.GetDomainResponse;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -147,28 +150,6 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 					.cache();
 			return mono.toFuture();
 		}
-  }
-  
-  private class DomainCacheLoader implements AsyncCacheLoader<String, GetDomainResponse> {
-		@Override
-		public @NonNull CompletableFuture<GetDomainResponse> asyncLoad(@NonNull String key,
-				@NonNull Executor executor) {
-			Mono<GetDomainResponse> mono = parent.retrieveDomain(key)
-					.subscribeOn(Schedulers.fromExecutor(executor))
-					.cache();
-			return mono.toFuture();
-		}
-	}
-
-	private class AppRouteCacheLoader implements AsyncCacheLoader<String, ListApplicationRoutesResponse> {
-		@Override
-		public @NonNull CompletableFuture<ListApplicationRoutesResponse> asyncLoad(@NonNull String key,
-				@NonNull Executor executor) {
-			Mono<ListApplicationRoutesResponse> mono = parent.retrieveAppRoutes(key)
-					.subscribeOn(Schedulers.fromExecutor(executor))
-					.cache();
-			return mono.toFuture();
-		}
 	}
 	
 	@PostConstruct
@@ -226,23 +207,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 				.recordStats()
 				.scheduler(caffeineScheduler)
 				.buildAsync(new SpaceSummaryCacheLoader());
-    this.internalMetrics.addCaffeineCache("spaceSummary", this.spaceSummaryCache);
-    
-    this.domainsCache = Caffeine.newBuilder()
-				.expireAfterAccess(this.expiryCacheDomainLevelInSeconds, TimeUnit.SECONDS)
-				.refreshAfterWrite(this.refreshCacheDomainLevelInSeconds, TimeUnit.SECONDS)
-				.recordStats()
-				.scheduler(caffeineScheduler)
-				.buildAsync(new DomainCacheLoader());
-		this.internalMetrics.addCaffeineCache("domainCache", this.domainsCache);
-
-		this.appRoutesCache = Caffeine.newBuilder()
-				.expireAfterAccess(this.expiryCacheRoutesLevelInSeconds, TimeUnit.SECONDS)
-				.refreshAfterWrite(this.refreshCacheRouteLevelInSeconds, TimeUnit.SECONDS)
-				.recordStats()
-				.scheduler(caffeineScheduler)
-				.buildAsync(new AppRouteCacheLoader());
-		this.internalMetrics.addCaffeineCache("routeCache", this.appRoutesCache);
+		this.internalMetrics.addCaffeineCache("spaceSummary", this.spaceSummaryCache);
 	}
 
 	@Override
@@ -284,16 +249,6 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	public Mono<ListSpacesResponse> retrieveSpaceIdsInOrg(String orgId) {
 		return Mono.fromFuture(this.spaceIdInOrgCache.get(orgId));
 	}
-  
- 	@Override
-	public Mono<GetDomainResponse> retrieveDomain(String domainId) {
-    	return Mono.fromFuture(this.domainsCache.get(domainId));
-	}
-
-	@Override
-	public Mono<ListApplicationRoutesResponse> retrieveAppRoutes(String appId) {
-		return Mono.fromFuture(this.appRoutesCache.get(appId));
-	}
 
 	@Override
 	public void invalidateCacheApplications() {
@@ -332,5 +287,23 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	@Override
 	public void reset() {
 		this.parent.reset();
+	}
+
+	@Override
+	public Mono<ListOrganizationDomainsResponse> retrieveAllDomains(String orgId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Mono<ListSpaceRoutesResponse> retrieveSpaceRoutes(String spaceId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Mono<ListRouteMappingsResponse> retrieveRouteMappings() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
