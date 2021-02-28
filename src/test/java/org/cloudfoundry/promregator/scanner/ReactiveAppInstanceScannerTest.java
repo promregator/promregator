@@ -614,7 +614,33 @@ class ReactiveAppInstanceScannerTest {
 		t.setProtocol("http");
 		t.setApplicationId(UNITTEST_APP_INTERNAL_UUID);		
 		final Target emptyTarget = new Target();
-		emptyTarget.setInternalPort(8080);
+		emptyTarget.setInternalPort(9090);
+		t.setOriginalTarget(emptyTarget);
+		targets.add(t);
+					
+		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, null, null);
+		
+		assertThat(result).filteredOn( instance -> instance.getInstanceId().equals(UNITTEST_APP_INTERNAL_UUID+":0") )
+			.extracting("internal").containsOnly(true);
+
+		assertThat(result).filteredOn( instance -> instance.getInstanceId().equals(UNITTEST_APP_INTERNAL_UUID+":0") )
+			.extracting("accessUrl").containsOnly("http://0.internal-app.apps.internal:9090/metrics");
+
+		assertThat(result).filteredOn( instance -> instance.getInstanceId().equals(UNITTEST_APP_INTERNAL_UUID+":1") )
+			.extracting("accessUrl").containsOnly("http://1.internal-app.apps.internal:9090/metrics");    
+	}
+
+	@Test
+	void testInternalRouteWithNoPortDefinedInTarget() {
+		List<ResolvedTarget> targets = new LinkedList<>();
+		
+		ResolvedTarget t = new ResolvedTarget();
+		t.setOrgName("unittestorg");
+		t.setSpaceName("unittestspace");
+		t.setApplicationName("internalapp");		
+		t.setProtocol("http");
+		t.setApplicationId(UNITTEST_APP_INTERNAL_UUID);		
+		final Target emptyTarget = new Target();
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 					

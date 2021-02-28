@@ -37,6 +37,9 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	@Value("${cf.cache.timeout.application:300}")
 	private int timeoutCacheApplicationLevel;
 
+	@Value("${promregator.defaultInternalRoutePort:8080}")
+	private int defaultInternalRoutePort;
+
 	/*
 	 * see also https://github.com/promregator/promregator/issues/76 This is the
 	 * locale, which we use to convert both "what we get from CF" and "the stuff,
@@ -413,7 +416,12 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 
 	private String formatInternalAccessURL(final String url, final String path, final int internalPort,
 			final int instanceId) {
-		String internalURL = String.format("%s.%s:%s", instanceId, url, internalPort);
+		int port = internalPort;
+		if(port == 0) {
+			port = defaultInternalRoutePort;
+		}
+		
+		String internalURL = String.format("%s.%s:%s", instanceId, url, port);
 		log.debug(String.format("Using internal Application URL: '%s'", internalURL));
 
 		return formatAccessURL("http", internalURL, path);
