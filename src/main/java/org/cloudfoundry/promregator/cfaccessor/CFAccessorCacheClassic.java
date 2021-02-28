@@ -38,12 +38,6 @@ public class CFAccessorCacheClassic implements CFAccessorCache {
 	@Value("${cf.cache.timeout.application:300}")
 	private int refreshCacheApplicationLevelInSeconds;
 
-	@Value("${cf.cache.timeout.routemapping:300}")
-	private int refreshCacheRouteMappingLevelInSeconds;
-
-	@Value("${cf.cache.timeout.route:300}")
-	private int refreshCacheRouteLevelInSeconds;
-
 	@Value("${cf.cache.timeout.domain:3600}")
 	private int refreshCacheDomainLevelInSeconds;
 		
@@ -54,13 +48,7 @@ public class CFAccessorCacheClassic implements CFAccessorCache {
 	private int expiryCacheSpaceLevelInSeconds;
 	
 	@Value("${cf.cache.expiry.application:120}")
-	private int expiryCacheApplicationLevelInSeconds;
-	
-	@Value("${cf.cache.expiry.routemapping:120}")
-	private int expiryCacheRouteMappingLevelInSeconds;
-
-	@Value("${cf.cache.expiry.route:120}")
-	private int expiryCacheRouteLevelInSeconds;
+	private int expiryCacheApplicationLevelInSeconds;	
 
 	@Value("${cf.cache.expiry.domain:300}")
 	private int expiryCacheDomainLevelInSeconds;

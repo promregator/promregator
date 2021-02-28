@@ -205,6 +205,17 @@ Note that applications and routes *may* change often. That is why you should pic
 
 Caches can also be invalidated out of line by sending an HTTP REST request to Promregator. Further details can be found at the [Cache Invalidation page](./invalidate-cache.md).
 
+### Option "cf.cache.timeout.domain" (optional)
+For performance reasons the metadata of the Cloud Foundry environment (organization, space, applications, routes, domains) is cached locally in Promregator.
+
+This option allows you to specify how often the metadata of the domains you have selected in your targets shall be verified after they have been fetched. The value is a timeout after which the metadata is retrieved again. Its unit is seconds.
+
+By default, this value is set to 3600 seconds, which means that the metadata is retrieved (again) after an hour
+
+Note that domains typically do not change often. That is why you should pick a high value here, as otherwise you would produce unnecessary network traffic for everyone.
+
+Caches can also be invalidated out of line by sending an HTTP REST request to Promregator. Further details can be found at the [Cache Invalidation page](./invalidate-cache.md).
+
 ### Option "cf.cache.timeout.resolver" (optional)
 For performance reasons the metadata of the Cloud Foundry environment (organization, space, applications, routes) is cached locally in Promregator.
 
@@ -240,6 +251,15 @@ For performance reasons the metadata of the Cloud Foundry environment (organizat
 This option allows you to specify how long an apparently no-longer-used record should stay in the application cache, before it is removed. Its unit is seconds.
 
 By default, this value is set to 120 seconds, which means that records, which were not used for more than two minutes, are considered deprecated and removed from the cache.
+
+Caches can also be invalidated out of line by sending an HTTP REST request to Promregator. Further details can be found at the [Cache Invalidation page](./invalidate-cache.md).
+
+### Option "cf.cache.expiry.domain" (optional)
+For performance reasons the metadata of the Cloud Foundry environment (organization, space, applications, routes, domains) is cached locally in Promregator.
+
+This option allows you to specify how long an apparently no-longer-used record should stay in the domain cache, before it is removed. Its unit is seconds.
+
+By default, this value is set to 300 seconds, which means that records, which were not used for more than five minutes, are considered deprecated and removed from the cache.
 
 Caches can also be invalidated out of line by sending an HTTP REST request to Promregator. Further details can be found at the [Cache Invalidation page](./invalidate-cache.md).
 
