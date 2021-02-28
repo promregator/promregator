@@ -253,12 +253,15 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 						v.getTarget().getOriginalTarget().getPreferredRouteRegexPatterns()));
 			}
 
-			// find the route matching the selected URL
-			Route route = sas.getRoutes().stream().filter(rt -> v.getAccessURL().startsWith(rt.getHost()+"."+rt.getDomain().getName())).findFirst().get();
-
-			// TODO Add some logic to catch issues here
-
-			v.setDomainId(route.getDomain().getId());
+			// In the interest of backwards compatibility lest do this inside a try.
+			// There is little reason why this should not find the correct domain
+			try {
+				Route route = sas.getRoutes().stream().filter(rt -> v.getAccessURL().startsWith(rt.getHost()+"."+rt.getDomain().getName())).findFirst().get();
+				v.setDomainId(route.getDomain().getId());	
+			} catch (Exception e) {
+				log.warn(String.format("unable to find matching domain for the url %s", v.getAccessURL()));
+			}
+			
 			v.setNumberOfInstances(sas.getInstances());
 
 			return Mono.just(v);
@@ -276,13 +279,18 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				return Mono.empty();
 			}
 
-			// find the route to match this InstanceRoute
-			DomainResource domain = domains.stream().filter(r -> r.getMetadata().getId().equals(v.getDomainId()))
-					.findFirst().get();
+			// we should only run this if we found a domain in the above step
+			// this is to make sure we have compatibility with existing behaviour
+			if( !v.getDomainId().isEmpty()) {
+				try {			
+					DomainResource domain = domains.stream().filter(r -> r.getMetadata().getId().equals(v.getDomainId()))
+						.findFirst().get();
 
-			// TODO Add some logic to catch issues here
-
-			v.setInternal(domain.getEntity().getInternal());
+					v.setInternal(domain.getEntity().getInternal());							
+				} catch (Exception e) {
+					log.warn(String.format("unable to find matching domain for the domain with id %s", v.getDomainId()));
+				}
+			}
 
 			return Mono.just(v);
 		});
@@ -298,8 +306,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			List<Instance> instances = new ArrayList<>(v.getNumberOfInstances());
 			for (int i = 0; i < v.numberOfInstances; i++) {
 				Instance inst = new Instance(v.getTarget(), String.format("%s:%d", v.getApplicationId(), i),
-						v.getAccessURL());
-				inst.setInternal(v.isInternal());
+						v.getAccessURL(), v.isInternal());				
 
 				if (v.isInternal()) {
 					inst.setAccessUrl(this.formatInternalAccessURL(v.getAccessURL(), v.getTarget().getPath(),

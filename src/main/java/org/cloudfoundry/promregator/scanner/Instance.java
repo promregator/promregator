@@ -23,11 +23,12 @@ public class Instance {
 		this.internal = isInternal;
 	}
 
-	public Instance(ResolvedTarget target, String instanceId, String accessUrl) {
+	public Instance(ResolvedTarget target, String instanceId, String accessUrl, boolean internal) {
 		super();
 		this.target = target;
 		this.instanceId = instanceId;
 		this.accessUrl = accessUrl;
+		this.internal = internal;
 	}
 
 	public ResolvedTarget getTarget() {

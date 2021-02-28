@@ -15,7 +15,7 @@ class InstanceTest {
 		rt.setPath("/test/path");
 		rt.setProtocol("https");
 		
-		Instance subject = new Instance(rt, "1", "https://accessUrl.bogus");
+		Instance subject = new Instance(rt, "1", "https://accessUrl.bogus", false);
 		
 		String result = subject.toString();
 		
@@ -25,6 +25,7 @@ class InstanceTest {
 		Assertions.assertTrue(result.contains("/test/path"));
 		Assertions.assertTrue(result.contains("https"));
 		Assertions.assertTrue(result.contains("https://accessUrl.bogus"));
+		Assertions.assertTrue(result.contains("false"));
 		
 	}
 
