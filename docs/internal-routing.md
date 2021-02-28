@@ -8,7 +8,7 @@ When promregator resolves your targets it will automatically detect if the route
 
 ## Network policies
 
-To enable internal communication between containers you must define network policies to allow the traffic between promregator and the target app. When defining the network policy its important to ensure you use the same port that you expect to scrape on and configure in the `internalPort` value of your target.
+To enable internal communication between containers you must define network policies to allow the traffic between promregator and the target app. When defining the network policy its important to ensure you use the same port that you expect to scrape on and configure in the `internalRoutePort` value of your target.
 
 ```sh
 cf add-network-policy promregator --destination-app apptoscrape --protocol tcp --port 9090

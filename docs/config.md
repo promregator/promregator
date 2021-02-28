@@ -337,7 +337,7 @@ Please also make sure that you set "cf.proxy.host", too, as otherwise proxy supp
 This group configures the behavior of Promregator itself. It is mainly meant on how requests shall be handled, as soon as the Prometheus server starts to pull metrics.
 
 #### Option "promregator.defaultInternalRoutePort" (optional)
-Specifies the default port to use for internal routes if no `internalPort` is defined on a target. The default value for this is port `8080`.
+Specifies the default port to use for internal routes if no `internalRoutePort` is defined on a target. The default value for this is port `8080`.
 
 ### Subgroup "promregator.targets"
 Lists one or more Cloud Foundry applications, which shall be queried for metrics.
@@ -410,7 +410,7 @@ Specifies the identifier of the *target-specific* authentication configuration, 
 
 If not specified, the global authentication configuration is applied for this target.
 
-#### Item property "promregator.targets[].internalPort" (optional)
+#### Item property "promregator.targets[].internalRoutePort" (optional)
 Specifies the port to be used if the route selected is identified as an internal domain.
 
 If not specified then the value of `promregator.defaultInternalRoutePort` will be used as the port for all internal routes.

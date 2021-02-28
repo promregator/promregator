@@ -614,7 +614,7 @@ class ReactiveAppInstanceScannerTest {
 		t.setProtocol("http");
 		t.setApplicationId(UNITTEST_APP_INTERNAL_UUID);		
 		final Target emptyTarget = new Target();
-		emptyTarget.setInternalPort(9090);
+		emptyTarget.setInternalRoutePort(9090);
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 					

@@ -64,7 +64,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		private String accessURL;
 		private int numberOfInstances;
 		private boolean internal;
-		private int internalPort;
+		private int internalRoutePort;
 
 		/**
 		 * @return the target
@@ -81,12 +81,12 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			this.domainId = domainId;
 		}
 
-		public int getInternalPort() {
-			return internalPort;
+		public int getInternalRoutePort() {
+			return internalRoutePort;
 		}
 
-		public void setInternalPort(int internalPort) {
-			this.internalPort = internalPort;
+		public void setInternalRoutePort(int internalRoutePort) {
+			this.internalRoutePort = internalRoutePort;
 		}
 
 		/**
@@ -195,7 +195,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			OSAVector v = new OSAVector();
 			v.setTarget(target);
 			v.setApplicationId(target.getApplicationId());
-			v.setInternalPort(target.getOriginalTarget().getInternalPort());
+			v.setInternalRoutePort(target.getOriginalTarget().getInternalRoutePort());
 
 			return v;
 		});
@@ -303,7 +303,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 
 				if (v.isInternal()) {
 					inst.setAccessUrl(this.formatInternalAccessURL(v.getAccessURL(), v.getTarget().getPath(),
-							v.getInternalPort(), i));
+							v.getInternalRoutePort(), i));
 				} else {
 					inst.setAccessUrl(this.formatAccessURL(v.getTarget().getProtocol(), v.getAccessURL(),
 							v.getTarget().getPath()));
@@ -414,9 +414,9 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		return applUrl + internalPath;
 	}
 
-	private String formatInternalAccessURL(final String url, final String path, final int internalPort,
+	private String formatInternalAccessURL(final String url, final String path, final int internalRoutePort,
 			final int instanceId) {
-		int port = internalPort;
+		int port = internalRoutePort;
 		if(port == 0) {
 			port = defaultInternalRoutePort;
 		}
