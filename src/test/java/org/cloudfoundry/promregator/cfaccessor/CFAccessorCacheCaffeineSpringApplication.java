@@ -4,12 +4,8 @@ import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
-import org.cloudfoundry.client.v2.routemappings.ListRouteMappingsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
-import org.cloudfoundry.client.v2.spaces.ListSpaceRoutesResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
-import org.cloudfoundry.client.v2.applications.ListApplicationRoutesResponse;
-import org.cloudfoundry.client.v2.domains.GetDomainResponse;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -72,20 +68,7 @@ public class CFAccessorCacheCaffeineSpringApplication {
 		public Mono<ListOrganizationDomainsResponse> retrieveAllDomains(String orgId) {
 			// TODO Auto-generated method stub
 			return null;
-		}
-
-		@Override
-		public Mono<ListSpaceRoutesResponse> retrieveSpaceRoutes(String spaceId) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Mono<ListRouteMappingsResponse> retrieveRouteMappings() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-		
+		}		
 	}
 	
 	@Bean
