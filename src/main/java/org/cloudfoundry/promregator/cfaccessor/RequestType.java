@@ -7,8 +7,7 @@ public enum RequestType {
 	SPACE_IN_ORG("space", "retrieveAllSpaceIdsInOrg"),
 	ALL_APPS_IN_SPACE("allApps", "retrieveAllApplicationIdsInSpace"),
 	SPACE_SUMMARY("spaceSummary", "retrieveSpaceSummary"),
-	DOMAINS("domains", "retrieveDomains"),
-	APP_ROUTES("appRoutes", "retrieveAppRoutes"),
+	DOMAINS("domains", "retrieveDomains"),	
 	OTHER("other", "other"); // used for unit testing only
 	
 	private final String metricName;

@@ -89,11 +89,8 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	@Value("${cf.request.timeout.appSummary:4000}")
 	private int requestTimeoutAppSummary;
 	
-	@Value("${cf.request.timeout.domains:4000}")
+	@Value("${cf.request.timeout.domain:2500}")
 	private int requestTimeoutDomains;
-
-	@Value("${cf.request.timeout.appRoutes:4000}")
-	private int requestTimeoutAppRoutes;
 	
 	@Value("${cf.connectionPool.size:#{null}}")
 	private Integer connectionPoolSize;
@@ -392,7 +389,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 
 		ListOrganizationDomainsRequest request = ListOrganizationDomainsRequest.builder().organizationId(orgId).build();
 
-		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.APP_ROUTES, orgId, 
-		request, r -> this.cloudFoundryClient.organizations().listDomains(request), this.requestTimeoutAppRoutes);
+		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.DOMAINS, orgId, 
+		request, r -> this.cloudFoundryClient.organizations().listDomains(request), this.requestTimeoutDomains);
 	}
 }

@@ -60,14 +60,13 @@ public class CFAccessorCacheCaffeineSpringApplication {
 		}
 
 		@Override
-		public void reset() {
-			// nothing to be done
-		}
+		public Mono<ListOrganizationDomainsResponse> retrieveAllDomains(String orgId) {
+			return Mono.just(ListOrganizationDomainsResponse.builder().build());
+		}		
 
 		@Override
-		public Mono<ListOrganizationDomainsResponse> retrieveAllDomains(String orgId) {
-			// TODO Auto-generated method stub
-			return null;
+		public void reset() {
+			// nothing to be done
 		}		
 	}
 	
