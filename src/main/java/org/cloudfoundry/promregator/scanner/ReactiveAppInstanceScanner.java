@@ -8,17 +8,14 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
 import org.cloudfoundry.client.v2.organizations.OrganizationResource;
-import org.cloudfoundry.client.v2.routemappings.ListRouteMappingsResponse;
-import org.cloudfoundry.client.v2.routemappings.RouteMappingResource;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
-import org.cloudfoundry.client.v2.routes.RouteResource;
+import org.cloudfoundry.client.v2.routes.Route;
 import org.cloudfoundry.client.v2.domains.DomainResource;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.slf4j.Logger;
@@ -35,8 +32,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	private static final Logger log = LoggerFactory.getLogger(ReactiveAppInstanceScanner.class);
 	private static final String INVALID_ORG_ID = "***invalid***";
 	private static final String INVALID_SPACE_ID = "***invalid***";
-	private static final Map<String, SpaceApplicationSummary> INVALID_SUMMARY = new HashMap<>();
-	private static final List<RouteMappingResource> INVALID_ROUTE_MAPS = new ArrayList<RouteMappingResource>();
+	private static final Map<String, SpaceApplicationSummary> INVALID_SUMMARY = new HashMap<>();	
 
 	@Value("${cf.cache.timeout.application:300}")
 	private int timeoutCacheApplicationLevel;
@@ -60,8 +56,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 
 		private String orgId;
 		private String spaceId;
-		private String applicationId;
-		private String routeId;
+		private String applicationId;		
 		private String domainId;
 		private String accessURL;
 		private int numberOfInstances;
@@ -81,14 +76,6 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 
 		public void setDomainId(String domainId) {
 			this.domainId = domainId;
-		}
-
-		public String getRouteId() {
-			return routeId;
-		}
-
-		public void setRouteId(String routeId) {
-			this.routeId = routeId;
 		}
 
 		public int getInternalPort() {
@@ -192,76 +179,6 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 
 	}
 
-	private Flux<AppRouteVector> determineRoutes(String orgId, String spaceId) {
-		Mono<ListRouteMappingsResponse> routeMappings = this.cfAccessor.retrieveRouteMappings();
-
-		Flux<RouteMappingResource> something = routeMappings
-				.flatMapMany(mapper -> Flux.fromIterable(mapper.getResources()));
-
-		Flux<AppRouteVector> routeMappingFlux = something.map(mapper -> {
-			AppRouteVector route = new AppRouteVector();
-
-			// TODO some validation here
-
-			route.setAppId(mapper.getEntity().getApplicationId());
-			route.setPort(mapper.getEntity().getApplicationPort());
-			route.setRouteId(mapper.getEntity().getRouteId());
-			return route;
-		});
-
-		Flux<List<RouteResource>> spaceRoutes = routeMappingFlux.flatMapSequential(v -> {
-			return this.cfAccessor.retrieveSpaceRoutes(spaceId).flatMap(mapper -> Mono.just(mapper.getResources()));
-		});
-		Flux<AppRouteVector> routeInstanceFlux = Flux.zip(routeMappingFlux, spaceRoutes).flatMap(tuple -> {
-			AppRouteVector v = tuple.getT1();
-			List<RouteResource> routes = tuple.getT2();
-
-			if (routes.size() == 0) {
-				// NB: This drops the current instance route!
-				return Mono.empty();
-			}
-
-			// find the route to match this InstanceRoute
-			RouteResource route = routes.stream().filter(r -> r.getMetadata().getId().equals(v.getRouteId()))
-					.findFirst().get();
-
-			// TODO what if we dont find???
-
-			// set the values
-			v.setDomainId(route.getEntity().getDomainId());
-			v.setHostname(route.getEntity().getHost());
-			v.setPath(route.getEntity().getPath());
-
-			return Mono.just(v);
-		});
-
-		Flux<List<DomainResource>> domainFlux = routeInstanceFlux.flatMapSequential(v -> {
-			return this.cfAccessor.retrieveAllDomains(orgId).flatMap(mapper -> Mono.just(mapper.getResources()));
-		});
-		Flux<AppRouteVector> domainRouteInstanceFlux = Flux.zip(routeInstanceFlux, domainFlux).flatMap(tuple -> {
-			AppRouteVector v = tuple.getT1();
-			List<DomainResource> domains = tuple.getT2();
-
-			if (domains.size() == 0) {
-				// NB: This drops the current target!
-				return Mono.empty();
-			}
-
-			// find the route to match this InstanceRoute
-			DomainResource domain = domains.stream().filter(r -> r.getMetadata().getId().equals(v.getDomainId()))
-					.findFirst().get();
-
-			// TODO what if we dont find???
-
-			v.setDomain(domain.getEntity().getName());
-			v.setInternal(domain.getEntity().getInternal());
-
-			return Mono.just(v);
-		});
-
-		return domainRouteInstanceFlux;
-	}
-
 	@Autowired
 	private CFAccessor cfAccessor;
 
@@ -275,6 +192,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			OSAVector v = new OSAVector();
 			v.setTarget(target);
 			v.setApplicationId(target.getApplicationId());
+			v.setInternalPort(target.getOriginalTarget().getInternalPort());
 
 			return v;
 		});
@@ -332,52 +250,55 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 						v.getTarget().getOriginalTarget().getPreferredRouteRegexPatterns()));
 			}
 
+			// find the route matching the selected URL
+			Route route = sas.getRoutes().stream().filter(rt -> v.getAccessURL().startsWith(rt.getHost()+"."+rt.getDomain().getName())).findFirst().get();
+
+			// TODO Add some logic to catch issues here
+
+			v.setDomainId(route.getDomain().getId());
 			v.setNumberOfInstances(sas.getInstances());
 
 			return Mono.just(v);
 		});
 
-		Flux<List<AppRouteVector>> applicationRoutesFlux = osaVectorApplicationFlux
-				.flatMapSequential(v -> this.getAppRoutes(v.getApplicationId(), v.getOrgId(), v.getSpaceId()));
-		Flux<OSAVector> osaVectorApplicationRouteFlux = Flux.zip(osaVectorApplicationFlux, applicationRoutesFlux)
-				.flatMap(tuple -> {
-					OSAVector v = tuple.getT1();
+		Flux<List<DomainResource>> domainFlux = osaVectorApplicationFlux.flatMapSequential(v -> {
+			return this.cfAccessor.retrieveAllDomains(v.getOrgId()).flatMap(mapper -> Mono.just(mapper.getResources()));
+		});
+		Flux<OSAVector> osaVectorDomainApplicationFlux = Flux.zip(osaVectorApplicationFlux, domainFlux).flatMap(tuple -> {
+			OSAVector v = tuple.getT1();
+			List<DomainResource> domains = tuple.getT2();
 
-					if (INVALID_SUMMARY == tuple.getT2()) {
-						// NB: This drops the current target!
-						return Mono.empty();
-					}
+			if (domains.size() == 0) {
+				// NB: This drops the current target!
+				return Mono.empty();
+			}
 
-					List<AppRouteVector> appRoutes = tuple.getT2();
+			// find the route to match this InstanceRoute
+			DomainResource domain = domains.stream().filter(r -> r.getMetadata().getId().equals(v.getDomainId()))
+					.findFirst().get();
 
-					// find the app route dictated by the selected url
-					AppRouteVector appRoute = appRoutes.stream().filter(r -> v.getAccessURL().startsWith(r.getUrl()))
-							.findFirst().get();
+			// TODO Add some logic to catch issues here
 
-					// TODO what to do when the route doesnt exist..
+			v.setInternal(domain.getEntity().getInternal());
 
-					// add the required data to the instance vector
-					v.setDomainId(appRoute.getDomainId());
-					v.setInternal(appRoute.isInternal());
-					v.setInternalPort(appRoute.getPort());
+			return Mono.just(v);
+		});
 
-					return Mono.just(v);
-				});
 
 		// perform pre-filtering, if available
 		if (applicationIdFilter != null) {
-			osaVectorApplicationRouteFlux = osaVectorApplicationRouteFlux
+			osaVectorDomainApplicationFlux = osaVectorDomainApplicationFlux
 					.filter(v -> applicationIdFilter.test(v.getApplicationId()));
 		}
 
-		Flux<Instance> instancesFlux = osaVectorApplicationRouteFlux.flatMapSequential(v -> {
+		Flux<Instance> instancesFlux = osaVectorDomainApplicationFlux.flatMapSequential(v -> {
 			List<Instance> instances = new ArrayList<>(v.getNumberOfInstances());
 			for (int i = 0; i < v.numberOfInstances; i++) {
 				Instance inst = new Instance(v.getTarget(), String.format("%s:%d", v.getApplicationId(), i),
 						v.getAccessURL());
-				inst.setInternal(v.internal);
+				inst.setInternal(v.isInternal());
 
-				if (v.internal) {
+				if (v.isInternal()) {
 					inst.setAccessUrl(this.formatInternalAccessURL(v.getAccessURL(), v.getTarget().getPath(),
 							v.getInternalPort(), i));
 				} else {
@@ -471,12 +392,6 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			log.error(String.format("retrieving summary for space id '%s' resulted in an exception", spaceIdString), e);
 			return Mono.just(INVALID_SUMMARY);
 		});
-	}
-
-	private Mono<List<AppRouteVector>> getAppRoutes(String appId, String orgId, String spaceId) {
-		Flux<AppRouteVector> routes = this.determineRoutes(orgId, spaceId).filter(p -> p.getAppId().equals(appId));
-
-		return routes.collectList();
 	}
 
 	private String formatAccessURL(final String protocol, final String url, final String path) {

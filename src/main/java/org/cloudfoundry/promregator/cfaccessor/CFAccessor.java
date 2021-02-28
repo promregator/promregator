@@ -4,9 +4,7 @@ import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
-import org.cloudfoundry.client.v2.routemappings.ListRouteMappingsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
-import org.cloudfoundry.client.v2.spaces.ListSpaceRoutesResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 
 import reactor.core.publisher.Mono;
@@ -27,10 +25,6 @@ public interface CFAccessor {
 	Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId);	
 
 	Mono<ListOrganizationDomainsResponse> retrieveAllDomains(String orgId);
-
-	Mono<ListSpaceRoutesResponse> retrieveSpaceRoutes(String spaceId);
-
-	Mono<ListRouteMappingsResponse> retrieveRouteMappings();
 	
 	void reset();
 }

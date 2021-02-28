@@ -16,19 +16,15 @@ import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.organizations.OrganizationEntity;
 import org.cloudfoundry.client.v2.organizations.OrganizationResource;
-import org.cloudfoundry.client.v2.routemappings.ListRouteMappingsResponse;
-import org.cloudfoundry.client.v2.routemappings.RouteMappingEntity;
-import org.cloudfoundry.client.v2.routemappings.RouteMappingResource;
+import org.cloudfoundry.client.v2.routes.Route;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
-import org.cloudfoundry.client.v2.spaces.ListSpaceRoutesResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v2.spaces.SpaceEntity;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
+import org.cloudfoundry.client.v2.domains.Domain;
 import org.cloudfoundry.client.v2.domains.DomainEntity;
 import org.cloudfoundry.client.v2.domains.DomainResource;
-import org.cloudfoundry.client.v2.routes.RouteEntity;
-import org.cloudfoundry.client.v2.routes.RouteResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
@@ -150,11 +146,14 @@ public class CFAccessorSimulator implements CFAccessor {
 			List<SpaceApplicationSummary> list = new LinkedList<>();
 			
 			for (int i = 1;i<=100;i++) {
+				Domain sharedDomain = Domain.builder().id(SHARED_DOMAIN_UUID+i).name(SHARED_DOMAIN).build();												
 				final String[] urls = { APP_HOST_PREFIX+i+"."+SHARED_DOMAIN }; 
+				final Route[] routes = { Route.builder().domain(sharedDomain).host(APP_HOST_PREFIX+i).build() };
 				SpaceApplicationSummary sas = SpaceApplicationSummary.builder()
 						.id(APP_UUID_PREFIX+i)
 						.name("testapp"+i)
 						.addAllUrls(Arrays.asList(urls))
+						.addAllRoutes(Arrays.asList(routes))
 						.instances(this.amountInstances)
 						.state("STARTED")
 						.build();
@@ -206,61 +205,6 @@ public class CFAccessorSimulator implements CFAccessor {
 		}
 		
 		ListOrganizationDomainsResponse response = ListOrganizationDomainsResponse.builder().addAllResources(domains).build();
-		return Mono.just(response);
-	}
-
-	@Override
-	public Mono<ListSpaceRoutesResponse> retrieveSpaceRoutes(String spaceId) {		
-		if (spaceId == null) {
-			return Mono.empty();
-		}
-		
-		List<RouteResource> routes = new LinkedList<>();
-
-
-		for (int i = 1;i<=100;i++) {
-			RouteResource res = RouteResource.builder()
-			.metadata(
-				Metadata.builder()
-				.id(APP_ROUTE_UUID+i)
-				.createdAt(CREATED_AT_TIMESTAMP)
-				.build())
-			.entity(
-				RouteEntity.builder()
-				.host(APP_HOST_PREFIX+i)			
-				.path("path")								
-				.domainId(SHARED_DOMAIN_UUID+i)
-				.spaceId(SPACE_UUID)
-				.build()
-				)
-			.build();
-
-			routes.add(res);				
-		}
-
-		ListSpaceRoutesResponse resp = ListSpaceRoutesResponse.builder().addAllResources(routes).build();
-		return Mono.just(resp);
-	}
-
-	@Override
-	public Mono<ListRouteMappingsResponse> retrieveRouteMappings() {
-		List<RouteMappingResource> routes = new LinkedList<>();
-				
-		for (int i = 1;i<=100;i++) {
-			RouteMappingResource res = RouteMappingResource.builder()
-			.metadata(Metadata.builder().id("id").createdAt(CREATED_AT_TIMESTAMP).build())
-			.entity(RouteMappingEntity.builder()
-				.applicationId(APP_UUID_PREFIX+i)
-				.applicationPort(0)									
-				.routeId(APP_ROUTE_UUID+i)			
-				.build())
-			.build();
-
-			routes.add(res);				
-		}
-
-		ListRouteMappingsResponse response = ListRouteMappingsResponse.builder().addAllResources(routes).build();
-
 		return Mono.just(response);
 	}
 }

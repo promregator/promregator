@@ -16,19 +16,15 @@ import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.organizations.OrganizationEntity;
 import org.cloudfoundry.client.v2.organizations.OrganizationResource;
-import org.cloudfoundry.client.v2.routemappings.ListRouteMappingsResponse;
-import org.cloudfoundry.client.v2.routemappings.RouteMappingEntity;
-import org.cloudfoundry.client.v2.routemappings.RouteMappingResource;
-import org.cloudfoundry.client.v2.routes.RouteEntity;
+import org.cloudfoundry.client.v2.routes.Route;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
-import org.cloudfoundry.client.v2.spaces.ListSpaceRoutesResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v2.spaces.SpaceEntity;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
+import org.cloudfoundry.client.v2.domains.Domain;
 import org.cloudfoundry.client.v2.domains.DomainEntity;
 import org.cloudfoundry.client.v2.domains.DomainResource;
-import org.cloudfoundry.client.v2.routes.RouteResource;
 import org.junit.jupiter.api.Assertions;
 
 import reactor.core.publisher.Mono;
@@ -127,13 +123,16 @@ public class CFAccessorMassMock implements CFAccessor {
 	public Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId) {
 		if (spaceId.equals(UNITTEST_SPACE_UUID)) {
 			List<SpaceApplicationSummary> list = new LinkedList<>();
-			
+					
 			for (int i = 0;i<100;i++) {
+				Domain sharedDomain = Domain.builder().id(UNITTEST_SHARED_DOMAIN_UUID+i).name(UNITTEST_SHARED_DOMAIN).build();
 				final String[] urls = { "hostapp"+i+"."+UNITTEST_SHARED_DOMAIN }; 
+				final Route[] routes = { Route.builder().domain(sharedDomain).host("hostapp"+i).build() };
 				SpaceApplicationSummary sas = SpaceApplicationSummary.builder()
 						.id(UNITTEST_APP_UUID_PREFIX+i)
 						.name("testapp"+i)
 						.addAllUrls(Arrays.asList(urls))
+						.addAllRoutes(Arrays.asList(routes))
 						.instances(this.amountInstances)
 						.build();
 				list.add(sas);
@@ -194,62 +193,6 @@ public class CFAccessorMassMock implements CFAccessor {
 		}			
 
 		ListOrganizationDomainsResponse response = ListOrganizationDomainsResponse.builder().addAllResources(domains).build();
-		return Mono.just(response);
-	}
-
-	@Override
-	public Mono<ListSpaceRoutesResponse> retrieveSpaceRoutes(String spaceId) {		
-		if (spaceId == null) {
-			return Mono.empty();
-		}
-		
-		List<RouteResource> routes = new LinkedList<>();
-
-		for (int i = 0;i<100;i++) {
-							
-			RouteResource res = RouteResource.builder()
-			.metadata(
-				Metadata.builder()
-				.id(UNITTEST_ROUTE_UUID+i)
-				.createdAt(CREATED_AT_TIMESTAMP)
-				.build())
-			.entity(
-				RouteEntity.builder()
-				.host("hostapp"+i)			
-				.path("path")								
-				.domainId(UNITTEST_SHARED_DOMAIN_UUID+i)
-				.spaceId(UNITTEST_SPACE_UUID)
-				.build()
-				)
-			.build();
-
-			routes.add(res);			
-		}				
-
-		ListSpaceRoutesResponse resp = ListSpaceRoutesResponse.builder().addAllResources(routes).build();
-		return Mono.just(resp);
-	}
-
-	@Override
-	public Mono<ListRouteMappingsResponse> retrieveRouteMappings() {
-		List<RouteMappingResource> routes = new LinkedList<>();
-
-		for (int i = 0;i<100;i++) {
-							
-			RouteMappingResource res = RouteMappingResource.builder()
-			.metadata(Metadata.builder().id("id").createdAt(CREATED_AT_TIMESTAMP).build())
-			.entity(RouteMappingEntity.builder()
-				.applicationId(UNITTEST_APP_UUID_PREFIX+i)
-				.applicationPort(0)									
-				.routeId(UNITTEST_ROUTE_UUID+i)			
-				.build())
-			.build();
-
-			routes.add(res);			
-		}
-		
-		ListRouteMappingsResponse response = ListRouteMappingsResponse.builder().addAllResources(routes).build();
-
 		return Mono.just(response);
 	}
 }

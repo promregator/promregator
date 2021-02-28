@@ -18,12 +18,8 @@ import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsRequest;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.organizations.OrganizationResource;
-import org.cloudfoundry.client.v2.routemappings.ListRouteMappingsRequest;
-import org.cloudfoundry.client.v2.routemappings.ListRouteMappingsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryRequest;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
-import org.cloudfoundry.client.v2.spaces.ListSpaceRoutesRequest;
-import org.cloudfoundry.client.v2.spaces.ListSpaceRoutesResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesRequest;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
@@ -398,21 +394,5 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 
 		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.APP_ROUTES, orgId, 
 		request, r -> this.cloudFoundryClient.organizations().listDomains(request), this.requestTimeoutAppRoutes);
-	}
-
-	@Override
-	public Mono<ListSpaceRoutesResponse> retrieveSpaceRoutes(String spaceId) {
-		ListSpaceRoutesRequest request = ListSpaceRoutesRequest.builder().spaceId(spaceId).build();
-
-		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.APP_ROUTES, spaceId, 
-		request, r -> this.cloudFoundryClient.spaces().listRoutes(request), this.requestTimeoutAppRoutes);
-	}
-
-	@Override
-	public Mono<ListRouteMappingsResponse> retrieveRouteMappings() {
-		ListRouteMappingsRequest request = ListRouteMappingsRequest.builder().build();
-
-		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.APP_ROUTES, "(empty)", 
-		request, r -> this.cloudFoundryClient.routeMappings().list(request), this.requestTimeoutAppRoutes);
 	}
 }
