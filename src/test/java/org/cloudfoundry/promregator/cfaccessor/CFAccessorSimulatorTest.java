@@ -2,6 +2,8 @@ package org.cloudfoundry.promregator.cfaccessor;
 
 import java.util.List;
 
+import org.cloudfoundry.client.v2.domains.DomainResource;
+import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;

@@ -1,6 +1,7 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
+import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
@@ -38,6 +39,7 @@ class CFAccessorCacheClassicTimeoutTest {
 		this.subject.invalidateCacheApplications();
 		this.subject.invalidateCacheSpace();
 		this.subject.invalidateCacheOrg();
+		this.subject.invalidateCacheDomain();
 	}
 	
 	@AfterAll
@@ -102,4 +104,17 @@ class CFAccessorCacheClassicTimeoutTest {
 		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveSpaceSummary("dummy");
 	}
 
+	@Test
+	void testRetrieveDomains() throws InterruptedException {
+		Mono<ListOrganizationDomainsResponse> response1 = subject.retrieveAllDomains("dummy");
+		response1.subscribe();
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllDomains("dummy");
+		
+		Thread.sleep(300); // required, as we can only raise the timeout after 100ms
+
+		Mono<ListOrganizationDomainsResponse> response2 = subject.retrieveAllDomains("dummy");
+		response2.subscribe();
+		assertThat(response1).isNotEqualTo(response2);
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveAllDomains("dummy");
+	}
 }

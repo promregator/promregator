@@ -35,6 +35,7 @@ public class CFAccessorCacheClassicTimeoutSpringApplication {
 		Mockito.when(mock.retrieveSpaceId("dummy1", "dummy2")).then(new TimeoutMonoAnswer());
 		Mockito.when(mock.retrieveAllApplicationIdsInSpace("dummy1", "dummy2")).then(new TimeoutMonoAnswer());
 		Mockito.when(mock.retrieveSpaceSummary("dummy")).then(new TimeoutMonoAnswer());
+		Mockito.when(mock.retrieveAllDomains("dummy")).then(new TimeoutMonoAnswer());
 		return mock;
 	}
 	

@@ -1,6 +1,7 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
+import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
@@ -42,6 +43,7 @@ class CFAccessorCacheCaffeineTimeoutTest {
 		this.subject.invalidateCacheApplications();
 		this.subject.invalidateCacheSpace();
 		this.subject.invalidateCacheOrg();
+		this.subject.invalidateCacheDomain();
 	}
 	
 	@BeforeEach
@@ -51,6 +53,7 @@ class CFAccessorCacheCaffeineTimeoutTest {
 		Mockito.when(this.parentMock.retrieveSpaceId("dummy1", "dummy2")).then(new TimeoutMonoAnswer());
 		Mockito.when(this.parentMock.retrieveAllApplicationIdsInSpace("dummy1", "dummy2")).then(new TimeoutMonoAnswer());
 		Mockito.when(this.parentMock.retrieveSpaceSummary("dummy")).then(new TimeoutMonoAnswer());
+		Mockito.when(this.parentMock.retrieveAllDomains("dummy")).then(new TimeoutMonoAnswer());
 	}
 
 	public static class TimeoutMonoAnswer implements Answer<Mono<?>> {
@@ -125,6 +128,21 @@ class CFAccessorCacheCaffeineTimeoutTest {
 		response2.subscribe();
 		assertThat(response1).isNotEqualTo(response2);
 		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveSpaceSummary("dummy");
+	}
+
+	@Test
+	void testRetrieveDomains() throws InterruptedException {
+		Mono<ListOrganizationDomainsResponse> response1 = subject.retrieveAllDomains("dummy");
+		response1.subscribe();
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllDomains("dummy");
+		
+		// required to permit asynchronous updates of caches => test stability
+		Thread.sleep(10);
+		
+		Mono<ListOrganizationDomainsResponse> response2 = subject.retrieveAllDomains("dummy");
+		response2.subscribe();
+		assertThat(response1).isNotEqualTo(response2);
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveAllDomains("dummy");
 	}
 
 }
