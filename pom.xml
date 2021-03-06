@@ -38,7 +38,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.4.1</version> <!-- see also https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-parent -->
+		<version>2.4.3</version> <!-- see also https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-parent -->
 		<!-- Warning! On bumping also check guava-version below! -->
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
@@ -54,9 +54,17 @@
 			However, it breaks Eclipse debugging, and processes keep hanging on maven 
 			shutdown. See also https://stackoverflow.com/a/58701275/6350762 and https://github.com/spring-projects/spring-boot/issues/18638 -->
 
-		<spring-cloud.version>2020.0.0</spring-cloud.version>
+		<spring-cloud.version>2020.0.1</spring-cloud.version>
 		<prometheus.version>0.9.0</prometheus.version>
-		<cloudfoundry.client.version>4.12.0.RELEASE</cloudfoundry.client.version>
+		<!-- 
+		Warning on bumping to 0.10.0: 
+		* The bump is incompatible, changing Type.UNTYPED apparently to Type.UNKNOWN
+		* The bump is incompatible, as reading "dummy" for a counter ends up in a
+		  response where the name of the metric is changed to "dummy_total" implicitly.
+		  
+		  Further impact assessment especially on the second topic is needed
+		 -->
+		<cloudfoundry.client.version>4.14.0.RELEASE</cloudfoundry.client.version>
 		<logback.contrib.version>0.1.5</logback.contrib.version>
 
 		<sonar.projectKey>promregator</sonar.projectKey>
