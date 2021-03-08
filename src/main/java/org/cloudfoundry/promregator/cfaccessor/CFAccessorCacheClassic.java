@@ -358,7 +358,7 @@ public class CFAccessorCacheClassic implements CFAccessorCache {
 		 */
 		mono = mono.doOnError(e -> {
 			if (e instanceof TimeoutException) {
-				log.warn(String.format("Timed-out entry using key %s detected, which would get stuck in our appsInSpace cache; "
+				log.warn(String.format("Timed-out entry using key %s detected, which would get stuck in our domain cache; "
 					+ "displacing it now to prevent further harm", orgId), e);
 				/* 
 				 * Note that it *might* happen that a different Mono gets displaced than the one we are in here now. 
