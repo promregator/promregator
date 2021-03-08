@@ -268,7 +268,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		});
 
 		Flux<List<DomainResource>> domainFlux = osaVectorApplicationFlux.flatMapSequential(v -> {
-			return this.cfAccessor.retrieveAllDomains(v.getOrgId()).flatMap(mapper -> Mono.just(mapper.getResources()));
+			return this.cfAccessor.retrieveAllDomains(v.getOrgId()).map(mapper -> mapper.getResources());
 		});
 		Flux<OSAVector> osaVectorDomainApplicationFlux = Flux.zip(osaVectorApplicationFlux, domainFlux).flatMap(tuple -> {
 			OSAVector v = tuple.getT1();
