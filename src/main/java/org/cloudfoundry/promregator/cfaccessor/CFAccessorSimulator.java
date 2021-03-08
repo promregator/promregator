@@ -36,6 +36,8 @@ public class CFAccessorSimulator implements CFAccessor {
 	public static final String APP_HOST_PREFIX = "hostapp";
 	public static final String SHARED_DOMAIN = "shared.domain.example.org";
 	public static final String SHARED_DOMAIN_UUID = "be9b8696-2fa6-11e8-b467-0ed5f89f718b";  
+	public static final String INTERNAL_DOMAIN = "apps.internal";
+	public static final String INTERNAL_DOMAIN_UUID = "61c11947-087b-4894-a64f-4d9d5f619b58";  
 	public static final String APP_ROUTE_UUID = "676fe9a7-2f41-4b71-8a10-22294af1e81e";  
 	public static final String APP_ROUTE_PATH = "path";  
 	
@@ -203,6 +205,18 @@ public class CFAccessorSimulator implements CFAccessor {
 
 			domains.add(domain);				
 		}
+
+		DomainResource domain = DomainResource.builder()
+		.entity(
+			DomainEntity.builder()
+			.name(INTERNAL_DOMAIN)
+			.internal(true)
+			.build())
+		.metadata(
+			Metadata.builder().id(INTERNAL_DOMAIN_UUID).createdAt(CREATED_AT_TIMESTAMP).build())    
+		.build();
+
+		domains.add(domain);	
 		
 		ListOrganizationDomainsResponse response = ListOrganizationDomainsResponse.builder().addAllResources(domains).build();
 		return Mono.just(response);
