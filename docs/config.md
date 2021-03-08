@@ -210,7 +210,7 @@ For performance reasons the metadata of the Cloud Foundry environment (organizat
 
 This option allows you to specify how often the metadata of the domains you have selected in your targets shall be verified after they have been fetched. The value is a timeout after which the metadata is retrieved again. Its unit is seconds.
 
-By default, this value is set to 3600 seconds, which means that the metadata is retrieved (again) after an hour
+By default, this value is set to 3600 seconds, which means that the metadata is retrieved (again) after an hour.
 
 Note that domains typically do not change often. That is why you should pick a high value here, as otherwise you would produce unnecessary network traffic for everyone.
 
@@ -800,5 +800,4 @@ There are several important loggers, which might be of interest for you:
 | `cloudfoundry-client` | unknown | single-line log for all requests (and responses) the cloudfoundry-client library sends and receives. The response line also contains a brief information about the latency the request had. |
 
 Note that this list is not considered to be stable; the logger's name represent internal components, whose design and implementation may change.
-
 
