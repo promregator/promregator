@@ -404,8 +404,8 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		});
 	}
 
-	private String formatAccessURL(final String protocol, final String url, final String path) {
-		final String applicationUrl = String.format("%s://%s", protocol, url);
+	private String formatAccessURL(final String protocol, final String hostnameDomain, final String path) {
+		final String applicationUrl = String.format("%s://%s", protocol, hostnameDomain);
 		log.debug(String.format("Using Application URL: '%s'", applicationUrl));
 
 		String applUrl = applicationUrl;
@@ -421,14 +421,14 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		return applUrl + internalPath;
 	}
 
-	private String formatInternalAccessURL(final String url, final String path, final int internalRoutePort,
+	private String formatInternalAccessURL(final String hostnameDomain, final String path, final int internalRoutePort,
 			final int instanceId) {
 		int port = internalRoutePort;
 		if(port == 0) {
 			port = defaultInternalRoutePort;
 		}
 		
-		String internalURL = String.format("%s.%s:%s", instanceId, url, port);
+		String internalURL = String.format("%s.%s:%s", instanceId, hostnameDomain, port);
 		log.debug(String.format("Using internal Application URL: '%s'", internalURL));
 
 		return formatAccessURL("http", internalURL, path);
