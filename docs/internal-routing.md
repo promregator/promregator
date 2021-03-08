@@ -13,3 +13,5 @@ To enable internal communication between containers you must define network poli
 ```sh
 cf add-network-policy promregator --destination-app apptoscrape --protocol tcp --port 9090
 ```
+
+In the example above, you would also want to set `internalRoutePort` to `9090`.
