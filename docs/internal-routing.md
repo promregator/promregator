@@ -8,6 +8,8 @@ When promregator resolves your targets it will automatically detect if the route
 
 When using internal routes for scraping you should only have a single route per application. This is because the instance identification is via DNS and not headers it is not possible to distinguish different apps on the same route. If multiple apps are on the same route it is possible that there are inconsistent scraping results.
 
+Because there is no gorouter for internal routed they will by default only have HTTP endpoints unless you provide HTTPS functionality from directly within your apps. This means you should set `promregator.targets[].protocol` to `http`.
+
 ## Network policies
 
 To enable internal communication between containers you must define network policies to allow the traffic between promregator and the target app. When defining the network policy it's important to ensure you use the same port that you expect to scrape on and configure in the `internalRoutePort` value of your target.

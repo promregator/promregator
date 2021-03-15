@@ -64,4 +64,29 @@ class CFAccessorSimulatorTest {
 			Assertions.assertTrue(tests[i]);
 		}
 	}
+
+	@Test
+	void testRetrieveAllDomains() {
+		CFAccessorSimulator subject = new CFAccessorSimulator(2);
+		Mono<ListOrganizationDomainsResponse> mono = subject.retrieveAllDomains(CFAccessorSimulator.ORG_UUID);
+		ListOrganizationDomainsResponse result = mono.block();
+		
+		Assertions.assertNotNull(result);
+		Assertions.assertNotNull(result.getResources());
+		Assertions.assertEquals(101, result.getResources().size());
+		
+		for(int i = 0;i<=99;i++) {		
+			int domainSequenceId = i + 1;	
+			DomainResource item = result.getResources().get(i);
+			
+			Assertions.assertEquals(CFAccessorSimulator.SHARED_DOMAIN, item.getEntity().getName());			
+			Assertions.assertFalse(item.getEntity().getInternal());
+			Assertions.assertTrue(item.getMetadata().getId().contains(CFAccessorSimulator.SHARED_DOMAIN_UUID+domainSequenceId));
+		}
+
+		// get the shared domain
+		DomainResource sharedDomain = result.getResources().get(100);
+		Assertions.assertTrue(sharedDomain.getEntity().getInternal());
+		Assertions.assertEquals(CFAccessorSimulator.INTERNAL_DOMAIN, sharedDomain.getEntity().getName());
+	}
 }
