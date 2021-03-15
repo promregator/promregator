@@ -44,6 +44,7 @@ public class CFMetricsFetcher implements MetricsFetcher {
 	
 	private String endpointUrl;
 	private String instanceId;
+	private boolean withInternalRouting;
 	private final RequestConfig config;
 	private AuthenticationEnricher ae;
 	
@@ -65,13 +66,14 @@ public class CFMetricsFetcher implements MetricsFetcher {
 	 * @param instanceId the instance Id in format <i>[app guid]:[instance number]</i>, which identifies the instance uniquely.
 	 * @param config additional configurations specifying additional properties for retrieving data.
 	 */
-	public CFMetricsFetcher(String endpointUrl, String instanceId, CFMetricsFetcherConfig config) {
+	public CFMetricsFetcher(String endpointUrl, String instanceId, CFMetricsFetcherConfig config, boolean withInternalRouting) {
 		this.endpointUrl = endpointUrl;
 		this.instanceId = instanceId;
 		this.ae = config.getAuthenticationEnricher();
 		this.mfse = config.getMetricFamilySamplesEnricher();
 		this.mfm = config.getMetricsFetcherMetrics();
-		
+		this.withInternalRouting = withInternalRouting;
+
 		this.up = config.getUpChild();
 		this.promregatorUUID = config.getPromregatorInstanceIdentifier();
 
@@ -121,9 +123,11 @@ public class CFMetricsFetcher implements MetricsFetcher {
 			httpget.setConfig(this.config);
 		}
 
-		// see also https://docs.cloudfoundry.org/concepts/http-routing.html
-		httpget.setHeader(HTTP_HEADER_CF_APP_INSTANCE, this.instanceId);
-		
+		if (!withInternalRouting) {
+			// see also https://docs.cloudfoundry.org/concepts/http-routing.html
+			httpget.setHeader(HTTP_HEADER_CF_APP_INSTANCE, this.instanceId);
+		}
+
 		// provided for recursive scraping / loopback detection
 		httpget.setHeader(EndpointConstants.HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER, this.promregatorUUID.toString());
 		

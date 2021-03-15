@@ -13,7 +13,7 @@ class SingleTargetMetricsEndpointInternalTestPositive extends SingleTargetMetric
 	public String handleRequest(Predicate<? super String> applicationIdFilter, Predicate<? super Instance> instanceFilter) {
 		Assertions.assertTrue(applicationIdFilter.test("129856d2-c53b-4971-b100-4ce371b78070"));
 		
-		Instance i = new Instance(null, "129856d2-c53b-4971-b100-4ce371b78070:42", "https://someurl");
+		Instance i = new Instance(null, "129856d2-c53b-4971-b100-4ce371b78070:42", "https://someurl", false);
 		Assertions.assertTrue(instanceFilter.test(i));
 		
 		return null;

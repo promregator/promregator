@@ -205,6 +205,17 @@ Note that applications and routes *may* change often. That is why you should pic
 
 Caches can also be invalidated out of line by sending an HTTP REST request to Promregator. Further details can be found at the [Cache Invalidation page](./invalidate-cache.md).
 
+### Option "cf.cache.timeout.domain" (optional)
+For performance reasons the metadata of the Cloud Foundry environment (organization, space, applications, routes, domains) is cached locally in Promregator.
+
+This option allows you to specify how often the metadata of the domains you have selected in your targets shall be verified after they have been fetched. The value is a timeout after which the metadata is retrieved again. Its unit is seconds.
+
+By default, this value is set to 3600 seconds, which means that the metadata is retrieved (again) after an hour.
+
+Note that domains typically do not change often. That is why you should pick a high value here, as otherwise you would produce unnecessary network traffic for everyone.
+
+Caches can also be invalidated out of line by sending an HTTP REST request to Promregator. Further details can be found at the [Cache Invalidation page](./invalidate-cache.md).
+
 ### Option "cf.cache.timeout.resolver" (optional)
 For performance reasons the metadata of the Cloud Foundry environment (organization, space, applications, routes) is cached locally in Promregator.
 
@@ -243,6 +254,15 @@ By default, this value is set to 120 seconds, which means that records, which we
 
 Caches can also be invalidated out of line by sending an HTTP REST request to Promregator. Further details can be found at the [Cache Invalidation page](./invalidate-cache.md).
 
+### Option "cf.cache.expiry.domain" (optional)
+For performance reasons the metadata of the Cloud Foundry environment (organization, space, applications, routes, domains) is cached locally in Promregator.
+
+This option allows you to specify how long an apparently no-longer-used record should stay in the domain cache, before it is removed. Its unit is seconds.
+
+By default, this value is set to 300 seconds, which means that records, which were not used for more than five minutes, are considered deprecated and removed from the cache.
+
+Caches can also be invalidated out of line by sending an HTTP REST request to Promregator. Further details can be found at the [Cache Invalidation page](./invalidate-cache.md).
+
 
 ### Option "cf.request.timeout.org" (optional)
 During discovery Promregator needs to retrieve metadata from the Cloud Foundry platform. To prevent congestion on requests, which may be caused by ongoing requests of scraping by Prometheus, requests sent to the Cloud Foundry platform have to respond within a certain timeframe (the "request timeout"). 
@@ -255,6 +275,13 @@ By default, this value is set to 2500 milliseconds.
 During discovery Promregator needs to retrieve metadata from the Cloud Foundry platform. To prevent congestion on requests, which may be caused by ongoing requests of scraping by Prometheus, requests sent to the Cloud Foundry platform have to respond within a certain timeframe (the "request timeout"). 
 
 This option defines the request timeout value for sending requests retrieving data about spaces. Its unit always is specified in milliseconds.
+
+By default, this value is set to 2500 milliseconds.
+
+### Option "cf.request.timeout.domain" (optional)
+During discovery Promregator needs to retrieve metadata from the Cloud Foundry platform. To prevent congestion on requests, which may be caused by ongoing requests of scraping by Prometheus, requests sent to the Cloud Foundry platform have to respond within a certain timeframe (the "request timeout").
+
+This option defines the request timeout value for sending requests retrieving data about domains. Its unit always is specified in milliseconds.
 
 By default, this value is set to 2500 milliseconds.
 
@@ -336,6 +363,9 @@ Please also make sure that you set "cf.proxy.host", too, as otherwise proxy supp
 ## Group "promregator"
 This group configures the behavior of Promregator itself. It is mainly meant on how requests shall be handled, as soon as the Prometheus server starts to pull metrics.
 
+#### Option "promregator.defaultInternalRoutePort" (optional)
+Specifies the default port to use for internal routes if no `internalRoutePort` is defined on a target. The default value for this is port `8080`.
+
 ### Subgroup "promregator.targets"
 Lists one or more Cloud Foundry applications, which shall be queried for metrics.
 The subgroup expects an item list, which contains additional mandatory properties
@@ -407,6 +437,12 @@ Specifies the identifier of the *target-specific* authentication configuration, 
 
 If not specified, the global authentication configuration is applied for this target.
 
+#### Item property "promregator.targets[].internalRoutePort" (optional)
+Specifies the port to be used if the route selected is identified as an internal domain.
+
+If not specified then the value of `promregator.defaultInternalRoutePort` will be used as the port for all internal routes.
+
+For further information, see also [Internal Routing](./internal-routing.md).
 #### Subgroup "promregator.targets[].preferredRouteRegex" (optional)
 This option became available starting with version 0.6.0.
 
@@ -765,5 +801,3 @@ There are several important loggers, which might be of interest for you:
 | `cloudfoundry-client` | unknown | single-line log for all requests (and responses) the cloudfoundry-client library sends and receives. The response line also contains a brief information about the latency the request had. |
 
 Note that this list is not considered to be stable; the logger's name represent internal components, whose design and implementation may change.
-
-

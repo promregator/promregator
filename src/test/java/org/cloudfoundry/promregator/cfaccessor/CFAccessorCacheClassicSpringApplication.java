@@ -23,6 +23,7 @@ public class CFAccessorCacheClassicSpringApplication {
 		Mockito.when(mock.retrieveSpaceId("dummy1", "dummy2")).thenReturn(Mockito.mock(Mono.class));
 		Mockito.when(mock.retrieveAllApplicationIdsInSpace("dummy1", "dummy2")).thenReturn(Mockito.mock(Mono.class));
 		Mockito.when(mock.retrieveSpaceSummary("dummy")).thenReturn(Mockito.mock(Mono.class));
+		Mockito.when(mock.retrieveAllDomains("dummy")).thenReturn(Mockito.mock(Mono.class));
 		return mock;
 	}
 	

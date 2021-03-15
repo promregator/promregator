@@ -33,10 +33,21 @@ public class Target {
 	private String authenticatorId;
 
 	private List<String> preferredRouteRegex;
+
 	private List<Pattern> cachedPreferredRouteRegexPattern;
+
+	private int internalRoutePort;
 
 	public Target() {
 		super();
+	}
+
+	public int getInternalRoutePort() {
+		return internalRoutePort;
+	}
+
+	public void setInternalRoutePort(int internalRoutePort) {
+		this.internalRoutePort = internalRoutePort;
 	}
 
 	/**
@@ -53,7 +64,7 @@ public class Target {
 		this.path = source.path;
 		this.protocol = source.protocol;
 		this.authenticatorId = source.authenticatorId;
-
+		this.internalRoutePort = source.internalRoutePort;
 		
 		if (source.preferredRouteRegex == null) {
 			this.preferredRouteRegex = new ArrayList<>(0);
@@ -218,6 +229,8 @@ public class Target {
 		builder.append(authenticatorId);
 		builder.append(", preferredRouteRegex=");
 		builder.append(preferredRouteRegex);
+		builder.append(", internalRoutePort=");
+		builder.append(internalRoutePort);
 		builder.append("]");
 		return builder.toString();
 	}

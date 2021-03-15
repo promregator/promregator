@@ -1,5 +1,6 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
+import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
@@ -37,6 +38,7 @@ class CFAccessorCacheCaffeineTest {
 		this.subject.invalidateCacheApplications();
 		this.subject.invalidateCacheSpace();
 		this.subject.invalidateCacheOrg();
+		this.subject.invalidateCacheDomain();
 	}
 	
 	@AfterAll
@@ -90,6 +92,16 @@ class CFAccessorCacheCaffeineTest {
 		Mono<GetSpaceSummaryResponse> response2 = subject.retrieveSpaceSummary("dummy");
 		assertThat(response1.block()).isEqualTo(response2.block());
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveSpaceSummary("dummy");
+	}
+
+	@Test
+	void testRetrieveDomain() {
+		Mono<ListOrganizationDomainsResponse> response1 = subject.retrieveAllDomains("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllDomains("dummy");
+		
+		Mono<ListOrganizationDomainsResponse> response2 = subject.retrieveAllDomains("dummy");
+		assertThat(response1.block()).isEqualTo(response2.block());
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllDomains("dummy");
 	}
 
 }

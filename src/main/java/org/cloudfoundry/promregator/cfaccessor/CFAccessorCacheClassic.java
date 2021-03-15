@@ -7,6 +7,7 @@ import javax.annotation.PostConstruct;
 
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
+import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
@@ -25,7 +26,8 @@ public class CFAccessorCacheClassic implements CFAccessorCache {
 	private AutoRefreshingCacheMap<String, Mono<ListOrganizationsResponse>> orgCache;
 	private AutoRefreshingCacheMap<CacheKeySpace, Mono<ListSpacesResponse>> spaceCache;
 	private AutoRefreshingCacheMap<CacheKeyAppsInSpace, Mono<ListApplicationsResponse>> appsInSpaceCache;
-	private AutoRefreshingCacheMap<String, Mono<GetSpaceSummaryResponse>> spaceSummaryCache;
+	private AutoRefreshingCacheMap<String, Mono<GetSpaceSummaryResponse>> spaceSummaryCache;	
+	private AutoRefreshingCacheMap<String, Mono<ListOrganizationDomainsResponse>> domainCache;
 
 	@Value("${cf.cache.timeout.org:3600}")
 	private int refreshCacheOrgLevelInSeconds;
@@ -35,6 +37,9 @@ public class CFAccessorCacheClassic implements CFAccessorCache {
 	
 	@Value("${cf.cache.timeout.application:300}")
 	private int refreshCacheApplicationLevelInSeconds;
+
+	@Value("${cf.cache.timeout.domain:3600}")
+	private int refreshCacheDomainLevelInSeconds;
 		
 	@Value("${cf.cache.expiry.org:120}")
 	private int expiryCacheOrgLevelInSeconds;
@@ -43,8 +48,11 @@ public class CFAccessorCacheClassic implements CFAccessorCache {
 	private int expiryCacheSpaceLevelInSeconds;
 	
 	@Value("${cf.cache.expiry.application:120}")
-	private int expiryCacheApplicationLevelInSeconds;
-	
+	private int expiryCacheApplicationLevelInSeconds;	
+
+	@Value("${cf.cache.expiry.domain:300}")
+	private int expiryCacheDomainLevelInSeconds;
+
 	@Autowired
 	private InternalMetrics internalMetrics;
 	
@@ -67,7 +75,8 @@ public class CFAccessorCacheClassic implements CFAccessorCache {
 		this.orgCache = new AutoRefreshingCacheMap<>("org", this.internalMetrics, Duration.ofSeconds(this.expiryCacheOrgLevelInSeconds), Duration.ofSeconds(this.refreshCacheOrgLevelInSeconds), this::orgCacheLoader);
 		this.spaceCache = new AutoRefreshingCacheMap<>("space", this.internalMetrics, Duration.ofSeconds(this.expiryCacheSpaceLevelInSeconds), Duration.ofSeconds(refreshCacheSpaceLevelInSeconds), this::spaceCacheLoader);
 		this.appsInSpaceCache = new AutoRefreshingCacheMap<>("appsInSpace", this.internalMetrics, Duration.ofSeconds(this.expiryCacheApplicationLevelInSeconds), Duration.ofSeconds(refreshCacheApplicationLevelInSeconds), this::appsInSpaceCacheLoader);
-		this.spaceSummaryCache = new AutoRefreshingCacheMap<>("spaceSummary", this.internalMetrics, Duration.ofSeconds(this.expiryCacheApplicationLevelInSeconds), Duration.ofSeconds(refreshCacheApplicationLevelInSeconds), this::spaceSummaryCacheLoader);
+		this.spaceSummaryCache = new AutoRefreshingCacheMap<>("spaceSummary", this.internalMetrics, Duration.ofSeconds(this.expiryCacheApplicationLevelInSeconds), Duration.ofSeconds(refreshCacheApplicationLevelInSeconds), this::spaceSummaryCacheLoader);		
+		this.domainCache = new AutoRefreshingCacheMap<>("routeMappings", this.internalMetrics, Duration.ofSeconds(this.expiryCacheDomainLevelInSeconds), Duration.ofSeconds(refreshCacheDomainLevelInSeconds), this::domainCacheLoader);
 	}
 
 	private Mono<ListOrganizationsResponse> orgCacheLoader(String orgName) {
@@ -260,10 +269,73 @@ public class CFAccessorCacheClassic implements CFAccessorCache {
 		 */
 
 		return mono;
-	}
-	
-	private Mono<GetSpaceSummaryResponse> spaceSummaryCacheLoader(String spaceId) {
+	}		
+
+  	private Mono<GetSpaceSummaryResponse> spaceSummaryCacheLoader(String spaceId) {
 		Mono<GetSpaceSummaryResponse> mono = this.parent.retrieveSpaceSummary(spaceId).cache();
+		
+		/*
+		* Note that the mono does not have any subscriber, yet! 
+		* The cache which we are using is working "on-stock", i.e. we need to ensure
+		* that the underlying calls to the CF API really is triggered.
+		* Fortunately, we can do this very easily:
+		*/
+		mono.subscribe();
+		
+		/*
+		* Handling for issue #96: If a timeout of the request to the  CF Cloud Controller occurs, 
+		* we must make sure that the erroneous Mono is not kept in the cache. Instead we have to displace the item, 
+		* which triggers a refresh of the cache.
+		* 
+		* Note that subscribe() must be called *before* adding this error handling below.
+		* Otherwise we will run into the situation that the error handling routine is called by this
+		* subscribe() already - but the Mono has not been written into the cache yet!
+		* If we do it in this order, the doOnError method will only be called once the first "real subscriber" 
+		* of the Mono will start requesting.
+		*/
+		mono = mono.doOnError(e -> {
+			if (e instanceof TimeoutException) {
+				log.warn(String.format("Timed-out entry using key %s detected, which would get stuck in our spaceSummary cache; "
+						+ "displacing it now to prevent further harm", spaceId), e);
+				/* 
+				* Note that it *might* happen that a different Mono gets displaced than the one we are in here now. 
+				* Yet, we can't make use of the
+				* 
+				* remove(key, value)
+				* 
+				* method, as providing value would lead to a hen-egg problem (we were required to provide the reference
+				* of the Mono instance, which we are just creating).
+				* Instead, we just blindly remove the entry from the cache. This may lead to four cases to consider:
+				* 
+				* 1. We hit the correct (erroneous) entry: then this is exactly what we want to do.
+				* 2. We hit another erroneous entry: then we have no harm done, because we fixed yet another case.
+				* 3. We hit a healthy entry: Bad luck; on next iteration, we will get a cache miss, which automatically
+				*    fixes the issue (as long this does not happen too often, ...)
+				* 4. The entry has already been deleted by someone else: the remove(key) operation will 
+				*    simply be a NOOP. => no harm done either.
+				*/
+				this.spaceSummaryCache.remove(spaceId);
+				
+				// Notify metrics of this case
+				if (this.internalMetrics != null) {
+					this.internalMetrics.countAutoRefreshingCacheMapErroneousEntriesDisplaced(this.spaceSummaryCache.getName());
+				}
+			}
+		});
+		/*
+		* Keep in mind that doOnError is a side-effect:  The logic above only removes it from the cache. 
+		* The erroneous instance still is used downstream and will trigger subsequent error handling (including 
+		* logging) there.
+		* Note that this also holds true during the timeframe of the timeout: This instance of the Mono will 
+		* be written to the cache, thus all consumers of the cache will be handed out the cached, not-yet-resolved 
+		* object instance. This implicitly makes sure that there can only be one valid pending request is out there.
+		*/
+		
+		return mono;
+	}	
+	
+	private Mono<ListOrganizationDomainsResponse> domainCacheLoader(String orgId) {
+		Mono<ListOrganizationDomainsResponse> mono = this.parent.retrieveAllDomains(orgId).cache();
 		
 		/*
 		 * Note that the mono does not have any subscriber, yet! 
@@ -286,8 +358,8 @@ public class CFAccessorCacheClassic implements CFAccessorCache {
 		 */
 		mono = mono.doOnError(e -> {
 			if (e instanceof TimeoutException) {
-				log.warn(String.format("Timed-out entry using key %s detected, which would get stuck in our spaceSummary cache; "
-						+ "displacing it now to prevent further harm", spaceId), e);
+				log.warn(String.format("Timed-out entry using key %s detected, which would get stuck in our domain cache; "
+					+ "displacing it now to prevent further harm", orgId), e);
 				/* 
 				 * Note that it *might* happen that a different Mono gets displaced than the one we are in here now. 
 				 * Yet, we can't make use of the
@@ -305,11 +377,11 @@ public class CFAccessorCacheClassic implements CFAccessorCache {
 				 * 4. The entry has already been deleted by someone else: the remove(key) operation will 
 				 *    simply be a NOOP. => no harm done either.
 				 */
-				this.spaceSummaryCache.remove(spaceId);
+				this.domainCache.remove(orgId);
 				
 				// Notify metrics of this case
 				if (this.internalMetrics != null) {
-					this.internalMetrics.countAutoRefreshingCacheMapErroneousEntriesDisplaced(this.spaceSummaryCache.getName());
+					this.internalMetrics.countAutoRefreshingCacheMapErroneousEntriesDisplaced(this.domainCache.getName());
 				}
 			}
 		});
@@ -323,7 +395,8 @@ public class CFAccessorCacheClassic implements CFAccessorCache {
 		 */
 		
 		return mono;
-	}
+  	}
+
 
 	@Override
 	public Mono<GetInfoResponse> getInfo() {
@@ -368,11 +441,15 @@ public class CFAccessorCacheClassic implements CFAccessorCache {
 		 */
 		return this.parent.retrieveSpaceIdsInOrg(orgId);
 	}
-
 	
 	@Override
 	public Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId) {
 		return this.spaceSummaryCache.get(spaceId);
+  	}
+
+	@Override
+	public Mono<ListOrganizationDomainsResponse> retrieveAllDomains(String orgId) {
+		return this.domainCache.get(orgId);
 	}
 
 	@Override
@@ -395,8 +472,13 @@ public class CFAccessorCacheClassic implements CFAccessorCache {
 	}
 	
 	@Override
-	public void reset() {
-		this.parent.reset();
+	public void invalidateCacheDomain() {		
+		log.info("Invalidating domain cache");
+		this.domainCache.clear();
 	}
 
+	@Override
+	public void reset() {
+		this.parent.reset();
+	}	
 }

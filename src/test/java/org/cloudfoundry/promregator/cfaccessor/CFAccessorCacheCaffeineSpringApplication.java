@@ -2,6 +2,7 @@ package org.cloudfoundry.promregator.cfaccessor;
 
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
+import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
@@ -59,10 +60,14 @@ public class CFAccessorCacheCaffeineSpringApplication {
 		}
 
 		@Override
+		public Mono<ListOrganizationDomainsResponse> retrieveAllDomains(String orgId) {
+			return Mono.just(ListOrganizationDomainsResponse.builder().build());
+		}		
+
+		@Override
 		public void reset() {
 			// nothing to be done
-		}
-		
+		}		
 	}
 	
 	@Bean

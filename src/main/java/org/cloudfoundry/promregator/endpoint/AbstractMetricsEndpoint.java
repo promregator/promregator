@@ -360,7 +360,7 @@ public abstract class AbstractMetricsEndpoint {
 				cfmfConfig.setSocketReadTimeoutInMillis(this.fetcherSocketReadTimeout);
 				this.provideProxyConfiguration(cfmfConfig);
 				
-				mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), cfmfConfig);
+				mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), cfmfConfig, instance.isInternal());
 			}
 			callablesList.add(mf);
 		}

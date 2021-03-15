@@ -1,6 +1,7 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -11,14 +12,19 @@ import org.cloudfoundry.client.v2.applications.ApplicationEntity;
 import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
+import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.organizations.OrganizationEntity;
 import org.cloudfoundry.client.v2.organizations.OrganizationResource;
+import org.cloudfoundry.client.v2.routes.Route;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v2.spaces.SpaceEntity;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
+import org.cloudfoundry.client.v2.domains.Domain;
+import org.cloudfoundry.client.v2.domains.DomainEntity;
+import org.cloudfoundry.client.v2.domains.DomainResource;
 import org.junit.jupiter.api.Assertions;
 
 import reactor.core.publisher.Mono;
@@ -27,7 +33,9 @@ public class CFAccessorMassMock implements CFAccessor {
 	public static final String UNITTEST_ORG_UUID = "eb51aa9c-2fa3-11e8-b467-0ed5f89f718b";
 	public static final String UNITTEST_SPACE_UUID = "db08be9a-2fa4-11e8-b467-0ed5f89f718b";
 	public static final String UNITTEST_APP_UUID_PREFIX = "55820b2c-2fa5-11e8-b467-";
+	public static final String UNITTEST_SHARED_DOMAIN_UUID = "be9b8696-2fa6-11e8-b467-0ed5f89f718b";
 	public static final String UNITTEST_SHARED_DOMAIN = "shared.domain.example.org";
+	public static final String UNITTEST_ROUTE_UUID = "b79d2d45-6f6c-4f9e-bd5b-1a7b3ccac247";
 	
 	public static final String CREATED_AT_TIMESTAMP = "2014-11-24T19:32:49+00:00";
 	public static final String UPDATED_AT_TIMESTAMP = "2014-11-24T19:32:49+00:00";
@@ -115,13 +123,16 @@ public class CFAccessorMassMock implements CFAccessor {
 	public Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId) {
 		if (spaceId.equals(UNITTEST_SPACE_UUID)) {
 			List<SpaceApplicationSummary> list = new LinkedList<>();
-			
+					
 			for (int i = 0;i<100;i++) {
+				Domain sharedDomain = Domain.builder().id(UNITTEST_SHARED_DOMAIN_UUID+i).name(UNITTEST_SHARED_DOMAIN).build();
 				final String[] urls = { "hostapp"+i+"."+UNITTEST_SHARED_DOMAIN }; 
+				final Route[] routes = { Route.builder().domain(sharedDomain).host("hostapp"+i).build() };
 				SpaceApplicationSummary sas = SpaceApplicationSummary.builder()
 						.id(UNITTEST_APP_UUID_PREFIX+i)
 						.name("testapp"+i)
 						.addAllUrls(Arrays.asList(urls))
+						.addAllRoutes(Arrays.asList(routes))
 						.instances(this.amountInstances)
 						.build();
 				list.add(sas);
@@ -159,5 +170,29 @@ public class CFAccessorMassMock implements CFAccessor {
 	@Override
 	public void reset() {
 		// nothing to be done
+	}	
+
+	@Override
+	public Mono<ListOrganizationDomainsResponse> retrieveAllDomains(String orgId) {		
+		List<DomainResource> domains = new ArrayList<DomainResource>();
+
+
+		for (int i = 0;i<100;i++) {
+							
+			DomainResource domain = DomainResource.builder()
+				.entity(
+					DomainEntity.builder()
+					.name(UNITTEST_SHARED_DOMAIN)
+					.internal(false)
+					.build())
+				.metadata(
+					Metadata.builder().id(UNITTEST_SHARED_DOMAIN_UUID+i).createdAt(CREATED_AT_TIMESTAMP).build())    
+				.build();
+
+			domains.add(domain);			
+		}			
+
+		ListOrganizationDomainsResponse response = ListOrganizationDomainsResponse.builder().addAllResources(domains).build();
+		return Mono.just(response);
 	}
 }

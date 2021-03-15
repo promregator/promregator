@@ -37,6 +37,7 @@ class CFAccessorCacheCaffeineInvalidationTest {
 		this.subject.invalidateCacheApplications();
 		this.subject.invalidateCacheSpace();
 		this.subject.invalidateCacheOrg();
+		this.subject.invalidateCacheDomain();
 	}
 	
 	@AfterAll
@@ -75,6 +76,17 @@ class CFAccessorCacheCaffeineInvalidationTest {
 		
 		subject.retrieveOrgId("dummy");
 		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveOrgId("dummy");
+	}
+
+	@Test
+	void testInvalidateCacheDomain() {
+		subject.retrieveAllDomains("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllDomains("dummy");
+		
+		subject.invalidateCacheDomain();
+		
+		subject.retrieveAllDomains("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveAllDomains("dummy");
 	}
 
 }

@@ -9,16 +9,26 @@ public class Instance {
 	private ResolvedTarget target;
 	private String instanceId;
 	private String accessUrl;
+	private boolean internal;
 	
 	public Instance() {
 		super();
 	}
 
-	public Instance(ResolvedTarget target, String instanceId, String accessUrl) {
+	public boolean isInternal() {
+		return internal;
+	}
+
+	public void setInternal(boolean isInternal) {
+		this.internal = isInternal;
+	}
+
+	public Instance(ResolvedTarget target, String instanceId, String accessUrl, boolean internal) {
 		super();
 		this.target = target;
 		this.instanceId = instanceId;
 		this.accessUrl = accessUrl;
+		this.internal = internal;
 	}
 
 	public ResolvedTarget getTarget() {
@@ -75,6 +85,7 @@ public class Instance {
 		result = prime * result + ((accessUrl == null) ? 0 : accessUrl.hashCode());
 		result = prime * result + ((instanceId == null) ? 0 : instanceId.hashCode());
 		result = prime * result + ((target == null) ? 0 : target.hashCode());
+		result = prime * result + (internal ? 1 : 0);
 		return result;
 	}
 
@@ -114,6 +125,9 @@ public class Instance {
 		} else if (!target.equals(other.target)) {
 			return false;
 		}
+		if (internal != other.internal) {
+			return false;
+		}
 		return true;
 	}
 
@@ -129,6 +143,8 @@ public class Instance {
 		builder.append(instanceId);
 		builder.append(", accessUrl=");
 		builder.append(accessUrl);
+		builder.append(", internal=");
+		builder.append(internal);
 		builder.append("]");
 		return builder.toString();
 	}

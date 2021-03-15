@@ -1,6 +1,7 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -11,15 +12,19 @@ import org.cloudfoundry.client.v2.applications.ApplicationEntity;
 import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
+import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.organizations.OrganizationEntity;
 import org.cloudfoundry.client.v2.organizations.OrganizationResource;
+import org.cloudfoundry.client.v2.routes.Route;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v2.spaces.SpaceEntity;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
-
+import org.cloudfoundry.client.v2.domains.Domain;
+import org.cloudfoundry.client.v2.domains.DomainEntity;
+import org.cloudfoundry.client.v2.domains.DomainResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
@@ -30,6 +35,11 @@ public class CFAccessorSimulator implements CFAccessor {
 	public static final String APP_UUID_PREFIX = "55820b2c-2fa5-11e8-b467-";
 	public static final String APP_HOST_PREFIX = "hostapp";
 	public static final String SHARED_DOMAIN = "shared.domain.example.org";
+	public static final String SHARED_DOMAIN_UUID = "be9b8696-2fa6-11e8-b467-0ed5f89f718b";  
+	public static final String INTERNAL_DOMAIN = "apps.internal";
+	public static final String INTERNAL_DOMAIN_UUID = "61c11947-087b-4894-a64f-4d9d5f619b58";  
+	public static final String APP_ROUTE_UUID = "676fe9a7-2f41-4b71-8a10-22294af1e81e";  
+	public static final String APP_ROUTE_PATH = "path";  
 	
 	private static final Logger log = LoggerFactory.getLogger(CFAccessorSimulator.class);
 	
@@ -138,11 +148,14 @@ public class CFAccessorSimulator implements CFAccessor {
 			List<SpaceApplicationSummary> list = new LinkedList<>();
 			
 			for (int i = 1;i<=100;i++) {
+				Domain sharedDomain = Domain.builder().id(SHARED_DOMAIN_UUID+i).name(SHARED_DOMAIN).build();												
 				final String[] urls = { APP_HOST_PREFIX+i+"."+SHARED_DOMAIN }; 
+				final Route[] routes = { Route.builder().domain(sharedDomain).host(APP_HOST_PREFIX+i).build() };
 				SpaceApplicationSummary sas = SpaceApplicationSummary.builder()
 						.id(APP_UUID_PREFIX+i)
 						.name("testapp"+i)
 						.addAllUrls(Arrays.asList(urls))
+						.addAllRoutes(Arrays.asList(routes))
 						.instances(this.amountInstances)
 						.state("STARTED")
 						.build();
@@ -156,7 +169,7 @@ public class CFAccessorSimulator implements CFAccessor {
 		
 		log.error("Invalid retrieveSpaceSummary request");
 		return null;
-	}
+  }
 
 	@Override
 	public Mono<GetInfoResponse> getInfo() {
@@ -174,5 +187,38 @@ public class CFAccessorSimulator implements CFAccessor {
 		// nothing to do
 	}
 
+	@Override
+	public Mono<ListOrganizationDomainsResponse> retrieveAllDomains(String orgId) {		
+		List<DomainResource> domains = new ArrayList<DomainResource>();
 
+		for (int i = 1;i<=100;i++) {
+			
+			DomainResource domain = DomainResource.builder()
+			.entity(
+				DomainEntity.builder()
+				.name(SHARED_DOMAIN)
+				.internal(false)
+				.build())
+			.metadata(
+				Metadata.builder().id(SHARED_DOMAIN_UUID+i).createdAt(CREATED_AT_TIMESTAMP).build())    
+			.build();
+
+			domains.add(domain);				
+		}
+
+		DomainResource domain = DomainResource.builder()
+		.entity(
+			DomainEntity.builder()
+			.name(INTERNAL_DOMAIN)
+			.internal(true)
+			.build())
+		.metadata(
+			Metadata.builder().id(INTERNAL_DOMAIN_UUID).createdAt(CREATED_AT_TIMESTAMP).build())    
+		.build();
+
+		domains.add(domain);	
+		
+		ListOrganizationDomainsResponse response = ListOrganizationDomainsResponse.builder().addAllResources(domains).build();
+		return Mono.just(response);
+	}
 }

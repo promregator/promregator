@@ -13,6 +13,8 @@ import org.cloudfoundry.client.v2.applications.ListApplicationsRequest;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.info.GetInfoRequest;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
+import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsRequest;
+import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsRequest;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.organizations.OrganizationResource;
@@ -86,6 +88,9 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	
 	@Value("${cf.request.timeout.appSummary:4000}")
 	private int requestTimeoutAppSummary;
+	
+	@Value("${cf.request.timeout.domain:2500}")
+	private int requestTimeoutDomains;
 	
 	@Value("${cf.connectionPool.size:#{null}}")
 	private Integer connectionPoolSize;
@@ -377,6 +382,14 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.SPACE_SUMMARY, spaceId, 
 				request, r -> this.cloudFoundryClient.spaces().getSummary(r), this.requestTimeoutAppSummary);
 
-	}
+  }
 
+	@Override
+	public Mono<ListOrganizationDomainsResponse> retrieveAllDomains(String orgId) {
+
+		ListOrganizationDomainsRequest request = ListOrganizationDomainsRequest.builder().organizationId(orgId).build();
+
+		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.DOMAINS, orgId, 
+		request, r -> this.cloudFoundryClient.organizations().listDomains(request), this.requestTimeoutDomains);
+	}
 }
