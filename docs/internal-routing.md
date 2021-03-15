@@ -1,4 +1,5 @@
 # Internal Routing
+This functionality became available starting with version 0.9.0.
 
 It's possible to deploy promregator into cloudfoundry as a cloud foundry app and this enables the possibility of routing all promregator calls internally so that they don't leave your environment.
 

@@ -364,6 +364,8 @@ Please also make sure that you set "cf.proxy.host", too, as otherwise proxy supp
 This group configures the behavior of Promregator itself. It is mainly meant on how requests shall be handled, as soon as the Prometheus server starts to pull metrics.
 
 #### Option "promregator.defaultInternalRoutePort" (optional)
+This option became available starting with version 0.9.0.
+
 Specifies the default port to use for internal routes if no `internalRoutePort` is defined on a target. The default value for this is port `8080`.
 
 ### Subgroup "promregator.targets"
@@ -438,11 +440,15 @@ Specifies the identifier of the *target-specific* authentication configuration, 
 If not specified, the global authentication configuration is applied for this target.
 
 #### Item property "promregator.targets[].internalRoutePort" (optional)
+This option became available starting with version 0.9.0.
+
 Specifies the port to be used if the route selected is identified as an internal domain.
 
 If not specified then the value of `promregator.defaultInternalRoutePort` will be used as the port for all internal routes.
 
 For further information, see also [Internal Routing](./internal-routing.md).
+
+
 #### Subgroup "promregator.targets[].preferredRouteRegex" (optional)
 This option became available starting with version 0.6.0.
 
