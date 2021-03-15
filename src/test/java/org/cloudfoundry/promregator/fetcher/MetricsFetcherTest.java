@@ -82,7 +82,7 @@ class MetricsFetcherTest {
 		config.setConnectionTimeoutInMillis(5000);
 		config.setSocketReadTimeoutInMillis(5000);
 		
-		CFMetricsFetcher subject = new CFMetricsFetcher("http://localhost:9002/metrics", instanceId, config);
+		CFMetricsFetcher subject = new CFMetricsFetcher("http://localhost:9002/metrics", instanceId, config, false);
 		
 		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
 		
@@ -90,6 +90,34 @@ class MetricsFetcherTest {
 		
 		ParserCompareUtils.compareEMFS(this.expectedResult, Collections.enumeration(response.values()));
 		Assertions.assertEquals(instanceId, this.mems.getMetricsEndpointHandler().getHeaders().getFirst("X-CF-APP-INSTANCE"));
+		Assertions.assertEquals(currentUUID.toString(), this.mems.getMetricsEndpointHandler().getHeaders().getFirst(EndpointConstants.HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER));
+	}
+
+	@Test
+	void testStraightForwardInternalRoute() throws Exception {
+		String instanceId = "abcd:4";
+		NullMetricFamilySamplesEnricher dummymfse = new NullMetricFamilySamplesEnricher("dummy", "dummy", "dummy", "dummy:0");
+		List<String> labelValues = dummymfse.getEnrichedLabelValues(new LinkedList<>());
+		String[] ownTelemetryLabelValues = labelValues.toArray(new String[0]);
+		
+		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, false);
+		UUID currentUUID = UUID.randomUUID();
+		
+		CFMetricsFetcherConfig config = new CFMetricsFetcherConfig();
+		config.setMetricFamilySamplesEnricher(dummymfse);
+		config.setMetricsFetcherMetrics(mfm);
+		config.setPromregatorInstanceIdentifier(currentUUID);
+		config.setConnectionTimeoutInMillis(5000);
+		config.setSocketReadTimeoutInMillis(5000);
+		
+		CFMetricsFetcher subject = new CFMetricsFetcher("http://localhost:9002/metrics", instanceId, config, true);
+		
+		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
+		
+		HashMap<String, MetricFamilySamples> response = subject.call();
+		
+		ParserCompareUtils.compareEMFS(this.expectedResult, Collections.enumeration(response.values()));
+		Assertions.assertNull(this.mems.getMetricsEndpointHandler().getHeaders().getFirst("X-CF-APP-INSTANCE"));
 		Assertions.assertEquals(currentUUID.toString(), this.mems.getMetricsEndpointHandler().getHeaders().getFirst(EndpointConstants.HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER));
 	}
 	
@@ -129,7 +157,7 @@ class MetricsFetcherTest {
 		config.setSocketReadTimeoutInMillis(5000);
 
 		
-		CFMetricsFetcher subject = new CFMetricsFetcher("http://localhost:9002/metrics", instanceId, config);
+		CFMetricsFetcher subject = new CFMetricsFetcher("http://localhost:9002/metrics", instanceId, config, false);
 		
 		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
 		
@@ -159,7 +187,7 @@ class MetricsFetcherTest {
 		config.setConnectionTimeoutInMillis(5000);
 		config.setSocketReadTimeoutInMillis(10); // Note that this is way too strict
 		
-		CFMetricsFetcher subject = new CFMetricsFetcher("http://localhost:9002/metrics", instanceId, config);
+		CFMetricsFetcher subject = new CFMetricsFetcher("http://localhost:9002/metrics", instanceId, config, false);
 		
 		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
 		this.mems.getMetricsEndpointHandler().setDelayInMillis(500);
@@ -186,7 +214,7 @@ class MetricsFetcherTest {
 		config.setConnectionTimeoutInMillis(5000);
 		config.setSocketReadTimeoutInMillis(5000); // Note that this is very strict
 		
-		CFMetricsFetcher subject = new CFMetricsFetcher("http://localhost:9042/metrics", instanceId, config);
+		CFMetricsFetcher subject = new CFMetricsFetcher("http://localhost:9042/metrics", instanceId, config, false);
 		
 		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
 		this.mems.getMetricsEndpointHandler().setDelayInMillis(500);

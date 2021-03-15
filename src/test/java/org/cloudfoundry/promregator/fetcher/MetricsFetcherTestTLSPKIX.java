@@ -72,7 +72,7 @@ class MetricsFetcherTestTLSPKIX {
 		config.setConnectionTimeoutInMillis(5000);
 		config.setSocketReadTimeoutInMillis(5000);
 		
-		CFMetricsFetcher subject = new CFMetricsFetcher("https://localhost:9003/metrics", instanceId, config);
+		CFMetricsFetcher subject = new CFMetricsFetcher("https://localhost:9003/metrics", instanceId, config, false);
 		
 		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
 		
