@@ -442,6 +442,7 @@ Specifies the port to be used if the route selected is identified as an internal
 
 If not specified then the value of `promregator.defaultInternalRoutePort` will be used as the port for all internal routes.
 
+For further information, see also [Internal Routing](./internal-routing.md).
 #### Subgroup "promregator.targets[].preferredRouteRegex" (optional)
 This option became available starting with version 0.6.0.
 
@@ -800,4 +801,3 @@ There are several important loggers, which might be of interest for you:
 | `cloudfoundry-client` | unknown | single-line log for all requests (and responses) the cloudfoundry-client library sends and receives. The response line also contains a brief information about the latency the request had. |
 
 Note that this list is not considered to be stable; the logger's name represent internal components, whose design and implementation may change.
-
