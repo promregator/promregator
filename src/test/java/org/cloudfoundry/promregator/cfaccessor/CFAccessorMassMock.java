@@ -25,6 +25,8 @@ import org.cloudfoundry.client.v2.spaces.SpaceResource;
 import org.cloudfoundry.client.v2.domains.Domain;
 import org.cloudfoundry.client.v2.domains.DomainEntity;
 import org.cloudfoundry.client.v2.domains.DomainResource;
+import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
+import org.cloudfoundry.client.v3.spaces.GetSpaceResponse;
 import org.junit.jupiter.api.Assertions;
 
 import reactor.core.publisher.Mono;
@@ -194,5 +196,45 @@ public class CFAccessorMassMock implements CFAccessor {
 
 		ListOrganizationDomainsResponse response = ListOrganizationDomainsResponse.builder().addAllResources(domains).build();
 		return Mono.just(response);
+	}
+
+	@Override
+	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> retrieveOrgIdV3(String orgName) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> retrieveAllOrgIdsV3() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Mono<org.cloudfoundry.client.v3.spaces.ListSpacesResponse> retrieveSpaceIdV3(String orgId, String spaceName) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Mono<org.cloudfoundry.client.v3.spaces.ListSpacesResponse> retrieveSpaceIdsInOrgV3(String orgId) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> retrieveAllApplicationIdsInSpaceV3(String orgId, String spaceId) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Mono<GetSpaceResponse> retrieveSpaceV3(String spaceId) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse> retrieveAllDomainsV3(String orgId) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Mono<ListApplicationRoutesResponse> retrieveRoutesForAppId(String appId) {
+		throw new UnsupportedOperationException();
 	}
 }

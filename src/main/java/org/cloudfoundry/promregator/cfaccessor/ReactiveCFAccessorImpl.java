@@ -23,6 +23,10 @@ import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesRequest;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
+import org.cloudfoundry.client.v3.Pagination;
+import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
+import org.cloudfoundry.client.v3.spaces.GetSpaceRequest;
+import org.cloudfoundry.client.v3.spaces.GetSpaceResponse;
 import org.cloudfoundry.promregator.config.ConfigurationException;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.cloudfoundry.reactor.ConnectionContext;
@@ -42,7 +46,8 @@ import reactor.core.publisher.Mono;
 public class ReactiveCFAccessorImpl implements CFAccessor {
 
 	private static final Logger log = LoggerFactory.getLogger(ReactiveCFAccessorImpl.class);
-	
+	private boolean v3Enabled;
+
 	@Value("${cf.api_host}")
 	private String apiHost;
 
@@ -220,6 +225,14 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 			
 			log.info("Target CF platform is running on API version {}", apiVersion);
 		}
+
+		String getRoot = this.cloudFoundryClient.getRootV3().block();
+		// Ensures v3 API exists
+
+		if (getRoot == null) {
+			log.warn("unable to get v3 endpoint of CF platform");
+			this.v3Enabled = false;
+		}
 	}
 
 	@Override
@@ -258,6 +271,10 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	private void setupPaginatedRequestFetcher() {
 		this.paginatedRequestFetcher = new ReactiveCFPaginatedRequestFetcher(this.internalMetrics, this.requestRateLimit, 
 				Duration.ofMillis(this.backoffDelay));
+	}
+
+	public boolean isV3Enabled() {
+		return this.v3Enabled;
 	}
 	
 	private static final GetInfoRequest DUMMY_GET_INFO_REQUEST = GetInfoRequest.builder().build();
@@ -391,5 +408,115 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 
 		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.DOMAINS, orgId, 
 		request, r -> this.cloudFoundryClient.organizations().listDomains(request), this.requestTimeoutDomains);
+	}
+
+	@Override
+	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> retrieveOrgIdV3(String orgName) {
+		// Note: even though we use the List request here, the number of values returned is either zero or one
+		// ==> No need for a paged request.
+		org.cloudfoundry.client.v3.organizations.ListOrganizationsRequest orgsRequest = org.cloudfoundry.client.v3.organizations.ListOrganizationsRequest.builder().name(orgName).build();
+
+		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.ORG, orgName, orgsRequest,
+																	or -> this.cloudFoundryClient.organizationsV3()
+																								 .list(or), this.requestTimeoutOrg);
+	}
+
+	@Override
+	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> retrieveAllOrgIdsV3() {
+		PaginatedRequestGeneratorFunctionV3<org.cloudfoundry.client.v3.organizations.ListOrganizationsRequest> requestGenerator = (resultsPerPage, pageNumber) ->
+			org.cloudfoundry.client.v3.organizations.ListOrganizationsRequest.builder()
+									.perPage(resultsPerPage)
+									.page(pageNumber)
+									.build();
+
+		PaginatedResponseGeneratorFunctionV3<org.cloudfoundry.client.v3.organizations.OrganizationResource, org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> responseGenerator = (list, numberOfPages) ->
+			org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse.builder()
+									 .addAllResources(list)
+									 .pagination(Pagination.builder().totalPages(numberOfPages).totalResults(list.size()).build())
+									 .build();
+
+		return this.paginatedRequestFetcher.performGenericPagedRetrievalV3(RequestType.ALL_ORGS, "(empty)", requestGenerator,
+																		 r -> this.cloudFoundryClient.organizationsV3().list(r),  this.requestTimeoutOrg, responseGenerator);
+	}
+
+	@Override
+	public Mono<org.cloudfoundry.client.v3.spaces.ListSpacesResponse> retrieveSpaceIdV3(String orgId, String spaceName) {
+		// Note: even though we use the List request here, the number of values returned is either zero or one
+		// ==> No need for a paged request.
+
+		String key = String.format("%s|%s", orgId, spaceName);
+
+		org.cloudfoundry.client.v3.spaces.ListSpacesRequest spacesRequest = org.cloudfoundry.client.v3.spaces.ListSpacesRequest.builder().organizationId(orgId).name(spaceName).build();
+
+		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.SPACE, key, spacesRequest, sr ->
+																		this.cloudFoundryClient.spacesV3().list(sr),
+																	this.requestTimeoutSpace);
+	}
+
+	@Override
+	public Mono<org.cloudfoundry.client.v3.spaces.ListSpacesResponse> retrieveSpaceIdsInOrgV3(String orgId) {
+		PaginatedRequestGeneratorFunctionV3<org.cloudfoundry.client.v3.spaces.ListSpacesRequest> requestGenerator = (resultsPerPage, pageNumber) ->
+			org.cloudfoundry.client.v3.spaces.ListSpacesRequest.builder()
+							 .organizationId(orgId)
+							 .perPage(resultsPerPage)
+							 .page(pageNumber)
+							 .build();
+
+		PaginatedResponseGeneratorFunctionV3<org.cloudfoundry.client.v3.spaces.SpaceResource, org.cloudfoundry.client.v3.spaces.ListSpacesResponse> responseGenerator = (list, numberOfPages) ->
+			org.cloudfoundry.client.v3.spaces.ListSpacesResponse.builder()
+							  .addAllResources(list)
+							  .pagination(Pagination.builder().totalPages(numberOfPages).totalResults(list.size()).build())
+							  .build();
+
+
+		return this.paginatedRequestFetcher.performGenericPagedRetrievalV3(RequestType.SPACE_IN_ORG, orgId, requestGenerator,
+																		 r -> this.cloudFoundryClient.spacesV3().list(r),  this.requestTimeoutSpace, responseGenerator);
+	}
+
+	@Override
+	public Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> retrieveAllApplicationIdsInSpaceV3(String orgId, String spaceId) {
+		String key = String.format("%s|%s", orgId, spaceId);
+
+		PaginatedRequestGeneratorFunctionV3<org.cloudfoundry.client.v3.applications.ListApplicationsRequest> requestGenerator = (resultsPerPage, pageNumber) ->
+			org.cloudfoundry.client.v3.applications.ListApplicationsRequest.builder()
+								   .organizationId(orgId)
+								   .spaceId(spaceId)
+								   .perPage(resultsPerPage)
+								   .page(pageNumber)
+								   .build();
+
+		PaginatedResponseGeneratorFunctionV3<org.cloudfoundry.client.v3.applications.ApplicationResource, org.cloudfoundry.client.v3.applications.ListApplicationsResponse> responseGenerator = (list, numberOfPages) ->
+			org.cloudfoundry.client.v3.applications.ListApplicationsResponse.builder()
+									.addAllResources(list)
+									.pagination(Pagination.builder().totalPages(numberOfPages).totalResults(list.size()).build())
+									.build();
+
+		return this.paginatedRequestFetcher.performGenericPagedRetrievalV3(RequestType.ALL_APPS_IN_SPACE, key, requestGenerator,
+																		 r -> this.cloudFoundryClient.applicationsV3().list(r), this.requestTimeoutAppInSpace, responseGenerator);
+	}
+
+	@Override
+	public Mono<GetSpaceResponse> retrieveSpaceV3(String spaceId) {
+		// This API has drastically changed in v3 and does not support the same resources. This call for a space summary will probably
+		// take another call to list applications for a space, list routes for the apps, and list domains in the org
+		// Previously they were all grouped into this API
+
+		GetSpaceRequest request = GetSpaceRequest.builder().spaceId(spaceId).build();
+
+		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.SPACE_SUMMARY, spaceId,
+																	request, r -> this.cloudFoundryClient.spacesV3().get(r), this.requestTimeoutAppSummary);
+	}
+
+	@Override
+	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse> retrieveAllDomainsV3(String orgId) {
+		org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsRequest request = org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsRequest.builder().organizationId(orgId).build();
+
+		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.DOMAINS, orgId,
+																	request, r -> this.cloudFoundryClient.organizationsV3().listDomains(request), this.requestTimeoutDomains);
+	}
+
+	@Override
+	public Mono<ListApplicationRoutesResponse> retrieveRoutesForAppId(String appId) {
+		throw new UnsupportedOperationException();
 	}
 }

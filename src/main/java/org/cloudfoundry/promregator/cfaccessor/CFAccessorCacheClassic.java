@@ -11,6 +11,8 @@ import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
+import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
+import org.cloudfoundry.client.v3.spaces.GetSpaceResponse;
 import org.cloudfoundry.promregator.cache.AutoRefreshingCacheMap;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.slf4j.Logger;
@@ -450,6 +452,53 @@ public class CFAccessorCacheClassic implements CFAccessorCache {
 	@Override
 	public Mono<ListOrganizationDomainsResponse> retrieveAllDomains(String orgId) {
 		return this.domainCache.get(orgId);
+	}
+
+	@Override
+	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> retrieveOrgIdV3(String orgName) {
+		// TODO: Implement cache
+		return this.parent.retrieveOrgIdV3(orgName);
+	}
+
+	@Override
+	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> retrieveAllOrgIdsV3() {
+		// TODO: Implement cache
+		return this.parent.retrieveAllOrgIdsV3();
+	}
+
+	@Override
+	public Mono<org.cloudfoundry.client.v3.spaces.ListSpacesResponse> retrieveSpaceIdV3(String orgId, String spaceName) {
+		// TODO: Implement cache
+		return this.parent.retrieveSpaceIdV3(orgId, spaceName);
+	}
+
+	@Override
+	public Mono<org.cloudfoundry.client.v3.spaces.ListSpacesResponse> retrieveSpaceIdsInOrgV3(String orgId) {
+		// TODO: Implement cache
+		return this.parent.retrieveSpaceIdsInOrgV3(orgId);
+	}
+
+	@Override
+	public Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> retrieveAllApplicationIdsInSpaceV3(String orgId, String spaceId) {
+		// TODO: Implement cache
+		return this.parent.retrieveAllApplicationIdsInSpaceV3(orgId, spaceId);
+	}
+
+	@Override
+	public Mono<GetSpaceResponse> retrieveSpaceV3(String spaceId) {
+		// TODO: Implement cache
+		return this.parent.retrieveSpaceV3(spaceId);
+	}
+
+	@Override
+	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse> retrieveAllDomainsV3(String orgId) {
+		// TODO: Implement cache
+		return this.parent.retrieveAllDomainsV3(orgId);
+	}
+
+	@Override
+	public Mono<ListApplicationRoutesResponse> retrieveRoutesForAppId(String appId) {
+		throw new UnsupportedOperationException();
 	}
 
 	@Override

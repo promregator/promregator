@@ -4,6 +4,7 @@ import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
+import org.cloudfoundry.client.v3.spaces.GetSpaceResponse;
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -91,6 +92,57 @@ class CFAccessorCacheClassicTest {
 		Mono<ListOrganizationDomainsResponse> response2 = subject.retrieveAllDomains("dummy");
 		assertThat(response1).isEqualTo(response2);
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllDomains("dummy");
+	}
+
+	@Test
+	void testRetrieveDomainsV3() {
+		Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse> response1 = subject.retrieveAllDomainsV3("dummy");
+		Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse> response2 = subject.retrieveAllDomainsV3("dummy");
+		assertThat(response1).isEqualTo(response2);
+		// Cache not implemented
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveAllDomainsV3("dummy");
+	}
+
+	@Test
+	void testRetrieveSpaceSummaryV3() {
+		Mono<GetSpaceResponse> response1 = subject.retrieveSpaceV3("dummy");
+		Mono<GetSpaceResponse> response2 = subject.retrieveSpaceV3("dummy");
+		assertThat(response1).isEqualTo(response2);
+		// Cache not implemented
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveSpaceV3("dummy");
+	}
+
+	@Test
+	void testRetrieveAllApplicationIdsInSpaceV3() {
+		subject.retrieveAllApplicationIdsInSpaceV3("dummy1", "dummy2");
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllApplicationIdsInSpaceV3("dummy1", "dummy2");
+
+		subject.retrieveAllApplicationIdsInSpaceV3("dummy1", "dummy2");
+		// Cache not implemented
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveAllApplicationIdsInSpaceV3("dummy1", "dummy2");
+	}
+
+	@Test
+	void testRetrieveOrgIdV3() {
+		Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> response1 = subject.retrieveOrgIdV3("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveOrgIdV3("dummy");
+
+		Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> response2 = subject.retrieveOrgIdV3("dummy");
+		assertThat(response1).isEqualTo(response2);
+		// Cache not implemented
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveOrgIdV3("dummy");
+	}
+
+	@Test
+	void testRetrieveSpaceIdV3() {
+
+		Mono<org.cloudfoundry.client.v3.spaces.ListSpacesResponse> response1 = subject.retrieveSpaceIdV3("dummy1", "dummy2");
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveSpaceIdV3("dummy1", "dummy2");
+
+		Mono<org.cloudfoundry.client.v3.spaces.ListSpacesResponse> response2 = subject.retrieveSpaceIdV3("dummy1", "dummy2");
+		assertThat(response1).isEqualTo(response2);
+		// Cache not implemented
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveSpaceIdV3("dummy1" ,"dummy2");
 	}
 
 }
