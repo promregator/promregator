@@ -130,11 +130,11 @@ class CFAccessorCacheCaffeineTest {
 
 	@Test
 	void testRetrieveAllApplicationIdsInSpaceV3() {
-		subject.retrieveAllApplicationIdsInSpaceV3("dummy1", "dummy2");
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllApplicationIdsInSpaceV3("dummy1", "dummy2");
+		subject.retrieveAllApplicationsInSpaceV3("dummy1", "dummy2");
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllApplicationsInSpaceV3("dummy1", "dummy2");
 
-		subject.retrieveAllApplicationIdsInSpaceV3("dummy1", "dummy2");
-		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveAllApplicationIdsInSpaceV3("dummy1", "dummy2");
+		subject.retrieveAllApplicationsInSpaceV3("dummy1", "dummy2");
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllApplicationsInSpaceV3("dummy1", "dummy2");
 	}
 
 	@Test

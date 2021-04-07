@@ -7,6 +7,8 @@ import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import org.apache.http.conn.util.InetAddressUtils;
 import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.client.v2.applications.ListApplicationsRequest;
@@ -27,6 +29,7 @@ import org.cloudfoundry.client.v3.Pagination;
 import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
 import org.cloudfoundry.client.v3.spaces.GetSpaceRequest;
 import org.cloudfoundry.client.v3.spaces.GetSpaceResponse;
+import org.cloudfoundry.promregator.cfaccessor.client.ReactorInfoV3;
 import org.cloudfoundry.promregator.config.ConfigurationException;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.cloudfoundry.reactor.ConnectionContext;
@@ -47,6 +50,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 
 	private static final Logger log = LoggerFactory.getLogger(ReactiveCFAccessorImpl.class);
 	private boolean v3Enabled;
+	public static org.cloudfoundry.client.v3.applications.ListApplicationsResponse INVALID_APPLICATIONS_RESPONSE = org.cloudfoundry.client.v3.applications.ListApplicationsResponse.builder().build();
 
 	@Value("${cf.api_host}")
 	private String apiHost;
@@ -226,12 +230,16 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 			log.info("Target CF platform is running on API version {}", apiVersion);
 		}
 
-		String getRoot = this.cloudFoundryClient.getRootV3().block();
-		// Ensures v3 API exists
+		// Ensures v3 API exists. The CF Java Client does not yet implement the info endpoint for V3, so we do it manually.
+		JsonNode v3Info = new ReactorInfoV3(this.cloudFoundryClient.getConnectionContext(), this.cloudFoundryClient.getRootV3(),
+											this.cloudFoundryClient.getTokenProvider(), this.cloudFoundryClient.getRequestTags())
+			.get().onErrorReturn(JsonNodeFactory.instance.nullNode()).block();
 
-		if (getRoot == null) {
-			log.warn("unable to get v3 endpoint of CF platform");
+		if (v3Info == null || v3Info.isNull()) {
+			log.warn("unable to get v3 info endpoint of CF platform");
 			this.v3Enabled = false;
+		} else {
+			this.v3Enabled = true;
 		}
 	}
 
@@ -412,6 +420,10 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 
 	@Override
 	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> retrieveOrgIdV3(String orgName) {
+		if (!isV3Enabled()) {
+			throw new UnsupportedOperationException("V3 API is not supported on your foundation.");
+		}
+
 		// Note: even though we use the List request here, the number of values returned is either zero or one
 		// ==> No need for a paged request.
 		org.cloudfoundry.client.v3.organizations.ListOrganizationsRequest orgsRequest = org.cloudfoundry.client.v3.organizations.ListOrganizationsRequest.builder().name(orgName).build();
@@ -423,6 +435,10 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 
 	@Override
 	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> retrieveAllOrgIdsV3() {
+		if (!isV3Enabled()) {
+			throw new UnsupportedOperationException("V3 API is not supported on your foundation.");
+		}
+
 		PaginatedRequestGeneratorFunctionV3<org.cloudfoundry.client.v3.organizations.ListOrganizationsRequest> requestGenerator = (resultsPerPage, pageNumber) ->
 			org.cloudfoundry.client.v3.organizations.ListOrganizationsRequest.builder()
 									.perPage(resultsPerPage)
@@ -441,6 +457,10 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 
 	@Override
 	public Mono<org.cloudfoundry.client.v3.spaces.ListSpacesResponse> retrieveSpaceIdV3(String orgId, String spaceName) {
+		if (!isV3Enabled()) {
+			throw new UnsupportedOperationException("V3 API is not supported on your foundation.");
+		}
+
 		// Note: even though we use the List request here, the number of values returned is either zero or one
 		// ==> No need for a paged request.
 
@@ -455,6 +475,10 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 
 	@Override
 	public Mono<org.cloudfoundry.client.v3.spaces.ListSpacesResponse> retrieveSpaceIdsInOrgV3(String orgId) {
+		if (!isV3Enabled()) {
+			throw new UnsupportedOperationException("V3 API is not supported on your foundation.");
+		}
+
 		PaginatedRequestGeneratorFunctionV3<org.cloudfoundry.client.v3.spaces.ListSpacesRequest> requestGenerator = (resultsPerPage, pageNumber) ->
 			org.cloudfoundry.client.v3.spaces.ListSpacesRequest.builder()
 							 .organizationId(orgId)
@@ -474,7 +498,11 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	}
 
 	@Override
-	public Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> retrieveAllApplicationIdsInSpaceV3(String orgId, String spaceId) {
+	public Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> retrieveAllApplicationsInSpaceV3(String orgId, String spaceId) {
+		if (!isV3Enabled()) {
+			return Mono.just(INVALID_APPLICATIONS_RESPONSE);
+		}
+
 		String key = String.format("%s|%s", orgId, spaceId);
 
 		PaginatedRequestGeneratorFunctionV3<org.cloudfoundry.client.v3.applications.ListApplicationsRequest> requestGenerator = (resultsPerPage, pageNumber) ->
@@ -497,6 +525,10 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 
 	@Override
 	public Mono<GetSpaceResponse> retrieveSpaceV3(String spaceId) {
+		if (!isV3Enabled()) {
+			throw new UnsupportedOperationException("V3 API is not supported on your foundation.");
+		}
+
 		// This API has drastically changed in v3 and does not support the same resources. This call for a space summary will probably
 		// take another call to list applications for a space, list routes for the apps, and list domains in the org
 		// Previously they were all grouped into this API
@@ -509,6 +541,10 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 
 	@Override
 	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse> retrieveAllDomainsV3(String orgId) {
+		if (!isV3Enabled()) {
+			throw new UnsupportedOperationException("V3 API is not supported on your foundation.");
+		}
+
 		org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsRequest request = org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsRequest.builder().organizationId(orgId).build();
 
 		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.DOMAINS, orgId,

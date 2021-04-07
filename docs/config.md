@@ -429,6 +429,16 @@ Defaults to `/metrics`, as this is the value which is suggested by Prometheus.
 
 Note that there may be frameworks out there, which expose their metrics in a different format using the same path `/metrics`, though. 
 
+#### Item property "promregator.targets[].kubernetesAnnotations" (optional)
+Enables support for the de facto standard Kubernetes Prometheus annotations on your CF applications. This allows each application to "opt-in" to scraping
+by specifying the annotation `prometheus.io/scrape: "true"`. Annotations support requires a version of Cloud Foundry with the V3 API otherwise this setting will be ignored. 
+
+For an example on deploying an app with these annotations see [here](https://github.com/cloudfoundry/cf-for-k8s-metric-examples).
+
+Defaults to `false`. Enabling this feature will override the `promregator.targets[].path` when it is specified using the annotation `prometheus.io/path: "/some/other/metrics"`
+
+Does not currently support the `prometheus.io/port` annotation.
+
 #### Item property "promregator.targets[].protocol" (optional)
 Specifies the protocol (`http` or `https`) which shall be used to retrieve the metrics.
 

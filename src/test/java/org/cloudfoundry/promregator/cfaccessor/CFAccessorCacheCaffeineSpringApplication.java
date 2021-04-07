@@ -87,7 +87,7 @@ public class CFAccessorCacheCaffeineSpringApplication {
 		}
 
 		@Override
-		public Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> retrieveAllApplicationIdsInSpaceV3(String orgId, String spaceId) {
+		public Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> retrieveAllApplicationsInSpaceV3(String orgId, String spaceId) {
 			return Mono.just(org.cloudfoundry.client.v3.applications.ListApplicationsResponse.builder().build());
 		}
 

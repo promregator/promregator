@@ -28,6 +28,8 @@ public class Target {
 
 	private String path;
 
+	private Boolean kubernetesAnnotations = false;
+
 	private String protocol;
 
 	private String authenticatorId;
@@ -62,6 +64,9 @@ public class Target {
 		this.applicationName = source.applicationName;
 		this.applicationRegex = source.applicationRegex;
 		this.path = source.path;
+		if (source.kubernetesAnnotations != null)
+			this.kubernetesAnnotations = source.kubernetesAnnotations;
+
 		this.protocol = source.protocol;
 		this.authenticatorId = source.authenticatorId;
 		this.internalRoutePort = source.internalRoutePort;
@@ -131,6 +136,14 @@ public class Target {
 
 	public void setPath(String path) {
 		this.path = path;
+	}
+
+	public Boolean getKubernetesAnnotations() {
+		return kubernetesAnnotations;
+	}
+
+	public void setKubernetesAnnotations(Boolean kubernetesAnnotations) {
+		this.kubernetesAnnotations = kubernetesAnnotations != null ? kubernetesAnnotations : false;
 	}
 
 	public String getProtocol() {
@@ -223,6 +236,8 @@ public class Target {
 		builder.append(applicationRegex);
 		builder.append(", path=");
 		builder.append(path);
+		builder.append(", kubernetesAnnotations=");
+		builder.append(kubernetesAnnotations.toString());
 		builder.append(", protocol=");
 		builder.append(protocol);
 		builder.append(", authenticatorId=");

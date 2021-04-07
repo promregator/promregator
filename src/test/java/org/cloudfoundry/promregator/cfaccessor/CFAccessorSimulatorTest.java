@@ -89,4 +89,40 @@ class CFAccessorSimulatorTest {
 		Assertions.assertTrue(sharedDomain.getEntity().getInternal());
 		Assertions.assertEquals(CFAccessorSimulator.INTERNAL_DOMAIN, sharedDomain.getEntity().getName());
 	}
+
+	@Test
+	void testRetrieveOrgIdV3() {
+		CFAccessorSimulator subject = new CFAccessorSimulator(2);
+		Assertions.assertThrows(UnsupportedOperationException.class, () -> subject.retrieveOrgId("simorg"));
+	}
+
+	@Test
+	void testRetrieveSpaceIdV3() {
+		CFAccessorSimulator subject = new CFAccessorSimulator(2);
+		Assertions.assertThrows(UnsupportedOperationException.class, () -> subject.retrieveSpaceIdV3(CFAccessorSimulator.ORG_UUID, "simspace"));
+	}
+
+	@Test
+	void testRetrieveAllDomainsV3() {
+		CFAccessorSimulator subject = new CFAccessorSimulator(2);
+		Assertions.assertThrows(UnsupportedOperationException.class, () -> subject.retrieveAllDomainsV3(CFAccessorSimulator.ORG_UUID));
+	}
+
+	@Test
+	void testRetrieveRoutes3() {
+		CFAccessorSimulator subject = new CFAccessorSimulator(2);
+		Assertions.assertThrows(UnsupportedOperationException.class, () -> subject.retrieveRoutesForAppId("simapp"));
+	}
+
+	@Test
+	void testRetrieveAllSpacesV3() {
+		CFAccessorSimulator subject = new CFAccessorSimulator(2);
+		Assertions.assertThrows(UnsupportedOperationException.class, () -> subject.retrieveSpaceIdsInOrgV3(CFAccessorSimulator.ORG_UUID));
+	}
+
+	@Test
+	void testRetrieveSpaceV3() {
+		CFAccessorSimulator subject = new CFAccessorSimulator(2);
+		Assertions.assertThrows(UnsupportedOperationException.class, () -> subject.retrieveSpaceV3("simspace"));
+	}
 }

@@ -30,6 +30,7 @@ public class CFAccessorCacheClassic implements CFAccessorCache {
 	private AutoRefreshingCacheMap<CacheKeyAppsInSpace, Mono<ListApplicationsResponse>> appsInSpaceCache;
 	private AutoRefreshingCacheMap<String, Mono<GetSpaceSummaryResponse>> spaceSummaryCache;	
 	private AutoRefreshingCacheMap<String, Mono<ListOrganizationDomainsResponse>> domainCache;
+	private AutoRefreshingCacheMap<CacheKeyAppsInSpace, Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse>> appsInSpaceV3Cache;
 
 	@Value("${cf.cache.timeout.org:3600}")
 	private int refreshCacheOrgLevelInSeconds;
@@ -79,6 +80,7 @@ public class CFAccessorCacheClassic implements CFAccessorCache {
 		this.appsInSpaceCache = new AutoRefreshingCacheMap<>("appsInSpace", this.internalMetrics, Duration.ofSeconds(this.expiryCacheApplicationLevelInSeconds), Duration.ofSeconds(refreshCacheApplicationLevelInSeconds), this::appsInSpaceCacheLoader);
 		this.spaceSummaryCache = new AutoRefreshingCacheMap<>("spaceSummary", this.internalMetrics, Duration.ofSeconds(this.expiryCacheApplicationLevelInSeconds), Duration.ofSeconds(refreshCacheApplicationLevelInSeconds), this::spaceSummaryCacheLoader);		
 		this.domainCache = new AutoRefreshingCacheMap<>("routeMappings", this.internalMetrics, Duration.ofSeconds(this.expiryCacheDomainLevelInSeconds), Duration.ofSeconds(refreshCacheDomainLevelInSeconds), this::domainCacheLoader);
+		this.appsInSpaceV3Cache = new AutoRefreshingCacheMap<>("appsInSpaceV3", this.internalMetrics, Duration.ofSeconds(this.expiryCacheApplicationLevelInSeconds), Duration.ofSeconds(refreshCacheApplicationLevelInSeconds), this::appsInSpaceV3CacheLoader);
 	}
 
 	private Mono<ListOrganizationsResponse> orgCacheLoader(String orgName) {
@@ -399,6 +401,70 @@ public class CFAccessorCacheClassic implements CFAccessorCache {
 		return mono;
   	}
 
+	private Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> appsInSpaceV3CacheLoader(CacheKeyAppsInSpace cacheKey) {
+		Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> mono = this.parent.retrieveAllApplicationsInSpaceV3(cacheKey.getOrgId(), cacheKey.getSpaceId()).cache();
+
+
+		/*
+		 * Note that the mono does not have any subscriber, yet!
+		 * The cache which we are using is working "on-stock", i.e. we need to ensure
+		 * that the underlying calls to the CF API really is triggered.
+		 * Fortunately, we can do this very easily:
+		 */
+		mono.subscribe();
+
+		/*
+		 * Handling for issue #96: If a timeout of the request to the  CF Cloud Controller occurs,
+		 * we must make sure that the erroneous Mono is not kept in the cache. Instead we have to displace the item,
+		 * which triggers a refresh of the cache.
+		 *
+		 * Note that subscribe() must be called *before* adding this error handling below.
+		 * Otherwise we will run into the situation that the error handling routine is called by this
+		 * subscribe() already - but the Mono has not been written into the cache yet!
+		 * If we do it in this order, the doOnError method will only be called once the first "real subscriber"
+		 * of the Mono will start requesting.
+		 */
+		mono = mono.doOnError(e -> {
+			if (e instanceof TimeoutException) {
+				log.warn(String.format("Timed-out entry using key %s detected, which would get stuck in our appsInSpace cache; "
+										   + "displacing it now to prevent further harm", cacheKey), e);
+				/*
+				 * Note that it *might* happen that a different Mono gets displaced than the one we are in here now.
+				 * Yet, we can't make use of the
+				 *
+				 * remove(key, value)
+				 *
+				 * method, as providing value would lead to a hen-egg problem (we were required to provide the reference
+				 * of the Mono instance, which we are just creating).
+				 * Instead, we just blindly remove the entry from the cache. This may lead to four cases to consider:
+				 *
+				 * 1. We hit the correct (erroneous) entry: then this is exactly what we want to do.
+				 * 2. We hit another erroneous entry: then we have no harm done, because we fixed yet another case.
+				 * 3. We hit a healthy entry: Bad luck; on next iteration, we will get a cache miss, which automatically
+				 *    fixes the issue (as long this does not happen too often, ...)
+				 * 4. The entry has already been deleted by someone else: the remove(key) operation will
+				 *    simply be a NOOP. => no harm done either.
+				 */
+				this.appsInSpaceV3Cache.remove(cacheKey);
+
+				// Notify metrics of this case
+				if (this.internalMetrics != null) {
+					this.internalMetrics.countAutoRefreshingCacheMapErroneousEntriesDisplaced(this.appsInSpaceV3Cache.getName());
+				}
+			}
+		});
+		/*
+		 * Keep in mind that doOnError is a side-effect:  The logic above only removes it from the cache.
+		 * The erroneous instance still is used downstream and will trigger subsequent error handling (including
+		 * logging) there.
+		 * Note that this also holds true during the timeframe of the timeout: This instance of the Mono will
+		 * be written to the cache, thus all consumers of the cache will be handed out the cached, not-yet-resolved
+		 * object instance. This implicitly makes sure that there can only be one valid pending request is out there.
+		 */
+
+		return mono;
+	}
+
 
 	@Override
 	public Mono<GetInfoResponse> getInfo() {
@@ -479,9 +545,10 @@ public class CFAccessorCacheClassic implements CFAccessorCache {
 	}
 
 	@Override
-	public Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> retrieveAllApplicationIdsInSpaceV3(String orgId, String spaceId) {
-		// TODO: Implement cache
-		return this.parent.retrieveAllApplicationIdsInSpaceV3(orgId, spaceId);
+	public Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> retrieveAllApplicationsInSpaceV3(String orgId, String spaceId) {
+		final CacheKeyAppsInSpace key = new CacheKeyAppsInSpace(orgId, spaceId);
+
+		return this.appsInSpaceV3Cache.get(key);
 	}
 
 	@Override
@@ -505,6 +572,7 @@ public class CFAccessorCacheClassic implements CFAccessorCache {
 	public void invalidateCacheApplications() {
 		log.info("Invalidating application cache");
 		this.spaceSummaryCache.clear();
+		this.appsInSpaceV3Cache.clear();
 		// TODO why is appsInSpaceCache not cleared here?
 	}
 	

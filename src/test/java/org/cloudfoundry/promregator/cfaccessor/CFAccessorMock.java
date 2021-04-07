@@ -23,6 +23,10 @@ import org.cloudfoundry.client.v2.spaces.SpaceResource;
 import org.cloudfoundry.client.v2.domains.Domain;
 import org.cloudfoundry.client.v2.domains.DomainEntity;
 import org.cloudfoundry.client.v2.domains.DomainResource;
+import org.cloudfoundry.client.v3.BuildpackData;
+import org.cloudfoundry.client.v3.Lifecycle;
+import org.cloudfoundry.client.v3.LifecycleData;
+import org.cloudfoundry.client.v3.LifecycleType;
 import org.cloudfoundry.client.v3.applications.ApplicationState;
 import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
 import org.cloudfoundry.client.v3.spaces.GetSpaceResponse;
@@ -396,7 +400,7 @@ public class CFAccessorMock implements CFAccessor {
 	}
 
 	@Override
-	public Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> retrieveAllApplicationIdsInSpaceV3(String orgId, String spaceId) {
+	public Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> retrieveAllApplicationsInSpaceV3(String orgId, String spaceId) {
 		if (orgId.equals(UNITTEST_ORG_UUID) && spaceId.equals(UNITTEST_SPACE_UUID)) {
 			List<org.cloudfoundry.client.v3.applications.ApplicationResource> list = new LinkedList<>();
 
@@ -405,18 +409,24 @@ public class CFAccessorMock implements CFAccessor {
 																																		.state(ApplicationState.STARTED)
 																																		.createdAt(CREATED_AT_TIMESTAMP)
 																																		.id(UNITTEST_APP1_UUID)
+																																		.lifecycle(Lifecycle.builder().data(BuildpackData.builder().build()).type(LifecycleType.BUILDPACK).build())
+																																		.metadata(org.cloudfoundry.client.v3.Metadata.builder().annotation("prometheus.io/scrape", "true").build())
 																																		.build();
 			list.add(ar);
 
 			ar = org.cloudfoundry.client.v3.applications.ApplicationResource.builder()
 																			.name("testapp2").state(ApplicationState.STARTED)
 																			.createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP2_UUID)
+																			.lifecycle(Lifecycle.builder().data(BuildpackData.builder().build()).type(LifecycleType.BUILDPACK).build())
+																			.metadata(org.cloudfoundry.client.v3.Metadata.builder().annotation("prometheus.io/scrape", "badValue").build())
 																			.build();
 			list.add(ar);
 
 			ar = org.cloudfoundry.client.v3.applications.ApplicationResource.builder()
 																			.name("internalapp").state(ApplicationState.STARTED)
 																			.createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP_INTERNAL_UUID)
+																			.lifecycle(Lifecycle.builder().data(BuildpackData.builder().build()).type(LifecycleType.BUILDPACK).build())
+																			.metadata(org.cloudfoundry.client.v3.Metadata.builder().annotation("prometheus.io/scrape", "true").annotation("prometheus.io/path", "/actuator/prometheus").build())
 																			.build();
 			list.add(ar);
 

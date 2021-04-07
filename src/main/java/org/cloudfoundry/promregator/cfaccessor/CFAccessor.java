@@ -35,7 +35,7 @@ public interface CFAccessor {
 
 	Mono<org.cloudfoundry.client.v3.spaces.ListSpacesResponse> retrieveSpaceIdsInOrgV3(String orgId);
 
-	Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> retrieveAllApplicationIdsInSpaceV3(String orgId, String spaceId);
+	Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> retrieveAllApplicationsInSpaceV3(String orgId, String spaceId);
 
 	Mono<GetSpaceResponse> retrieveSpaceV3(String spaceId);
 

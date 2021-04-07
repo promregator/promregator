@@ -5,6 +5,7 @@ import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
@@ -22,6 +23,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+import static org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl.INVALID_APPLICATIONS_RESPONSE;
+
 public class ReactiveTargetResolver implements TargetResolver {
 	private static final Logger log = LoggerFactory.getLogger(ReactiveTargetResolver.class);
 	private static final Logger logEmptyTarget = LoggerFactory.getLogger(String.format("%s.EmptyTarget", ReactiveTargetResolver.class.getName()));
@@ -37,6 +40,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 		private String resolvedSpaceId;
 		private String resolvedApplicationName;
 		private String resolvedApplicationId;
+		private String resolvedMetricsPath;
 		
 		public IntermediateTarget() {
 			super();
@@ -50,6 +54,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 			this.resolvedSpaceId = source.resolvedSpaceId;
 			this.resolvedApplicationName = source.resolvedApplicationName;
 			this.resolvedApplicationId = source.resolvedApplicationId;
+			this.resolvedMetricsPath = source.resolvedMetricsPath;
 		}
 
 		public IntermediateTarget(Target target) {
@@ -89,7 +94,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 			rt.setSpaceName(this.resolvedSpaceName);
 			rt.setApplicationName(this.resolvedApplicationName);
 			rt.setProtocol(this.configTarget.getProtocol());
-			rt.setPath(this.configTarget.getPath());
+			rt.setPath(this.resolvedMetricsPath != null ? this.resolvedMetricsPath : this.configTarget.getPath());
 			rt.setApplicationId(this.resolvedApplicationId);
 			return rt;
 		}
@@ -202,6 +207,20 @@ public class ReactiveTargetResolver implements TargetResolver {
 		public void setResolvedApplicationId(String resolvedApplicationId) {
 			this.resolvedApplicationId = resolvedApplicationId;
 		}
+
+		/**
+		 * @return the resolved metrics path
+		 */
+		public String getResolvedMetricsPath() {
+			return resolvedMetricsPath;
+		}
+
+		/**
+		 * @param resolvedMetricsPath the resolvedMetricsPath to set
+		 */
+		public void setResolvedMetricsPath(String resolvedMetricsPath) {
+			this.resolvedMetricsPath = resolvedMetricsPath;
+		}
 		
 		
 	}
@@ -218,6 +237,8 @@ public class ReactiveTargetResolver implements TargetResolver {
 				.log(log.getName() + ".resolveSpace")
 				.flatMap (this::resolveApplication)
 				.log(log.getName() + ".resolveApplication")
+				.flatMap(this::resolveAnnotations)
+				.log(log.getName() + ".resolveAnnotations")
 				.map(IntermediateTarget::toResolvedTarget)
 				.sequential()
 				.distinct().collectList()
@@ -400,6 +421,40 @@ public class ReactiveTargetResolver implements TargetResolver {
 			
 			return itnew;
 		});
+	}
+
+	private Flux<IntermediateTarget> resolveAnnotations(IntermediateTarget it) {
+		if (Boolean.TRUE.equals(it.getConfigTarget().getKubernetesAnnotations())) {
+			Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> response = this.cfAccessor
+				.retrieveAllApplicationsInSpaceV3(it.getResolvedOrgId(), it.getResolvedSpaceId());
+
+			return response.flatMap(res -> {
+				if (res == null || INVALID_APPLICATIONS_RESPONSE == res) {
+					logEmptyTarget
+						.warn("Your foundation does not support V3 APIs, yet you have enabled Kubernetes Annotation filtering. Ignoring annotation filtering.");
+					return Mono.just(it);
+				}
+
+				return res.getResources().stream()
+						  .filter(app -> it.getResolvedApplicationName()
+										   .equals(app.getName().toLowerCase(Locale.ENGLISH)))
+						  .filter(app -> this.isApplicationInScrapableState(app.getState().toString()))
+						  .filter(app -> app.getMetadata() != null)
+						  .filter(app -> app.getMetadata().getAnnotations() != null)
+						  .filter(app -> app.getMetadata().getAnnotations()
+											.getOrDefault("prometheus.io/scrape", "false")
+											.equals("true"))
+						  .map(app -> {
+							  it.setResolvedMetricsPath(app.getMetadata().getAnnotations()
+														   .getOrDefault("prometheus.io/path", null));
+							  return Mono.just(it);
+						  }).findFirst().orElseGet(Mono::empty);
+			}).doOnError(e ->
+				 log.warn(String.format("Error on retrieving application annotations for org '%s', space '%s' and application '%s'.",
+										it.getResolvedOrgName(), it.getResolvedSpaceName(), it.getConfigTarget().getApplicationName()), e)).flux();
+		}
+
+		return Mono.just(it).flux();
 	}
 	
 	private boolean isApplicationInScrapableState(String state) {
