@@ -28,7 +28,9 @@ import static org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl.INV
 public class ReactiveTargetResolver implements TargetResolver {
 	private static final Logger log = LoggerFactory.getLogger(ReactiveTargetResolver.class);
 	private static final Logger logEmptyTarget = LoggerFactory.getLogger(String.format("%s.EmptyTarget", ReactiveTargetResolver.class.getName()));
-	
+	public static final String PROMETHEUS_IO_SCRAPE = "prometheus.io/scrape";
+	public static final String PROMETHEUS_IO_PATH = "prometheus.io/path";
+
 	@Autowired
 	private CFAccessor cfAccessor;
 
@@ -431,7 +433,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 			return response.flatMap(res -> {
 				if (res == null || INVALID_APPLICATIONS_RESPONSE == res) {
 					logEmptyTarget
-						.warn("Your foundation does not support V3 APIs, yet you have enabled Kubernetes Annotation filtering. Ignoring annotation filtering.");
+						.debug("Your foundation does not support V3 APIs, yet you have enabled Kubernetes Annotation filtering. Ignoring annotation filtering.");
 					return Mono.just(it);
 				}
 
@@ -442,11 +444,11 @@ public class ReactiveTargetResolver implements TargetResolver {
 						  .filter(app -> app.getMetadata() != null)
 						  .filter(app -> app.getMetadata().getAnnotations() != null)
 						  .filter(app -> app.getMetadata().getAnnotations()
-											.getOrDefault("prometheus.io/scrape", "false")
+											.getOrDefault(PROMETHEUS_IO_SCRAPE, "false")
 											.equals("true"))
 						  .map(app -> {
 							  it.setResolvedMetricsPath(app.getMetadata().getAnnotations()
-														   .getOrDefault("prometheus.io/path", null));
+														   .getOrDefault(PROMETHEUS_IO_PATH, null));
 							  return Mono.just(it);
 						  }).findFirst().orElseGet(Mono::empty);
 			}).doOnError(e ->
@@ -456,7 +458,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 
 		return Mono.just(it).flux();
 	}
-	
+
 	private boolean isApplicationInScrapableState(String state) {
 		if ("STARTED".equals(state)) {
 			return true;

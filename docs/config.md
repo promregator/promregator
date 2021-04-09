@@ -427,7 +427,8 @@ Note that the data returned by this endpoint of the target must comply to the [T
 
 Defaults to `/metrics`, as this is the value which is suggested by Prometheus.
 
-Note that there may be frameworks out there, which expose their metrics in a different format using the same path `/metrics`, though. 
+Note that there may be frameworks out there, which expose their metrics in a different format using the same path `/metrics`, though.
+Note that setting `promregator.targets[].kubernetesAnnotations` to `true` will cause that any value set to this parameter is ignored by applications that have annotation `prometheus.io/path` set.
 
 #### Item property "promregator.targets[].kubernetesAnnotations" (optional)
 Enables support for the de facto standard Kubernetes Prometheus annotations on your CF applications. This allows each application to "opt-in" to scraping

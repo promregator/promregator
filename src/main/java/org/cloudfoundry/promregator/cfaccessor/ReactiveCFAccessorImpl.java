@@ -236,7 +236,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 			.get().onErrorReturn(JsonNodeFactory.instance.nullNode()).block();
 
 		if (v3Info == null || v3Info.isNull()) {
-			log.warn("unable to get v3 info endpoint of CF platform");
+			log.warn("unable to get v3 info endpoint of CF platform, some features will not work as expected");
 			this.v3Enabled = false;
 		} else {
 			this.v3Enabled = true;

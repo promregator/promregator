@@ -59,7 +59,6 @@ class CFAccessorCacheClassicTest {
 
 	@Test
 	void testRetrieveSpaceId() {
-		
 		Mono<ListSpacesResponse> response1 = subject.retrieveSpaceId("dummy1", "dummy2");
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveSpaceId("dummy1", "dummy2");
 		

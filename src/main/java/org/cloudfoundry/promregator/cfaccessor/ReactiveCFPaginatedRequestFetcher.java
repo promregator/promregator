@@ -43,18 +43,15 @@ class ReactiveCFPaginatedRequestFetcher {
 
 		if (requestRateLimit <= 0.0f) {
 			this.cfccRateLimiter = RateLimiter.create(Double.POSITIVE_INFINITY);
-		}
-		else {
+		} else {
 			this.cfccRateLimiter = RateLimiter.create(requestRateLimit);
 		}
 	}
 
 	/**
-	 * Returns an empty Mono, which is only resolved after the configured rate limit could be acquired.
-	 *
-	 * @param requestType
-	 * 	the RequestType for which the rate limiting shall be acquired (mainly for statistical purpose only)
-	 *
+	 * Returns an empty Mono, which is only resolved after the configured rate limit
+	 * could be acquired.
+	 * @param requestType the RequestType for which the rate limiting shall be acquired (mainly for statistical purpose only)
 	 * @return an empty Mono
 	 */
 	private Mono<Object> rateLimitingMono(RequestType requestType) {
@@ -82,21 +79,23 @@ class ReactiveCFPaginatedRequestFetcher {
 
 
 	/**
-	 * performs standard (raw) retrieval from the CF Cloud Controller of a single page
+	 * performs standard (raw) retrieval from the CF Cloud Controller of a single
+	 * page
 	 *
 	 * @param requestType
-	 * 	the type information of the request which is being made
+	 *            the type information of the request which is being made
 	 * @param key
-	 * 	the key for which the request is being made (e.g. orgId, orgId|spaceName, ...)
+	 *            the key for which the request is being made (e.g. orgId,
+	 *            orgId|spaceName, ...)
 	 * @param requestData
-	 * 	an object which is being used as input parameter for the request
+	 *            an object which is being used as input parameter for the request
 	 * @param requestFunction
-	 * 	a function which calls the CF API operation, which is being made,
-	 * 	<code>requestData</code> is used as input parameter for this
-	 * 	function.
+	 *            a function which calls the CF API operation, which is being made,
+	 *            <code>requestData</code> is used as input parameter for this
+	 *            function.
 	 * @param timeoutInMS
-	 * 	the timeout value in milliseconds for a single data request to the CF Cloud Controller
-	 *
+	 *            the timeout value in milliseconds for a single data request to the
+	 *            CF Cloud Controller
 	 * @return a Mono on the response provided by the CF Cloud Controller
 	 */
 	@SuppressWarnings("lgtm[java/sync-on-boxed-types]")
@@ -114,7 +113,7 @@ class ReactiveCFPaginatedRequestFetcher {
 		final String retrievalTypeName = requestType.getMetricName();
 		final String logName = requestType.getLoggerSuffix();
 
-		final String lock = (this.getClass().getCanonicalName() + "|" + retrievalTypeName + "|" + key).intern();
+		final String lock = (this.getClass().getCanonicalName()+"|"+retrievalTypeName+"|"+key).intern();
 
 		synchronized (lock) {
 			Mono<P> result = null;
@@ -173,8 +172,7 @@ class ReactiveCFPaginatedRequestFetcher {
 								 log.error(String.format(
 									 "Async retrieval of %s with key %s caused a timeout after %dms even though we tried three times",
 									 logName, key, timeoutInMS));
-							 }
-							 else if (unwrappedThrowable instanceof OutOfMemoryError) {
+							 } else if (unwrappedThrowable instanceof OutOfMemoryError){
 								 // This may be an direct memory or a heap error!
 								 // Using String.format and/or log.error here is a bad idea - it takes memory!
 
@@ -183,8 +181,7 @@ class ReactiveCFPaginatedRequestFetcher {
 									 this.triggerOutOfMemoryRestart();
 								 }
 
-							 }
-							 else {
+							 } else {
 								 log.error(String.format("Async retrieval of %s with key %s raised a reactor error", logName,
 														 key), unwrappedThrowable);
 							 }
@@ -199,29 +196,34 @@ class ReactiveCFPaginatedRequestFetcher {
 		}
 	}
 
-	@SuppressFBWarnings(value = "DM_EXIT", justification = "Restart of JVM is done intentionally here!")
+	@SuppressFBWarnings(value = "DM_EXIT", justification="Restart of JVM is done intentionally here!")
 	private void triggerOutOfMemoryRestart() {
 		System.err.println("Out of Memory situation detected on talking to the Cloud Foundry Controller; restarting application");
 		System.exit(ExitCodes.CF_ACCESSOR_OUT_OF_MEMORY);
 	}
 
 	/**
-	 * performs a retrieval from the CF Cloud Controller fetching all pages available.
+	 * performs a retrieval from the CF Cloud Controller fetching all pages
+	 * available.
 	 *
 	 * @param requestType
-	 * 	the type information of the request which is being made
+	 *            the type information of the request which is being made
 	 * @param key
-	 * 	the key for which the request is being made (e.g. orgId, orgId|spaceName, ...)
+	 *            the key for which the request is being made (e.g. orgId,
+	 *            orgId|spaceName, ...)
 	 * @param requestGenerator
-	 * 	a request generator function, which permits creating request objects instance for a given set of page parameters (e.g. for which page, using
-	 * 	which page size, ...)
+	 *            a request generator function, which permits creating request
+	 *            objects instance for a given set of page parameters (e.g. for
+	 *            which page, using which page size, ...)
 	 * @param requestFunction
-	 * 	a function which calls the CF API operation, which is being made.
+	 *            a function which calls the CF API operation, which is being made.
 	 * @param timeoutInMS
-	 * 	the timeout value in milliseconds for a single data request to the CF Cloud Controller
+	 *            the timeout value in milliseconds for a single data request to the
+	 *            CF Cloud Controller
 	 * @param responseGenerator
-	 * 	a response generator function, which permits creating a response object, which contains the collected resources of all pages retrieved.
-	 *
+	 *            a response generator function, which permits creating a response
+	 *            object, which contains the collected resources of all pages
+	 *            retrieved.
 	 * @return a Mono on the response provided by the CF Cloud Controller
 	 */
 	public <S, P extends PaginatedResponse<?>, R extends PaginatedRequest> Mono<P> performGenericPagedRetrieval(
@@ -234,17 +236,15 @@ class ReactiveCFPaginatedRequestFetcher {
 		ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, pageRetrievalType);
 
 		Mono<P> firstPage = Mono.just(reactiveTimer).doOnNext(ReactiveTimer::start).flatMap(dummy ->
-																								this.performGenericRetrieval(requestType, key, requestGenerator
-																									.
-																										apply(OrderDirection.ASCENDING, RESULTS_PER_PAGE, 1), requestFunction, timeoutInMS));
+																								this.performGenericRetrieval(requestType, key, requestGenerator.
+																																								   apply(OrderDirection.ASCENDING, RESULTS_PER_PAGE, 1), requestFunction,	timeoutInMS));
 
 		Flux<R> requestFlux = firstPage.map(page -> page.getTotalPages() - 1)
 									   .flatMapMany(pagesCount -> Flux.range(2, pagesCount))
 									   .map(pageNumber -> requestGenerator.apply(OrderDirection.ASCENDING, RESULTS_PER_PAGE, pageNumber));
 
 		Mono<List<P>> subsequentPagesList = requestFlux.flatMap(req ->
-																	this.performGenericRetrieval(requestType, key, req, requestFunction, timeoutInMS))
-													   .collectList();
+																	this.performGenericRetrieval(requestType, key, req, requestFunction, timeoutInMS)).collectList();
 
 		/*
 		 * Word on error handling: We can't judge here what will be the consequence, if
@@ -313,7 +313,7 @@ class ReactiveCFPaginatedRequestFetcher {
 									   .map(pageNumber -> requestGenerator.apply(RESULTS_PER_PAGE, pageNumber));
 
 		Mono<List<P>> subsequentPagesList = requestFlux.flatMap(req ->
-																	this.performGenericRetrieval(requestType, key, req, requestFunction, timeoutInMS))
+														this.performGenericRetrieval(requestType, key, req, requestFunction, timeoutInMS))
 													   .collectList();
 
 		/*

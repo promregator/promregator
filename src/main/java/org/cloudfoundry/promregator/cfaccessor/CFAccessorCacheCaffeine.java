@@ -341,6 +341,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 		
 		this.appsInSpaceCache.synchronous().invalidateAll();
 		this.spaceSummaryCache.synchronous().invalidateAll();
+		this.appsInSpaceV3Cache.synchronous().invalidateAll();
 	}
 
 	@Override
