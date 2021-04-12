@@ -1,11 +1,13 @@
 package org.cloudfoundry.promregator.scanner;
 
+import static org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl.INVALID_APPLICATIONS_RESPONSE;
+
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
@@ -22,8 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
-
-import static org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl.INVALID_APPLICATIONS_RESPONSE;
 
 public class ReactiveTargetResolver implements TargetResolver {
 	private static final Logger log = LoggerFactory.getLogger(ReactiveTargetResolver.class);
@@ -426,37 +426,44 @@ public class ReactiveTargetResolver implements TargetResolver {
 	}
 
 	private Flux<IntermediateTarget> resolveAnnotations(IntermediateTarget it) {
-		if (Boolean.TRUE.equals(it.getConfigTarget().getKubernetesAnnotations())) {
-			Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> response = this.cfAccessor
-				.retrieveAllApplicationsInSpaceV3(it.getResolvedOrgId(), it.getResolvedSpaceId());
-
-			return response.flatMap(res -> {
-				if (res == null || INVALID_APPLICATIONS_RESPONSE == res) {
-					logEmptyTarget
-						.debug("Your foundation does not support V3 APIs, yet you have enabled Kubernetes Annotation filtering. Ignoring annotation filtering.");
-					return Mono.just(it);
-				}
-
-				return res.getResources().stream()
-						  .filter(app -> it.getResolvedApplicationName()
-										   .equals(app.getName().toLowerCase(Locale.ENGLISH)))
-						  .filter(app -> this.isApplicationInScrapableState(app.getState().toString()))
-						  .filter(app -> app.getMetadata() != null)
-						  .filter(app -> app.getMetadata().getAnnotations() != null)
-						  .filter(app -> app.getMetadata().getAnnotations()
-											.getOrDefault(PROMETHEUS_IO_SCRAPE, "false")
-											.equals("true"))
-						  .map(app -> {
-							  it.setResolvedMetricsPath(app.getMetadata().getAnnotations()
-														   .getOrDefault(PROMETHEUS_IO_PATH, null));
-							  return Mono.just(it);
-						  }).findFirst().orElseGet(Mono::empty);
-			}).doOnError(e ->
-				 log.warn(String.format("Error on retrieving application annotations for org '%s', space '%s' and application '%s'.",
-										it.getResolvedOrgName(), it.getResolvedSpaceName(), it.getConfigTarget().getApplicationName()), e)).flux();
+		if (!Boolean.TRUE.equals(it.getConfigTarget().getKubernetesAnnotations())) {
+			return Mono.just(it).flux();
 		}
 
-		return Mono.just(it).flux();
+		Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> allAppsInSpaceV3 = this.cfAccessor
+			.retrieveAllApplicationsInSpaceV3(it.getResolvedOrgId(), it.getResolvedSpaceId());
+
+		Mono<IntermediateTarget> enrichedMono = allAppsInSpaceV3.flatMap(res -> {
+			if (res == null || INVALID_APPLICATIONS_RESPONSE == res) {
+				log.debug("Your foundation does not support V3 APIs, yet you have enabled Kubernetes Annotation filtering. Ignoring annotation filtering.");
+				return Mono.just(it);
+			}
+
+			List<org.cloudfoundry.client.v3.applications.ApplicationResource> appResList = res.getResources();
+			for (org.cloudfoundry.client.v3.applications.ApplicationResource appRes : appResList) {
+				if (!it.getResolvedApplicationName().equals(appRes.getName().toLowerCase(Locale.ENGLISH))) {
+					continue;
+				}
+				if (!this.isApplicationInScrapableState(appRes.getState().toString())) {
+					continue;
+				}
+				
+				if (appRes.getMetadata() != null && appRes.getMetadata().getAnnotations() != null) {
+					final Map<String, String> annotationsMap = appRes.getMetadata().getAnnotations();
+					if (annotationsMap.getOrDefault(PROMETHEUS_IO_SCRAPE, "false").equals("true")) {
+						it.setResolvedMetricsPath(annotationsMap.getOrDefault(PROMETHEUS_IO_PATH, null));
+						return Mono.just(it);
+					}
+				}
+			}
+			
+			return Mono.empty();
+		}).doOnError(e -> {
+			log.warn(String.format("Error on retrieving application annotations for org '%s', space '%s' and application '%s'.",
+									it.getResolvedOrgName(), it.getResolvedSpaceName(), it.getConfigTarget().getApplicationName()), e);
+		});
+
+		return enrichedMono.flux();
 	}
 
 	private boolean isApplicationInScrapableState(String state) {
