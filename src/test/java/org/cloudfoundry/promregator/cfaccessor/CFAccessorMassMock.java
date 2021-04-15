@@ -237,4 +237,9 @@ public class CFAccessorMassMock implements CFAccessor {
 	public Mono<ListApplicationRoutesResponse> retrieveRoutesForAppId(String appId) {
 		throw new UnsupportedOperationException();
 	}
+
+	@Override
+	public boolean isV3Enabled() {
+		return true;
+	}
 }

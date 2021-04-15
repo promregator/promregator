@@ -3,18 +3,15 @@ package org.cloudfoundry.promregator.config;
 import javax.annotation.PostConstruct;
 
 import org.cloudfoundry.promregator.config.validations.ConfigurationValidation;
-import org.cloudfoundry.promregator.config.validations.PreferredRouteRegexMustBeCompilable;
-import org.cloudfoundry.promregator.config.validations.TargetsHaveConsistentAuthenticatorId;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
 
 public class ConfigurationValidations {
 	@Autowired
 	private PromregatorConfiguration promregatorConfiguration;
-
-	protected ConfigurationValidation[] listOfValidations = {
-			new TargetsHaveConsistentAuthenticatorId(),
-			new PreferredRouteRegexMustBeCompilable()
-		};
+	@Autowired
+	protected List<ConfigurationValidation> listOfValidations;
 	
 	@PostConstruct
 	protected void validateConfiguration() {

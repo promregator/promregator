@@ -493,4 +493,9 @@ public class CFAccessorMock implements CFAccessor {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
+	public boolean isV3Enabled() {
+		return true;
+	}
+
 }

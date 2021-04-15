@@ -336,6 +336,11 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	}
 
 	@Override
+	public boolean isV3Enabled() {
+		return this.parent.isV3Enabled();
+	}
+
+	@Override
 	public void invalidateCacheApplications() {
 		log.info("Invalidating application cache");
 		

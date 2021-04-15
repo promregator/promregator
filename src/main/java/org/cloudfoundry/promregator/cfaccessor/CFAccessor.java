@@ -42,6 +42,8 @@ public interface CFAccessor {
 	Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse> retrieveAllDomainsV3(String orgId);
 
 	Mono<org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse> retrieveRoutesForAppId(String appId);
+
+	boolean isV3Enabled();
 	
 	void reset();
 }

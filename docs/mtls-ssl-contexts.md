@@ -12,7 +12,7 @@ and verify their certificates if signed by an alternate CA.
 - You have a keystore containing the client certificate for Promregator to use for
 outgoing communications
   
-- You have a Java truststore containing your CA
+- You have a Java trust store containing your CA
 
 ## Specifying an SSL Context
 
@@ -35,4 +35,9 @@ certificates that Promregator should trust
 
 ```shell
 java -Djavax.net.ssl.keyStore=/home/example/key.jks -Djavax.net.ssl.keyStorePassword=example -Djavax.net.ssl.trustStore=/home/example/trust.jks -Djavax.net.ssl.trustStorePassword=example
+```
+
+If using the docker container you can specify these options using the `JAVA_OPTS` environment variable
+```shell
+docker run -e JAVA_OPTS='-Djavax.net.ssl.keyStore...' ...
 ```

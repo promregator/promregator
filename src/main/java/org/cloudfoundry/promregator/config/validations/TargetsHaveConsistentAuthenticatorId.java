@@ -7,12 +7,14 @@ import org.cloudfoundry.promregator.config.Target;
 import org.cloudfoundry.promregator.config.TargetAuthenticatorConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * All targets must have an authenticatorId (if specified), which is specified
  * in the list of targetAuthenticators (referential integrity).
  *
  */
+@Component
 public class TargetsHaveConsistentAuthenticatorId implements ConfigurationValidation {
 	private static final Logger log = LoggerFactory.getLogger(TargetsHaveConsistentAuthenticatorId.class);
 
