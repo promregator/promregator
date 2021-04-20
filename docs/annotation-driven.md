@@ -14,6 +14,8 @@ These annotations are supported:
 
 For the metadata to be evaluated, the corresponding target needs to have set the attribute `kubernetesAnnotations` to `true` (see also details at the [configuration option page](./config.md) for this option). Note that if this option is set, any target which does *not* provide the necessary metadata annotations will not be selected for scraping (but ignored).
 
+This provides the opportunity for an "opt-in" to scraping by applications without the need of modifying Promregator's configuration: If another application wants to get scraped, it may set `prometheus.io/scrape` to `true` (and provide a `prometheus.io/path` if applicable). On the next metadata update, the new application will be detected automatically and added to discovery.
+
 ## Example application
 
 An example Cloud Foundry application using these annotations would be deployed

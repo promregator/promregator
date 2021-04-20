@@ -93,7 +93,7 @@ class CFAccessorSimulatorTest {
 	@Test
 	void testRetrieveOrgIdV3() {
 		CFAccessorSimulator subject = new CFAccessorSimulator(2);
-		Assertions.assertThrows(UnsupportedOperationException.class, () -> subject.retrieveOrgId("simorg"));
+		Assertions.assertThrows(UnsupportedOperationException.class, () -> subject.retrieveOrgIdV3("simorg"));
 	}
 
 	@Test

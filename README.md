@@ -52,6 +52,7 @@ Here is the list of major features provided by Promregator:
   The available authentication schemes are easily extensible.
   
   *(>= 0.4.0)* Each target may be configured to use its own authentication scheme, thus you may authenticate to multiple CF apps using different credentials.
+  *(>= 0.9.0)* Ability to specify the [SSL Context](docs/mtls-ssl-contexts.md) used by promregator using JVM options
 * *(>= 0.2.0)* **Support for inbound authentication** (e.g. Prometheus authenticates to Promregator) using Basic HTTP Authentication. 
 * **Configuration using standard Spring properties** as defined by the Spring Framework (e.g. using `application.yml` file).
 * *(>= 0.6.0)* Support for [**encrypted passwords in configuration files**](./docs/passwords-in-config.md) including providing the encryption key via **Docker Secrets**
@@ -61,7 +62,6 @@ Here is the list of major features provided by Promregator:
 * *(>= 0.4.0)* **[Cache Invalidation](docs/invalidate-cache.md)** is possible via an (optionally auth-protected) HTTP REST endpoint.
 * Promregator's endpoints (e.g. `/metrics`, `/promregatorMetrics`, `/discovery`) support **GZIP compression**, if the clients indicates to accept it.
 * *(>= 0.9.0)* [Filtering by annotations](docs/annotation-driven.md) and using annotations to specify the metrics path.
-* *(>= 0.9.0)* Ability to specify the [SSL Context](docs/mtls-ssl-contexts.md) used by promregator using JVM options
 
 
 ## Architecture
