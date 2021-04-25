@@ -25,9 +25,13 @@ import org.cloudfoundry.client.v2.spaces.SpaceResource;
 import org.cloudfoundry.client.v2.domains.Domain;
 import org.cloudfoundry.client.v2.domains.DomainEntity;
 import org.cloudfoundry.client.v2.domains.DomainResource;
+import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
+import org.cloudfoundry.client.v3.spaces.GetSpaceResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
+
+import static org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl.INVALID_APPLICATIONS_RESPONSE;
 
 public class CFAccessorSimulator implements CFAccessor {
 	public static final String ORG_UUID = "eb51aa9c-2fa3-11e8-b467-0ed5f89f718b";
@@ -220,5 +224,50 @@ public class CFAccessorSimulator implements CFAccessor {
 		
 		ListOrganizationDomainsResponse response = ListOrganizationDomainsResponse.builder().addAllResources(domains).build();
 		return Mono.just(response);
+	}
+
+	@Override
+	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> retrieveOrgIdV3(String orgName) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> retrieveAllOrgIdsV3() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Mono<org.cloudfoundry.client.v3.spaces.ListSpacesResponse> retrieveSpaceIdV3(String orgId, String spaceName) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Mono<org.cloudfoundry.client.v3.spaces.ListSpacesResponse> retrieveSpaceIdsInOrgV3(String orgId) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> retrieveAllApplicationsInSpaceV3(String orgId, String spaceId) {
+		return Mono.just(INVALID_APPLICATIONS_RESPONSE);
+	}
+
+	@Override
+	public Mono<GetSpaceResponse> retrieveSpaceV3(String spaceId) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse> retrieveAllDomainsV3(String orgId) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Mono<ListApplicationRoutesResponse> retrieveRoutesForAppId(String appId) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean isV3Enabled() {
+		return true;
 	}
 }

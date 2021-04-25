@@ -17,6 +17,8 @@ public class ResolvedTarget {
 	private String protocol;
 
 	private String applicationId;
+
+	private Boolean kubernetesAnnotations = false;
 	
 	public ResolvedTarget() {
 		super();
@@ -29,6 +31,7 @@ public class ResolvedTarget {
 		this.applicationName = configTarget.getApplicationName();
 		this.path = configTarget.getPath();
 		this.protocol = configTarget.getProtocol();
+		this.kubernetesAnnotations = configTarget.getKubernetesAnnotations();
 	}
 	
 	public String getOrgName() {
@@ -64,6 +67,14 @@ public class ResolvedTarget {
 
 	public void setPath(String path) {
 		this.path = path;
+	}
+
+	public Boolean getKubernetesAnnotations() {
+		return kubernetesAnnotations;
+	}
+
+	public void setKubernetesAnnotations(Boolean kubernetesAnnotations) {
+		this.kubernetesAnnotations = kubernetesAnnotations != null ? kubernetesAnnotations : false;
 	}
 
 	public String getProtocol() {
@@ -107,6 +118,7 @@ public class ResolvedTarget {
 		result = prime * result + ((applicationName == null) ? 0 : applicationName.hashCode());
 		result = prime * result + ((orgName == null) ? 0 : orgName.hashCode());
 		result = prime * result + ((path == null) ? 0 : path.hashCode());
+		result = prime * result + ((kubernetesAnnotations == null) ? 0 : kubernetesAnnotations.hashCode());
 		result = prime * result + ((protocol == null) ? 0 : protocol.hashCode());
 		result = prime * result + ((spaceName == null) ? 0 : spaceName.hashCode());
 		result = prime * result + ((applicationId == null) ? 0 : applicationId.hashCode());
@@ -156,6 +168,13 @@ public class ResolvedTarget {
 		} else if (!path.equals(other.path)) {
 			return false;
 		}
+		if (kubernetesAnnotations == null) {
+			if (other.kubernetesAnnotations != null) {
+				return false;
+			}
+		} else if (!kubernetesAnnotations.equals(other.kubernetesAnnotations)) {
+			return false;
+		}
 		if (protocol == null) {
 			if (other.protocol != null) {
 				return false;
@@ -189,6 +208,8 @@ public class ResolvedTarget {
 		builder.append(applicationId);
 		builder.append(", path=");
 		builder.append(path);
+		builder.append(", kuberntesAnnotations=");
+		builder.append(kubernetesAnnotations.toString());
 		builder.append(", protocol=");
 		builder.append(protocol);
 		builder.append("]");

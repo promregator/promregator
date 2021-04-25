@@ -3,6 +3,7 @@ package org.cloudfoundry.promregator.scanner;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorMock;
@@ -16,6 +17,9 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import reactor.core.publisher.Mono;
+
+import static org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl.INVALID_APPLICATIONS_RESPONSE;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = MockedReactiveTargetResolverSpringApplication.class)
@@ -597,4 +601,96 @@ class ReactiveTargetResolverTest {
 		Assertions.assertEquals(0, actualList.size());
 	}
 
+	@Test
+	void testWithV3Unsupported() {
+		Mono<ListApplicationsResponse> errorResponse = Mono.just(INVALID_APPLICATIONS_RESPONSE);
+		Mockito.when(this.cfAccessor.retrieveAllApplicationsInSpaceV3(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID))
+			   .thenReturn(errorResponse);
+
+		List<Target> list = new LinkedList<>();
+
+		Target t = new Target();
+		t.setOrgName("unittestorg");
+		t.setSpaceName("unittestspace");
+		t.setApplicationRegex(".*2");
+		t.setPath("path");
+		t.setProtocol("https");
+		t.setKubernetesAnnotations(true);
+		list.add(t);
+
+		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
+
+		// Still returns 1 even though the annotations do not exist
+		Assertions.assertEquals(1, actualList.size());
+
+		ResolvedTarget rt = actualList.get(0);
+		Assertions.assertEquals(t, rt.getOriginalTarget());
+		Assertions.assertEquals(t.getOrgName(), rt.getOrgName());
+		Assertions.assertEquals(t.getSpaceName(), rt.getSpaceName());
+		Assertions.assertEquals("testapp2", rt.getApplicationName());
+		Assertions.assertEquals(t.getPath(), rt.getPath());
+		Assertions.assertEquals(t.getProtocol(), rt.getProtocol());
+
+		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationsInSpaceV3(CFAccessorMock.UNITTEST_ORG_UUID,
+																						   CFAccessorMock.UNITTEST_SPACE_UUID);
+	}
+
+	@Test
+	void testWithAnnotationsUnexpectedValue() {
+		List<Target> list = new LinkedList<>();
+
+		Target t = new Target();
+		t.setOrgName("unittestorg");
+		t.setSpaceName("unittestspace");
+		t.setApplicationRegex(".*2");
+		t.setPath("path");
+		t.setProtocol("https");
+		t.setKubernetesAnnotations(true);
+		list.add(t);
+		// testapp2 has an invalid scrape value
+
+		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
+
+		Assertions.assertEquals(0, actualList.size());
+		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationsInSpaceV3(CFAccessorMock.UNITTEST_ORG_UUID,
+																						   CFAccessorMock.UNITTEST_SPACE_UUID);
+	}
+
+	@Test
+	void testWithAnnotations() {
+		List<Target> list = new LinkedList<>();
+
+		Target t = new Target();
+		t.setOrgName("unittestorg");
+		t.setSpaceName("unittestspace");
+		t.setApplicationRegex(".*");
+		t.setPath("path");
+		t.setProtocol("https");
+		t.setKubernetesAnnotations(true);
+		list.add(t);
+
+		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
+
+		Assertions.assertEquals(2, actualList.size());
+
+		ResolvedTarget rt = actualList.get(0);
+		Assertions.assertEquals(t, rt.getOriginalTarget());
+		Assertions.assertEquals(t.getOrgName(), rt.getOrgName());
+		Assertions.assertEquals(t.getSpaceName(), rt.getSpaceName());
+		Assertions.assertEquals("testapp", rt.getApplicationName());
+		// Defaults pathing to config value
+		Assertions.assertEquals(t.getPath(), rt.getPath());
+		Assertions.assertEquals(t.getProtocol(), rt.getProtocol());
+
+		rt = actualList.get(1);
+		Assertions.assertEquals(t, rt.getOriginalTarget());
+		Assertions.assertEquals(t.getOrgName(), rt.getOrgName());
+		Assertions.assertEquals(t.getSpaceName(), rt.getSpaceName());
+		Assertions.assertEquals("internalapp", rt.getApplicationName());
+		// Overrides pathing with annotations
+		Assertions.assertEquals("/actuator/prometheus", rt.getPath());
+		Assertions.assertEquals(t.getProtocol(), rt.getProtocol());
+		Mockito.verify(this.cfAccessor, Mockito.times(3)).retrieveAllApplicationsInSpaceV3(CFAccessorMock.UNITTEST_ORG_UUID,
+																						   CFAccessorMock.UNITTEST_SPACE_UUID);
+	}
 }

@@ -14,6 +14,8 @@ import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
+import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
+import org.cloudfoundry.client.v3.spaces.GetSpaceResponse;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +39,8 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	private AsyncLoadingCache<String, ListSpacesResponse> spaceIdInOrgCache;
 	private AsyncLoadingCache<CacheKeyAppsInSpace, ListApplicationsResponse> appsInSpaceCache;
 	private AsyncLoadingCache<String, GetSpaceSummaryResponse> spaceSummaryCache;		
-	private AsyncLoadingCache<String, ListOrganizationDomainsResponse> domainsInOrgCache;	
+	private AsyncLoadingCache<String, ListOrganizationDomainsResponse> domainsInOrgCache;
+	private AsyncLoadingCache<CacheKeyAppsInSpace, org.cloudfoundry.client.v3.applications.ListApplicationsResponse> appsInSpaceV3Cache;
 	
 	@Value("${cf.cache.timeout.org:3600}")
 	private int refreshCacheOrgLevelInSeconds;
@@ -153,6 +156,17 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 			return mono.toFuture();
 		}
 	}
+
+	private class AppsInSpaceV3CacheLoader implements AsyncCacheLoader<CacheKeyAppsInSpace, org.cloudfoundry.client.v3.applications.ListApplicationsResponse> {
+		@Override
+		public @NonNull CompletableFuture<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> asyncLoad(
+			@NonNull CacheKeyAppsInSpace key, @NonNull Executor executor) {
+			Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> mono = parent.retrieveAllApplicationsInSpaceV3(key.getOrgId(), key.getSpaceId())
+																								.subscribeOn(Schedulers.fromExecutor(executor))
+																								.cache();
+			return mono.toFuture();
+		}
+	}
 	
 	@PostConstruct
 	public void setupCaches() {
@@ -218,6 +232,14 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 				.scheduler(caffeineScheduler)
 				.buildAsync(new DomainCacheLoader());
 		this.internalMetrics.addCaffeineCache("domain", this.domainsInOrgCache);
+
+		this.appsInSpaceV3Cache = Caffeine.newBuilder()
+										.expireAfterAccess(this.expiryCacheApplicationLevelInSeconds, TimeUnit.SECONDS)
+										.refreshAfterWrite(this.refreshCacheApplicationLevelInSeconds, TimeUnit.SECONDS)
+										.recordStats()
+										.scheduler(caffeineScheduler)
+										.buildAsync(new AppsInSpaceV3CacheLoader());
+		this.internalMetrics.addCaffeineCache("appsInSpaceV3", this.appsInSpaceV3Cache);
 	}
 
 	@Override
@@ -266,11 +288,65 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	}
 
 	@Override
+	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> retrieveOrgIdV3(String orgName) {
+		// TODO: Implement cache
+		return this.parent.retrieveOrgIdV3(orgName);
+	}
+
+	@Override
+	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> retrieveAllOrgIdsV3() {
+		// TODO: Implement cache
+		return this.parent.retrieveAllOrgIdsV3();
+	}
+
+	@Override
+	public Mono<org.cloudfoundry.client.v3.spaces.ListSpacesResponse> retrieveSpaceIdV3(String orgId, String spaceName) {
+		// TODO: Implement cache
+		return this.parent.retrieveSpaceIdV3(orgId, spaceName);
+	}
+
+	@Override
+	public Mono<org.cloudfoundry.client.v3.spaces.ListSpacesResponse> retrieveSpaceIdsInOrgV3(String orgId) {
+		// TODO: Implement cache
+		return this.parent.retrieveSpaceIdsInOrgV3(orgId);
+	}
+
+	@Override
+	public Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> retrieveAllApplicationsInSpaceV3(String orgId, String spaceId) {
+		final CacheKeyAppsInSpace key = new CacheKeyAppsInSpace(orgId, spaceId);
+
+		return Mono.fromFuture(this.appsInSpaceV3Cache.get(key));
+	}
+
+	@Override
+	public Mono<GetSpaceResponse> retrieveSpaceV3(String spaceId) {
+		// TODO: Implement cache
+		return this.parent.retrieveSpaceV3(spaceId);
+	}
+
+	@Override
+	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse> retrieveAllDomainsV3(String orgId) {
+		// TODO: Implement cache
+		return this.parent.retrieveAllDomainsV3(orgId);
+	}
+
+	@Override
+	public Mono<ListApplicationRoutesResponse> retrieveRoutesForAppId(String appId) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean isV3Enabled() {
+		return this.parent.isV3Enabled();
+	}
+
+	@Override
 	public void invalidateCacheApplications() {
 		log.info("Invalidating application cache");
 		
 		this.appsInSpaceCache.synchronous().invalidateAll();
 		this.spaceSummaryCache.synchronous().invalidateAll();
+		this.appsInSpaceV3Cache.synchronous().invalidateAll();
 	}
 
 	@Override

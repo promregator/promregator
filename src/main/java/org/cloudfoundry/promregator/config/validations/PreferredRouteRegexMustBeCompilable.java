@@ -6,10 +6,12 @@ import java.util.regex.PatternSyntaxException;
 
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.config.Target;
+import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Component
 public class PreferredRouteRegexMustBeCompilable implements ConfigurationValidation {
 	private static final Logger log = LoggerFactory.getLogger(PreferredRouteRegexMustBeCompilable.class);
 	

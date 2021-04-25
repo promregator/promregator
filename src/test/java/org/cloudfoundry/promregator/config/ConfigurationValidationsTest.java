@@ -4,6 +4,9 @@ import org.cloudfoundry.promregator.config.validations.ConfigurationValidation;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
+import java.util.List;
+
 class ConfigurationValidationsTest {
 	private class TestableConfigurationValidations extends ConfigurationValidations {
 		public boolean called = false;
@@ -38,9 +41,7 @@ class ConfigurationValidationsTest {
 	@Test
 	void testNoValidationFailed() {
 		TestableConfigurationValidations subject = new TestableConfigurationValidations();
-		ConfigurationValidation[] listOfValidations = {
-				new AcceptingConfigurationValidation()
-		};
+		List<ConfigurationValidation> listOfValidations = Collections.singletonList(new AcceptingConfigurationValidation());
 		subject.listOfValidations = listOfValidations;
 		
 		subject.validateConfiguration();
@@ -51,9 +52,7 @@ class ConfigurationValidationsTest {
 	@Test
 	void testValidationFailed() {
 		TestableConfigurationValidations subject = new TestableConfigurationValidations();
-		ConfigurationValidation[] listOfValidations = {
-				new FailingConfigurationValidation()
-		};
+		List<ConfigurationValidation> listOfValidations = Collections.singletonList(new FailingConfigurationValidation());
 		subject.listOfValidations = listOfValidations;
 		
 		subject.validateConfiguration();

@@ -15,6 +15,7 @@ class ResolvedTargetTest {
 		
 		subject.setPath("/path/test");
 		subject.setProtocol("https");
+		subject.setKubernetesAnnotations(true);
 		
 		String answer = subject.toString();
 		
@@ -23,6 +24,7 @@ class ResolvedTargetTest {
 		Assertions.assertTrue(answer.contains("testapp"));
 		Assertions.assertTrue(answer.contains("/path/test"));
 		Assertions.assertTrue(answer.contains("https"));
+		Assertions.assertTrue(answer.contains("kuberntesAnnotations=true"));
 	}
 
 }
