@@ -279,6 +279,9 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+		                <configuration>
+                                        <classifier>exec</classifier>
+                              </configuration>
 			</plugin>
 
 			<!-- see also https://central.sonatype.org/pages/apache-maven.html -->
