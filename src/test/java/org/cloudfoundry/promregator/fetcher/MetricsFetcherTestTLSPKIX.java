@@ -59,7 +59,7 @@ class MetricsFetcherTestTLSPKIX {
 	void testPKIXErrorOnSelfSignedCertificateInDefaultMode() throws Exception {
 		String instanceId = "abcd:4";
 		NullMetricFamilySamplesEnricher dummymfse = new NullMetricFamilySamplesEnricher("dummy", "dummy", "dummy", "dummy:0");
-		List<String> labelValues = dummymfse.getEnrichedLabelValues(new LinkedList<>());
+		List<String> labelValues = dummymfse.getEnrichedLabelValues(new LinkedList<>(), new LinkedList<>());
 		String[] ownTelemetryLabelValues = labelValues.toArray(new String[0]);
 		
 		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, false);

@@ -69,7 +69,7 @@ class MetricsFetcherTest {
 	void testStraightForward() throws Exception {
 		String instanceId = "abcd:4";
 		NullMetricFamilySamplesEnricher dummymfse = new NullMetricFamilySamplesEnricher("dummy", "dummy", "dummy", "dummy:0");
-		List<String> labelValues = dummymfse.getEnrichedLabelValues(new LinkedList<>());
+		List<String> labelValues = dummymfse.getEnrichedLabelValues(new LinkedList<>(), new LinkedList<>());
 		String[] ownTelemetryLabelValues = labelValues.toArray(new String[0]);
 		
 		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, false);
@@ -143,7 +143,7 @@ class MetricsFetcherTest {
 		String instanceId = "abcd:2";
 		TestAuthenticationEnricher ae = new TestAuthenticationEnricher();
 		NullMetricFamilySamplesEnricher dummymfse = new NullMetricFamilySamplesEnricher("dummy", "dummy", "dummy", "dummy:0");
-		List<String> labelValues = dummymfse.getEnrichedLabelValues(new LinkedList<>());
+		List<String> labelValues = dummymfse.getEnrichedLabelValues(new LinkedList<>(), new LinkedList<>());
 		String[] ownTelemetryLabelValues = labelValues.toArray(new String[0]);
 		
 		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, false);
@@ -174,7 +174,7 @@ class MetricsFetcherTest {
 	void testSocketReadTimeoutTriggered() throws Exception {
 		String instanceId = "abcd:7";
 		NullMetricFamilySamplesEnricher dummymfse = new NullMetricFamilySamplesEnricher("dummy", "dummy", "dummy", "dummy:0");
-		List<String> labelValues = dummymfse.getEnrichedLabelValues(new LinkedList<>());
+		List<String> labelValues = dummymfse.getEnrichedLabelValues(new LinkedList<>(), new LinkedList<>());
 		String[] ownTelemetryLabelValues = labelValues.toArray(new String[0]);
 		
 		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, false);
@@ -201,7 +201,7 @@ class MetricsFetcherTest {
 	void testInvalidEndpointURL() throws Exception {
 		String instanceId = "abcd:8";
 		NullMetricFamilySamplesEnricher dummymfse = new NullMetricFamilySamplesEnricher("dummy", "dummy", "dummy", "dummy:0");
-		List<String> labelValues = dummymfse.getEnrichedLabelValues(new LinkedList<>());
+		List<String> labelValues = dummymfse.getEnrichedLabelValues(new LinkedList<>(), new LinkedList<>());
 		String[] ownTelemetryLabelValues = labelValues.toArray(new String[0]);
 		
 		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, false);
