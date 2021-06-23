@@ -36,7 +36,7 @@ public class CFWatchdog {
 	
 	@Scheduled(fixedRateString = "${cf.watchdog.rate:60}000", initialDelayString = "${cf.watchdog.initialDelay:60}000")
 	@SuppressWarnings("unused")
-	protected void connectionWatchdog() {
+	private void connectionWatchdog() {
 		// see also https://github.com/promregator/promregator/issues/83
 		
 		if (!this.watchdogEnabled) {
