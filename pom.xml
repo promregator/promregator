@@ -277,11 +277,21 @@
 	<build>
 		<plugins>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>library-jar</id>
+						<goals><goal>jar</goal></goals>
+						<configuration>
+							<classifier>library</classifier>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-		                <configuration>
-                                        <classifier>exec</classifier>
-                              </configuration>
 			</plugin>
 
 			<!-- see also https://central.sonatype.org/pages/apache-maven.html -->
