@@ -5,7 +5,8 @@ Promregator supports extending it. Starting with 0.10.0, Promregator not just pr
 ```xml
 <dependency>
 	<groupId>com.github.promregator</groupId>
-	<artifactId>promregator-library</artifactId>
+	<artifactId>promregator</artifactId>
+	<classifier>library</artifactId>
 	<version>0.10.0</version> <!-- or any other higher version number -->
 </dependency>
 ```
