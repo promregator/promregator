@@ -330,3 +330,6 @@ If you want to have your logs formatted based on JSON, remember that Promregator
 	</logger>
 </configuration>
 ```
+
+## Extending Promregator
+Promregator supports extension since version 0.10.0. For details refer to the ["Extending Promregator" documentation](./extension/README.md).
