@@ -251,7 +251,9 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				// Set the access url to the selected route (without any protocol or path yet)
 				v.setAccessURL(this.determineApplicationRoute(urls,
 						v.getTarget().getOriginalTarget().getPreferredRouteRegexPatterns()));
-			}
+			} else
+				// if there is no url, skip this one
+				return Mono.empty();
 
 			// In the interest of backwards compatibility lest do this inside a try.
 			// There is little reason why this should not find the correct domain
@@ -274,7 +276,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			OSAVector v = tuple.getT1();
 			List<DomainResource> domains = tuple.getT2();
 
-			if (domains.size() == 0) {
+			if (domains.size() == 0 || v.getDomainId() == null) {
 				// NB: This drops the current target!
 				return Mono.empty();
 			}
