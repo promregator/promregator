@@ -601,8 +601,8 @@ class ReactiveAppInstanceScannerTest {
 
 		assertThat(result).filteredOn( instance -> instance.getInstanceId().equals(UNITTEST_APP2_UUID+":0") )
 				.extracting("accessUrl").containsOnly("https://hostapp2.shared.domain.example.org/additionalPath/testpath2");
-  	}
-  
+	}
+
 
 	@Test
 	void testStraightForwardInternalRoute() {
