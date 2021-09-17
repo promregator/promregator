@@ -5,10 +5,14 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.assertj.core.util.Lists;
 import org.cloudfoundry.client.v2.Metadata;
 import org.cloudfoundry.client.v2.applications.ApplicationEntity;
 import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
+import org.cloudfoundry.client.v2.domains.Domain;
+import org.cloudfoundry.client.v2.domains.DomainEntity;
+import org.cloudfoundry.client.v2.domains.DomainResource;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
@@ -20,12 +24,8 @@ import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v2.spaces.SpaceEntity;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
-import org.cloudfoundry.client.v2.domains.Domain;
-import org.cloudfoundry.client.v2.domains.DomainEntity;
-import org.cloudfoundry.client.v2.domains.DomainResource;
 import org.cloudfoundry.client.v3.BuildpackData;
 import org.cloudfoundry.client.v3.Lifecycle;
-import org.cloudfoundry.client.v3.LifecycleData;
 import org.cloudfoundry.client.v3.LifecycleType;
 import org.cloudfoundry.client.v3.applications.ApplicationState;
 import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
@@ -41,6 +41,7 @@ public class CFAccessorMock implements CFAccessor {
 	public static final String UNITTEST_SPACE_UUID_EXCEPTION = "db08be9a-2fa4-11e8-b467-0ed5f89f718b-exception";
 	public static final String UNITTEST_APP1_UUID = "55820b2c-2fa5-11e8-b467-0ed5f89f718b";
 	public static final String UNITTEST_APP2_UUID = "5a0ead6c-2fa5-11e8-b467-0ed5f89f718b";
+	public static final String UNITTEST_APP3_UUID = "4b0ead6c-2fa5-11e8-b467-0ed5f89f718b";
 	public static final String UNITTEST_APP1_ROUTE_UUID = "57ac2ada-2fa6-11e8-b467-0ed5f89f718b";
 	public static final String UNITTEST_APP2_ROUTE_UUID = "5c5b464c-2fa6-11e8-b467-0ed5f89f718b";
 	public static final String UNITTEST_APP2_ADDITIONAL_ROUTE_UUID = "efa7710e-c8e2-42c7-ac50-b0a7837c517a";
@@ -158,6 +159,12 @@ public class CFAccessorMock implements CFAccessor {
 			list.add(ar);
 
 			ar = ApplicationResource.builder()
+					.entity(ApplicationEntity.builder().name("testapp3").state("STARTED").build())
+					.metadata(Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP3_UUID).build())
+					.build();
+			list.add(ar);
+			
+			ar = ApplicationResource.builder()
 									.entity(ApplicationEntity.builder().name("internalapp").state("STARTED").build())
 									.metadata(Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP_INTERNAL_UUID).build())
 									.build();
@@ -210,6 +217,13 @@ public class CFAccessorMock implements CFAccessor {
 										 .name("testapp2")
 										 .addAllRoutes(Arrays.asList(routes2))
 										 .addAllUrls(Arrays.asList(urls2)).instances(1).build();
+			list.add(sas);
+			
+			sas = SpaceApplicationSummary.builder()
+					.id(UNITTEST_APP3_UUID)
+					.name("testapp3")
+					.addAllRoutes(Lists.emptyList())
+					.addAllUrls(Lists.emptyList()).instances(1).build();
 			list.add(sas);
 
 			final String[] urls3 = {UNITTEST_APP_INTERNAL_HOST + "." + UNITTEST_INTERNAL_DOMAIN};
@@ -422,6 +436,14 @@ public class CFAccessorMock implements CFAccessor {
 																			.build();
 			list.add(ar);
 
+			ar = org.cloudfoundry.client.v3.applications.ApplicationResource.builder()
+					.name("testapp3").state(ApplicationState.STARTED)
+					.createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP3_UUID)
+					.lifecycle(Lifecycle.builder().data(BuildpackData.builder().build()).type(LifecycleType.BUILDPACK).build())
+					.metadata(org.cloudfoundry.client.v3.Metadata.builder().annotation("prometheus.io/scrape", "badValue").build())
+					.build();
+			list.add(ar);
+			
 			ar = org.cloudfoundry.client.v3.applications.ApplicationResource.builder()
 																			.name("internalapp").state(ApplicationState.STARTED)
 																			.createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP_INTERNAL_UUID)
