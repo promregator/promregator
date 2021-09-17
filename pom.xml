@@ -38,7 +38,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.4.5</version> <!-- see also https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-parent -->
+		<version>2.4.10</version> <!-- see also https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-parent -->
 		<!-- Warning! On bumping also check guava-version below! -->
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
@@ -64,7 +64,7 @@
 		  
 		  Further impact assessment especially on the second topic is needed
 		 -->
-		<cloudfoundry.client.version>4.14.0.RELEASE</cloudfoundry.client.version>
+		<cloudfoundry.client.version>4.16.0.RELEASE</cloudfoundry.client.version>
 		<logback.contrib.version>0.1.5</logback.contrib.version>
 
 		<sonar.projectKey>promregator</sonar.projectKey>
