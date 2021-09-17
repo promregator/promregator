@@ -59,7 +59,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 
 		private String orgId;
 		private String spaceId;
-		private String applicationId;		
+		private String applicationId;
 		private String domainId;
 		private String accessURL;
 		private int numberOfInstances;
@@ -257,7 +257,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			// There is little reason why this should not find the correct domain
 			try {
 				Route route = sas.getRoutes().stream().filter(rt -> v.getAccessURL().startsWith(rt.getHost()+"."+rt.getDomain().getName())).findFirst().get();
-				v.setDomainId(route.getDomain().getId());	
+				v.setDomainId(route.getDomain().getId());
 			} catch (Exception e) {
 				log.warn(String.format("unable to find matching domain for the url %s", v.getAccessURL()));
 			}
@@ -282,11 +282,11 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			// we should only run this if we found a domain in the above step
 			// this is to make sure we have compatibility with existing behaviour
 			if( !v.getDomainId().isEmpty()) {
-				try {			
+				try {
 					DomainResource domain = domains.stream().filter(r -> r.getMetadata().getId().equals(v.getDomainId()))
 						.findFirst().get();
 
-					v.setInternal(domain.getEntity().getInternal());							
+					v.setInternal(domain.getEntity().getInternal());
 				} catch (Exception e) {
 					log.warn(String.format("unable to find matching domain for the domain with id %s", v.getDomainId()));
 				}
