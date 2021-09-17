@@ -64,7 +64,7 @@
 		  
 		  Further impact assessment especially on the second topic is needed
 		 -->
-		<cloudfoundry.client.version>4.14.0.RELEASE</cloudfoundry.client.version>
+		<cloudfoundry.client.version>4.16.0.RELEASE</cloudfoundry.client.version>
 		<logback.contrib.version>0.1.5</logback.contrib.version>
 
 		<sonar.projectKey>promregator</sonar.projectKey>
