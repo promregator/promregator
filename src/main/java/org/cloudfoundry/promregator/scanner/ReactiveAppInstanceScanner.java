@@ -251,9 +251,10 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				// Set the access url to the selected route (without any protocol or path yet)
 				v.setAccessURL(this.determineApplicationRoute(urls,
 						v.getTarget().getOriginalTarget().getPreferredRouteRegexPatterns()));
-			} else
+			} else {
 				// if there is no url, skip this one
 				return Mono.empty();
+			}
 
 			// In the interest of backwards compatibility lest do this inside a try.
 			// There is little reason why this should not find the correct domain
