@@ -83,7 +83,7 @@ class ReactiveTargetResolverTest {
 		
 		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
 		
-		Assertions.assertEquals(3, actualList.size());
+		Assertions.assertEquals(4, actualList.size());
 		
 		ResolvedTarget rt = actualList.get(0);
 		Assertions.assertEquals(t, rt.getOriginalTarget());
@@ -341,6 +341,7 @@ class ReactiveTargetResolverTest {
 		t.setOrgName("unittestorg");
 		t.setSpaceName("unittestspace");
 		t.setApplicationRegex("testapp.*");
+		// Note that this will find all of testapp, testapp2 and testapp3
 		t.setPath("path");
 		t.setProtocol("https");
 		list.add(t);
@@ -349,6 +350,7 @@ class ReactiveTargetResolverTest {
 		t.setOrgName("unittestorg");
 		t.setSpaceName("unittestspace");
 		t.setApplicationName("testapp");
+		// this is causing the double-selection
 		t.setPath("path");
 		t.setProtocol("https");
 		list.add(t);
@@ -357,10 +359,11 @@ class ReactiveTargetResolverTest {
 		
 		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
 		
-		Assertions.assertEquals(2, actualList.size()); // and not 3!
+		Assertions.assertEquals(3, actualList.size()); // and not 4!
 		
 		boolean testappFound = false;
 		boolean testapp2Found = false;
+		boolean testapp3Found = false;
 		for (ResolvedTarget rt : actualList) {
 			Assertions.assertEquals(t.getOrgName(), rt.getOrgName());
 			Assertions.assertEquals(t.getSpaceName(), rt.getSpaceName());
@@ -370,7 +373,13 @@ class ReactiveTargetResolverTest {
 			if (rt.getApplicationName().equals("testapp2")) {
 				testapp2Found = true;
 			} else if (rt.getApplicationName().equals("testapp")) {
+				if (testappFound) {
+					// testApp was already found before; this would be a duplicate entry, which is what we want to avoid
+					Assertions.fail("Duplicate entry for testapp returned");
+				}
 				testappFound = true;
+			} else if (rt.getApplicationName().equals("testapp3")) {
+				testapp3Found = true;
 			} else {
 				Assertions.fail("Unknown application name returned");
 			}
@@ -378,6 +387,7 @@ class ReactiveTargetResolverTest {
 		
 		Assertions.assertTrue(testappFound);
 		Assertions.assertTrue(testapp2Found);
+		Assertions.assertTrue(testapp3Found);
 	}
 
 	@Test
@@ -690,7 +700,7 @@ class ReactiveTargetResolverTest {
 		// Overrides pathing with annotations
 		Assertions.assertEquals("/actuator/prometheus", rt.getPath());
 		Assertions.assertEquals(t.getProtocol(), rt.getProtocol());
-		Mockito.verify(this.cfAccessor, Mockito.times(3)).retrieveAllApplicationsInSpaceV3(CFAccessorMock.UNITTEST_ORG_UUID,
+		Mockito.verify(this.cfAccessor, Mockito.times(4)).retrieveAllApplicationsInSpaceV3(CFAccessorMock.UNITTEST_ORG_UUID,
 																						   CFAccessorMock.UNITTEST_SPACE_UUID);
 	}
 }
