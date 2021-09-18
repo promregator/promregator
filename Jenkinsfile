@@ -63,7 +63,7 @@ def springCloudCliPasswordTest(params) {
 			cp ../build/test/integration/springCloudCliPassword/bluemix.yaml .
 		"""
 		
-		sh """#!/bin/bash -xe
+		sh """#!/bin/bash +xe
 			CFPASSWORDENC=`cat encrypted.txt`
 			sed -i -e 's/%%CRYPTEDPASSWORD%%/\${CFPASSWORDENC}/g' bluemix.yaml
 		"""
@@ -73,7 +73,7 @@ def springCloudCliPasswordTest(params) {
 		"""
 		
 		// Run Test itself
-		sh """#!/bin/bash +xe
+		sh """#!/bin/bash -xe
 			ENCRYPT_KEY=somekey java -jar ../build/target/promregator-${params.currentVersion}.jar -Dspring.config.name=bluemix &
 			export PROMREGATOR_PID=\$!
 			
