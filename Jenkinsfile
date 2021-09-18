@@ -65,7 +65,7 @@ def springCloudCliPasswordTest(params) {
 			CFPASSWORDENC=`cat encrypted.txt`
 			sed -i -e 's/%%CRYPTEDPASSWORD%%/\${CFPASSWORDENC}/g' bluemix.yaml
 			
-			rm -rf encrypted.txt
+			rm -f encrypted.txt
 		"""
 		
 		// Run Test itself
