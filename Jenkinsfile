@@ -69,7 +69,7 @@ def springCloudCliPasswordTest(params) {
 		"""
 		
 		// Run Test itself
-		sh """
+		sh """#!/bin/bash +xe
 			java -jar ../build/target/promregator-${params.currentVersion} -Dspring.config.name=bluemix &
 			export PROMREGATOR_PID=$!
 			
@@ -84,7 +84,7 @@ def springCloudCliPasswordTest(params) {
 		"""
 		
 		// verify that the expected app could be discovered (i.e. the discovery file isn't empty)
-		sh """
+		sh """#!/bin/bash +xe
 			CHECKRESULT=`jq -r '.[] | select(.labels.__meta_promregator_target_applicationName=="testapp2") | .labels.__meta_promregator_target_applicationName' discovery.json`
 			if [ "\$CHECKRESULT" != "testapp2" ]; then
 				echo "Test has failed: Discovery response does not include the expected application name 'testapp2'"
