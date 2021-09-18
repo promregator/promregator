@@ -77,9 +77,9 @@ def springCloudCliPasswordTest(params) {
 			ENCRYPT_KEY=somekey java -jar ../build/target/promregator-${params.currentVersion}.jar -Dspring.config.name=bluemix &
 			export PROMREGATOR_PID=\$!
 			
-			echo "Promregator is running on \$PROMREGATOR_PID; giving it 30 seconds to start up"
+			echo "Promregator is running on \$PROMREGATOR_PID; giving it 20 seconds to start up"
 			
-			sleep 30
+			sleep 20
 			
 			curl -m 10 http://localhost:8080/discovery > discovery.json
 			cat discovery.json
