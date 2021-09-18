@@ -46,6 +46,7 @@ def springCloudCliPasswordTest(params) {
 		sh """
 			wget -nv https://repo.spring.io/release/org/springframework/boot/spring-boot-cli/2.5.4/spring-boot-cli-2.5.4-bin.tar.gz
 			tar xzvf spring-boot-cli-2.5.4-bin.tar.gz
+			rm -f spring-boot-cli-2.5.4-bin.tar.gz
 			cd spring-2.5.4/bin
 			
 			./spring install org.springframework.cloud:spring-cloud-cli:2.2.4.RELEASE
