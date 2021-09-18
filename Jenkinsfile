@@ -39,6 +39,63 @@ def runWithGPG(Closure job) {
 
 }
 
+def springCloudCliPasswordTest(params) {
+	assert params.currentVersion != null : "Current Version at springCloudCliPasswordTest not set"
+
+	dir("../springCloudTest") {
+		sh """
+			wget https://repo.spring.io/release/org/springframework/boot/spring-boot-cli/2.5.4/spring-boot-cli-2.5.4-bin.tar.gz
+			tar xzvf spring-boot-cli-2.5.4-bin.tar.gz
+			cd spring-2.5.4/bin
+			
+			./spring install org.springframework.cloud:spring-cloud-cli:2.2.4.RELEASE
+		"""
+		
+		withCredentials([usernamePassword(credentialsId: 'bluemix-ibm-cf-platform', passwordVariable: 'CFPASSWORD', usernameVariable: 'CFUSER')]) {
+			sh """#!/bin/bash -xe
+				spring-2.5.4/bin/spring encrypt '${CFPASSWORD}' --key somekey > encrypted.txt
+				
+			"""
+		}
+		
+		// prepare configuration file
+		sh """
+			cp ../build/test/integration/springCloudCliPassword/bluemix.yaml .
+			
+			CFPASSWORDENC=`cat encrypted.txt`
+			sed -i -e 's/%%CRYPTEDPASSWORD%%/${CFPASSWORDENC}/g' bluemix.yaml
+			
+			rm -rf encrypted.txt
+		"""
+		
+		// Run Test itself
+		sh """
+			java -jar ../build/target/promregator-${params.currentVersion} -Dspring.config.name=bluemix &
+			export PROMREGATOR_PID=$!
+			
+			echo "Promregator is running on \$PROMREGATOR_PID; giving it 30 seconds to start up"
+			
+			sleep 30
+			
+			curl http://localhost:8080/discovery > discovery.json
+			cat discovery.json
+
+			kill \$PROMREGATOR_PID
+		"""
+		
+		// verify that the expected app could be discovered (i.e. the discovery file isn't empty)
+		sh """
+			CHECKRESULT=`jq -r '.[] | select(.labels.__meta_promregator_target_applicationName=="testapp2") | .labels.__meta_promregator_target_applicationName' discovery.json`
+			if [ "\$CHECKRESULT" != "testapp2" ]; then
+				echo "Test has failed: Discovery response does not include the expected application name 'testapp2'"
+				exit 1
+			fi
+			
+			rm -f discovery.json
+		"""
+	}
+}
+
 timestamps {
 	node("slave") {
 		def checkoutBranchName = env.BRANCH_NAME // see also https://stackoverflow.com/a/36332154
@@ -104,6 +161,10 @@ timestamps {
 						javaDoc(reportEncoding: 'UTF-8'),
 						mavenConsole(reportEncoding: 'UTF-8')
 					]
+			}
+			
+			stage("Integration Test") {
+				springCloudCliPasswordTest currentVersion: currentVersion
 			}
 			
 			stage("SecDependency Scan") {

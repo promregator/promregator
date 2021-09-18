@@ -1,0 +1,51 @@
+promregator:
+  metrics:
+    internal: true
+  
+  authenticator:
+    type: none
+    
+  scraping:
+    labelEnrichment: false
+  
+  resolver:
+    logging:
+      empty:
+        target: false
+
+  reactor:
+    debug: true
+  
+  targets:
+    - orgName: ibm@schmoigl-online.de
+      spaceRegex: .*
+      applicationName: testapp2
+      path: /metrics
+      kubernetesAnnotations: true
+
+cf:
+  api_host: api.eu-gb.bluemix.net
+  username: ibm@schmoigl-online.de
+  password: '{cipher}%%CRYPTEDPASSWORD%%'
+  
+  cache:
+    type: caffeine
+    timeout:
+      org: 30
+      space: 30
+      application: 30
+      resolver: 30
+
+
+logging:
+  level:
+    org:
+      cloudfoundry:
+        promregator:
+          cfaccessor: DEBUG
+          cache: 
+            AutoRefreshingCacheMap: DEBUG
+
+    cloudfoundry-client:
+      request: DEBUG
+      response: DEBUG
