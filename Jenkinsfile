@@ -74,7 +74,12 @@ def springCloudCliPasswordTest(params) {
 		
 		// Run Test itself
 		sh """#!/bin/bash -xe
-			ENCRYPT_KEY=somekey java -jar ../build/target/promregator-${params.currentVersion}.jar -Dspring.config.name=bluemix &
+			ls -al .
+		
+			# see also https://docs.spring.io/spring-boot/docs/2.0.5.RELEASE/reference/html/boot-features-external-config.html
+			ENCRYPT_KEY=somekey java -jar ../build/target/promregator-${params.currentVersion}.jar --spring.config.name=bluemix &
+			# on ENCRYPT_KEY see also https://cloud.spring.io/spring-cloud-config/reference/html/#_key_management
+			
 			export PROMREGATOR_PID=\$!
 			
 			echo "Promregator is running on \$PROMREGATOR_PID; giving it 20 seconds to start up"
