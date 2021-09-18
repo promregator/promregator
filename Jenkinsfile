@@ -81,7 +81,7 @@ def springCloudCliPasswordTest(params) {
 			
 			sleep 30
 			
-			curl http://localhost:8080/discovery > discovery.json
+			curl -m 10 http://localhost:8080/discovery > discovery.json
 			cat discovery.json
 
 			kill \$PROMREGATOR_PID
