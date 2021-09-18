@@ -70,7 +70,7 @@ def springCloudCliPasswordTest(params) {
 		
 		// Run Test itself
 		sh """#!/bin/bash +xe
-			java -jar ../build/target/promregator-${params.currentVersion} -Dspring.config.name=bluemix &
+			ENCRYPT_KEY=somekey java -jar ../build/target/promregator-${params.currentVersion} -Dspring.config.name=bluemix &
 			export PROMREGATOR_PID=\$!
 			
 			echo "Promregator is running on \$PROMREGATOR_PID; giving it 30 seconds to start up"
