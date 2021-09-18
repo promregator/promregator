@@ -83,9 +83,9 @@ def springCloudCliPasswordTest(params) {
 			
 			export PROMREGATOR_PID=\$!
 			
-			echo "Promregator is running on \$PROMREGATOR_PID; giving it 20 seconds to start up"
+			echo "Promregator is running on \$PROMREGATOR_PID; giving it 30 seconds to start up"
 			
-			sleep 20
+			sleep 30
 			
 			curl -m 10 http://localhost:8080/discovery > discovery.json
 			cat discovery.json
