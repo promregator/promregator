@@ -7,18 +7,14 @@ import java.time.temporal.ChronoUnit;
 
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.cloudfoundry.promregator.config.OAuth2XSUAAAuthenticationConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
-	
+
 	private static final Logger log = LoggerFactory.getLogger(OAuth2XSUAAEnricher.class);
-	
-	static final CloseableHttpClient httpclient = HttpClients.createDefault();
-	
+
 	private final TokenFetcher tokenFetcher;
 
 	public OAuth2XSUAAEnricher(OAuth2XSUAAAuthenticationConfiguration config) {
@@ -44,30 +40,30 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
 	@Override
 	public void enrichWithAuthentication(HttpGet httpget) {
 		final RequestConfig requestConfig = httpget.getConfig();
-		
+
 		final String jwt = getBufferedJWT(requestConfig);
 		if (jwt == null) {
 			log.error("Unable to enrich request with JWT");
 			return;
 		}
-		
+
 		httpget.setHeader("Authorization", String.format("Bearer %s", jwt));
 	}
 
 	private String bufferedJwt = null;
 	private Instant validUntil = null;
-	
+
 	private synchronized String getBufferedJWT(RequestConfig config) {
 		if (this.bufferedJwt == null || Instant.now().isAfter(this.validUntil)) {
 			// JWT is not available or expired
 			this.bufferedJwt = getJWT(config);
 		}
-		
+
 		return bufferedJwt;
 	}
 
 	private String getJWT(RequestConfig config) {
-		
+
 		if (tokenFetcher == null) {
 			log.error("Cannot retrieve token. No token fetcher available. Check auth config.");
 			return null;
@@ -101,7 +97,7 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
 	static class TokenResponse {
 		private String access_token;
 		private int expires_in;
-		
+
 		public String getAccessToken() {
 			return access_token;
 		}
@@ -110,5 +106,5 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
 			return expires_in;
 		}
 	}
-	
+
 }
