@@ -42,8 +42,6 @@ public class CertificateBasedTokenFetcher extends TokenFetcher {
 
 	public TokenResponse getJWT(RequestConfig config) throws IOException {
 
-		log.info("Fetching new JWT token");
-
 		if (this.authConfig.getClient_id().contains(":")) {
 			log.error("Security: jwtClient_id contains colon");
 			return null;
