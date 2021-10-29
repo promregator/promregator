@@ -2,6 +2,7 @@ package org.cloudfoundry.promregator.auth;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
@@ -94,8 +95,13 @@ public abstract class TokenFetcher {
 	}
 
 	public final static void main(String[] args) throws Exception {
-		Key key = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-				.readValue(new FileInputStream(args[0]), Key.class);
+
+		Key key = null;
+
+		try (InputStream i = new FileInputStream(args[0])) {
+			key = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).readValue(i,
+					Key.class);
+		}
 
 		OAuth2XSUAAAuthenticationConfiguration authConfig = new OAuth2XSUAAAuthenticationConfiguration();
 
