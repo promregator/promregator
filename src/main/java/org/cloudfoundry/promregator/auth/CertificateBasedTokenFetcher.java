@@ -32,6 +32,7 @@ public class CertificateBasedTokenFetcher extends TokenFetcher {
 		super(authConfig);
 	}
 
+	@Override
 	public final CloseableHttpClient prepareHttpCient(OAuth2XSUAAAuthenticationConfiguration authConfig)
 			throws GeneralSecurityException, IOException {
 		SSLContext sslContext = SSLContextFactory.getInstance().create(this.authConfig.getClient_certificates(),
