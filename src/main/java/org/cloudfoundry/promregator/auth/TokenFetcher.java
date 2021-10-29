@@ -3,11 +3,13 @@ package org.cloudfoundry.promregator.auth;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.http.Consts;
+import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.ParseException;
 import org.apache.http.client.config.RequestConfig;
@@ -15,6 +17,7 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.cloudfoundry.promregator.auth.OAuth2XSUAAEnricher.TokenResponse;
 import org.cloudfoundry.promregator.config.OAuth2XSUAAAuthenticationConfiguration;
 import org.slf4j.Logger;
@@ -23,7 +26,6 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
-import com.google.json.JsonSanitizer;
 
 public abstract class TokenFetcher {
 
@@ -70,9 +72,22 @@ public abstract class TokenFetcher {
 		return httpPost;
 	}
 
-	protected TokenResponse parseToken(String responseBody) {
+	protected TokenResponse parseToken(HttpEntity responseBody) throws IOException {
+
 		try {
-			return new Gson().fromJson(JsonSanitizer.sanitize(responseBody), TokenResponse.class);
+			String json = EntityUtils.toString(responseBody, StandardCharsets.UTF_8);
+
+			if (json == null) {
+				log.warn("Null-JSON detected on OAuth response");
+				return null;
+			}
+
+			return new Gson().fromJson(json, TokenResponse.class);
+
+		} catch (IOException e) {
+			log.error("IO Exception while running GSON parser", e);
+			throw e;
+
 		} catch (ParseException e) {
 			log.error("GSON parser exception on JWT response from token server", e);
 			throw e;

@@ -1,7 +1,6 @@
 package org.cloudfoundry.promregator.auth;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +14,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
 import org.cloudfoundry.promregator.auth.OAuth2XSUAAEnricher.TokenResponse;
 import org.cloudfoundry.promregator.config.OAuth2XSUAAAuthenticationConfiguration;
 import org.slf4j.Logger;
@@ -61,7 +59,7 @@ public class CertificateBasedTokenFetcher extends TokenFetcher {
 				return null;
 			}
 
-			return parseToken(EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8));
+			return parseToken(response.getEntity());
 		}
 	}
 }

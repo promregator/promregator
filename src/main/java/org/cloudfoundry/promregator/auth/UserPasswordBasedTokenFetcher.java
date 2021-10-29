@@ -15,7 +15,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
 import org.cloudfoundry.promregator.auth.OAuth2XSUAAEnricher.TokenResponse;
 import org.cloudfoundry.promregator.config.OAuth2XSUAAAuthenticationConfiguration;
 import org.slf4j.Logger;
@@ -64,20 +63,8 @@ public class UserPasswordBasedTokenFetcher extends TokenFetcher {
 				return null;
 			}
 
-			try {
-				String json = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+			return parseToken(response.getEntity());
 
-				if (json == null) {
-					log.warn("Null-JSON detected on OAuth response");
-					return null;
-				}
-
-				return parseToken(json);
-
-			} catch (IOException e) {
-				log.error("IO Exception while running GSON parser", e);
-				throw e;
-			}
 		} catch (ClientProtocolException e) {
 			log.error("Unable to read from the token server", e);
 			throw e;
