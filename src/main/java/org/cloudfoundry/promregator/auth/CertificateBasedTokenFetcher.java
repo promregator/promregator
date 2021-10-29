@@ -8,6 +8,7 @@ import java.util.List;
 import javax.net.ssl.SSLContext;
 
 import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -60,6 +61,12 @@ public class CertificateBasedTokenFetcher extends TokenFetcher {
 			}
 
 			return parseToken(response.getEntity());
+		} catch (ClientProtocolException e) {
+			log.error("Unable to read from the token server", e);
+			throw e;
+		} catch (IOException e) {
+			log.error("IO Exception while reading from the token server", e);
+			throw e;
 		}
 	}
 }
