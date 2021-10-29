@@ -2,10 +2,14 @@ package org.cloudfoundry.promregator.config;
 
 public class OAuth2XSUAAAuthenticationConfiguration {
 	private String tokenServiceURL;
-	
+
 	private String client_id;
-	
+
 	private String client_secret;
+
+	private String client_certificates;
+
+	private String client_key;
 
 	private String scopes;
 
@@ -29,6 +33,22 @@ public class OAuth2XSUAAAuthenticationConfiguration {
 		return client_secret;
 	}
 
+	public void setClient_certificates(String client_certificates) {
+		this.client_certificates = client_certificates;
+	}
+
+	public String getClient_certificates() {
+		return this.client_certificates;
+	}
+
+	public void setClient_key(String client_key) {
+		this.client_key = client_key;
+	}
+
+	public String getClient_key() {
+		return this.client_key;
+	}
+
 	public void setClient_secret(String client_secret) {
 		this.client_secret = client_secret;
 	}
@@ -40,6 +60,5 @@ public class OAuth2XSUAAAuthenticationConfiguration {
 	public void setScopes(String scopes) {
 		this.scopes = scopes;
 	}
-	
-	
+
 }

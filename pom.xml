@@ -261,6 +261,11 @@
 			<version>${guava-version}</version>
 		</dependency>
 
+         <dependency>
+            <groupId>com.sap.cloud.security.xsuaa</groupId>
+            <artifactId>token-client</artifactId>
+            <version>2.10.5</version>
+        </dependency>
 
 	</dependencies>
 
