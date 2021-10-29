@@ -81,4 +81,45 @@ public abstract class TokenFetcher {
 	public void close() throws IOException {
 		httpClient.close();
 	}
+
+	//
+	// START only during development ...
+	static class Key {
+		public String certurl;
+		public String url;
+		public String clientid;
+		public String certificate;
+		public String key;
+		public String clientsecret;
+	}
+
+	public final static void main(String[] args) throws Exception {
+		Key key = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+				.readValue(new FileInputStream(args[0]), Key.class);
+
+		OAuth2XSUAAAuthenticationConfiguration authConfig = new OAuth2XSUAAAuthenticationConfiguration();
+
+		authConfig.setClient_certificates(key.certificate);
+		authConfig.setClient_id(key.clientid);
+		authConfig.setClient_key(key.key);
+
+		TokenResponse jwt;
+
+		if (key.certurl != null) {
+			authConfig.setTokenServiceURL(key.certurl + "/oauth/token");
+			jwt = new CertificateBasedTokenFetcher(authConfig).getJWT(null);
+			System.err.println("Using certificate for retrieving the token");
+		} else if (key.url != null) {
+			authConfig.setTokenServiceURL(key.url + "/oauth/token");
+			authConfig.setClient_secret(key.clientsecret);
+			jwt = new UserPasswordBasedTokenFetcher(authConfig).getJWT(null);
+			System.err.println("Using user/password for retrieving the token");
+		} else {
+			throw new Exception("Invalid config, neither user/passwd not certifcates configured");
+		}
+
+		System.err.println(jwt.getAccessToken());
+	}
+	// END only during development
+	//
 }
