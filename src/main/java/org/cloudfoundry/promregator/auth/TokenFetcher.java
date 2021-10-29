@@ -12,8 +12,10 @@ import org.apache.http.Consts;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.ParseException;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicNameValuePair;
@@ -72,7 +74,33 @@ public abstract class TokenFetcher {
 		return httpPost;
 	}
 
-	protected TokenResponse parseToken(HttpEntity responseBody) throws IOException {
+	protected TokenResponse fetchAndParseToken(HttpPost httpPost) throws IOException {
+		try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
+
+			if (response.getStatusLine().getStatusCode() != 200) {
+				log.error(String.format(
+						"Server did not respond with ok while fetching JWT from token server; status code provided: %d",
+						response.getStatusLine().getStatusCode()));
+				return null;
+			}
+
+			return parseToken(response.getEntity());
+
+		} catch (ClientProtocolException e) {
+			log.error("Unable to read from the token server", e);
+			throw e;
+		} catch (IOException e) {
+			log.error("IO Exception while reading from the token server", e);
+			throw e;
+		}
+
+	}
+
+	public void close() throws IOException {
+		httpClient.close();
+	}
+
+	private static TokenResponse parseToken(HttpEntity responseBody) throws IOException {
 
 		try {
 			String json = EntityUtils.toString(responseBody, StandardCharsets.UTF_8);
@@ -92,10 +120,6 @@ public abstract class TokenFetcher {
 			log.error("GSON parser exception on JWT response from token server", e);
 			throw e;
 		}
-	}
-
-	public void close() throws IOException {
-		httpClient.close();
 	}
 
 	//

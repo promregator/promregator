@@ -8,9 +8,7 @@ import java.util.List;
 import javax.net.ssl.SSLContext;
 
 import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -51,22 +49,7 @@ public class CertificateBasedTokenFetcher extends TokenFetcher {
 
 		HttpPost httpPost = preparePostRequest(this.authConfig.getTokenServiceURL(), config, params);
 
-		try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
+		return fetchAndParseToken(httpPost);
 
-			if (response.getStatusLine().getStatusCode() != 200) {
-				log.error(String.format(
-						"Server did not respond with ok while fetching JWT from token server; status code provided: %d",
-						response.getStatusLine().getStatusCode()));
-				return null;
-			}
-
-			return parseToken(response.getEntity());
-		} catch (ClientProtocolException e) {
-			log.error("Unable to read from the token server", e);
-			throw e;
-		} catch (IOException e) {
-			log.error("IO Exception while reading from the token server", e);
-			throw e;
-		}
 	}
 }

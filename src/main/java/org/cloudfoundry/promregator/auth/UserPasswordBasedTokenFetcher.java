@@ -8,9 +8,7 @@ import java.util.Base64;
 import java.util.List;
 
 import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -54,24 +52,7 @@ public class UserPasswordBasedTokenFetcher extends TokenFetcher {
 		httpPost.setHeader("Authorization", String.format("Basic %s",
 				encodeUserPassword(this.authConfig.getClient_id(), this.authConfig.getClient_secret())));
 
-		try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
-
-			if (response.getStatusLine().getStatusCode() != 200) {
-				log.error(String.format(
-						"Server did not respond with ok while fetching JWT from token server; status code provided: %d",
-						response.getStatusLine().getStatusCode()));
-				return null;
-			}
-
-			return parseToken(response.getEntity());
-
-		} catch (ClientProtocolException e) {
-			log.error("Unable to read from the token server", e);
-			throw e;
-		} catch (IOException e) {
-			log.error("IO Exception while reading from the token server", e);
-			throw e;
-		}
+		return fetchAndParseToken(httpPost);
 	}
 
 	private static String encodeUserPassword(String user, String password) {
