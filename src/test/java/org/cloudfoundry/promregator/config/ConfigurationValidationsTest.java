@@ -1,6 +1,7 @@
 package org.cloudfoundry.promregator.config;
 
 import org.cloudfoundry.promregator.config.validations.ConfigurationValidation;
+import org.cloudfoundry.promregator.lite.config.PromregatorConfiguration;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

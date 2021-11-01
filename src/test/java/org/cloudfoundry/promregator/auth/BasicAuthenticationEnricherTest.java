@@ -2,7 +2,7 @@ package org.cloudfoundry.promregator.auth;
 
 import org.apache.http.client.methods.HttpGet;
 import org.cloudfoundry.promregator.JUnitTestUtils;
-import org.cloudfoundry.promregator.config.BasicAuthenticationConfiguration;
+import org.cloudfoundry.promregator.lite.config.BasicAuthenticationConfiguration;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -19,10 +19,8 @@ public class BasicAuthenticationEnricherTest {
 
 	@Test
 	void testStraightForward() {
-		BasicAuthenticationConfiguration config = new BasicAuthenticationConfiguration();
-		config.setUsername("dummyuser");
-		config.setPassword("unittestpassword");
-		
+		BasicAuthenticationConfiguration config = new BasicAuthenticationConfiguration("dummyuser", "unittestpassword");
+
 		BasicAuthenticationEnricher subject = new BasicAuthenticationEnricher(config);
 		
 		HttpGet mockGet = Mockito.mock(HttpGet.class);

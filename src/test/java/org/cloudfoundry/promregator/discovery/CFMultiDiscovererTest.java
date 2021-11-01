@@ -11,7 +11,7 @@ import java.util.List;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorMock;
-import org.cloudfoundry.promregator.config.Target;
+import org.cloudfoundry.promregator.lite.config.Target;
 import org.cloudfoundry.promregator.messagebus.MessageBus;
 import org.cloudfoundry.promregator.messagebus.MessageBusTopic;
 import org.cloudfoundry.promregator.messagebus.MessageSubscriber;
