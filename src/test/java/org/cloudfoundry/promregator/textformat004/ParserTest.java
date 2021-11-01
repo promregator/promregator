@@ -42,7 +42,7 @@ class ParserTest {
 		Sample sample = new Sample("metric_without_timestamp_and_labels", new LinkedList<String>(), new LinkedList<String>(), 12.47);
 		samples.add(sample);
 		
-		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("metric_without_timestamp_and_labels", Type.UNTYPED, "", samples);
+		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("metric_without_timestamp_and_labels", Type.UNKNOWN, "", samples);
 		expectedList.add(expectedMFS);
 		
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
@@ -68,7 +68,7 @@ class ParserTest {
 		Sample sample = new Sample("metric_without_labels", new LinkedList<String>(), new LinkedList<String>(), 12.47);
 		samples.add(sample);
 		
-		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("metric_without_labels", Type.UNTYPED, "", samples);
+		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("metric_without_labels", Type.UNKNOWN, "", samples);
 		expectedList.add(expectedMFS);
 		
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
@@ -94,7 +94,7 @@ class ParserTest {
 		Sample sample = new Sample("metric_without_labels", new LinkedList<String>(), new LinkedList<String>(), 1.7560473e+07);
 		samples.add(sample);
 		
-		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("metric_without_labels", Type.UNTYPED, "", samples);
+		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("metric_without_labels", Type.UNKNOWN, "", samples);
 		expectedList.add(expectedMFS);
 		
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
@@ -120,7 +120,7 @@ class ParserTest {
 		Sample sample = new Sample("metric_without_labels", new LinkedList<String>(), new LinkedList<String>(), Double.POSITIVE_INFINITY);
 		samples.add(sample);
 		
-		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("metric_without_labels", Type.UNTYPED, "", samples);
+		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("metric_without_labels", Type.UNKNOWN, "", samples);
 		expectedList.add(expectedMFS);
 		
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
@@ -146,7 +146,7 @@ class ParserTest {
 		Sample sample = new Sample("metric_without_labels", new LinkedList<String>(), new LinkedList<String>(), Double.NEGATIVE_INFINITY);
 		samples.add(sample);
 		
-		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("metric_without_labels", Type.UNTYPED, "", samples);
+		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("metric_without_labels", Type.UNKNOWN, "", samples);
 		expectedList.add(expectedMFS);
 		
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
@@ -432,7 +432,7 @@ class ParserTest {
 		Sample sample = new Sample("msdos_file_access_time_seconds", labelNames, labelValues, 1.458255915e9);
 		samples.add(sample);
 		
-		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("msdos_file_access_time_seconds", Type.UNTYPED, "", samples);
+		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("msdos_file_access_time_seconds", Type.UNKNOWN, "", samples);
 		expectedList.add(expectedMFS);
 		
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
@@ -752,7 +752,7 @@ class ParserTest {
 		Sample sample = new Sample("rpc_duration_seconds", labelNames, labelValues, 3102);
 		samples.add(sample);
 
-		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("rpc_duration_seconds", Type.UNTYPED, "", samples);
+		Collector.MetricFamilySamples expectedMFS = new Collector.MetricFamilySamples("rpc_duration_seconds", Type.UNKNOWN, "", samples);
 		expectedList.add(expectedMFS);
 
 		Enumeration<Collector.MetricFamilySamples> expected = Collections.enumeration(expectedList);
@@ -792,7 +792,7 @@ class ParserTest {
 		
 		// ensure that all metrics are understood
 		for (MetricFamilySamples mfs : resultMap.values()) {
-			Assertions.assertNotEquals(Type.UNTYPED, mfs.type);
+			Assertions.assertNotEquals(Type.UNKNOWN, mfs.type);
 		}
 		
 	}

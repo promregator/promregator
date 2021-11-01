@@ -63,7 +63,7 @@ public class MergableMetricFamilySamples {
 		
 		for (Iterator<MetricFamilySamples> iterator = coll.iterator(); iterator.hasNext();) {
 			MetricFamilySamples mfs = iterator.next();
-			if (mfs.type == Type.UNTYPED) {
+			if (mfs.type == Type.UNKNOWN) {
 				log.warn(String.format("Dropping metric %s from set of metrics, as it is untyped and the simpleclient's serialization coding does not properly support this", mfs.name));
 				iterator.remove();
 			}

@@ -8,8 +8,8 @@ import org.cloudfoundry.promregator.auth.AuthenticatorController;
 import org.cloudfoundry.promregator.auth.NullEnricher;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorCacheClassic;
-import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
+import org.cloudfoundry.promregator.lite.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.CachingTargetResolver;
 import org.cloudfoundry.promregator.scanner.ReactiveAppInstanceScanner;
@@ -37,7 +37,6 @@ import io.prometheus.client.CollectorRegistry;
 		// NB: Handling is taken over by TestableMetricsEndpoint! That one is
 		// NOT excluded
 })
-@Import({ PromregatorConfiguration.class })
 @TestPropertySource(locations="../default.properties")
 public class MockedAppInstanceScannerEndpointSpringApplication {
 	

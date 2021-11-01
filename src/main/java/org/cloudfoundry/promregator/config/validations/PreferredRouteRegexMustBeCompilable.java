@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.cloudfoundry.promregator.config.PromregatorConfiguration;
-import org.cloudfoundry.promregator.config.Target;
+import org.cloudfoundry.promregator.lite.config.PromregatorConfiguration;
+import org.cloudfoundry.promregator.lite.config.Target;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.slf4j.Logger;

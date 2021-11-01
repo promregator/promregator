@@ -1,6 +1,7 @@
 package org.cloudfoundry.promregator.config.validations;
 
-import org.cloudfoundry.promregator.config.PromregatorConfiguration;
+
+import org.cloudfoundry.promregator.lite.config.PromregatorConfiguration;
 
 /**
  * This interface defines the structure of validations which can be called by

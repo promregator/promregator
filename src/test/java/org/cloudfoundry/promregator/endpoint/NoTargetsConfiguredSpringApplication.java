@@ -14,8 +14,8 @@ import javax.servlet.http.HttpServletRequest;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.auth.AuthenticatorController;
 import org.cloudfoundry.promregator.auth.NullEnricher;
-import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.discovery.CFMultiDiscoverer;
+import org.cloudfoundry.promregator.lite.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
@@ -45,7 +45,6 @@ import io.prometheus.client.CollectorRegistry;
 		// NOT excluded
 		@Filter(type = FilterType.ASSIGNABLE_TYPE, value=InvalidateCacheEndpoint.class)
 })
-@Import({ PromregatorConfiguration.class })
 public class NoTargetsConfiguredSpringApplication {
 	public static final UUID currentPromregatorInstanceIdentifier = UUID.randomUUID();
 	

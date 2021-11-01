@@ -24,7 +24,7 @@ import io.prometheus.client.exporter.common.TextFormat;
  * whose data is being backed by a set of further Prometheus metrics endpoints run on one or several CF apps. 
  *
  */
-@RestController
+@RestController("promregatorMetricsController")
 @Scope(value=WebApplicationContext.SCOPE_REQUEST) // see also https://github.com/promregator/promregator/issues/51
 @RequestMapping(EndpointConstants.ENDPOINT_PATH_SINGLE_ENDPOINT_SCRAPING)
 public class MetricsEndpoint extends AbstractMetricsEndpoint {

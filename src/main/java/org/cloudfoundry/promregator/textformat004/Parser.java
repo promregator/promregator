@@ -97,11 +97,11 @@ public class Parser {
 		final String metricName = sample.name;
 		
 		Collector.Type type = determineType(metricName);
-		if (type == Type.UNTYPED) {
+		if (type == Type.UNKNOWN) {
 			log.info(String.format("Definition of metric %s without type information (assuming untyped)", metricName));
 		}
 		
-		if (type.equals(Collector.Type.COUNTER) || type.equals(Collector.Type.GAUGE) || type.equals(Collector.Type.UNTYPED)) {
+		if (type.equals(Collector.Type.COUNTER) || type.equals(Collector.Type.GAUGE) || type.equals(Collector.Type.UNKNOWN)) {
 			this.storeSimpleType(sample, metricName, type);
 		} else if (type.equals(Collector.Type.HISTOGRAM) || type.equals(Collector.Type.SUMMARY)) {
 			this.storeComplexType(sample, metricName, type);
@@ -174,7 +174,7 @@ public class Parser {
 		}
 		
 		// we have no clue what this metric is all about
-		return Collector.Type.UNTYPED;
+		return Collector.Type.UNKNOWN;
 	}
 
 	private static String determineBaseMetricName(String metricName) {
@@ -212,7 +212,7 @@ public class Parser {
 		} else if (typeString.equalsIgnoreCase("histogram")) {
 			type = Collector.Type.HISTOGRAM;
 		} else if (typeString.equalsIgnoreCase("untyped")) {
-			type = Collector.Type.UNTYPED;
+			type = Collector.Type.UNKNOWN;
 		} else {
 			log.warn("Unable to parse type from TYPE line: "+line);
 			return;

@@ -1,6 +1,6 @@
 package org.cloudfoundry.promregator.auth;
 
-import org.cloudfoundry.promregator.config.AuthenticatorConfiguration;
+import org.cloudfoundry.promregator.lite.config.AuthenticatorConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

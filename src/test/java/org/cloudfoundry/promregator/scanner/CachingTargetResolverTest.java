@@ -4,7 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
-import org.cloudfoundry.promregator.config.Target;
+import org.cloudfoundry.promregator.lite.config.Target;
 import org.cloudfoundry.promregator.scanner.MockedCachingTargetResolverSpringApplication.MockedTargetResolver;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -39,8 +39,8 @@ class CachingTargetResolverTest {
 	@Test
 	void testTwoPlainTargets() {
 		List<Target> list = new LinkedList<>();
-		list.add(MockedTargetResolver.target1);
-		list.add(MockedTargetResolver.target2);
+		list.add(MockedTargetResolver.Companion.getTarget1());
+		list.add(MockedTargetResolver.Companion.getTarget2());
 		
 		List<ResolvedTarget> actualList = this.cachingTargetResolver.resolveTargets(list);
 		
@@ -56,9 +56,9 @@ class CachingTargetResolverTest {
 		boolean target1Found = false;
 		boolean target2Found = false;
 		for (ResolvedTarget rt : actualList) {
-			if (rt == MockedTargetResolver.rTarget1) {
+			if (rt == MockedTargetResolver.Companion.getRTarget1()) {
 				target1Found = true;
-			} else if (rt == MockedTargetResolver.rTarget2) {
+			} else if (rt == MockedTargetResolver.Companion.getRTarget2()) {
 				target2Found = true;
 			} else {
 				Assertions.fail("Unexpected target provided");
@@ -71,7 +71,7 @@ class CachingTargetResolverTest {
 	@Test
 	void testTargetMissingApplicationName() {
 		List<Target> list = new LinkedList<>();
-		list.add(MockedTargetResolver.targetAllInSpace);
+		list.add(MockedTargetResolver.Companion.getTargetAllInSpace());
 		
 		List<ResolvedTarget> actualList = this.cachingTargetResolver.resolveTargets(list);
 		
@@ -86,9 +86,9 @@ class CachingTargetResolverTest {
 		boolean target1Found = false;
 		boolean target2Found = false;
 		for (ResolvedTarget rt : actualList) {
-			if (rt == MockedTargetResolver.rTarget1) {
+			if (rt == MockedTargetResolver.Companion.getRTarget1()) {
 				target1Found = true;
-			} else if (rt == MockedTargetResolver.rTarget2) {
+			} else if (rt == MockedTargetResolver.Companion.getRTarget2()) {
 				target2Found = true;
 			} else {
 				Assertions.fail("Unexpected target provided");
@@ -101,7 +101,7 @@ class CachingTargetResolverTest {
 	@Test
 	void testRepeatedRequestIsCached() {
 		List<Target> list = new LinkedList<>();
-		list.add(MockedTargetResolver.target1);
+		list.add(MockedTargetResolver.Companion.getTarget1());
 		
 		// fill the cache
 		List<ResolvedTarget> actualList = this.cachingTargetResolver.resolveTargets(list);
@@ -115,7 +115,7 @@ class CachingTargetResolverTest {
 		Assertions.assertEquals(1, actualList.size());
 		
 		ResolvedTarget rt = actualList.get(0);
-		Assertions.assertEquals(MockedTargetResolver.rTarget1, rt);
+		Assertions.assertEquals(MockedTargetResolver.Companion.getRTarget1(), rt);
 		
 		
 		mtr.resetRequestFlags();
@@ -128,14 +128,14 @@ class CachingTargetResolverTest {
 		Assertions.assertEquals(1, actualList.size());
 		
 		rt = actualList.get(0);
-		Assertions.assertEquals(MockedTargetResolver.rTarget1, rt);
+		Assertions.assertEquals(MockedTargetResolver.Companion.getRTarget1(), rt);
 
 	}
 	
 	@Test
 	void testRepeatedRequestIsCachedAlsoSelectively() {
 		List<Target> list = new LinkedList<>();
-		list.add(MockedTargetResolver.target1);
+		list.add(MockedTargetResolver.Companion.getTarget1());
 		
 		// fill the cache
 		List<ResolvedTarget> actualList = this.cachingTargetResolver.resolveTargets(list);
@@ -149,12 +149,12 @@ class CachingTargetResolverTest {
 		Assertions.assertEquals(1, actualList.size());
 		
 		ResolvedTarget rt = actualList.get(0);
-		Assertions.assertEquals(MockedTargetResolver.rTarget1, rt);
+		Assertions.assertEquals(MockedTargetResolver.Companion.getRTarget1(), rt);
 		
 		
 		mtr.resetRequestFlags();
 		
-		list.add(MockedTargetResolver.target2);
+		list.add(MockedTargetResolver.Companion.getTarget2());
 		
 		actualList = this.cachingTargetResolver.resolveTargets(list);
 		Assertions.assertFalse(mtr.isRequestForTarget1());
@@ -166,9 +166,9 @@ class CachingTargetResolverTest {
 		boolean target1Found = false;
 		boolean target2Found = false;
 		for (ResolvedTarget rt2 : actualList) {
-			if (rt2 == MockedTargetResolver.rTarget1) {
+			if (rt2 == MockedTargetResolver.Companion.getRTarget1()) {
 				target1Found = true;
-			} else if (rt2 == MockedTargetResolver.rTarget2) {
+			} else if (rt2 == MockedTargetResolver.Companion.getRTarget2()) {
 				target2Found = true;
 			} else {
 				Assertions.fail("Unexpected target provided");
@@ -181,8 +181,8 @@ class CachingTargetResolverTest {
 	@Test
 	void testTargetDuplicateRequestDistincts() {
 		List<Target> list = new LinkedList<>();
-		list.add(MockedTargetResolver.target1);
-		list.add(MockedTargetResolver.targetRegex);
+		list.add(MockedTargetResolver.Companion.getTarget1());
+		list.add(MockedTargetResolver.Companion.getTargetRegex());
 		
 		List<ResolvedTarget> actualList = this.cachingTargetResolver.resolveTargets(list);
 		
@@ -197,9 +197,9 @@ class CachingTargetResolverTest {
 		boolean target1Found = false;
 		boolean target2Found = false;
 		for (ResolvedTarget rt : actualList) {
-			if (rt == MockedTargetResolver.rTarget1) {
+			if (rt == MockedTargetResolver.Companion.getRTarget1()) {
 				target1Found = true;
-			} else if (rt == MockedTargetResolver.rTarget2) {
+			} else if (rt == MockedTargetResolver.Companion.getRTarget2()) {
 				target2Found = true;
 			} else {
 				Assertions.fail("Unexpected target provided");

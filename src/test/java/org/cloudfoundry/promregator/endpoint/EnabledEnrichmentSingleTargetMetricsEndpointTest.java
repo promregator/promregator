@@ -67,7 +67,7 @@ class EnabledEnrichmentSingleTargetMetricsEndpointTest {
 		Parser parser = new Parser(response);
 		HashMap<String, MetricFamilySamples> mapMFS = parser.parse();
 		
-		MetricFamilySamples dummyMFS = mapMFS.get("dummy");
+		MetricFamilySamples dummyMFS = mapMFS.get("dummy_total");
 		Assertions.assertNotNull(dummyMFS);
 		
 		Assertions.assertEquals(1, dummyMFS.samples.size());

@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
-import org.cloudfoundry.promregator.config.PromregatorConfiguration;
-import org.cloudfoundry.promregator.config.Target;
+import org.cloudfoundry.promregator.lite.config.PromregatorConfiguration;
+import org.cloudfoundry.promregator.lite.config.Target;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;

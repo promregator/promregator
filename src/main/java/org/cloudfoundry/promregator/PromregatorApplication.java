@@ -36,8 +36,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -45,12 +46,13 @@ import org.springframework.scheduling.annotation.Scheduled;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.prometheus.client.CollectorRegistry;
-import io.prometheus.client.hotspot.DefaultExports;
+//import io.prometheus.client.hotspot.DefaultExports;
 import reactor.core.publisher.Hooks;
 
 @SpringBootApplication
 // Warning! This implies @ComponentScan - and we really must have that in place, e.g. due to JMS :(
 
+@ConfigurationPropertiesScan
 @EnableScheduling
 @Import({ BasicAuthenticationSpringConfiguration.class, SecurityConfig.class, ErrorSpringConfiguration.class, JMSSpringConfiguration.class, AuthenticatorSpringConfiguration.class })
 @EnableAsync
@@ -161,17 +163,16 @@ public class PromregatorApplication {
 		return new InstanceLifecycleHandler();
 	}
 	
-	@Bean
-	public CollectorRegistry collectorRegistry() {
-		CollectorRegistry cr = CollectorRegistry.defaultRegistry;
-		
-		DefaultExports.initialize();
-		
-		return cr;
-	}
+//	@Bean
+//	public CollectorRegistry collectorRegistry() {
+//		CollectorRegistry cr = CollectorRegistry.defaultRegistry;
+//
+////		DefaultExports.initialize();
+//
+//		return cr;
+//	}
 	
 	@Bean
-	@DependsOn("promregatorConfiguration")
 	public ConfigurationValidations configurationValidations() {
 		return new ConfigurationValidations();
 	}

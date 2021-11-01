@@ -57,7 +57,7 @@ class DisabledEnrichmentMetricsEndpointTest {
 	}
 	
 	@Autowired
-	@Qualifier("metricsEndpoint") // NB: Otherwise ambiguity with TestableMetricsEndpoint would be a problem - we want "the real one"
+	@Qualifier("promregatorMetricsController") // NB: Otherwise ambiguity with TestableMetricsEndpoint would be a problem - we want "the real one"
 	private MetricsEndpoint subject;
 	
 	@AfterAll
@@ -77,7 +77,7 @@ class DisabledEnrichmentMetricsEndpointTest {
 		Parser parser = new Parser(response);
 		HashMap<String, MetricFamilySamples> mapMFS = parser.parse();
 		
-		MetricFamilySamples dummyMFS = mapMFS.get("dummy");
+		MetricFamilySamples dummyMFS = mapMFS.get("dummy_total");
 		Assertions.assertNotNull(dummyMFS);
 		
 		Assertions.assertEquals(1, dummyMFS.samples.size());

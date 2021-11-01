@@ -5,10 +5,10 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
-import org.cloudfoundry.promregator.config.AuthenticatorConfiguration;
-import org.cloudfoundry.promregator.config.PromregatorConfiguration;
-import org.cloudfoundry.promregator.config.Target;
-import org.cloudfoundry.promregator.config.TargetAuthenticatorConfiguration;
+import org.cloudfoundry.promregator.lite.config.AuthenticatorConfiguration;
+import org.cloudfoundry.promregator.lite.config.PromregatorConfiguration;
+import org.cloudfoundry.promregator.lite.config.Target;
+import org.cloudfoundry.promregator.lite.config.TargetAuthenticatorConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**

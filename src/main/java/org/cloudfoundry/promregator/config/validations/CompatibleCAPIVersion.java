@@ -1,15 +1,18 @@
 package org.cloudfoundry.promregator.config.validations;
 
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
-import org.cloudfoundry.promregator.config.PromregatorConfiguration;
-import org.cloudfoundry.promregator.config.Target;
+import org.cloudfoundry.promregator.lite.config.PromregatorConfiguration;
+import org.cloudfoundry.promregator.lite.config.Target;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class CompatibleCAPIVersion implements ConfigurationValidation {
-	@Autowired
-	private CFAccessor cfAccessor;
+	private final CFAccessor cfAccessor;
+
+	public CompatibleCAPIVersion(CFAccessor cfAccessor) {
+		this.cfAccessor = cfAccessor;
+	}
 
 	private boolean usingV3OnlyFeature(Target targetConfiguration) {
 		return targetConfiguration.getKubernetesAnnotations();

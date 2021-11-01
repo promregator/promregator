@@ -1,7 +1,7 @@
 package org.cloudfoundry.promregator.scanner;
 
 import org.cloudfoundry.promregator.config.InvalidTargetProtocolSpecifiedError;
-import org.cloudfoundry.promregator.config.Target;
+import org.cloudfoundry.promregator.lite.config.Target;
 
 public class ResolvedTarget {
 	private Target originalTarget;
