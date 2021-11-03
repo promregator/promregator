@@ -1,7 +1,11 @@
 package org.cloudfoundry.promregator.config;
 
 public class OAuth2XSUAAAuthenticationConfiguration {
-	private String tokenServiceURL;
+	private String url;
+
+	private String certUrl;
+
+	private String credential_type;
 
 	private String client_id;
 
@@ -13,20 +17,36 @@ public class OAuth2XSUAAAuthenticationConfiguration {
 
 	private String scopes;
 
-	public String getTokenServiceURL() {
-		return tokenServiceURL;
+	public String getUrl() {
+		return url;
 	}
 
-	public void setTokenServiceURL(String tokenServiceURL) {
-		this.tokenServiceURL = tokenServiceURL;
+	public void setUrl(String url) {
+		this.url = url;
+	}
+
+	public String getCertUrl() {
+		return certUrl;
+	}
+
+	public void setCertUrl(String certUrl) {
+		this.certUrl = certUrl;
 	}
 
 	public String getClient_id() {
 		return client_id;
 	}
 
-	public void setClient_id(String clent_id) {
-		this.client_id = clent_id;
+	public void setClient_id(String client_id) {
+		this.client_id = client_id;
+	}
+
+	public void setCredential_type(String credential_type) {
+		this.credential_type = credential_type;
+	}
+
+	public String getCredential_type() {
+		return credential_type;
 	}
 
 	public String getClient_secret() {

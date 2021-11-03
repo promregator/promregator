@@ -54,7 +54,7 @@ class OAuth2XSUAAEnricherTest {
 		OAuth2XSUAAAuthenticationConfiguration authenticatorConfig = new OAuth2XSUAAAuthenticationConfiguration();
 		authenticatorConfig.setClient_id("client_id");
 		authenticatorConfig.setClient_secret("client_secret");
-		authenticatorConfig.setTokenServiceURL("http://localhost:9001/oauth/token");
+		authenticatorConfig.setUrl("http://localhost:9001/oauth/token");
 		
 		OAuth2XSUAAEnricher subject = new OAuth2XSUAAEnricher(authenticatorConfig);
 		
@@ -73,7 +73,7 @@ class OAuth2XSUAAEnricherTest {
 		OAuth2XSUAAAuthenticationConfiguration authenticatorConfig = new OAuth2XSUAAAuthenticationConfiguration();
 		authenticatorConfig.setClient_id("client_id");
 		authenticatorConfig.setClient_secret("client_secret");
-		authenticatorConfig.setTokenServiceURL("http://localhost:9001/oauth/token");
+		authenticatorConfig.setUrl("http://localhost:9001/oauth/token");
 		
 		OAuth2XSUAAEnricher subject = new OAuth2XSUAAEnricher(authenticatorConfig);
 		
