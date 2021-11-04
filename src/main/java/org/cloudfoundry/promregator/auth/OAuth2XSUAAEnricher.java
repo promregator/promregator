@@ -29,6 +29,7 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
 		this.httpClient = HttpClientFactory.create(c.getClientIdentity());
 		this.tokenClient = new XsuaaTokenFlows(new DefaultOAuth2TokenService(httpClient), new XsuaaDefaultEndpoints(c),
 				c.getClientIdentity()).clientCredentialsTokenFlow();
+		this.tokenClient.scopes(config.getScopes().toArray(new String[0]));
 	}
 
 	@Override

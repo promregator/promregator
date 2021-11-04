@@ -1,5 +1,9 @@
 package org.cloudfoundry.promregator.config;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 public class OAuth2XSUAAAuthenticationConfiguration {
 	private String url;
 
@@ -15,7 +19,7 @@ public class OAuth2XSUAAAuthenticationConfiguration {
 
 	private String client_key;
 
-	private String scopes;
+	private final Set<String> scopes = new HashSet<>();
 
 	public String getUrl() {
 		return url;
@@ -73,12 +77,16 @@ public class OAuth2XSUAAAuthenticationConfiguration {
 		this.client_secret = client_secret;
 	}
 
-	public String getScopes() {
-		return scopes;
+	public Set<String> getScopes() {
+		return new HashSet<>(this.scopes);
 	}
 
 	public void setScopes(String scopes) {
-		this.scopes = scopes;
+		setScopes(new HashSet<>(Arrays.asList(scopes.split(" "))));
 	}
 
+	public void setScopes(Set<String> scopes) {
+		this.scopes.clear();
+		this.scopes.addAll(scopes);
+	}
 }
