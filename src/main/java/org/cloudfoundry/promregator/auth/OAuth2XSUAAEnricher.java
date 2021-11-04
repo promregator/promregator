@@ -23,12 +23,22 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
 	private final CloseableHttpClient httpClient;
 	private final ClientCredentialsTokenFlow tokenClient;
 
-	public OAuth2XSUAAEnricher(OAuth2XSUAAAuthenticationConfiguration config) {
+	OAuth2XSUAAEnricher(OAuth2XSUAAAuthenticationConfiguration config) {
+		this(config, null);
+	}
+
+	OAuth2XSUAAEnricher(OAuth2XSUAAAuthenticationConfiguration config, ClientCredentialsTokenFlow tokenClient) {
 		super();
 		OAuth2ServiceConfiguration c = new OAuth2ServiceConfig(config);
-		this.httpClient = HttpClientFactory.create(c.getClientIdentity());
-		this.tokenClient = new XsuaaTokenFlows(new DefaultOAuth2TokenService(httpClient), new XsuaaDefaultEndpoints(c),
-				c.getClientIdentity()).clientCredentialsTokenFlow();
+
+		if (tokenClient != null) {
+			this.httpClient = null;
+			this.tokenClient = tokenClient;
+		} else {
+			this.httpClient = HttpClientFactory.create(c.getClientIdentity());
+			this.tokenClient = new XsuaaTokenFlows(new DefaultOAuth2TokenService(this.httpClient),
+					new XsuaaDefaultEndpoints(c), c.getClientIdentity()).clientCredentialsTokenFlow();
+		}
 		this.tokenClient.scopes(config.getScopes().toArray(new String[0]));
 	}
 
@@ -53,6 +63,8 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
 	}
 
 	public void close() throws IOException {
-		this.httpClient.close();
+		if (this.httpClient != null) {
+			this.httpClient.close();
+		}
 	}
 }
