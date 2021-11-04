@@ -1,8 +1,12 @@
 package org.cloudfoundry.promregator.config;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.apache.http.client.utils.URIBuilder;
 
 public class OAuth2XSUAAAuthenticationConfiguration {
 	private String url;
@@ -23,6 +27,15 @@ public class OAuth2XSUAAAuthenticationConfiguration {
 
 	public String getUrl() {
 		return url;
+	}
+
+	public void setTokenServiceURL(String url) {
+		try {
+			URI u = new URI(url);
+			setUrl(new URIBuilder().setScheme(u.getScheme()).setHost(u.getHost()).setPort(u.getPort()).build().toASCIIString());
+		} catch (URISyntaxException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	public void setUrl(String url) {
