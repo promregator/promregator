@@ -30,7 +30,8 @@ public class OAuth2XSUAAAuthenticationConfiguration {
 	public void setTokenServiceURL(String url) {
 		try {
 			URI u = new URI(url);
-			setUrl(new URIBuilder().setScheme(u.getScheme()).setHost(u.getHost()).setPort(u.getPort()).build().toASCIIString());
+			setUrl(new URIBuilder().setScheme(u.getScheme()).setHost(u.getHost()).setPort(u.getPort())
+					.setPath(u.getPath().replaceAll("/oauth/token$", "")).build().toASCIIString());
 		} catch (URISyntaxException e) {
 			throw new RuntimeException(e);
 		}
