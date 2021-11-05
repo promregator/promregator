@@ -663,11 +663,26 @@ java -Dspring.config.location=file:/path/to/your/myconfig.yaml -jar promregator-
 #### Option "promregator.authenticator.oauth2xsuaa.tokenServiceURL" (mandatory, if using promregator.authenticator.type=OAuth2XSUAA)
 Specifies the URL of the OAuth2 endpoint, which contains the token service of your authorization server in case of global authentication. Typically, this is the endpoint with the path `/oauth/token`, as Promregator will try to perform to establish a ["Client Credentials"-based authentication](https://www.digitalocean.com/community/tutorials/an-introduction-to-oauth-2#grant-type-client-credentials).
 
+#### Option "promregator.authenticator.oauth2xsuaa.url"
+Like `promregator.authenticator.oauth2xsuaa.tokenServiceURL`, but without trailing `/oauth/token`.
+
+#### Option "promregator.authenticator.oauth2xsuaa.cert_url"
+Specifies the URL of the OAuth2 endpoint for certificate based authentication, which contains the token service of your authorization server in case of global authentication. Needs to be provided without a path.
+
 #### Option "promregator.authenticator.oauth2xsuaa.client_id" (mandatory, if using promregator.authenticator.type=OAuth2XSUAA)
 Specifies the client identifier (a.k.a. "client_id") which shall be used during the OAuth2 request based on the Grant Type Client Credentials flow in case of global authentication.
 
-#### Option "promregator.authenticator.oauth2xsuaa.client_secret" (mandatory, if using promregator.authenticator.type=OAuth2XSUAA)
-Specifies the client secret (a.k.a. "client_secret") which shall be used during the OAuth2 request based on the Grant Type Client Credentials flow in case of global authentication.
+#### Option "promregator.authenticator.oauth2xsuaa.client_secret" (mandatory for client secret based authentication, if using promregator.authenticator.type=OAuth2XSUAA)
+Specifies the client secret (a.k.a. "client_secret") which shall be used during the OAuth2 request based on the Grant Type Client Credentials flow in case of global authentication. Omitted when certificate based authentication is used.
+
+#### Option "client_certificates" (mandatory for certificate based authentication, if using promregator.authenticator.type=OAuth2XSUA)
+Specifies the certificate chain which shall be used during the OAuth2 request. Omitted when clientsecret based authentification is used.
+
+#### Option "client_key" (mandatory for certificate based authentication, if using promregator.authenticator.type=OAuth2XSUA)
+Specifies the private key which shall be used during the OAuth2 request. Omitted when clientsecret based authentification is used.
+
+#### Option "credential_type" (mandatory for certificate based authentication, if using promregator.authenticator.type=OAuth2XSUA)
+Specifies the type of the credential. Typically `x509`. Omitted when clientsecret based authentification is used.
 
 *WARNING!* 
 Due to security reasons, it is *neither* recommended to store this value in your YAML file, nor to put it into the command line when starting Promregator.
