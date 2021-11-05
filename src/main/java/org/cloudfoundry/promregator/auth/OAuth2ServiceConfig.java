@@ -14,6 +14,7 @@ import java.util.Map;
 
 import org.cloudfoundry.promregator.config.OAuth2XSUAAAuthenticationConfiguration;
 
+import com.google.common.base.Strings;
 import com.sap.cloud.security.config.OAuth2ServiceConfiguration;
 import com.sap.cloud.security.config.Service;
 
@@ -76,6 +77,9 @@ public class OAuth2ServiceConfig implements OAuth2ServiceConfiguration {
 	}
 
 	private static URI toUri(String uri) {
+		if (uri == null) {
+			return null;
+		}
 		try {
 			return new URI(uri);
 		} catch (URISyntaxException e) {
