@@ -13,8 +13,6 @@ public class OAuth2XSUAAAuthenticationConfiguration {
 
 	private String cert_url;
 
-	private String credential_type;
-
 	private String client_id;
 
 	private String client_secret;
@@ -56,14 +54,6 @@ public class OAuth2XSUAAAuthenticationConfiguration {
 
 	public void setClient_id(String client_id) {
 		this.client_id = client_id;
-	}
-
-	public void setCredential_type(String credential_type) {
-		this.credential_type = credential_type;
-	}
-
-	public String getCredential_type() {
-		return credential_type;
 	}
 
 	public String getClient_secret() {

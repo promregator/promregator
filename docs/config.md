@@ -681,9 +681,6 @@ Specifies the certificate chain which shall be used during the OAuth2 request. O
 #### Option "client_key" (mandatory for certificate based authentication, if using promregator.authenticator.type=OAuth2XSUA)
 Specifies the private key which shall be used during the OAuth2 request. Omitted when clientsecret based authentification is used.
 
-#### Option "credential_type" (mandatory for certificate based authentication, if using promregator.authenticator.type=OAuth2XSUA)
-Specifies the type of the credential. Typically `x509`. Omitted when clientsecret based authentification is used.
-
 *WARNING!* 
 Due to security reasons, it is *neither* recommended to store this value in your YAML file, nor to put it into the command line when starting Promregator.
 Instead it is suggested to set the identically named environment variable `promregator.authenticator.oauth2xsuaa.client_secret` when starting the application.

@@ -41,7 +41,6 @@ public abstract class TokenFetcher {
 		c.setClient_id(key.clientid);
 		c.setClient_key(key.key);
 		c.setClient_secret(key.clientsecret);
-		c.setCredential_type(key.credentialType);
 		c.setUrl(key.url);
 
 		OAuth2XSUAAEnricher enricher = new OAuth2XSUAAEnricher(c);

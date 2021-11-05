@@ -6,7 +6,6 @@ import static com.sap.cloud.security.config.cf.CFConstants.CLIENT_SECRET;
 import static com.sap.cloud.security.config.cf.CFConstants.KEY;
 import static com.sap.cloud.security.config.cf.CFConstants.URL;
 import static com.sap.cloud.security.config.cf.CFConstants.XSUAA.CERT_URL;
-import static com.sap.cloud.security.config.cf.CFConstants.XSUAA.CREDENTIAL_TYPE;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -29,7 +28,6 @@ public class OAuth2ServiceConfig implements OAuth2ServiceConfiguration {
 		properties.put(CLIENT_SECRET, config.getClient_secret());
 		properties.put(URL, config.getUrl());
 		properties.put(CERT_URL, config.getCertUrl());
-		properties.put(CREDENTIAL_TYPE, config.getCredential_type());
 	}
 
 	@Override
