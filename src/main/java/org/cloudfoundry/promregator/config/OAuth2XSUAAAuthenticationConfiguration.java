@@ -11,7 +11,7 @@ import org.apache.http.client.utils.URIBuilder;
 public class OAuth2XSUAAAuthenticationConfiguration {
 	private String url;
 
-	private String certUrl;
+	private String cert_url;
 
 	private String credential_type;
 
@@ -43,11 +43,11 @@ public class OAuth2XSUAAAuthenticationConfiguration {
 	}
 
 	public String getCertUrl() {
-		return certUrl;
+		return cert_url;
 	}
 
-	public void setCertUrl(String certUrl) {
-		this.certUrl = certUrl;
+	public void setCertUrl(String cert_url) {
+		this.cert_url = cert_url;
 	}
 
 	public String getClient_id() {
