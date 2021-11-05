@@ -47,8 +47,9 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
 			String jwt = getJWT();
 			if (jwt == null || jwt.isEmpty()) {
 				log.error("Cannot obtain JWT for client '{}'.", c.getClientId());
+			} else {
+				log.debug("JWT obtained for client '{}': '{}******'", c.getClientId(), jwt.substring(0, Math.min(10, jwt.length()/3)));
 			}
-			log.debug("JWT obtained for client '{}': '{}******'", c.getClientId(), jwt.substring(0, Math.min(10, jwt.length()/3)));
 		} catch (TokenFlowException | RuntimeException e) {
 			log.error("Cannot obtain JWT.", e);
 		}
