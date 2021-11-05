@@ -30,4 +30,14 @@ public class OAuth2XSUAAAuthenticationConfigurationTest {
 
 		assertThat(subject.getUrl(), equalTo("https://example.org/v1"));
 	}
+
+	@Test
+	public void testTokenServiceURLBackwardCompatibilityWithPort() {
+
+		OAuth2XSUAAAuthenticationConfiguration subject = new OAuth2XSUAAAuthenticationConfiguration();
+
+		subject.setTokenServiceURL("https://example.org:1234/oauth/token");
+
+		assertThat(subject.getUrl(), equalTo("https://example.org:1234"));
+	}
 }
