@@ -33,7 +33,7 @@ The suggested approach is to create a configuration YAML file, such as `myconfig
 java -Dspring.config.location=file:/path/to/your/myconfig.yaml -jar promregator-x.y.z-SNAPSHOT.jar
 ```
 
-Here is an dummy example for such a configuration yaml file:
+Here is an dummy example for such a configuration yaml file when basic authentication is used:
 ```yaml
 cf:
   api_host: api.cf.example.org
@@ -46,14 +46,41 @@ promregator:
   authenticator:
     type: OAuth2XSUAA
     oauth2xsuaa:
-      tokenServiceURL: https://jwt.token.server.example.org/oauth/token
+      url: https://jwt.token.server.example.org
       client_id: myOAuth2ClientId
-    
+
   targets:
     - orgName: myCfOrgName
       spaceName: mySpaceName
       applicationName: myApplication1
-      
+
+    - orgName: myOtherCfOrgName
+      spaceName: myOtherSpaceName
+      applicationName: myOtherApplication
+```
+
+Here is an dummy example for such a configuration yaml file when certificate based authentication is used:
+```yaml
+cf:
+  api_host: api.cf.example.org
+  username: myCFUserName
+  proxy:
+    host: 192.168.111.1
+    port: 8080
+
+promregator:
+  authenticator:
+    type: OAuth2XSUAA
+    oauth2xsuaa:
+      cert_url: https://jwt.cert.token.server.example.org
+      client_id: myOAuth2ClientId
+      client_certificates: "-----BEGIN CERTIFICATE-----\nMyIFu...IxZ\n-----END CERTIFICATE-----\n"
+
+  targets:
+    - orgName: myCfOrgName
+      spaceName: mySpaceName
+      applicationName: myApplication1
+
     - orgName: myOtherCfOrgName
       spaceName: myOtherSpaceName
       applicationName: myOtherApplication
