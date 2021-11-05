@@ -40,11 +40,21 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
 					new XsuaaDefaultEndpoints(c), c.getClientIdentity()).clientCredentialsTokenFlow();
 		}
 		this.tokenClient.scopes(config.getScopes().toArray(new String[0]));
+
+		// Ensure getting the web token works (fail-fast)
+		// We don't raise an exception, but we log the failure.
+		try {
+			if (getJWT() == null) {
+				log.error("Cannot obtain JWT.");
+			}
+		} catch (TokenFlowException | RuntimeException e) {
+			log.error("Cannot obtain JWT: ", e);
+		}
 	}
 
 	@Override
 	public void enrichWithAuthentication(HttpGet httpget) {
-		final String jwt = getJWT();
+		final String jwt = getJWTAndCatchExceptions();
 		if (jwt == null) {
 			log.error("Unable to enrich request with JWT");
 			return;
@@ -52,14 +62,18 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
 		httpget.setHeader("Authorization", String.format("Bearer %s", jwt));
 	}
 
-	private String getJWT() {
+	private final String getJWTAndCatchExceptions() {
 		String jwt = null;
 		try {
-			jwt = tokenClient.execute().getAccessToken();
-		} catch (TokenFlowException e) {
+			jwt = getJWT();
+		} catch (TokenFlowException | RuntimeException e) {
 			log.error("Unable to enrich request with JWT", e);
 		}
 		return jwt;
+	}
+
+	private final String getJWT() throws TokenFlowException {
+		return this.tokenClient.execute().getAccessToken();
 	}
 
 	public void close() throws IOException {
