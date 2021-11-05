@@ -44,11 +44,13 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
 		// Ensure getting the web token works (fail-fast)
 		// We don't raise an exception, but we log the failure.
 		try {
-			if (getJWT() == null) {
-				log.error("Cannot obtain JWT.");
+			String jwt = getJWT();
+			if (jwt == null || jwt.isEmpty()) {
+				log.error("Cannot obtain JWT for client '{}'.", c.getClientId());
 			}
+			log.debug("JWT obtained for client '{}': '{}******'", c.getClientId(), jwt.substring(0, Math.min(10, jwt.length()/3)));
 		} catch (TokenFlowException | RuntimeException e) {
-			log.error("Cannot obtain JWT: ", e);
+			log.error("Cannot obtain JWT.", e);
 		}
 	}
 
