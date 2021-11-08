@@ -62,21 +62,16 @@ private val log = mu.KotlinLogging.logger { }
 
 @Component
 class SimpleCFAccessor(
-        private val cf: CloudFoundryConfig,
-        private val promregatorConfiguration: PromregatorConfiguration,
         private val meterRegistry: MeterRegistry,
 ) {
     private val rateLimiter = RateLimiter(600)
     private var _isV3Enabled = false
     val isV3Enabled: Boolean get() = _isV3Enabled
 
-    private val cloudFoundryClients = ConcurrentHashMap<String, ReactorCloudFoundryClient>()
-
     init {
         meterRegistry.gauge("promregator.cf.ratelimit.available", rateLimiter) { it.availableTokens.toDouble() }
         meterRegistry.gauge("promregator.cf.ratelimit.queue", rateLimiter) { it.waitQueue.toDouble() }
         meterRegistry.more().counter("promregator.cf.ratelimit.wait_seconds", Tags.empty(), rateLimiter) { (it.totalWaitTimeMs / 1000.0) }
-        createClients()
     }
 
     private suspend fun <T> rateLimitAndRecord(requestType: RequestType, block: suspend () -> T): T? {
@@ -93,110 +88,10 @@ class SimpleCFAccessor(
         }
     }
 
-    private fun createClients() {
-        cf.apis.forEach { api -> reset(api.key) }
-        if (promregatorConfiguration.internal.preCheckAPIVersion) {
-            val request = GetInfoRequest.builder().build()
-            cloudFoundryClients.forEach { (api: String, client: ReactorCloudFoundryClient) ->
-                val getInfo = client.info()[request].block()
-                        ?: throw RuntimeException("Error connecting to CF api '$api'")
-                // NB: This also ensures that the connection has been established properly...
-                log.info { "Target CF platform ($api) is running on API version ${getInfo.apiVersion}" }
 
-                // Ensures v3 API exists. The CF Java Client does not yet implement the info endpoint for V3, so we do it manually.
-                val v3Info = ReactorInfoV3(client.connectionContext, client.rootV3,
-                        client.tokenProvider, client.requestTags)
-                        .get().onErrorReturn(JsonNodeFactory.instance.nullNode()).block()
-                if (v3Info == null || v3Info.isNull) {
-                    log.warn("Unable to get v3 info endpoint of CF platform, some features will not work as expected")
-                    _isV3Enabled = false
-                } else {
-                    _isV3Enabled = true
-                }
-            }
-        }
-    }
 
-    private fun connectionContext(apiConfig: ApiConfig, proxyConfiguration: ProxyConfiguration?): DefaultConnectionContext {
-        if (PATTERN_HTTP_BASED_PROTOCOL_PREFIX.matcher(apiConfig.host).find()) {
-            throw ConfigurationException("cf.api_host configuration parameter must not contain an http(s)://-like prefix; specify the hostname only instead")
-        }
-        var connctx = DefaultConnectionContext.builder()
-                .apiHost(apiConfig.host)
-                .skipSslValidation(apiConfig.skipSslValidation)
-        if (proxyConfiguration != null) {
-            connctx = connctx.proxyConfiguration(proxyConfiguration)
-        }
-        if (apiConfig.connectionPool.size != null) {
-            connctx = connctx.connectionPoolSize(apiConfig.connectionPool.size)
-        }
-        if (apiConfig.threadPool.size != null) {
-            connctx = connctx.threadPoolSize(apiConfig.threadPool.size)
-        }
-        return connctx.build()
-    }
-
-    private fun tokenProvider(apiConfig: ApiConfig): PasswordGrantTokenProvider {
-        return PasswordGrantTokenProvider.builder().password(apiConfig.password).username(apiConfig.username).build()
-    }
-
-    private fun proxyConfiguration(apiConfig: ApiConfig): ProxyConfiguration? {
-        val effectiveProxyHost = apiConfig.proxy?.host
-        val effectiveProxyPort = apiConfig.proxy?.port ?: 0
-
-        if (effectiveProxyHost != null && PATTERN_HTTP_BASED_PROTOCOL_PREFIX.matcher(effectiveProxyHost).find()) {
-            throw ConfigurationException("Configuring of cf.proxyHost or cf.proxy.host configuration parameter must not contain an http(s)://-like prefix; specify the hostname only instead")
-        }
-        return if (effectiveProxyHost != null && effectiveProxyPort != 0) {
-            val proxyIP = if (!InetAddressUtils.isIPv4Address(effectiveProxyHost) && !InetAddressUtils.isIPv6Address(effectiveProxyHost)) {
-                /*
-				 * NB: There is currently a bug in io.netty.util.internal.SocketUtils.connect()
-				 * which is called implicitly by the CF API Client library, which leads to the effect
-				 * that a hostname for the proxy isn't resolved. Thus, it is only possible to pass
-				 * IP addresses as proxy names.
-				 * To work around this issue, we manually perform a resolution of the hostname here
-				 * and then feed that one to the CF API Client library...
-				 */
-                try {
-                    val ia = InetAddress.getByName(effectiveProxyHost)
-                    ia.hostAddress
-                } catch (e: UnknownHostException) {
-                    throw ConfigurationException(String.format("The proxy host '%s' cannot be resolved to an IP address; is there a typo in your configuration?", effectiveProxyHost), e)
-                }
-            } else {
-                // the address specified is already an IP address
-                effectiveProxyHost
-            }
-            ProxyConfiguration.builder().host(proxyIP).port(effectiveProxyPort).build()
-        } else {
-            null
-        }
-    }
-
-    private fun cloudFoundryClient(connectionContext: ConnectionContext, tokenProvider: TokenProvider): ReactorCloudFoundryClient {
-        return ReactorCloudFoundryClient.builder().connectionContext(connectionContext).tokenProvider(tokenProvider).build()
-    }
-
-    fun reset(api: String) {
-        val apiConfig = cf.apis[api]
-        if (apiConfig != null) {
-            resetCloudFoundryClient(api, apiConfig)
-        }
-    }
-
-    private fun resetCloudFoundryClient(api: String, apiConfig: ApiConfig) {
-        try {
-            val proxyConfiguration = proxyConfiguration(apiConfig)
-            val connectionContext = connectionContext(apiConfig, proxyConfiguration)
-            val tokenProvider = tokenProvider(apiConfig)
-            cloudFoundryClients[api] = cloudFoundryClient(connectionContext, tokenProvider)
-        } catch (e: ConfigurationException) {
-            log.error(e) { "Restarting Cloud Foundry Client failed due to Configuration Exception raised" }
-        }
-    }
-
-    suspend fun retrieveAllOrgIds(api: String): List<OrganizationResourceV2> {
-        return cfQueryV2<OrganizationResourceV2, ListOrganizationsResponseV2, ListOrganizationsRequestV2>(api, ORG) {
+    suspend fun retrieveAllOrgIds(cfClient: ReactorCloudFoundryClient): List<OrganizationResourceV2> {
+        return cfQueryV2<OrganizationResourceV2, ListOrganizationsResponseV2, ListOrganizationsRequestV2>(cfClient, ORG) {
             request { pageNumber, order, pageSize ->
                 ListOrganizationsRequestV2.builder()
                         .orderDirection(order)
@@ -211,8 +106,8 @@ class SimpleCFAccessor(
     /* (non-Javadoc)
 	 * @see org.cloudfoundry.promregator.cfaccessor.CFAccessor#retrieveSpaceIdsInOrg(java.lang.String)
 	 */
-    suspend fun retrieveSpaceIdsInOrg(api: String, orgId: String): List<SpaceResourceV2> {
-        return cfQueryV2<SpaceResourceV2, ListSpacesResponseV2, ListSpacesRequestV2>(api, SPACE_IN_ORG) {
+    suspend fun retrieveSpaceIdsInOrg(cfClient: ReactorCloudFoundryClient, orgId: String): List<SpaceResourceV2> {
+        return cfQueryV2<SpaceResourceV2, ListSpacesResponseV2, ListSpacesRequestV2>(cfClient, SPACE_IN_ORG) {
             request { pageNumber, order, pageSize ->
                 ListSpacesRequestV2.builder()
                         .organizationId(orgId)
@@ -228,8 +123,8 @@ class SimpleCFAccessor(
     /* (non-Javadoc)
 	 * @see org.cloudfoundry.promregator.cfaccessor.CFAccessor#retrieveAllApplicationIdsInSpace(java.lang.String, java.lang.String)
 	 */
-    suspend fun retrieveAllApplicationIdsInSpace(api: String, orgId: String, spaceId: String): List<ApplicationResourceV2> {
-        return cfQueryV2<ApplicationResourceV2, ListApplicationsResponseV2, ListApplicationsRequestV2>(api, ALL_APPS_IN_SPACE) {
+    suspend fun retrieveAllApplicationIdsInSpace(cfClient: ReactorCloudFoundryClient, orgId: String, spaceId: String): List<ApplicationResourceV2> {
+        return cfQueryV2<ApplicationResourceV2, ListApplicationsResponseV2, ListApplicationsRequestV2>(cfClient, ALL_APPS_IN_SPACE) {
             request { pageNumber, order, pageSize ->
                 ListApplicationsRequestV2.builder()
                         .organizationId(orgId)
@@ -243,45 +138,49 @@ class SimpleCFAccessor(
         }
     }
 
-    suspend fun retrieveSpaceSummary(api: String, spaceId: String): GetSpaceSummaryResponse? {
+    suspend fun retrieveSpaceSummary(cfClient: ReactorCloudFoundryClient, spaceId: String): GetSpaceSummaryResponse? {
         // Note that GetSpaceSummaryRequest is not paginated
         val request = GetSpaceSummaryRequest.builder().spaceId(spaceId).build()
         return try {
-            cloudFoundryClients[api]?.spaces()?.getSummary(request)?.awaitSingle()
+            cfClient.spaces().getSummary(request)?.awaitSingle()
         } catch (e: Exception) {
-            log.error(e) { "Error retrieving spaceSummary api:$api spaceId:$spaceId" }
+            log.error(e) { "Error retrieving spaceSummary api:$cfClient spaceId:$spaceId" }
             null
         }
     }
 
-    suspend fun retrieveSpaceSummaryV3(api: String, spaceId: String): GetSpaceSummaryResponse? {
+    suspend fun retrieveSpaceSummaryV3(cfClient: ReactorCloudFoundryClient, spaceId: String): GetSpaceSummaryResponse? {
         // Note that GetSpaceSummaryRequest is not paginated
         val request = GetSpaceSummaryRequest.builder().spaceId(spaceId).build()
         return try {
-            cloudFoundryClients[api]?.spaces()?.getSummary(request)?.awaitSingle()
+            cfClient.spaces()?.getSummary(request)?.awaitSingle()
         } catch (e: Exception) {
-            log.error(e) { "Error retrieving spaceSummary api:$api spaceId:$spaceId" }
+            log.error(e) { "Error retrieving spaceSummary api:$cfClient spaceId:$spaceId" }
             null
         }
     }
 
-    suspend fun retrieveAllDomains(api: String, orgId: String): org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse? {
+    suspend fun retrieveAllDomains(cfClient: ReactorCloudFoundryClient, orgId: String): org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse? {
         val request = org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsRequest.builder().organizationId(orgId).build()
-        return cloudFoundryClients[api]?.organizations()?.listDomains(request)?.awaitSingle()
+        return cfClient.organizations()?.listDomains(request)?.awaitSingle()
     }
 
-
-    suspend fun retrieveAllDomainsV3(api: String, orgId: String): org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse? {
+    suspend fun retrieveAllDomainsV3(cfClient: ReactorCloudFoundryClient, orgId: String): org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse? {
         val request = org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsRequest.builder().organizationId(orgId).build()
-        return cloudFoundryClients[api]?.organizationsV3()?.listDomains(request)?.awaitSingle()
+        return try {
+            cfClient.organizationsV3()?.listDomains(request)?.awaitSingle()
+        } catch (e: Exception) {
+            log.error(e) {"Error listing domains fo api:$cfClient"}
+            null
+        }
     }
 
-    suspend fun retrieveAllOrgIdsV3(api: String): List<OrganizationResourceV3> {
+    suspend fun retrieveAllOrgIdsV3(cfClient: ReactorCloudFoundryClient, ): List<OrganizationResourceV3> {
         if (!isV3Enabled) {
             error("V3 API is not supported on your foundation.")
         }
 
-        return cfQueryV3<OrganizationResourceV3, ListOrganizationsResponseV3, ListOrganizationsRequestV3>(api, ORG) {
+        return cfQueryV3<OrganizationResourceV3, ListOrganizationsResponseV3, ListOrganizationsRequestV3>(cfClient, ORG) {
             request { pageNumber, resultsPerPage ->
                 ListOrganizationsRequestV3.builder()
                     .perPage(resultsPerPage)
@@ -292,12 +191,12 @@ class SimpleCFAccessor(
         }
     }
 
-    suspend fun retrieveSpaceIdsInOrgV3(api: String, orgId: String): List<SpaceResourceV3> {
+    suspend fun retrieveSpaceIdsInOrgV3(cfClient: ReactorCloudFoundryClient, orgId: String): List<SpaceResourceV3> {
         if (!isV3Enabled) {
             error("V3 API is not supported on your foundation.")
         }
 
-        return cfQueryV3<SpaceResourceV3, ListSpacesResponseV3, ListSpacesRequestV3>(api, SPACE_IN_ORG) {
+        return cfQueryV3<SpaceResourceV3, ListSpacesResponseV3, ListSpacesRequestV3>(cfClient, SPACE_IN_ORG) {
             request { pageNumber, resultsPerPage ->
                 ListSpacesRequestV3.builder()
                         .organizationId(orgId)
@@ -309,12 +208,12 @@ class SimpleCFAccessor(
         }
     }
 
-    suspend fun retrieveAllApplicationsInSpaceV3(api: String, orgId: String, spaceId: String): List<ApplicationResourceV3> {
+    suspend fun retrieveAllApplicationsInSpaceV3(cfClient: ReactorCloudFoundryClient, orgId: String, spaceId: String): List<ApplicationResourceV3> {
         if (!isV3Enabled) {
             error("V3 API is not supported on your foundation.")
         }
 
-        return cfQueryV3<ApplicationResourceV3, ListApplicationsResponseV3, ListApplicationsRequestV3>(api, ALL_APPS_IN_SPACE) {
+        return cfQueryV3<ApplicationResourceV3, ListApplicationsResponseV3, ListApplicationsRequestV3>(cfClient, ALL_APPS_IN_SPACE) {
             request { pageNumber, resultsPerPage ->
                 ListApplicationsRequestV3.builder()
                         .organizationId(orgId)
@@ -326,12 +225,12 @@ class SimpleCFAccessor(
             query { applicationsV3().list(it) }
         }
     }
-    suspend fun retrieveApplicationsRoutesV3(api: String, appId: String): List<RouteResource> {
+    suspend fun retrieveApplicationsRoutesV3(cfClient: ReactorCloudFoundryClient, appId: String): List<RouteResource> {
         if (!isV3Enabled) {
             error("V3 API is not supported on your foundation.")
         }
 
-        return cfQueryV3<RouteResource, ListApplicationRoutesResponse, ListApplicationRoutesRequest>(api, OTHER) {
+        return cfQueryV3<RouteResource, ListApplicationRoutesResponse, ListApplicationRoutesRequest>(cfClient, OTHER) {
             request { pageNumber, resultsPerPage ->
                 ListApplicationRoutesRequest.builder()
                         .applicationId(appId)
@@ -344,7 +243,7 @@ class SimpleCFAccessor(
         }
     }
 
-    suspend fun retrieveApplicationProcessV3(api: String, appId: String): GetApplicationProcessResponse? {
+    suspend fun retrieveApplicationProcessV3(cfClient: ReactorCloudFoundryClient, appId: String): GetApplicationProcessResponse? {
         if (!isV3Enabled) {
             error("V3 API is not supported on your foundation.")
         }
@@ -352,23 +251,22 @@ class SimpleCFAccessor(
                 .applicationId(appId)
                 .type("web").build()
 
-        return cloudFoundryClients[api]?.applicationsV3()?.getProcess(req)?.awaitSingle()
+        return cfClient.applicationsV3()?.getProcess(req)?.awaitSingle()
     }
 
     private suspend fun <R : ResourceV2<*>, T : org.cloudfoundry.client.v2.PaginatedResponse<R>, S : PaginatedRequestV2>
-            cfQueryV2(api: String,
+            cfQueryV2(cfClient: ReactorCloudFoundryClient,
                       type: RequestType,
                       pageSize: Int = 100,
                       orderDirection: OrderDirection = OrderDirection.ASCENDING,
                       requestBlock: CfClientDslV2<R, T, S>.() -> Unit): List<R> {
-        val cfClient = cloudFoundryClients[api]
         val dsl = CfClientDslV2<R, T, S>(cfClient, type, pageSize, orderDirection)
         dsl.requestBlock()
         return dsl.runQueries()
     }
 
-    private suspend fun <R : Resource, T : org.cloudfoundry.client.v3.PaginatedResponse<R>, S : V3PaginatedRequest> cfQueryV3(api: String, type: RequestType, requestBlock: CfClientDslV3<R, T, S>.() -> Unit): List<R> {
-        val cfClient = cloudFoundryClients[api]
+    private suspend fun <R : Resource, T : org.cloudfoundry.client.v3.PaginatedResponse<R>, S : V3PaginatedRequest> cfQueryV3(
+            cfClient: ReactorCloudFoundryClient, type: RequestType, requestBlock: CfClientDslV3<R, T, S>.() -> Unit): List<R> {
         val dsl = CfClientDslV3<R, T, S>(cfClient, type)
         dsl.requestBlock()
         return dsl.runQueries()
@@ -456,7 +354,5 @@ class SimpleCFAccessor(
         }
     }
 
-    companion object {
-        private val PATTERN_HTTP_BASED_PROTOCOL_PREFIX = Pattern.compile("^https?://", Pattern.CASE_INSENSITIVE)
-    }
+
 }

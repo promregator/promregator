@@ -2,18 +2,16 @@ package org.cloudfoundry.promregator.config.validations
 
 import java.util.LinkedList
 import org.cloudfoundry.promregator.lite.config.PromregatorConfiguration
-import org.cloudfoundry.promregator.lite.config.InternalConfig
-import org.cloudfoundry.promregator.lite.config.Target
+import org.cloudfoundry.promregator.lite.config.CfTarget
 import org.cloudfoundry.promregator.lite.config.TargetAuthenticatorConfiguration
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import java.util.ArrayList
 
 internal class TargetsHaveConsistentAuthenticatorIdTest {
     @Test
     fun testValidateConfigBrokenNotExistingAtAll() {
-        val t = Target(authenticatorId = "unittest")
-        val targets: MutableList<Target> = LinkedList()
+        val t = CfTarget(authenticatorId = "unittest")
+        val targets: MutableList<CfTarget> = LinkedList()
         targets.add(t)
         val pc = PromregatorConfiguration(targets)
         val subject = TargetsHaveConsistentAuthenticatorId()
@@ -23,8 +21,8 @@ internal class TargetsHaveConsistentAuthenticatorIdTest {
 
     @Test
     fun testValidateConfigBrokenWithWrongTAC() {
-        val t = Target(authenticatorId = "unittest")
-        val targets: MutableList<Target> = LinkedList()
+        val t = CfTarget(authenticatorId = "unittest")
+        val targets: MutableList<CfTarget> = LinkedList()
         targets.add(t)
         val tac = TargetAuthenticatorConfiguration()
         tac.id = "unittestOtherIdentifier"
@@ -38,7 +36,7 @@ internal class TargetsHaveConsistentAuthenticatorIdTest {
 
     @Test
     fun testValidateConfigOk() {
-        val t = Target(authenticatorId = "unittest")
+        val t = CfTarget(authenticatorId = "unittest")
         val tac = TargetAuthenticatorConfiguration().apply { id = "unittest" }
         val pc = PromregatorConfiguration(listOf(t), targetAuthenticators = listOf(tac))
         val subject = TargetsHaveConsistentAuthenticatorId()

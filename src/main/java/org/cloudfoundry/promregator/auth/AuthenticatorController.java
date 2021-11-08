@@ -7,7 +7,7 @@ import javax.annotation.PostConstruct;
 
 import org.cloudfoundry.promregator.lite.config.AuthenticatorConfiguration;
 import org.cloudfoundry.promregator.lite.config.PromregatorConfiguration;
-import org.cloudfoundry.promregator.lite.config.Target;
+import org.cloudfoundry.promregator.lite.config.CfTarget;
 import org.cloudfoundry.promregator.lite.config.TargetAuthenticatorConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -68,7 +68,7 @@ public class AuthenticatorController {
 	 * target-specific AuthenticationEnricher defined for the target, a fallback to the globally 
 	 * defined AuthenticationEnricher is performed. 
 	 */
-	public AuthenticationEnricher getAuthenticationEnricherByTarget(Target target) {
+	public AuthenticationEnricher getAuthenticationEnricherByTarget(CfTarget target) {
 		AuthenticationEnricher ae = null;
 		
 		if (target == null) {

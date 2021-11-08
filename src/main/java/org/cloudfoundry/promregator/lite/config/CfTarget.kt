@@ -1,12 +1,12 @@
 package org.cloudfoundry.promregator.lite.config
 
 import org.cloudfoundry.promregator.lite.config.PromregatorConfiguration.Companion.DEFAULT_ID
-import java.util.regex.PatternSyntaxException
 import java.util.regex.Pattern
+import java.util.regex.PatternSyntaxException
 
 private val log = mu.KotlinLogging.logger {  }
 
-data class Target(
+data class CfTarget(
         val api: String = DEFAULT_ID,
         val orgName: String? = null,
         val orgRegex: String? = null,
@@ -19,7 +19,8 @@ data class Target(
         val protocol: String = "https",
         val authenticatorId: String? = null,
         val preferredRouteRegex: List<String> = listOf(),
-        val internalRoutePort: Int = 0
+        val internalRoutePort: Int = 0,
+        var overrideRouteAndPath: String? = null
 ) {
     val preferredRouteRegexPattern: List<Pattern>
 

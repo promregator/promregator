@@ -76,7 +76,8 @@ class AuthenticatorService(promregatorConfiguration: PromregatorConfiguration) {
         } else if ("none".equals(type, ignoreCase = true) || "null".equals(type, ignoreCase = true)) {
             ae = NullEnricher()
         } else if ("basic".equals(type, ignoreCase = true)) {
-            val basic = authConfig?.basic ?: error("auth.basic type is to be used, but config is missing")
+            val basic = authConfig?.basic ?:
+                                error("auth.basic type is to be used, but config is missing")
             ae = BasicAuthenticationEnricher(basic)
         } else {
             log.warn { "Authenticator type $type is unknown; skipping" }

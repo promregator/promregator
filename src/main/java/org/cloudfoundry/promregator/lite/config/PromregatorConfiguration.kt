@@ -10,7 +10,7 @@ import org.springframework.boot.context.properties.ConstructorBinding
 @ConstructorBinding
 @ConfigurationProperties(prefix = "promregator")
 data class PromregatorConfiguration(
-        val targets: List<Target> = ArrayList(),
+        val targets: List<CfTarget> = ArrayList(),
         val authenticator: AuthenticatorConfiguration = AuthenticatorConfiguration(),
         val targetAuthenticators: List<TargetAuthenticatorConfiguration> = ArrayList(),
         val internal: InternalConfig = InternalConfig(),

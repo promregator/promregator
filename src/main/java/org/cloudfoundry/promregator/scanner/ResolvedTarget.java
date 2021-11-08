@@ -1,10 +1,10 @@
 package org.cloudfoundry.promregator.scanner;
 
 import org.cloudfoundry.promregator.config.InvalidTargetProtocolSpecifiedError;
-import org.cloudfoundry.promregator.lite.config.Target;
+import org.cloudfoundry.promregator.lite.config.CfTarget;
 
 public class ResolvedTarget {
-	private Target originalTarget;
+	private CfTarget originalTarget;
 	
 	private String orgName;
 	
@@ -24,7 +24,7 @@ public class ResolvedTarget {
 		super();
 	}
 	
-	public ResolvedTarget(Target configTarget) {
+	public ResolvedTarget(CfTarget configTarget) {
 		this.originalTarget = configTarget;
 		this.orgName = configTarget.getOrgName();
 		this.spaceName = configTarget.getSpaceName();
@@ -99,11 +99,11 @@ public class ResolvedTarget {
 		}
 	}
 
-	public Target getOriginalTarget() {
+	public CfTarget getOriginalTarget() {
 		return originalTarget;
 	}
 
-	public void setOriginalTarget(Target originalTarget) {
+	public void setOriginalTarget(CfTarget originalTarget) {
 		this.originalTarget = originalTarget;
 	}
 

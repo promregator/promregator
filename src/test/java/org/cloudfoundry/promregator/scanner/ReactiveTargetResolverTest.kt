@@ -3,20 +3,17 @@ package org.cloudfoundry.promregator.scanner
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.boot.test.context.SpringBootTest
-import org.cloudfoundry.promregator.scanner.MockedReactiveTargetResolverSpringApplication
 import org.junit.jupiter.api.AfterEach
 import org.mockito.Mockito
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor
 import org.springframework.beans.factory.annotation.Autowired
-import org.cloudfoundry.promregator.scanner.TargetResolver
 import java.util.LinkedList
-import org.cloudfoundry.promregator.scanner.ResolvedTarget
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorMock
 import reactor.core.publisher.Mono
 import org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl
 import org.junit.jupiter.api.AfterAll
 import org.cloudfoundry.promregator.JUnitTestUtils
-import org.cloudfoundry.promregator.lite.config.Target
+import org.cloudfoundry.promregator.lite.config.CfTarget
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -35,8 +32,8 @@ internal class ReactiveTargetResolverTest {
     lateinit var cfAccessor: CFAccessor
     @Test
     fun testFullyResolvedAlready() {
-        val list: MutableList<Target> = LinkedList()
-        val t = Target(
+        val list: MutableList<CfTarget> = LinkedList()
+        val t = CfTarget(
                 orgName = "unittestorg",
                 spaceName = "unittestspace",
                 applicationName = "testapp",
@@ -59,8 +56,8 @@ internal class ReactiveTargetResolverTest {
 
     @Test
     fun testMissingApplicationName() {
-        val list: MutableList<Target> = LinkedList()
-        val t = Target(
+        val list: MutableList<CfTarget> = LinkedList()
+        val t = CfTarget(
                 orgName = "unittestorg",
                 spaceName = "unittestspace",
                 path = "path",
@@ -88,8 +85,8 @@ internal class ReactiveTargetResolverTest {
 
     @Test
     fun testWithApplicationRegex() {
-        val list: MutableList<Target> = LinkedList()
-        val t = Target(
+        val list: MutableList<CfTarget> = LinkedList()
+        val t = CfTarget(
                 orgName = "unittestorg",
                 spaceName = "unittestspace",
                 applicationRegex = ".*2",
@@ -111,8 +108,8 @@ internal class ReactiveTargetResolverTest {
 
     @Test
     fun testWithApplicationRegexCaseInsensitiveIssue76() {
-        val list: MutableList<Target> = LinkedList()
-        val t = Target(
+        val list: MutableList<CfTarget> = LinkedList()
+        val t = CfTarget(
                 orgName = "unittestorg",
                 spaceName = "unittestspace",
                 applicationRegex = "te.*App2",
@@ -134,7 +131,7 @@ internal class ReactiveTargetResolverTest {
 
     @Test
     fun testEmpty() {
-        val list: List<Target> = LinkedList()
+        val list: List<CfTarget> = LinkedList()
         val actualList = targetResolver!!.resolveTargets(list)
         Assertions.assertNotNull(actualList)
         Assertions.assertEquals(0, actualList.size)
@@ -142,8 +139,8 @@ internal class ReactiveTargetResolverTest {
 
     @Test
     fun testSummaryDoesnotExist() {
-        val list: MutableList<Target> = LinkedList()
-        val t = Target(
+        val list: MutableList<CfTarget> = LinkedList()
+        val t = CfTarget(
                 orgName = "unittestorg",
                 spaceName = "unittestspace-summarydoesnotexist",
                 path = "path",
@@ -157,8 +154,8 @@ internal class ReactiveTargetResolverTest {
 
     @Test
     fun testRetrieveAllApplicationIdsInSpaceThrowsException() {
-        val list: MutableList<Target> = LinkedList()
-        val t = Target(
+        val list: MutableList<CfTarget> = LinkedList()
+        val t = CfTarget(
                 orgName = "unittestorg",
                 spaceName = "unittestspace-summaryexception",
                 path = "path",
@@ -172,15 +169,15 @@ internal class ReactiveTargetResolverTest {
 
     @Test
     fun testInvalidOrgNameToResolve() {
-        val list: MutableList<Target> = LinkedList()
-        var t = Target(
+        val list: MutableList<CfTarget> = LinkedList()
+        var t = CfTarget(
                 orgName = "doesnotexist",
                 spaceName = "unittestspace",
                 path = "path",
                 protocol = "https"
         )
         list.add(t)
-        t = Target(
+        t = CfTarget(
                 orgName = "unittestorg",
                 spaceName = "unittestspace",
                 applicationName = "testapp2",
@@ -201,15 +198,15 @@ internal class ReactiveTargetResolverTest {
 
     @Test
     fun testExceptionOrgNameToResolve() {
-        val list: MutableList<Target> = LinkedList()
-        var t = Target(
+        val list: MutableList<CfTarget> = LinkedList()
+        var t = CfTarget(
                 orgName = "exception",
                 spaceName = "unittestspace",
                 path = "path",
                 protocol = "https"
         )
         list.add(t)
-        t = Target(
+        t = CfTarget(
                 orgName = "unittestorg",
                 spaceName = "unittestspace",
                 applicationName = "testapp2",
@@ -230,15 +227,15 @@ internal class ReactiveTargetResolverTest {
 
     @Test
     fun testInvalidSpaceNameToResolve() {
-        val list: MutableList<Target> = LinkedList()
-        var t = Target(
+        val list: MutableList<CfTarget> = LinkedList()
+        var t = CfTarget(
                 orgName = "unittestorg",
                 spaceName = "doesnotexist",
                 path = "path",
                 protocol = "https"
         )
         list.add(t)
-        t = Target(
+        t = CfTarget(
                 orgName = "unittestorg",
                 spaceName = "unittestspace",
                 applicationName = "testapp2",
@@ -259,15 +256,15 @@ internal class ReactiveTargetResolverTest {
 
     @Test
     fun testExceptionSpaceNameToResolve() {
-        val list: MutableList<Target> = LinkedList()
-        var t = Target(
+        val list: MutableList<CfTarget> = LinkedList()
+        var t = CfTarget(
                 orgName = "unittestorg",
                 spaceName = "exception",
                 path = "path",
                 protocol = "https"
         )
         list.add(t)
-        t = Target(
+        t = CfTarget(
                 orgName = "unittestorg",
                 spaceName = "unittestspace",
                 applicationName = "testapp2",
@@ -288,8 +285,8 @@ internal class ReactiveTargetResolverTest {
 
     @Test
     fun testDistinctResolvedTargets() {
-        val list: MutableList<Target> = LinkedList()
-        var t = Target(
+        val list: MutableList<CfTarget> = LinkedList()
+        var t = CfTarget(
                 orgName = "unittestorg",
                 spaceName = "unittestspace",
                 applicationRegex = "testapp.*",
@@ -298,7 +295,7 @@ internal class ReactiveTargetResolverTest {
                 protocol = "https"
         )
         list.add(t)
-        t = Target(
+        t = CfTarget(
                 orgName = "unittestorg",
                 spaceName = "unittestspace",
                 applicationName = "testapp",
@@ -340,8 +337,8 @@ internal class ReactiveTargetResolverTest {
 
     @Test
     fun testMissingOrgName() {
-        val list: MutableList<Target> = LinkedList()
-        val t = Target(
+        val list: MutableList<CfTarget> = LinkedList()
+        val t = CfTarget(
                 spaceName = "unittestspace",
                 applicationName = "testapp",
                 path = "path",
@@ -363,8 +360,8 @@ internal class ReactiveTargetResolverTest {
 
     @Test
     fun testWithOrgRegex() {
-        val list: MutableList<Target> = LinkedList()
-        val t = Target(
+        val list: MutableList<CfTarget> = LinkedList()
+        val t = CfTarget(
                 orgRegex = "unittest.*",
                 spaceName = "unittestspace",
                 applicationName = "testapp2",
@@ -387,8 +384,8 @@ internal class ReactiveTargetResolverTest {
 
     @Test
     fun testWithOrgRegexCaseInsensitive() {
-        val list: MutableList<Target> = LinkedList()
-        val t = Target(
+        val list: MutableList<CfTarget> = LinkedList()
+        val t = CfTarget(
                 orgRegex = "unit.*TOrg",
                 spaceName = "unittestspace",
                 applicationName = "testapp2",
@@ -410,8 +407,8 @@ internal class ReactiveTargetResolverTest {
 
     @Test
     fun testMissingSpaceName() {
-        val list: MutableList<Target> = LinkedList()
-        val t = Target(
+        val list: MutableList<CfTarget> = LinkedList()
+        val t = CfTarget(
                 orgName = "unittestorg",
                 applicationName = "testapp",
                 path = "path",
@@ -433,8 +430,8 @@ internal class ReactiveTargetResolverTest {
 
     @Test
     fun testWithSpaceRegex() {
-        val list: MutableList<Target> = LinkedList()
-        val t = Target(
+        val list: MutableList<CfTarget> = LinkedList()
+        val t = CfTarget(
                 orgName = "unittestorg",
                 spaceRegex = "unitte.*",
                 applicationName = "testapp2",
@@ -457,8 +454,8 @@ internal class ReactiveTargetResolverTest {
 
     @Test
     fun testWithSpaceRegexCaseInsensitive() {
-        val list: MutableList<Target> = LinkedList()
-        val t = Target(
+        val list: MutableList<CfTarget> = LinkedList()
+        val t = CfTarget(
                 orgName = "unittestorg",
                 spaceRegex = "unit.*tSpace",
                 applicationName = "testapp2",
@@ -481,8 +478,8 @@ internal class ReactiveTargetResolverTest {
 
     @Test
     fun testCorrectingCaseOnNamesIssue77() {
-        val list: MutableList<Target> = LinkedList()
-        val t = Target(
+        val list: MutableList<CfTarget> = LinkedList()
+        val t = CfTarget(
                 orgName = "uniTtEstOrg",
                 spaceName = "unitteStspAce",
                 applicationName = "testapp",
@@ -503,8 +500,8 @@ internal class ReactiveTargetResolverTest {
 
     @Test
     fun testInvalidOrgNameDoesNotRaiseExceptionIssue109() {
-        val list: MutableList<Target> = LinkedList()
-        val t = Target(
+        val list: MutableList<CfTarget> = LinkedList()
+        val t = CfTarget(
                 orgName = "doesnotexist",
         )
         list.add(t)
@@ -514,8 +511,8 @@ internal class ReactiveTargetResolverTest {
 
     @Test
     fun testInvalidSpaceNameDoesNotRaiseExceptionIssue109() {
-        val list: MutableList<Target> = LinkedList()
-        val t = Target(
+        val list: MutableList<CfTarget> = LinkedList()
+        val t = CfTarget(
                 orgName = "unittestorg",
                 spaceName = "doesnotexist",
         )
@@ -529,8 +526,8 @@ internal class ReactiveTargetResolverTest {
         val errorResponse = Mono.just(ReactiveCFAccessorImpl.INVALID_APPLICATIONS_RESPONSE)
         Mockito.`when`(cfAccessor!!.retrieveAllApplicationsInSpaceV3(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID))
                 .thenReturn(errorResponse)
-        val list: MutableList<Target> = LinkedList()
-        val t = Target(
+        val list: MutableList<CfTarget> = LinkedList()
+        val t = CfTarget(
                 orgName = "unittestorg",
                 spaceName = "unittestspace",
                 applicationRegex = ".*2",
@@ -556,8 +553,8 @@ internal class ReactiveTargetResolverTest {
 
     @Test
     fun testWithAnnotationsUnexpectedValue() {
-        val list: MutableList<Target> = LinkedList()
-        val t = Target(
+        val list: MutableList<CfTarget> = LinkedList()
+        val t = CfTarget(
                 orgName = "unittestorg",
                 spaceName = "unittestspace",
                 applicationRegex = ".*2",
@@ -575,8 +572,8 @@ internal class ReactiveTargetResolverTest {
 
     @Test
     fun testWithAnnotations() {
-        val list: MutableList<Target> = LinkedList()
-        val t = Target(
+        val list: MutableList<CfTarget> = LinkedList()
+        val t = CfTarget(
                 orgName = "unittestorg",
                 spaceName = "unittestspace",
                 applicationRegex = ".*",

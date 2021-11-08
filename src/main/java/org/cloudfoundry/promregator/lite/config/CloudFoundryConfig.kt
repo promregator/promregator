@@ -17,6 +17,7 @@ data class CloudFoundryConfig(
         val threadPool: ThreadPoolConfig = ThreadPoolConfig(),
         val apis: MutableMap<String, ApiConfig> = mutableMapOf(),
         val request: RequestConfig = RequestConfig(),
+        val client: ClientConfig = ClientConfig()
 ) {
     init {
         if (apis[DEFAULT_API] == null && api_host != null && username != null && password != null) apis[DEFAULT_API] = ApiConfig(
@@ -33,6 +34,10 @@ data class CloudFoundryConfig(
         const val DEFAULT_API = "__default__"
     }
 }
+
+data class ClientConfig(
+        val cacheDuration: Duration = Duration.ofMinutes(10)
+)
 
 data class RequestConfig(
         val rateLimit: Double = 0.0,

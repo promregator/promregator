@@ -8,14 +8,15 @@ import org.cloudfoundry.client.v2.routes.Route
 import org.cloudfoundry.promregator.lite.config.CloudFoundryConfig
 import org.springframework.stereotype.Component
 import java.util.*
-import org.cloudfoundry.promregator.lite.config.Target
+import org.cloudfoundry.promregator.lite.config.CfTarget
+import org.cloudfoundry.reactor.client.ReactorCloudFoundryClient
 import kotlin.text.RegexOption.IGNORE_CASE
-
 
 data class OrgResponse(
         val api: String,
         val id: String,
-        val name: String
+        val name: String,
+        val cfClient: ReactorCloudFoundryClient,
 )
 
 data class SpaceResponse(
@@ -51,7 +52,7 @@ data class AppResponse(
         val isScrapable: Boolean,
         val annotationScrape: Boolean,
         val annotationMetricsPath: String? = null,
-        val originalTarget: Target? = null,
+        val originalTarget: CfTarget? = null,
         val instances: Int = 0,
         val urls: List<String> = listOf(),
         val routes: List<DomainResponse> = listOf(),
@@ -67,20 +68,24 @@ private val log = mu.KotlinLogging.logger { }
 @Component
 class SimpleTargetResolver(
         private val cfAccessor: SimpleCFAccessor,
+        private val clientFactory: CfClientFactory,
         private val cf: CloudFoundryConfig
 ) {
+
     @Suppress("SimplifyBooleanWithConstants")
-    suspend fun resolveTargets(configTargetsToMatch: List<Target>): List<AppResponse> = coroutineScope {
-        val configTargets = configTargetsToMatch.ifEmpty { listOf(Target()) }
+    suspend fun resolveTargets(configTargetsToMatch: List<CfTarget>): List<AppResponse> = coroutineScope {
+        val configTargets = configTargetsToMatch.ifEmpty { listOf(CfTarget()) }
+
+        val cfClients = cf.apis.keys.associateWith { clientFactory.getClient(it) }
 
         val apps = if (cfAccessor.isV3Enabled) {
-            val orgs = resolveOrgsV3().filterOrgs(configTargets)
+            val orgs = resolveOrgsV3(cfClients).filterOrgs(configTargets)
             val domains = orgs.resolveDomainsV3()
             val spaces = orgs.resolveSpacesV3(domains).filterSpaces(configTargets)
 
             spaces.resolveAppsV3()
         } else {
-            val orgs = resolveOrgs().filterOrgs(configTargets)
+            val orgs = resolveOrgs(cfClients).filterOrgs(configTargets)
             val domains = orgs.resolveDomains()
             val spaces = orgs.resolveSpaces(configTargets, domains).filterSpaces(configTargets)
 
@@ -103,7 +108,7 @@ class SimpleTargetResolver(
         }
     }
 
-    private fun List<OrgResponse>.filterOrgs(configTargets: List<Target>): List<OrgResponse> {
+    private fun List<OrgResponse>.filterOrgs(configTargets: List<CfTarget>): List<OrgResponse> {
         return this.filter { org ->
             configTargets.any { target ->
                 org.api == target.api &&
@@ -114,21 +119,21 @@ class SimpleTargetResolver(
         }
     }
 
-    private suspend fun resolveOrgs(): List<OrgResponse> = coroutineScope {
-        cf.apis.keys.map { api ->
+    private suspend fun resolveOrgs(cfClients: Map<String, ReactorCloudFoundryClient>): List<OrgResponse> = coroutineScope {
+        cfClients.map { (api, client) ->
             async {
-                cfAccessor.retrieveAllOrgIds(api).map {
-                    OrgResponse(api, it.metadata.id, it.entity.name)
+                cfAccessor.retrieveAllOrgIds(client).map {
+                    OrgResponse(api, it.metadata.id, it.entity.name, client)
                 }
             }
         }.awaitAll().flatten()
     }
 
-    private suspend fun resolveOrgsV3(): List<OrgResponse> = coroutineScope {
-        cf.apis.keys.map { api ->
+    private suspend fun resolveOrgsV3(cfClients: Map<String, ReactorCloudFoundryClient>): List<OrgResponse> = coroutineScope {
+        cfClients.map { (api, client) ->
             async {
-                cfAccessor.retrieveAllOrgIdsV3(api).map {
-                    OrgResponse(api, it.id, it.name)
+                cfAccessor.retrieveAllOrgIdsV3(client).map {
+                    OrgResponse(api, it.id, it.name, client)
                 }
             }
         }.awaitAll().flatten()
@@ -137,7 +142,7 @@ class SimpleTargetResolver(
     private suspend fun List<OrgResponse>.resolveDomains() = coroutineScope {
         return@coroutineScope this@resolveDomains.map { org ->
             async {
-                cfAccessor.retrieveAllDomains(org.api, org.id)?.resources?.map { domainResource ->
+                cfAccessor.retrieveAllDomains(org.cfClient, org.id)?.resources?.map { domainResource ->
                     DomainResponse(org.id, domainResource.metadata.id, domainResource.entity.internal
                             ?: false, domainResource.entity.name)
                 } ?: listOf()
@@ -148,14 +153,14 @@ class SimpleTargetResolver(
     private suspend fun List<OrgResponse>.resolveDomainsV3() = coroutineScope {
         return@coroutineScope this@resolveDomainsV3.map { org ->
             async {
-                cfAccessor.retrieveAllDomainsV3(org.api, org.id)?.resources?.map { domainResource ->
+                cfAccessor.retrieveAllDomainsV3(org.cfClient, org.id)?.resources?.map { domainResource ->
                     DomainResponse(org.id, domainResource.id, domainResource.isInternal, domainResource.name)
                 } ?: listOf()
             }
         }.awaitAll().flatten()
     }
 
-    private fun List<SpaceResponse>.filterSpaces(configTargets: List<Target>): List<SpaceResponse> {
+    private fun List<SpaceResponse>.filterSpaces(configTargets: List<CfTarget>): List<SpaceResponse> {
         return this.filter { space ->
             configTargets.any { target ->
                 (target.spaceName == null && target.spaceRegex == null) ||
@@ -169,17 +174,17 @@ class SimpleTargetResolver(
     private suspend fun List<OrgResponse>.resolveSpacesV3(domains: List<DomainResponse>) = coroutineScope {
         return@coroutineScope this@resolveSpacesV3.map { org ->
             async {
-                cfAccessor.retrieveSpaceIdsInOrgV3(org.api, org.id).map { space ->
+                cfAccessor.retrieveSpaceIdsInOrgV3(org.cfClient, org.id).map { space ->
                     SpaceResponse(org, space.name, space.id, domains.filter { it.orgId == org.id })
                 }
             }
         }.awaitAll().flatten()
     }
 
-    private suspend fun List<OrgResponse>.resolveSpaces(configTargets: List<Target>, domains: List<DomainResponse>) = coroutineScope {
+    private suspend fun List<OrgResponse>.resolveSpaces(configTargets: List<CfTarget>, domains: List<DomainResponse>) = coroutineScope {
         return@coroutineScope this@resolveSpaces.map { org ->
             async {
-                cfAccessor.retrieveSpaceIdsInOrg(org.api, org.id).map { space ->
+                cfAccessor.retrieveSpaceIdsInOrg(org.cfClient, org.id).map { space ->
                     SpaceResponse(org, space.entity.name, space.metadata.id, domains.filter { it.orgId == org.id })
                 }
             }
@@ -189,7 +194,7 @@ class SimpleTargetResolver(
     private suspend fun List<SpaceResponse>.resolveSummaries() = coroutineScope {
         return@coroutineScope this@resolveSummaries.map { space ->
             async {
-                cfAccessor.retrieveSpaceSummary(space.org.api, space.spaceId)?.applications?.map { app ->
+                cfAccessor.retrieveSpaceSummary(space.org.cfClient, space.spaceId)?.applications?.map { app ->
                     val appName = app.name.lowercase(LOCALE_OF_LOWER_CASE_CONVERSION_FOR_IDENTIFIER_COMPARISON)
                     SpaceSummaryAppResponse(space, appName, AppSummary(app.instances, app.urls, app.routes))
                 } ?: listOf()
@@ -200,9 +205,9 @@ class SimpleTargetResolver(
     private suspend fun List<SpaceResponse>.resolveAppsV3() = coroutineScope {
         return@coroutineScope this@resolveAppsV3.map { space ->
             async {
-                val appsv3 = cfAccessor.retrieveAllApplicationsInSpaceV3(space.org.api, space.org.id, space.spaceId)
-                val procsDefs = appsv3.map { async { cfAccessor.retrieveApplicationProcessV3(space.org.api, it.id) } }
-                val routesDefs = appsv3.map { async { it.id to cfAccessor.retrieveApplicationsRoutesV3(space.org.api, it.id) } }
+                val appsv3 = cfAccessor.retrieveAllApplicationsInSpaceV3(space.org.cfClient, space.org.id, space.spaceId)
+                val procsDefs = appsv3.map { async { cfAccessor.retrieveApplicationProcessV3(space.org.cfClient, it.id) } }
+                val routesDefs = appsv3.map { async { it.id to cfAccessor.retrieveApplicationsRoutesV3(space.org.cfClient, it.id) } }
                 val procs = procsDefs.awaitAll() // Await the procs response after submitting the routes so they run at the same time
                 val routes = routesDefs.awaitAll()
 
@@ -240,7 +245,7 @@ class SimpleTargetResolver(
     private suspend fun List<SpaceResponse>.resolveAppsV2(spaceSummaries: List<SpaceSummaryAppResponse>) = coroutineScope {
         return@coroutineScope this@resolveAppsV2.map { space ->
             async {
-                cfAccessor.retrieveAllApplicationIdsInSpace(space.org.api, space.org.id, space.spaceId).map { appRes ->
+                cfAccessor.retrieveAllApplicationIdsInSpace(space.org.cfClient, space.org.id, space.spaceId).map { appRes ->
                     val scrapable = isApplicationInScrapableState(appRes.entity.state)
                     val appNameLower = appRes.entity.name.lowercase(LOCALE_OF_LOWER_CASE_CONVERSION_FOR_IDENTIFIER_COMPARISON)
                     val summary = spaceSummaries.firstOrNull { it.appName == appNameLower }?.appSummary

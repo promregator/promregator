@@ -4,7 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
-import org.cloudfoundry.promregator.lite.config.Target;
+import org.cloudfoundry.promregator.lite.config.CfTarget;
 import org.cloudfoundry.promregator.scanner.MockedCachingTargetResolverSpringApplication.MockedTargetResolver;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -38,7 +38,7 @@ public class CachingTargetResolverTest {
 	}
 	@Test
 	void testTwoPlainTargets() {
-		List<Target> list = new LinkedList<>();
+		List<CfTarget> list = new LinkedList<>();
 		list.add(MockedTargetResolver.Companion.getTarget1());
 		list.add(MockedTargetResolver.Companion.getTarget2());
 		
@@ -70,7 +70,7 @@ public class CachingTargetResolverTest {
 	
 	@Test
 	void testTargetMissingApplicationName() {
-		List<Target> list = new LinkedList<>();
+		List<CfTarget> list = new LinkedList<>();
 		list.add(MockedTargetResolver.Companion.getTargetAllInSpace());
 		
 		List<ResolvedTarget> actualList = this.cachingTargetResolver.resolveTargets(list);
@@ -100,7 +100,7 @@ public class CachingTargetResolverTest {
 	
 	@Test
 	void testRepeatedRequestIsCached() {
-		List<Target> list = new LinkedList<>();
+		List<CfTarget> list = new LinkedList<>();
 		list.add(MockedTargetResolver.Companion.getTarget1());
 		
 		// fill the cache
@@ -134,7 +134,7 @@ public class CachingTargetResolverTest {
 	
 	@Test
 	void testRepeatedRequestIsCachedAlsoSelectively() {
-		List<Target> list = new LinkedList<>();
+		List<CfTarget> list = new LinkedList<>();
 		list.add(MockedTargetResolver.Companion.getTarget1());
 		
 		// fill the cache
@@ -180,7 +180,7 @@ public class CachingTargetResolverTest {
 	
 	@Test
 	void testTargetDuplicateRequestDistincts() {
-		List<Target> list = new LinkedList<>();
+		List<CfTarget> list = new LinkedList<>();
 		list.add(MockedTargetResolver.Companion.getTarget1());
 		list.add(MockedTargetResolver.Companion.getTargetRegex());
 		

@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.collections4.map.PassiveExpiringMap;
-import org.cloudfoundry.promregator.lite.config.Target;
+import org.cloudfoundry.promregator.lite.config.CfTarget;
 import org.springframework.beans.factory.annotation.Value;
 
 public class CachingTargetResolver implements TargetResolver {
@@ -19,7 +19,7 @@ public class CachingTargetResolver implements TargetResolver {
 
 	private TargetResolver parentTargetResolver;
 	
-	private PassiveExpiringMap<Target, List<ResolvedTarget>> targetResolutionCache;
+	private PassiveExpiringMap<CfTarget, List<ResolvedTarget>> targetResolutionCache;
 	
 	public CachingTargetResolver(TargetResolver parentTargetResolver) {
 		this.parentTargetResolver = parentTargetResolver;
@@ -39,12 +39,12 @@ public class CachingTargetResolver implements TargetResolver {
 	}
 
 	@Override
-	public List<ResolvedTarget> resolveTargets(List<Target> configTargets) {
-		List<Target> toBeLoaded = new LinkedList<>();
+	public List<ResolvedTarget> resolveTargets(List<CfTarget> configTargets) {
+		List<CfTarget> toBeLoaded = new LinkedList<>();
 		
 		List<ResolvedTarget> result = new LinkedList<>();
 		
-		for (Target configTarget : configTargets) {
+		for (CfTarget configTarget : configTargets) {
 			List<ResolvedTarget> cached = this.targetResolutionCache.get(configTarget);
 			if (cached != null) {
 				result.addAll(cached);
@@ -67,7 +67,7 @@ public class CachingTargetResolver implements TargetResolver {
 	}
 
 	private void updateTargetResolutionCache(List<ResolvedTarget> newlyResolvedTargets) {
-		Map<Target, List<ResolvedTarget>> map = new HashMap<>();
+		Map<CfTarget, List<ResolvedTarget>> map = new HashMap<>();
 		for (ResolvedTarget rtarget : newlyResolvedTargets) {
 			List<ResolvedTarget> list = map.get(rtarget.getOriginalTarget());
 			if (list == null) {
