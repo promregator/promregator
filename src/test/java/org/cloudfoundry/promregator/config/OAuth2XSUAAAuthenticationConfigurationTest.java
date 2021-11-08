@@ -15,13 +15,13 @@ public class OAuth2XSUAAAuthenticationConfigurationTest {
 		 * We can still receive an old url containing the path via 'tokenServiceUrl'.
 		 * But the corresponding new property 'url' does not contain the path. The url
 		 * is expected without the path by token-client.
-		 */ 
+		 */
 
 		OAuth2XSUAAAuthenticationConfiguration subject = new OAuth2XSUAAAuthenticationConfiguration();
 
 		subject.setTokenServiceURL("https://example.org/oauth/token");
 
-		assertThat(subject.getUrl(), equalTo("https://example.org"));
+		assertThat(subject.getXsuaaServiceURL(), equalTo("https://example.org"));
 	}
 
 	@Test
@@ -31,7 +31,7 @@ public class OAuth2XSUAAAuthenticationConfigurationTest {
 
 		subject.setTokenServiceURL("https://example.org/v1/oauth/token");
 
-		assertThat(subject.getUrl(), equalTo("https://example.org/v1"));
+		assertThat(subject.getXsuaaServiceURL(), equalTo("https://example.org/v1"));
 	}
 
 	@Test
@@ -41,7 +41,7 @@ public class OAuth2XSUAAAuthenticationConfigurationTest {
 
 		subject.setTokenServiceURL("https://example.org:1234/oauth/token");
 
-		assertThat(subject.getUrl(), equalTo("https://example.org:1234"));
+		assertThat(subject.getXsuaaServiceURL(), equalTo("https://example.org:1234"));
 	}
 
 	@Test

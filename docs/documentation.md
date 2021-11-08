@@ -46,7 +46,7 @@ promregator:
   authenticator:
     type: OAuth2XSUAA
     oauth2xsuaa:
-      url: https://jwt.token.server.example.org
+      xsuaaServiceURL: https://jwt.token.server.example.org
       client_id: myOAuth2ClientId
 
   targets:
@@ -72,7 +72,7 @@ promregator:
   authenticator:
     type: OAuth2XSUAA
     oauth2xsuaa:
-      cert_url: https://jwt.cert.token.server.example.org
+      xsuaaServiceCertURL: https://jwt.cert.token.server.example.org
       client_id: myOAuth2ClientId
       client_certificates: "-----BEGIN CERTIFICATE-----\nMyIFu...IxZ\n-----END CERTIFICATE-----\n"
 

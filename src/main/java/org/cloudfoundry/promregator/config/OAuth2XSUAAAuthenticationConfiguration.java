@@ -9,9 +9,9 @@ import java.util.Set;
 import org.apache.http.client.utils.URIBuilder;
 
 public class OAuth2XSUAAAuthenticationConfiguration {
-	private String url;
+	private String xsuaaServiceURL;
 
-	private String cert_url;
+	private String xsuaaServiceCertURL;
 
 	private String client_id;
 
@@ -23,30 +23,30 @@ public class OAuth2XSUAAAuthenticationConfiguration {
 
 	private final Set<String> scopes = new HashSet<>();
 
-	public String getUrl() {
-		return url;
+	public String getXsuaaServiceURL() {
+		return xsuaaServiceURL;
 	}
 
 	public void setTokenServiceURL(String url) {
 		try {
 			URI u = new URI(url);
-			setUrl(new URIBuilder().setScheme(u.getScheme()).setHost(u.getHost()).setPort(u.getPort())
+			setXsuaaServiceURL(new URIBuilder().setScheme(u.getScheme()).setHost(u.getHost()).setPort(u.getPort())
 					.setPath(u.getPath().replaceAll("/oauth/token$", "")).build().toASCIIString());
 		} catch (URISyntaxException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	public void setUrl(String url) {
-		this.url = url;
+	public void setXsuaaServiceURL(String xsuaaServiceURL) {
+		this.xsuaaServiceURL = xsuaaServiceURL;
 	}
 
-	public String getCertUrl() {
-		return cert_url;
+	public String getXsuaaServiceCertURL() {
+		return xsuaaServiceCertURL;
 	}
 
-	public void setCertUrl(String cert_url) {
-		this.cert_url = cert_url;
+	public void setXsuaaServiceCertURL(String xsuaaServiceCertURL) {
+		this.xsuaaServiceCertURL = xsuaaServiceCertURL;
 	}
 
 	public String getClient_id() {

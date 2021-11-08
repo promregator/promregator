@@ -663,10 +663,10 @@ java -Dspring.config.location=file:/path/to/your/myconfig.yaml -jar promregator-
 #### Option "promregator.authenticator.oauth2xsuaa.tokenServiceURL" (mandatory, if using promregator.authenticator.type=OAuth2XSUAA)
 Specifies the URL of the OAuth2 endpoint, which contains the token service of your authorization server in case of global authentication. Typically, this is the endpoint with the path `/oauth/token`, as Promregator will try to perform to establish a ["Client Credentials"-based authentication](https://www.digitalocean.com/community/tutorials/an-introduction-to-oauth-2#grant-type-client-credentials).
 
-#### Option "promregator.authenticator.oauth2xsuaa.url"
+#### Option "promregator.authenticator.oauth2xsuaa.xsuaaServiceURL"
 Like `promregator.authenticator.oauth2xsuaa.tokenServiceURL`, but without trailing `/oauth/token`.
 
-#### Option "promregator.authenticator.oauth2xsuaa.cert_url"
+#### Option "promregator.authenticator.oauth2xsuaa.xsuaaServiceCertURL"
 Specifies the URL of the OAuth2 endpoint for certificate based authentication, which contains the token service of your authorization server in case of global authentication. Needs to be provided without a path.
 
 #### Option "promregator.authenticator.oauth2xsuaa.client_id" (mandatory, if using promregator.authenticator.type=OAuth2XSUAA)
