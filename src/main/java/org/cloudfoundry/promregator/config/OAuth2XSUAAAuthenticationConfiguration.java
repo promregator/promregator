@@ -7,8 +7,16 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.http.client.utils.URIBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OAuth2XSUAAAuthenticationConfiguration {
+
+	public final static String deprecatedTokenServciceURLProperty = "tokenServiceURL";
+	public final static String useInsteadXsuassServiceURLProperty = "xsuaaServiceURL";
+
+	private static final Logger log = LoggerFactory.getLogger(OAuth2XSUAAAuthenticationConfiguration.class);
+
 	private String xsuaaServiceURL;
 
 	private String xsuaaServiceCertURL;
@@ -28,10 +36,20 @@ public class OAuth2XSUAAAuthenticationConfiguration {
 	}
 
 	public void setTokenServiceURL(String url) {
+
+		String urlSuffix = "/oauth/token";
+		log.warn("Deprecated property '{}' found. Use '{}' instead without providing trailing '{}'.'", deprecatedTokenServciceURLProperty, useInsteadXsuassServiceURLProperty, urlSuffix);
+		if (getXsuaaServiceURL() != null) {
+			// this does not work always. In case tokenServiceURL is handled first the xsuaaServiceURL is null at this point in time.
+			log.warn("Ingnoring deprecated property '{}' ({}) since '{}' ({}) has been provided", deprecatedTokenServciceURLProperty, url, useInsteadXsuassServiceURLProperty, getXsuaaServiceURL());
+			return;
+		}
 		try {
 			URI u = new URI(url);
-			setXsuaaServiceURL(new URIBuilder().setScheme(u.getScheme()).setHost(u.getHost()).setPort(u.getPort())
-					.setPath(u.getPath().replaceAll("/oauth/token$", "")).build().toASCIIString());
+			String rewritten = new URIBuilder().setScheme(u.getScheme()).setHost(u.getHost()).setPort(u.getPort())
+					.setPath(u.getPath().replaceAll(urlSuffix + "$", "")).build().toASCIIString();
+			log.warn("Rewriting '{}' ({}) to '{}' in order to use it as '{}'.", deprecatedTokenServciceURLProperty, url, rewritten, useInsteadXsuassServiceURLProperty);
+			setXsuaaServiceURL(rewritten);
 		} catch (URISyntaxException e) {
 			throw new RuntimeException(e);
 		}

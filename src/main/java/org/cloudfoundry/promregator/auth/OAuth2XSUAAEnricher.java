@@ -1,5 +1,7 @@
 package org.cloudfoundry.promregator.auth;
 
+import static java.lang.String.format;
+
 import java.io.IOException;
 
 import org.apache.http.client.methods.HttpGet;
@@ -50,7 +52,9 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
 			} else {
 				log.debug("JWT obtained for client '{}': '{}******'", c.getClientId(), jwt.substring(0, Math.min(10, jwt.length()/3)));
 			}
-		} catch (TokenFlowException | RuntimeException e) {
+		} catch (TokenFlowException e) {
+			log.error(format("Cannot obtain JWT. Did you use deprecated property '%s'? In this case replace it by property '%s'.", OAuth2XSUAAAuthenticationConfiguration.deprecatedTokenServciceURLProperty, OAuth2XSUAAAuthenticationConfiguration.useInsteadXsuassServiceURLProperty), e);
+		} catch(RuntimeException e) {
 			log.error("Cannot obtain JWT.", e);
 		}
 	}
