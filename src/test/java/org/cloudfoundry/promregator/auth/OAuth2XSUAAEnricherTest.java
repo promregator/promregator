@@ -94,7 +94,7 @@ class OAuth2XSUAAEnricherTest {
 	void testAuthorizationHeaderAddedWhenTokenRetrieved() throws Exception {
 		ClientCredentialsTokenFlow tokenClientMock = Mockito.mock(ClientCredentialsTokenFlow.class);
 		Mockito.when(tokenClientMock.execute())
-				.thenReturn(new OAuth2TokenResponse("someAccessToken", 42l, "somrRefreshToken"));
+				.thenReturn(new OAuth2TokenResponse("someAccessToken", 42l, "someRefreshToken"));
 
 		ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
 

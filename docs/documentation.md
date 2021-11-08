@@ -33,7 +33,7 @@ The suggested approach is to create a configuration YAML file, such as `myconfig
 java -Dspring.config.location=file:/path/to/your/myconfig.yaml -jar promregator-x.y.z-SNAPSHOT.jar
 ```
 
-Here is an dummy example for such a configuration yaml file when basic authentication is used:
+Here is an dummy example for such a configuration yaml file when using basic authentication:
 ```yaml
 cf:
   api_host: api.cf.example.org
@@ -59,7 +59,7 @@ promregator:
       applicationName: myOtherApplication
 ```
 
-Here is an dummy example for such a configuration yaml file when certificate based authentication is used:
+Here is an dummy example for such a configuration yaml file when using certificate-based authentication:
 ```yaml
 cf:
   api_host: api.cf.example.org
