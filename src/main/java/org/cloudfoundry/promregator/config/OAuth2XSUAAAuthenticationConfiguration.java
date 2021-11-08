@@ -86,7 +86,7 @@ public class OAuth2XSUAAAuthenticationConfiguration {
 	}
 
 	public void setScopes(String scopes) {
-		setScopes(new HashSet<>(Arrays.asList(scopes.split(" "))));
+		setScopes(new HashSet<>(Arrays.asList(scopes.split("[\\s,]+"))));
 	}
 
 	public void setScopes(Set<String> scopes) {
