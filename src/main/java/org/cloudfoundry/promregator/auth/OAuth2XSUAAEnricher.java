@@ -2,6 +2,7 @@ package org.cloudfoundry.promregator.auth;
 
 import static java.lang.String.format;
 
+import java.io.Closeable;
 import java.io.IOException;
 
 import org.apache.http.client.methods.HttpGet;
@@ -18,7 +19,7 @@ import com.sap.cloud.security.xsuaa.tokenflows.ClientCredentialsTokenFlow;
 import com.sap.cloud.security.xsuaa.tokenflows.TokenFlowException;
 import com.sap.cloud.security.xsuaa.tokenflows.XsuaaTokenFlows;
 
-public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
+public class OAuth2XSUAAEnricher implements AuthenticationEnricher, Closeable {
 
 	private static final Logger log = LoggerFactory.getLogger(OAuth2XSUAAEnricher.class);
 
@@ -87,6 +88,10 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
 		return this.tokenClient.execute().getAccessToken();
 	}
 
+	// TODO: currently there is no good place for calling this method.
+	// In case something goes wrong, the whole application will be
+	// restarted. With that the resources used by the old application
+	// we be released.
 	public void close() throws IOException {
 		if (this.httpClient != null) {
 			this.httpClient.close();
