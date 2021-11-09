@@ -1,7 +1,5 @@
 package org.cloudfoundry.promregator.auth;
 
-import static java.lang.String.format;
-
 import java.io.Closeable;
 import java.io.IOException;
 
@@ -14,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import com.sap.cloud.security.client.HttpClientFactory;
 import com.sap.cloud.security.config.OAuth2ServiceConfiguration;
 import com.sap.cloud.security.xsuaa.client.DefaultOAuth2TokenService;
-import com.sap.cloud.security.xsuaa.client.XsuaaDefaultEndpoints;
 import com.sap.cloud.security.xsuaa.tokenflows.ClientCredentialsTokenFlow;
 import com.sap.cloud.security.xsuaa.tokenflows.TokenFlowException;
 import com.sap.cloud.security.xsuaa.tokenflows.XsuaaTokenFlows;
@@ -44,7 +41,7 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher, Closeable {
 		} else {
 			this.httpClient = HttpClientFactory.create(c.getClientIdentity());
 			this.tokenClient = new XsuaaTokenFlows(new DefaultOAuth2TokenService(this.httpClient),
-					new XsuaaDefaultEndpoints(c), c.getClientIdentity()).clientCredentialsTokenFlow();
+					new NullEndpointProvider(c), c.getClientIdentity()).clientCredentialsTokenFlow();
 		}
 		this.tokenClient.scopes(config.getScopes().toArray(new String[0]));
 
@@ -57,9 +54,7 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher, Closeable {
 			} else {
 				log.debug("JWT obtained for client '{}': '{}******'", c.getClientId(), jwt.substring(0, Math.min(10, jwt.length()/3)));
 			}
-		} catch (TokenFlowException e) {
-			log.error(format("Cannot obtain JWT. Did you use deprecated property '%s'? In this case replace it by property '%s'.", OAuth2XSUAAAuthenticationConfiguration.deprecatedTokenServiceURLProperty, OAuth2XSUAAAuthenticationConfiguration.useInsteadXsuaaServiceURLProperty), e);
-		} catch(RuntimeException e) {
+		} catch (TokenFlowException | RuntimeException e) {
 			log.error("Cannot obtain JWT.", e);
 		}
 	}
