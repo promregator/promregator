@@ -6,6 +6,7 @@ import static org.mockito.Mockito.verify;
 import java.io.IOException;
 import java.net.URI;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.HttpGet;
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.config.OAuth2XSUAAAuthenticationConfiguration;
@@ -135,7 +136,7 @@ class OAuth2XSUAAEnricherTest {
 		authenticatorConfig.setClient_id("client_id");
 		authenticatorConfig.setClient_secret("client_secret");
 		authenticatorConfig.setTokenServiceURL("http://localhost:9001/oauth/token");
-		if (! Strings.isNullOrEmpty(scopes)) {
+		if (! StringUtils.isEmpty(scopes)) {
 			authenticatorConfig.setScopes(scopes);
 		}
 		return authenticatorConfig;
