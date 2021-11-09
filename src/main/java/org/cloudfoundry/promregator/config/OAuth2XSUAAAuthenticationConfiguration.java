@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 public class OAuth2XSUAAAuthenticationConfiguration {
 
 	public final static String deprecatedTokenServciceURLProperty = "tokenServiceURL";
-	public final static String useInsteadXsuassServiceURLProperty = "xsuaaServiceURL";
+	public final static String useInsteadXsuaaServiceURLProperty = "xsuaaServiceURL";
 
 	private static final Logger log = LoggerFactory.getLogger(OAuth2XSUAAAuthenticationConfiguration.class);
 
@@ -41,7 +41,7 @@ public class OAuth2XSUAAAuthenticationConfiguration {
 		log.warn("Deprecated property '{}' found. Use '{}' instead without providing trailing '{}'.'", deprecatedTokenServciceURLProperty, useInsteadXsuassServiceURLProperty, urlSuffix);
 		if (getXsuaaServiceURL() != null) {
 			// this does not work always. In case tokenServiceURL is handled first the xsuaaServiceURL is null at this point in time.
-			log.warn("Ingnoring deprecated property '{}' ({}) since '{}' ({}) has been provided", deprecatedTokenServciceURLProperty, url, useInsteadXsuassServiceURLProperty, getXsuaaServiceURL());
+			log.warn("Ignoring deprecated property '{}' ({}) since '{}' ({}) has been provided", deprecatedTokenServciceURLProperty, url, useInsteadXsuassServiceURLProperty, getXsuaaServiceURL());
 			return;
 		}
 		try {

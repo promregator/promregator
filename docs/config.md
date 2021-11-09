@@ -666,7 +666,9 @@ Specifies the URL of the OAuth2 endpoint, which contains the token service of yo
 #### Option "promregator.authenticator.oauth2xsuaa.xsuaaServiceURL"
 Like `promregator.authenticator.oauth2xsuaa.tokenServiceURL`, but without trailing `/oauth/token`.
 
-#### Option "promregator.authenticator.oauth2xsuaa.xsuaaServiceCertURL"
+If using `promregator.authenticator.type=OAuth2XSUAA` either `promregator.authenticator.oauth2xsuaa.tokenServiceURL` or `promregator.authenticator.oauth2xsuaa.xsuaaServiceURL` must be provided. If both are provided, `promregator.authenticator.oauth2xsuaa.xsuaaServiceURL` takes precedence.
+
+#### Option "promregator.authenticator.oauth2xsuaa.xsuaaServiceCertURL (mandatory for certificate-based authentication, if using promregator.authenticator.type=OAuth2XSUAA)"
 Specifies the URL of the OAuth2 endpoint for certificate based authentication, which contains the token service of your authorization server in case of global authentication. Needs to be provided without a path.
 
 #### Option "promregator.authenticator.oauth2xsuaa.client_id" (mandatory, if using promregator.authenticator.type=OAuth2XSUAA)
@@ -678,7 +680,7 @@ Specifies the certificate chain which shall be used during the OAuth2 request. O
 #### Option "promregator.authenticator.oauth2xsuaa.client_secret" (mandatory for client_secret-based authentication, if using promregator.authenticator.type=OAuth2XSUAA)
 Specifies the client secret (a.k.a. "client_secret") which shall be used during the OAuth2 request based on the Grant Type Client Credentials flow in case of global authentication. Omitted, if certificate based authentication is used.
 
-#### Option "client_key" (mandatory for certificate based authentication, if using promregator.authenticator.type=OAuth2XSUAA)
+#### Option "promregator.authenticator.oauth2xsuaa.client_key" (mandatory for certificate based authentication, if using promregator.authenticator.type=OAuth2XSUAA)
 Specifies the private key which shall be used during the OAuth2 request. Omitted when client secret-based authentification is used.
 
 *WARNING!* 
