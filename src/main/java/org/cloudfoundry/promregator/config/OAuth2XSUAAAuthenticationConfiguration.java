@@ -38,17 +38,17 @@ public class OAuth2XSUAAAuthenticationConfiguration {
 	public void setTokenServiceURL(String url) {
 
 		String urlSuffix = "/oauth/token";
-		log.warn("Deprecated property '{}' found. Use '{}' instead without providing trailing '{}'.'", deprecatedTokenServciceURLProperty, useInsteadXsuassServiceURLProperty, urlSuffix);
+		log.warn("Deprecated property '{}' found. Use '{}' instead without providing trailing '{}'.'", deprecatedTokenServiceURLProperty, useInsteadXsuaaServiceURLProperty, urlSuffix);
 		if (getXsuaaServiceURL() != null) {
 			// this does not work always. In case tokenServiceURL is handled first the xsuaaServiceURL is null at this point in time.
-			log.warn("Ignoring deprecated property '{}' ({}) since '{}' ({}) has been provided", deprecatedTokenServciceURLProperty, url, useInsteadXsuassServiceURLProperty, getXsuaaServiceURL());
+			log.warn("Ignoring deprecated property '{}' ({}) since '{}' ({}) has been provided", deprecatedTokenServiceURLProperty, url, useInsteadXsuaaServiceURLProperty, getXsuaaServiceURL());
 			return;
 		}
 		try {
 			URI u = new URI(url);
 			String rewritten = new URIBuilder().setScheme(u.getScheme()).setHost(u.getHost()).setPort(u.getPort())
 					.setPath(u.getPath().replaceAll(urlSuffix + "$", "")).build().toASCIIString();
-			log.warn("Rewriting '{}' ({}) to '{}' in order to use it as '{}'.", deprecatedTokenServciceURLProperty, url, rewritten, useInsteadXsuassServiceURLProperty);
+			log.warn("Rewriting '{}' ({}) to '{}' in order to use it as '{}'.", deprecatedTokenServiceURLProperty, url, rewritten, useInsteadXsuaaServiceURLProperty);
 			setXsuaaServiceURL(rewritten);
 		} catch (URISyntaxException e) {
 			throw new RuntimeException(e);

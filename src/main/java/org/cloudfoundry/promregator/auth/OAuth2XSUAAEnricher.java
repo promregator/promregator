@@ -53,7 +53,7 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
 				log.debug("JWT obtained for client '{}': '{}******'", c.getClientId(), jwt.substring(0, Math.min(10, jwt.length()/3)));
 			}
 		} catch (TokenFlowException e) {
-			log.error(format("Cannot obtain JWT. Did you use deprecated property '%s'? In this case replace it by property '%s'.", OAuth2XSUAAAuthenticationConfiguration.deprecatedTokenServciceURLProperty, OAuth2XSUAAAuthenticationConfiguration.useInsteadXsuassServiceURLProperty), e);
+			log.error(format("Cannot obtain JWT. Did you use deprecated property '%s'? In this case replace it by property '%s'.", OAuth2XSUAAAuthenticationConfiguration.deprecatedTokenServiceURLProperty, OAuth2XSUAAAuthenticationConfiguration.useInsteadXsuaaServiceURLProperty), e);
 		} catch(RuntimeException e) {
 			log.error("Cannot obtain JWT.", e);
 		}
