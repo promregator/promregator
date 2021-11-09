@@ -8,7 +8,7 @@ public class OAuth2XSUAAAuthenticationConfiguration {
 
 	private String tokenServiceURL;
 
-	private String tokenServiceCertUrl;
+	private String tokenServiceCertURL;
 
 	private String client_id;
 
@@ -29,11 +29,11 @@ public class OAuth2XSUAAAuthenticationConfiguration {
 	}
 
 	public String getTokenServiceCertURL() {
-		return tokenServiceCertUrl;
+		return tokenServiceCertURL;
 	}
 
 	public void setTokenServiceCertURL(String url) {
-		this.tokenServiceCertUrl = url;
+		this.tokenServiceCertURL = url;
 	}
 
 	public String getClient_id() {
