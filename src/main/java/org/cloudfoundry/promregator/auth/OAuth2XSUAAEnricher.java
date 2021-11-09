@@ -29,6 +29,10 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher {
 		this(config, null);
 	}
 
+	/**
+	 * @param config The configuration.
+	 * @param tokenClient A token client from outside. This is intended only for unit tests.
+	 */
 	OAuth2XSUAAEnricher(OAuth2XSUAAAuthenticationConfiguration config, ClientCredentialsTokenFlow tokenClient) {
 		super();
 		OAuth2ServiceConfiguration c = new OAuth2ServiceConfig(config);
