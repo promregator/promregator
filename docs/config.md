@@ -651,7 +651,7 @@ Specifies the password which is being used for authenticating the call to the Pr
 
 *WARNING!* 
 Due to security reasons, it is *neither* recommended to store this value in your YAML file, nor to put it into the command line when starting Promregator.
-Instead it is suggested to set the identically named environment variable `PROMREGATOR_AUTHENTICATOR_BASIC_PASSWORD` when starting the application.
+Instead it is suggested to set the corresponding environment variable `PROMREGATOR_AUTHENTICATOR_BASIC_PASSWORD` when starting the application.
 
 Example:
 
@@ -680,12 +680,16 @@ Specifies the certificate chain which shall be used during the OAuth2 request. O
 #### Option "promregator.authenticator.oauth2xsuaa.client_secret" (mandatory for client_secret-based authentication, if using promregator.authenticator.type=OAuth2XSUAA)
 Specifies the client secret (a.k.a. "client_secret") which shall be used during the OAuth2 request based on the Grant Type Client Credentials flow in case of global authentication. Omitted, if certificate based authentication is used.
 
+*WARNING!*
+Due to security reasons, it is *neither* recommended to store this value in your YAML file, nor to put it into the command line when starting Promregator.
+Instead it is suggested to set the corresponding environment variables `PROMREGATOR_AUTHENTICATOR_OAUTH2XSUAA_CLIENT_SECRET` when starting the application.
+
 #### Option "promregator.authenticator.oauth2xsuaa.client_key" (mandatory for certificate based authentication, if using promregator.authenticator.type=OAuth2XSUAA)
 Specifies the private key which shall be used during the OAuth2 request. Omitted when client secret-based authentification is used.
 
 *WARNING!* 
-Due to security reasons, it is *neither* recommended to store the value for `client_secret` and `client_key` in your YAML file, nor to put it into the command line when starting Promregator.
-Instead it is suggested to set the identically named environment variables `PROMREGATOR_AUTHENTICATOR_OAUTH2XSUAA_CLIENT_SECRET` and `PROMREGATOR_AUTHENTICATOR_OAUTH2XSUAA_CLIENT_KEY` when starting the application.
+Due to security reasons, it is *neither* recommended to store this value in your YAML file, nor to put it into the command line when starting Promregator.
+Instead it is suggested to set the corresponding environment variables `PROMREGATOR_AUTHENTICATOR_OAUTH2XSUAA_CLIENT_KEY` when starting the application.
 
 Example:
 
