@@ -91,6 +91,7 @@ class SimpleTargetResolver(
         return@coroutineScope apps.map { app ->
             val target = configTargets.firstOrNull { t ->
                 app.space.org.api == t.api &&
+                        ((app.annotationScrape && t.kubernetesAnnotations) || t.kubernetesAnnotations == false) &&
                         ((t.applicationName == null && t.applicationRegex == null) ||
                                 (t.applicationName == null && t.applicationRegex?.toRegex(IGNORE_CASE)?.matches(app.appName) == true) ||
                                 (t.applicationName == app.appName && t.applicationRegex == null))
@@ -98,9 +99,7 @@ class SimpleTargetResolver(
             app.copy(originalTarget = target)
         }.filter {
             it.originalTarget != null &&
-                    it.isScrapable &&
-                    (it.originalTarget.kubernetesAnnotations == false ||
-                            it.originalTarget.kubernetesAnnotations && it.annotationScrape)
+                    it.isScrapable
         }
     }
 
