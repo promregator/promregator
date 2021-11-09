@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 
 public class OAuth2XSUAAAuthenticationConfiguration {
 
-	public final static String deprecatedTokenServciceURLProperty = "tokenServiceURL";
+	public final static String deprecatedTokenServiceURLProperty = "tokenServiceURL";
 	public final static String useInsteadXsuaaServiceURLProperty = "xsuaaServiceURL";
 
 	private static final Logger log = LoggerFactory.getLogger(OAuth2XSUAAAuthenticationConfiguration.class);
