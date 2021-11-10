@@ -26,8 +26,8 @@ public class OAuth2ServiceConfig implements OAuth2ServiceConfiguration {
 		properties.put(KEY, config.getClient_key());
 		properties.put(CLIENT_ID, config.getClient_id());
 		properties.put(CLIENT_SECRET, config.getClient_secret());
-		properties.put(URL, config.getXsuaaServiceURL());
-		properties.put(CERT_URL, config.getXsuaaServiceCertURL());
+		properties.put(URL, config.getTokenServiceURL());
+		properties.put(CERT_URL, config.getTokenServiceCertURL());
 	}
 
 	@Override

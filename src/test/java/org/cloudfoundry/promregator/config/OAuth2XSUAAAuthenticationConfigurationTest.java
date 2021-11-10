@@ -10,38 +10,23 @@ public class OAuth2XSUAAAuthenticationConfigurationTest {
 
 	@Test
 	public void testTokenServiceURLBackwardCompatibility() {
-
-		/*
-		 * We can still receive an old url containing the path via 'tokenServiceUrl'.
-		 * But the corresponding new property 'url' does not contain the path. The url
-		 * is expected without the path by token-client.
-		 */
-
 		OAuth2XSUAAAuthenticationConfiguration subject = new OAuth2XSUAAAuthenticationConfiguration();
-
 		subject.setTokenServiceURL("https://example.org/oauth/token");
-
-		assertThat(subject.getXsuaaServiceURL(), equalTo("https://example.org"));
+		assertThat(subject.getTokenServiceURL(), equalTo("https://example.org/oauth/token"));
 	}
 
 	@Test
 	public void testTokenServiceURLBackwardCompatibilityWithPrefixInPath() {
-
 		OAuth2XSUAAAuthenticationConfiguration subject = new OAuth2XSUAAAuthenticationConfiguration();
-
 		subject.setTokenServiceURL("https://example.org/v1/oauth/token");
-
-		assertThat(subject.getXsuaaServiceURL(), equalTo("https://example.org/v1"));
+		assertThat(subject.getTokenServiceURL(), equalTo("https://example.org/v1/oauth/token"));
 	}
 
 	@Test
 	public void testTokenServiceURLBackwardCompatibilityWithPort() {
-
 		OAuth2XSUAAAuthenticationConfiguration subject = new OAuth2XSUAAAuthenticationConfiguration();
-
 		subject.setTokenServiceURL("https://example.org:1234/oauth/token");
-
-		assertThat(subject.getXsuaaServiceURL(), equalTo("https://example.org:1234"));
+		assertThat(subject.getTokenServiceURL(), equalTo("https://example.org:1234/oauth/token"));
 	}
 
 	@Test

@@ -70,8 +70,8 @@ basic:
 
 The OAuth2XSUAA Authentication scheme allows to set the following additional configuration options:
 
-* `xsuaaServiceURL` (mandatory for basic authentication): specifies the URL of the OAuth2 server, which shall be used to retrieve the token.
-* `xsuaaServiceCertURL` (mandatory for certificate-based authentication): specifies the URL of the OAuth2 server, which shall be used to retrieve the token.
+* `tokenServiceURL` (mandatory for basic authentication): specifies the URL of the OAuth2 server, which shall be used to retrieve the token.
+* `tokenServiceCertURL` (mandatory for certificate-based authentication): specifies the URL of the OAuth2 server, which shall be used to retrieve the token.
 * `client_id` (mandatory): specifies the client identifier which shall be used when authenticating at the OAuth2 server.
 * `client_secret` (mandatory for basic authentication): specifies the client secret which shall be used when authenticating at the OAuth2 server.
 * `client_certificates` (mandatory for certificate-based authentication): specifies the certificate (chain) which shall be used when authenticating at the OAuth2 server.
@@ -85,7 +85,7 @@ An example of a authentication configuration using basic authentication looks li
 ``` yaml
 type: oauth2xsuaa
 oauth2xsuaa:
-  xsuaaServiceURL: https://instance.subdomain.example.org
+  tokenServiceURL: https://instance.subdomain.example.org/oauth/token
   client_id: myclientid
   client_secret: mysecret
   scopes: scopea,scopeb
@@ -96,7 +96,7 @@ An example of a authentication configuration using certificate-based authenticat
 ``` yaml
 type: oauth2xsuaa
 oauth2xsuaa:
-  xsuaaServiceCertURL: https://instance.subdomain.example.org
+  tokenServiceCertURL: https://instance.subdomain.example.org/oauth/token
   client_id: myclientid
   client_certificates: mycert
   client_key: mykey

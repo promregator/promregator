@@ -1,27 +1,14 @@
 package org.cloudfoundry.promregator.config;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.http.client.utils.URIBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class OAuth2XSUAAAuthenticationConfiguration {
 
-	public final static String deprecatedTokenServiceURLProperty = "tokenServiceURL";
-	public final static String useInsteadXsuaaServiceURLProperty = "xsuaaServiceURL";
+	private String tokenServiceURL;
 
-	private final static String DEEFAULT_OAUTH_TOKEN_URL_PATH = "/oauth/token";
-
-	private static final Logger log = LoggerFactory.getLogger(OAuth2XSUAAAuthenticationConfiguration.class);
-
-	private String xsuaaServiceURL;
-
-	private String xsuaaServiceCertURL;
+	private String tokenServiceCertURL;
 
 	private String client_id;
 
@@ -33,39 +20,20 @@ public class OAuth2XSUAAAuthenticationConfiguration {
 
 	private final Set<String> scopes = new HashSet<>();
 
-	public String getXsuaaServiceURL() {
-		return xsuaaServiceURL;
+	public String getTokenServiceURL() {
+		return tokenServiceURL;
 	}
 
 	public void setTokenServiceURL(String url) {
-
-		log.warn("Deprecated property '{}' found. Use '{}' instead without providing trailing '{}'.'", deprecatedTokenServiceURLProperty, useInsteadXsuaaServiceURLProperty, DEEFAULT_OAUTH_TOKEN_URL_PATH);
-		if (getXsuaaServiceURL() != null) {
-			// this does not work always. In case tokenServiceURL is handled first the xsuaaServiceURL is null at this point in time.
-			log.warn("Ignoring deprecated property '{}' ({}) since '{}' ({}) has been provided", deprecatedTokenServiceURLProperty, url, useInsteadXsuaaServiceURLProperty, getXsuaaServiceURL());
-			return;
-		}
-		try {
-			URI u = new URI(url);
-			String rewritten = new URIBuilder().setScheme(u.getScheme()).setHost(u.getHost()).setPort(u.getPort())
-					.setPath(u.getPath().replaceAll(DEEFAULT_OAUTH_TOKEN_URL_PATH + "$", "")).build().toASCIIString();
-			log.warn("Rewriting '{}' ({}) to '{}' in order to use it as '{}'.", deprecatedTokenServiceURLProperty, url, rewritten, useInsteadXsuaaServiceURLProperty);
-			setXsuaaServiceURL(rewritten);
-		} catch (URISyntaxException e) {
-			throw new RuntimeException(e);
-		}
+		this.tokenServiceURL = url;
 	}
 
-	public void setXsuaaServiceURL(String xsuaaServiceURL) {
-		this.xsuaaServiceURL = xsuaaServiceURL;
+	public String getTokenServiceCertURL() {
+		return tokenServiceCertURL;
 	}
 
-	public String getXsuaaServiceCertURL() {
-		return xsuaaServiceCertURL;
-	}
-
-	public void setXsuaaServiceCertURL(String xsuaaServiceCertURL) {
-		this.xsuaaServiceCertURL = xsuaaServiceCertURL;
+	public void setTokenServiceCertURL(String url) {
+		this.tokenServiceCertURL = url;
 	}
 
 	public String getClient_id() {

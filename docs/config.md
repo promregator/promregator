@@ -663,13 +663,8 @@ java -Dspring.config.location=file:/path/to/your/myconfig.yaml -jar promregator-
 #### Option "promregator.authenticator.oauth2xsuaa.tokenServiceURL" (mandatory, if using promregator.authenticator.type=OAuth2XSUAA)
 Specifies the URL of the OAuth2 endpoint, which contains the token service of your authorization server in case of global authentication. Typically, this is the endpoint with the path `/oauth/token`, as Promregator will try to perform to establish a ["Client Credentials"-based authentication](https://www.digitalocean.com/community/tutorials/an-introduction-to-oauth-2#grant-type-client-credentials).
 
-#### Option "promregator.authenticator.oauth2xsuaa.xsuaaServiceURL"
-Like `promregator.authenticator.oauth2xsuaa.tokenServiceURL`, but without trailing `/oauth/token`.
-
-If using `promregator.authenticator.type=OAuth2XSUAA` either `promregator.authenticator.oauth2xsuaa.tokenServiceURL` or `promregator.authenticator.oauth2xsuaa.xsuaaServiceURL` must be provided. If both are provided, `promregator.authenticator.oauth2xsuaa.xsuaaServiceURL` takes precedence.
-
-#### Option "promregator.authenticator.oauth2xsuaa.xsuaaServiceCertURL (mandatory for certificate-based authentication, if using promregator.authenticator.type=OAuth2XSUAA)"
-Specifies the URL of the OAuth2 endpoint for certificate based authentication, which contains the token service of your authorization server in case of global authentication. Needs to be provided without a path.
+#### Option "promregator.authenticator.oauth2xsuaa.tokenServiceCertURL (mandatory for certificate-based authentication, if using promregator.authenticator.type=OAuth2XSUAA)"
+Specifies the URL of the OAuth2 endpoint for certificate based authentication, which contains the token service of your authorization server in case of global authentication.
 
 #### Option "promregator.authenticator.oauth2xsuaa.client_id" (mandatory, if using promregator.authenticator.type=OAuth2XSUAA)
 Specifies the client identifier (a.k.a. "client_id") which shall be used during the OAuth2 request based on the Grant Type Client Credentials flow in case of global authentication.
