@@ -17,6 +17,8 @@ public class AuthenticationEnricherFactory {
 		String type = authConfig.getType();
 		if ("OAuth2XSUAA".equalsIgnoreCase(type)) {
 			ae = new OAuth2XSUAAEnricher(authConfig.getOauth2xsuaa());
+		} else if ("OAuth2XSUAACertificate".equalsIgnoreCase(authConfig.getType())) {
+			ae = new OAuth2XSUAAEnricher(authConfig.getOauth2xsuaaCertificate());
 		} else if ("none".equalsIgnoreCase(type) || "null".equalsIgnoreCase(type)) {
 			ae = new NullEnricher();
 		} else if ("basic".equalsIgnoreCase(type)) {

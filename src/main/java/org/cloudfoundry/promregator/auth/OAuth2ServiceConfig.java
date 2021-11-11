@@ -12,7 +12,9 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.cloudfoundry.promregator.config.AbstractOAuth2XSUAAAuthenticationConfiguration;
 import org.cloudfoundry.promregator.config.OAuth2XSUAAAuthenticationConfiguration;
+import org.cloudfoundry.promregator.config.OAuth2XSUAACertificateAuthenticationConfiguration;
 
 import com.sap.cloud.security.config.OAuth2ServiceConfiguration;
 import com.sap.cloud.security.config.Service;
@@ -21,13 +23,20 @@ public class OAuth2ServiceConfig implements OAuth2ServiceConfiguration {
 
 	private final Map<String, String> properties = new HashMap<>();
 
-	public OAuth2ServiceConfig(OAuth2XSUAAAuthenticationConfiguration config) {
-		properties.put(CERTIFICATE, config.getClient_certificates());
-		properties.put(KEY, config.getClient_key());
+	public OAuth2ServiceConfig(AbstractOAuth2XSUAAAuthenticationConfiguration config) {
 		properties.put(CLIENT_ID, config.getClient_id());
-		properties.put(CLIENT_SECRET, config.getClient_secret());
-		properties.put(URL, config.getTokenServiceURL());
-		properties.put(CERT_URL, config.getTokenServiceCertURL());
+		if (config instanceof OAuth2XSUAAAuthenticationConfiguration) {
+			OAuth2XSUAAAuthenticationConfiguration c = (OAuth2XSUAAAuthenticationConfiguration) config;
+			properties.put(CLIENT_SECRET, c.getClient_secret());
+			properties.put(URL, c.getTokenServiceURL());
+		} else if (config instanceof OAuth2XSUAACertificateAuthenticationConfiguration) {
+			OAuth2XSUAACertificateAuthenticationConfiguration c = (OAuth2XSUAACertificateAuthenticationConfiguration) config;
+			properties.put(CERTIFICATE, c.getClient_certificates());
+			properties.put(KEY, c.getClient_key());
+			properties.put(CERT_URL, c.getTokenServiceCertURL());
+		} else {
+			throw new IllegalArgumentException(String.format("Invalid authentication configuration type '%s'", config.getClass().getName()));
+		}
 	}
 
 	@Override
