@@ -679,6 +679,13 @@ Specifies the client secret (a.k.a. "client_secret") which shall be used during 
 Due to security reasons, it is *neither* recommended to store this value in your YAML file, nor to put it into the command line when starting Promregator.
 Instead it is suggested to set the corresponding environment variables `PROMREGATOR_AUTHENTICATOR_OAUTH2XSUAA_CLIENT_SECRET` when starting the application.
 
+Example:
+
+```bash
+export PROMREGATOR_AUTHENTICATOR_OAUTH2XSUAA_CLIENT_SECRET=myClientSecret
+java -Dspring.config.location=file:/path/to/your/myconfig.yaml -jar promregator-0.0.1-SNAPSHOT.jar
+```
+
 #### Option "promregator.authenticator.oauth2xsuaa.client_key" (mandatory, if using promregator.authenticator.type=OAuth2XSUAACertificate)
 Specifies the private key which shall be used during the OAuth2 request. Omitted when client secret-based authentification is used.
 
