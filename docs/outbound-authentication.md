@@ -8,7 +8,7 @@ Promregator is capable of authenticating towards scraping targets with different
 |------------------------|-------------|
 | null                   | A null-authentication, i.e. no addition authentication takes place (may become handy in certain configuration cases |
 | basic                  | Basic Authentication scheme using plain-text-based Basic Authentication as defined in [RFC2617](https://www.ietf.org/rfc/rfc2617.txt) |
-| OAuth2XSUAA            | OAuth2/JWT-based authentication scheme using grant type "Client Credentials" with basic authentication as used for XSUAA servers. Deprecated, usd OAuth2XSUAABasic instead |
+| OAuth2XSUAA            | OAuth2/JWT-based authentication scheme using grant type "Client Credentials" with basic authentication as used for XSUAA servers. Deprecated, use OAuth2XSUAABasic instead |
 | OAuth2XSUAABasic       | OAuth2/JWT-based authentication scheme using grant type "Client Credentials" with basic authentication as used for XSUAA servers |
 | OAuth2XSUAACertificate | OAuth2/JWT-based authentication scheme using grant type "Client Credentials" witch certificate based authentication as used for XSUAA servers |
 
