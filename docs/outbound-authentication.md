@@ -77,9 +77,9 @@ same way like that authentication type.
 
 The OAuth2XSUAABasic Authentication scheme allows to set the following additional configuration options:
 
-* `tokenServiceURL` (mandatory for type OAuth2XSUAABasic): specifies the URL of the OAuth2 server, which shall be used to retrieve the token.
+* `tokenServiceURL` (mandatory): specifies the URL of the OAuth2 server, which shall be used to retrieve the token.
 * `client_id` (mandatory): specifies the client identifier which shall be used when authenticating at the OAuth2 server.
-* `client_secret` (mandatory for basic authentication): specifies the client secret which shall be used when authenticating at the OAuth2 server.
+* `client_secret` (mandatory): specifies the client secret which shall be used when authenticating at the OAuth2 server.
 * `scopes` (optional): specifies the scopes which shall be requested from the OAuth2 server during the call. If not specified, an empty string is assumed, which will suppress a dedicated request of scopes. Usually, OAuth2 servers then provide a JWT, which contains all scopes allowed for the set of credentials provided.
 
 Note that specifying the secret plain-text in the configuration file is highly discouraged due to security reasons. For an alternative solution, please refer to [this page](./passwords-in-config.md).
@@ -99,10 +99,10 @@ oauth2xsuaabasic:
 
 The OAuth2XSUAACertificate Authentication scheme allows to set the following additional configuration options:
 
-* `tokenServiceCertURL` (mandatory for type OAuth2XSUAACertificate): specifies the URL of the OAuth2 server, which shall be used to retrieve the token.
+* `tokenServiceCertURL` (mandatory): specifies the URL of the OAuth2 server, which shall be used to retrieve the token.
 * `client_id` (mandatory): specifies the client identifier which shall be used when authenticating at the OAuth2 server.
-* `client_certificates` (mandatory for certificate-based authentication): specifies the certificate (chain) which shall be used when authenticating at the OAuth2 server.
-* `client_key` (mandatory for certificate-based authentication): specifies the key which corresponds to the certificate which shall be used when authentication at the OAuth2 server.
+* `client_certificates` (mandatory): specifies the certificate (chain) which shall be used when authenticating at the OAuth2 server.
+* `client_key` (mandatory): specifies the key which corresponds to the certificate which shall be used when authentication at the OAuth2 server.
 * `scopes` (optional): specifies the scopes which shall be requested from the OAuth2 server during the call. If not specified, an empty string is assumed, which will suppress a dedicated request of scopes. Usually, OAuth2 servers then provide a JWT, which contains all scopes allowed for the set of credentials provided.
 
 An example of a authentication configuration using certificate-based authentication looks like this:
