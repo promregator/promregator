@@ -44,8 +44,8 @@ cf:
 
 promregator:
   authenticator:
-    type: OAuth2XSUAA
-    oauth2xsuaa:
+    type: OAuth2XSUAABasic
+    oauth2xsuaabasic:
       tokenServiceURL: https://jwt.token.server.example.org/oauth/token
       client_id: myOAuth2ClientId
 #     client_secret: <should be provided via environment variable PROMREGATOR_AUTHENTICATOR_OAUTH2XSUAA_CLIENT_SECRET>
@@ -71,8 +71,8 @@ cf:
 
 promregator:
   authenticator:
-    type: OAuth2XSUAA
-    oauth2xsuaa:
+    type: OAuth2XSUAACertificate
+    oauth2xsuaacertificate:
       tokenServiceCertURL: https://jwt.cert.token.server.example.org/oauth/token
       client_id: myOAuth2ClientId
       client_certificates: "-----BEGIN CERTIFICATE-----\nMyIFu...IxZ\n-----END CERTIFICATE-----\n"
