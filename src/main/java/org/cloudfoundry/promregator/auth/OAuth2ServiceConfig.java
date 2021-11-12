@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.cloudfoundry.promregator.config.AbstractOAuth2XSUAAAuthenticationConfiguration;
-import org.cloudfoundry.promregator.config.OAuth2XSUAAAuthenticationConfiguration;
+import org.cloudfoundry.promregator.config.OAuth2XSUAABasicAuthenticationConfiguration;
 import org.cloudfoundry.promregator.config.OAuth2XSUAACertificateAuthenticationConfiguration;
 
 import com.sap.cloud.security.config.OAuth2ServiceConfiguration;
@@ -25,8 +25,8 @@ public class OAuth2ServiceConfig implements OAuth2ServiceConfiguration {
 
 	public OAuth2ServiceConfig(AbstractOAuth2XSUAAAuthenticationConfiguration config) {
 		properties.put(CLIENT_ID, config.getClient_id());
-		if (config instanceof OAuth2XSUAAAuthenticationConfiguration) {
-			OAuth2XSUAAAuthenticationConfiguration c = (OAuth2XSUAAAuthenticationConfiguration) config;
+		if (config instanceof OAuth2XSUAABasicAuthenticationConfiguration) {
+			OAuth2XSUAABasicAuthenticationConfiguration c = (OAuth2XSUAABasicAuthenticationConfiguration) config;
 			properties.put(CLIENT_SECRET, c.getClient_secret());
 			properties.put(URL, c.getTokenServiceURL());
 		} else if (config instanceof OAuth2XSUAACertificateAuthenticationConfiguration) {

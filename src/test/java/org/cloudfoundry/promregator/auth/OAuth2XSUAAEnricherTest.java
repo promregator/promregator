@@ -9,7 +9,7 @@ import java.net.URI;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.HttpGet;
 import org.cloudfoundry.promregator.JUnitTestUtils;
-import org.cloudfoundry.promregator.config.OAuth2XSUAAAuthenticationConfiguration;
+import org.cloudfoundry.promregator.config.OAuth2XSUAABasicAuthenticationConfiguration;
 import org.cloudfoundry.promregator.mockServer.AuthenticationMockServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -127,11 +127,11 @@ class OAuth2XSUAAEnricherTest {
 		assertThat(get.getAllHeaders()).isEmpty();
 	}
 
-	private OAuth2XSUAAAuthenticationConfiguration getConfig() {
+	private OAuth2XSUAABasicAuthenticationConfiguration getConfig() {
 		return getConfig(null);
 	}
-	private OAuth2XSUAAAuthenticationConfiguration getConfig(String scopes) {
-		OAuth2XSUAAAuthenticationConfiguration authenticatorConfig = new OAuth2XSUAAAuthenticationConfiguration();
+	private OAuth2XSUAABasicAuthenticationConfiguration getConfig(String scopes) {
+		OAuth2XSUAABasicAuthenticationConfiguration authenticatorConfig = new OAuth2XSUAABasicAuthenticationConfiguration();
 		authenticatorConfig.setClient_id("client_id");
 		authenticatorConfig.setClient_secret("client_secret");
 		authenticatorConfig.setTokenServiceURL("http://localhost:9001/oauth/token");
