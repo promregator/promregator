@@ -689,7 +689,7 @@ Instead it is suggested to set the corresponding environment variables `PROMREGA
 Example:
 
 ```bash
-export promregator.authenticator.oauth2xsuaa.client_secret=myClientSecret
+export PROMREGATOR_AUTHENTICATOR_OAUTH2XSUAA_CLIENT_KEY=myClientKey
 java -Dspring.config.location=file:/path/to/your/myconfig.yaml -jar promregator-0.0.1-SNAPSHOT.jar
 ```
 
