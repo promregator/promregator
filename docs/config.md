@@ -663,13 +663,13 @@ java -Dspring.config.location=file:/path/to/your/myconfig.yaml -jar promregator-
 #### Option "promregator.authenticator.oauth2xsuaa.tokenServiceURL" (mandatory, if using promregator.authenticator.type=OAuth2XSUAABasic)
 Specifies the URL of the OAuth2 endpoint, which contains the token service of your authorization server in case of global authentication. Typically, this is the endpoint with the path `/oauth/token`, as Promregator will try to perform to establish a ["Client Credentials"-based authentication](https://www.digitalocean.com/community/tutorials/an-introduction-to-oauth-2#grant-type-client-credentials).
 
-#### Option "promregator.authenticator.oauth2xsuaa.tokenServiceCertURL (mandatory for if using promregator.authenticator.type=OAuth2XSUAACertificate)"
-Specifies the URL of the OAuth2 endpoint for certificate based authentication, which contains the token service of your authorization server in case of global authentication.
+#### Option "promregator.authenticator.oauth2xsuaa.tokenServiceCertURL" (mandatory for if using promregator.authenticator.type=OAuth2XSUAACertificate)
+Specifies the URL of the OAuth2 endpoint for certificate-based authentication, which contains the token service of your authorization server in case of global authentication.
 
 #### Option "promregator.authenticator.oauth2xsuaa.client_id" (mandatory, if using promregator.authenticator.type=OAuth2XSUAABasic or OAuth2XSUAACertificate)
 Specifies the client identifier (a.k.a. "client_id") which shall be used during the OAuth2 request based on the Grant Type Client Credentials flow in case of global authentication.
 
-#### Option "client_certificates" (mandatory if using promregator.authenticator.type=OAuth2XSUAACertificate)
+#### Option "promregator.authenticator.oauth2xsuaacertificate.client_certificates" (mandatory if using promregator.authenticator.type=OAuth2XSUAACertificate)
 Specifies the certificate chain which shall be used during the OAuth2 request. Omitted when client secret-based authentification is used.
 
 #### Option "promregator.authenticator.oauth2xsuaa.client_secret" (mandatory, if using promregator.authenticator.type=OAuth2XSUAABasic)
