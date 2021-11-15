@@ -670,10 +670,10 @@ Specifies the URL of the OAuth2 endpoint for certificate-based authentication, w
 Specifies the client identifier (a.k.a. "client_id") which shall be used during the OAuth2 request based on the Grant Type Client Credentials flow in case of global authentication.
 
 #### Option "promregator.authenticator.oauth2xsuaacertificate.client_certificates" (mandatory if using promregator.authenticator.type=OAuth2XSUAACertificate)
-Specifies the certificate chain which shall be used during the OAuth2 request. Omitted when client secret-based authentification is used.
+Specifies the certificate chain which shall be used during the OAuth2 request.
 
 #### Option "promregator.authenticator.oauth2xsuaa.client_secret" (mandatory, if using promregator.authenticator.type=OAuth2XSUAABasic)
-Specifies the client secret (a.k.a. "client_secret") which shall be used during the OAuth2 request based on the Grant Type Client Credentials flow in case of global authentication. Omitted, if certificate based authentication is used.
+Specifies the client secret (a.k.a. "client_secret") which shall be used during the OAuth2 request based on the Grant Type Client Credentials flow in case of global authentication.
 
 *WARNING!*
 Due to security reasons, it is *neither* recommended to store this value in your YAML file, nor to put it into the command line when starting Promregator.
@@ -687,7 +687,7 @@ java -Dspring.config.location=file:/path/to/your/myconfig.yaml -jar promregator-
 ```
 
 #### Option "promregator.authenticator.oauth2xsuaa.client_key" (mandatory, if using promregator.authenticator.type=OAuth2XSUAACertificate)
-Specifies the private key which shall be used during the OAuth2 request. Omitted when client secret-based authentification is used.
+Specifies the private key which shall be used during the OAuth2 request.
 
 *WARNING!* 
 Due to security reasons, it is *neither* recommended to store this value in your YAML file, nor to put it into the command line when starting Promregator.
