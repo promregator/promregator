@@ -87,8 +87,8 @@ Note that specifying the secret plain-text in the configuration file is highly d
 An example of a authentication configuration using basic authentication looks like this:
 
 ``` yaml
-type: oauth2xsuaabasic
-oauth2xsuaabasic:
+type: oauth2xsuaaBasic
+oauth2xsuaaBasic:
   tokenServiceURL: https://instance.subdomain.example.org/oauth/token
   client_id: myclientid
   client_secret: mysecret
@@ -108,8 +108,8 @@ The OAuth2XSUAACertificate Authentication scheme allows to set the following add
 An example of a authentication configuration using certificate-based authentication looks like this:
 
 ``` yaml
-type: oauth2xsuaacertificate
-oauth2xsuaacertificate:
+type: oauth2xsuaaCertificate
+oauth2xsuaaCertificate:
   tokenServiceCertURL: https://instance.subdomain.example.org/oauth/token
   client_id: myclientid
   client_certificates: mycert
