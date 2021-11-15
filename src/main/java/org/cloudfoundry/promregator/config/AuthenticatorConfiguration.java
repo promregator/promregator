@@ -34,7 +34,7 @@ public class AuthenticatorConfiguration {
 	}
 
 	@Deprecated
-	public void setOauth2xsuaa(OAuth2XSUAAAuthenticationConfiguration oauth2xsuaa) {
+	public void setOauth2xsuaa(OAuth2XSUAABasicAuthenticationConfiguration oauth2xsuaa) {
 		this.oauth2xsuaa = oauth2xsuaa;
 	}
 
