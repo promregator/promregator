@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-public class AbstractOAuth2XSUAAAuthenticationConfiguration {
+public abstract class AbstractOAuth2XSUAAAuthenticationConfiguration {
 
 	protected String client_id;
 
