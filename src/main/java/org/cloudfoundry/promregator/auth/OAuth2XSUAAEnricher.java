@@ -3,6 +3,7 @@ package org.cloudfoundry.promregator.auth;
 import java.io.Closeable;
 import java.io.IOException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.cloudfoundry.promregator.config.AbstractOAuth2XSUAAAuthenticationConfiguration;
@@ -62,7 +63,7 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher, Closeable {
 	@Override
 	public void enrichWithAuthentication(HttpGet httpget) {
 		final String jwt = getJWTAndCatchExceptions();
-		if (jwt == null) {
+		if (StringUtils.isAllBlank(jwt)) {
 			log.error("Unable to enrich request with JWT");
 			return;
 		}

@@ -127,6 +127,21 @@ class OAuth2XSUAAEnricherTest {
 		assertThat(get.getAllHeaders()).isEmpty();
 	}
 
+	@Test
+	void testAuthorizationHeaderNotAddedAndNoExceptionThrownWhenTokenIsEmpty() throws Exception {
+		ClientCredentialsTokenFlow tokenClientMock = Mockito.mock(ClientCredentialsTokenFlow.class);
+		OAuth2TokenResponse tokenResponse = new OAuth2TokenResponse("", 42l, "");
+		Mockito.when(tokenClientMock.execute()).thenReturn(tokenResponse);
+
+		OAuth2XSUAAEnricher subject = new OAuth2XSUAAEnricher(getConfig(), tokenClientMock);
+
+		HttpGet get = new HttpGet();
+
+		subject.enrichWithAuthentication(get);
+
+		assertThat(get.getAllHeaders()).isEmpty();
+	}
+
 	private OAuth2XSUAABasicAuthenticationConfiguration getConfig() {
 		return getConfig(null);
 	}
