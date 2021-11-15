@@ -17,6 +17,7 @@ import com.sun.net.httpserver.HttpHandler;
 public class DefaultOAuthHttpHandler implements HttpHandler {
 	private int counterCalled = 0;
 	
+	private int status = 200;
 	private String response = "";
 
 	
@@ -46,13 +47,21 @@ public class DefaultOAuthHttpHandler implements HttpHandler {
 
 		String contentTypeValue = he.getRequestHeaders().getFirst("Content-Type");
 		Assertions.assertEquals("application/x-www-form-urlencoded", contentTypeValue);
-		
+
 		// send response
-		he.sendResponseHeaders(200, this.response.length());
+		he.sendResponseHeaders(getStatus(), this.response.length());
 
 		OutputStream os = he.getResponseBody();
 		os.write(response.getBytes());
 		os.flush();
+	}
+
+	public int getStatus() {
+		return this.status;
+	}
+
+	public void setStatus(int status) {
+		this.status = status;
 	}
 
 	public String getResponse() {

@@ -11,6 +11,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.config.OAuth2XSUAABasicAuthenticationConfiguration;
 import org.cloudfoundry.promregator.mockServer.AuthenticationMockServer;
+import org.cloudfoundry.promregator.mockServer.DefaultOAuthHttpHandler;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,14 +26,15 @@ import com.sap.cloud.security.xsuaa.tokenflows.ClientCredentialsTokenFlow;
 import com.sap.cloud.security.xsuaa.tokenflows.TokenFlowException;
 
 class OAuth2XSUAAEnricherTest {
-	private String oAuthServerResponse = "{\n" + 
+	private String oAuthServer200Response = "{\n" +
 			"    \"access_token\": \"someAccessToken\",\n" + 
 			"    \"token_type\": \"bearer\",\n" + 
 			"    \"expires_in\": 43199,\n" + 
 			"    \"scope\": \"dummyScope.AdminOnboarding uaa.resource\",\n" + 
 			"    \"jti\": \"01234567890\"\n" + 
 			"}";
-	
+
+	private String oAuthServer401Response = "{\"error\":\"unauthorized\",\"error_description\":\"Bad credentials\"}";
 	private AuthenticationMockServer ams;
 	
 	@BeforeEach
@@ -53,7 +55,8 @@ class OAuth2XSUAAEnricherTest {
 
 	@Test
 	void testAppropriateJWTCall() {
-		this.ams.getOauthTokenHandler().setResponse(this.oAuthServerResponse);
+		this.ams.getOauthTokenHandler().setStatus(200);
+		this.ams.getOauthTokenHandler().setResponse(this.oAuthServer200Response);
 
 		OAuth2XSUAAEnricher subject = new OAuth2XSUAAEnricher(getConfig());
 
@@ -66,8 +69,21 @@ class OAuth2XSUAAEnricherTest {
 	}
 
 	@Test
+	void testBadJWTCall() {
+		this.ams.getOauthTokenHandler().setStatus(401);
+		this.ams.getOauthTokenHandler().setResponse(this.oAuthServer401Response);
+
+		/* OAuth2XSUAAEnricher subject =  */ new OAuth2XSUAAEnricher(getConfig());
+
+		// Here I would like to continue with enrichWithAuthentication but the second call does not
+		//hit the mock server apparently. Doen't know why ...
+
+	}
+
+	@Test
 	void testJWTCallIsBuffered() {
-		this.ams.getOauthTokenHandler().setResponse(this.oAuthServerResponse);
+		this.ams.getOauthTokenHandler().setStatus(200);
+		this.ams.getOauthTokenHandler().setResponse(this.oAuthServer200Response);
 
 		OAuth2XSUAAEnricher subject = new OAuth2XSUAAEnricher(getConfig());
 
