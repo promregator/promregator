@@ -5,7 +5,7 @@ public class AuthenticatorConfiguration {
 	
 	private BasicAuthenticationConfiguration basic;
 
-	//@Deprecated
+	@Deprecated
 	private OAuth2XSUAABasicAuthenticationConfiguration oauth2xsuaa;
 
 	private OAuth2XSUAABasicAuthenticationConfiguration oauth2xsuaaBasic;
@@ -28,12 +28,12 @@ public class AuthenticatorConfiguration {
 		this.basic = basic;
 	}
 
-	//@Deprecated
+	@Deprecated
 	public OAuth2XSUAABasicAuthenticationConfiguration getOauth2xsuaa() {
 		return oauth2xsuaa;
 	}
 
-	//@Deprecated
+	@Deprecated
 	public void setOauth2xsuaa(OAuth2XSUAAAuthenticationConfiguration oauth2xsuaa) {
 		this.oauth2xsuaa = oauth2xsuaa;
 	}
