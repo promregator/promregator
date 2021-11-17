@@ -17,6 +17,13 @@ import com.sap.cloud.security.mtls.SSLContextFactory;
 
 public class PromregatorHttpClientFactory implements com.sap.cloud.security.client.HttpClientFactory {
 
+	/*
+	 * This factory impl is taken from here:
+	 * https://github.com/SAP/cloud-security-xsuaa-integration/blob/
+	 * 9e65f91a926e782403df996d99d0eff43de63d24/token-client/src/main/java/com/sap/
+	 * cloud/security/client/DefaultHttpClientFactory.java
+	 */
+
 	private static final Logger log = LoggerFactory.getLogger(PromregatorHttpClientFactory.class);
 
 	@Override
