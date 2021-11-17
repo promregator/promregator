@@ -22,25 +22,20 @@ public class PromregatorHttpClientFactory implements com.sap.cloud.security.clie
 	@Override
 	public CloseableHttpClient createClient(ClientIdentity clientIdentity) throws HttpClientException {
 
-			log.info("Using '{}' http client factory.", getClass().getSimpleName());
-			if (clientIdentity != null && clientIdentity.isCertificateBased()) {
-				log.debug("Setting up HTTPS client with: certificate: {}\n", clientIdentity.getCertificate());
-				SSLContext sslContext;
-				try {
-					sslContext = SSLContextFactory.getInstance().create(clientIdentity);
-				} catch (IOException | GeneralSecurityException e) {
-					throw new HttpClientException(
-							String.format("Couldn't set up https client for service provider. %s.",
-									e.getMessage()));
-				}
-				SSLConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(sslContext);
-				return HttpClients.custom()
-						.setSSLContext(sslContext)
-						.setSSLSocketFactory(socketFactory)
-						.build();
+		log.info("Using '{}' http client factory.", getClass().getSimpleName());
+		if (clientIdentity != null && clientIdentity.isCertificateBased()) {
+			log.debug("Setting up HTTPS client with: certificate: {}\n", clientIdentity.getCertificate());
+			SSLContext sslContext;
+			try {
+				sslContext = SSLContextFactory.getInstance().create(clientIdentity);
+			} catch (IOException | GeneralSecurityException e) {
+				throw new HttpClientException(
+						String.format("Couldn't set up https client for service provider. %s.", e.getMessage()));
 			}
-			log.debug("Setting up default http client");
-			return HttpClients.createDefault();
+			SSLConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(sslContext);
+			return HttpClients.custom().setSSLContext(sslContext).setSSLSocketFactory(socketFactory).build();
+		}
+		log.debug("Setting up default http client");
+		return HttpClients.createDefault();
 	}
-
 }
