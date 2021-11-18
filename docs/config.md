@@ -714,12 +714,12 @@ Specifies the private key which shall be used during the OAuth2 request.
 
 *WARNING!* 
 Due to security reasons, it is *neither* recommended to store this value in your YAML file, nor to put it into the command line when starting Promregator.
-Instead it is suggested to set the corresponding environment variables `PROMREGATOR_AUTHENTICATOR_OAUTH2XSUAACERTIFICATE_CLIENT_KEY` when starting the application.
+Instead it is suggested to set the corresponding environment variables `PROMREGATOR_AUTHENTICATOR_OAUTH2XSUAA_CERTIFICATE_CLIENT_KEY` when starting the application.
 
 Example:
 
 ```bash
-export PROMREGATOR_AUTHENTICATOR_OAUTH2XSUAA_CERTFICATE_CLIENT_KEY=myClientKey
+export PROMREGATOR_AUTHENTICATOR_OAUTH2XSUAA_CERTIFICATE_CLIENT_KEY=myClientKey
 java -Dspring.config.location=file:/path/to/your/myconfig.yaml -jar promregator-0.0.1-SNAPSHOT.jar
 ```
 
