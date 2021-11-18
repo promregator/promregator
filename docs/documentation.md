@@ -48,7 +48,7 @@ promregator:
     oauth2xsuaaBasic:
       tokenServiceURL: https://jwt.token.server.example.org/oauth/token
       client_id: myOAuth2ClientId
-#     client_secret: <should be provided via environment variable PROMREGATOR_AUTHENTICATOR_OAUTH2XSUAA_CLIENT_SECRET>
+#     client_secret: <should be provided via environment variable PROMREGATOR_AUTHENTICATOR_OAUTH2XSUAABASIC_CLIENT_SECRET>
 
   targets:
     - orgName: myCfOrgName
@@ -75,8 +75,11 @@ promregator:
     oauth2xsuaaCertificate:
       tokenServiceCertURL: https://jwt.cert.token.server.example.org/oauth/token
       client_id: myOAuth2ClientId
-      client_certificates: "-----BEGIN CERTIFICATE-----\nMyIFu...IxZ\n-----END CERTIFICATE-----\n"
-#     client_key: <should be provided via environment variable PROMREGATOR_AUTHENTICATOR_OAUTH2XSUAA_CLIENT_KEY>
+      client_certificates: |
+          -----BEGIN CERTIFICATE-----
+          MyIFu...IxZ
+          -----END CERTIFICATE-----
+#     client_key: <should be provided via environment variable PROMREGATOR_AUTHENTICATOR_OAUTH2XSUAACERTIFICATE_CLIENT_KEY>
 
   targets:
     - orgName: myCfOrgName

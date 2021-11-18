@@ -714,7 +714,7 @@ Specifies the private key which shall be used during the OAuth2 request.
 
 *WARNING!* 
 Due to security reasons, it is *neither* recommended to store this value in your YAML file, nor to put it into the command line when starting Promregator.
-Instead it is suggested to set the corresponding environment variables `PROMREGATOR_AUTHENTICATOR_OAUTH2XSUAA_CLIENT_KEY` when starting the application.
+Instead it is suggested to set the corresponding environment variables `PROMREGATOR_AUTHENTICATOR_OAUTH2XSUAACERTIFICATE_CLIENT_KEY` when starting the application.
 
 Example:
 

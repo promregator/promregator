@@ -37,14 +37,14 @@ public class OAuth2XSUAAAuthenticationConfigurationTest {
 	}
 
 	@Test
-	public void testScopesWithCommaAsSepartor() {
+	public void testScopesWithCommaAsSeparator() {
 		OAuth2XSUAABasicAuthenticationConfiguration subject = new OAuth2XSUAABasicAuthenticationConfiguration();
 		subject.setScopes("a, b  , c,d, e");
 		assertThat(subject.getScopes(), containsInAnyOrder("a", "b", "c", "d", "e"));
 	}
 
 	@Test
-	public void testScopesWithMixedSepartors() {
+	public void testScopesWithMixedSeparators() {
 		OAuth2XSUAABasicAuthenticationConfiguration subject = new OAuth2XSUAABasicAuthenticationConfiguration();
 		subject.setScopes("a b, c");
 		assertThat(subject.getScopes(), containsInAnyOrder("a", "b", "c"));

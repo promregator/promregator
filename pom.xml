@@ -133,6 +133,7 @@
 		which of the two libraries is stated *first* in the classpath.
 		The classpath has the same order as the order of XML dependency 
 		declarations in your pom.xml.
+		See also https://github.com/SAP/cloud-security-xsuaa-integration/blob/1c133ee17b629b07d58a7aec512daf98b067c031/docs/Troubleshooting_JsonClasspathIssues.md
 		
 		That is why, the dependency declaration of com.sap.cloud.security.xsuaa:token-client
 		should be stated in the pom.xml before the dependency declaration of 
