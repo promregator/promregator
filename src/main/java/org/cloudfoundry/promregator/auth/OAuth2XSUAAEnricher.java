@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import com.sap.cloud.security.client.HttpClientFactory;
 import com.sap.cloud.security.config.OAuth2ServiceConfiguration;
 import com.sap.cloud.security.xsuaa.client.DefaultOAuth2TokenService;
+import com.sap.cloud.security.xsuaa.client.OAuth2TokenResponse;
 import com.sap.cloud.security.xsuaa.tokenflows.ClientCredentialsTokenFlow;
 import com.sap.cloud.security.xsuaa.tokenflows.TokenFlowException;
 import com.sap.cloud.security.xsuaa.tokenflows.XsuaaTokenFlows;
@@ -81,7 +82,11 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher, Closeable {
 	}
 
 	private final String getJWT() throws TokenFlowException {
-		return this.tokenClient.execute().getAccessToken();
+		OAuth2TokenResponse tokenResponse = this.tokenClient.execute();
+		if(tokenResponse == null) {
+			return null;
+		}
+		return tokenResponse.getAccessToken();
 	}
 
 	// TODO: currently there is no good place for calling this method.
