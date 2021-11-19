@@ -12,6 +12,7 @@ import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.config.OAuth2XSUAABasicAuthenticationConfiguration;
 import org.cloudfoundry.promregator.mockServer.AuthenticationMockServer;
 import org.cloudfoundry.promregator.mockServer.DefaultOAuthHttpHandler;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -73,11 +74,14 @@ class OAuth2XSUAAEnricherTest {
 		this.ams.getOauthTokenHandler().setStatus(401);
 		this.ams.getOauthTokenHandler().setResponse(this.oAuthServer401Response);
 
-		/* OAuth2XSUAAEnricher subject =  */ new OAuth2XSUAAEnricher(getConfig());
+		OAuth2XSUAAEnricher subject = new OAuth2XSUAAEnricher(getConfig());
 
-		// Here I would like to continue with enrichWithAuthentication but the second call does not
-		//hit the mock server apparently. Doen't know why ...
+		HttpGet get = new HttpGet();
+		subject.enrichWithAuthentication(get);
 
+		// No header has been added (especially no Authorization header).
+		// And we did not get an exception
+		assertThat(get.getAllHeaders()).isEmpty();
 	}
 
 	@Test
