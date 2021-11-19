@@ -5,12 +5,16 @@ import java.security.GeneralSecurityException;
 
 import javax.net.ssl.SSLContext;
 
+import org.apache.http.HttpHeaders;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Lists;
 import com.sap.cloud.security.client.HttpClientException;
 import com.sap.cloud.security.config.ClientIdentity;
 import com.sap.cloud.security.mtls.SSLContextFactory;
@@ -30,6 +34,8 @@ public class PromregatorHttpClientFactory implements com.sap.cloud.security.clie
 	public CloseableHttpClient createClient(ClientIdentity clientIdentity) throws HttpClientException {
 
 		log.info("Using '{}' http client factory.", getClass().getSimpleName());
+		HttpClientBuilder httpClientBuilder = HttpClients.custom();
+		httpClientBuilder.setDefaultHeaders(Lists.newArrayList(new BasicHeader(HttpHeaders.CONNECTION, "close")));
 		if (clientIdentity != null && clientIdentity.isCertificateBased()) {
 			log.debug("Setting up HTTPS client with: certificate: {}\n", clientIdentity.getCertificate());
 			SSLContext sslContext;
@@ -40,9 +46,10 @@ public class PromregatorHttpClientFactory implements com.sap.cloud.security.clie
 						String.format("Couldn't set up https client for service provider. %s.", e.getMessage()));
 			}
 			SSLConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(sslContext);
-			return HttpClients.custom().setSSLContext(sslContext).setSSLSocketFactory(socketFactory).build();
+			httpClientBuilder.setSSLContext(sslContext).setSSLSocketFactory(socketFactory);
+		} else {
+			log.debug("Setting up http client without ssl context");
 		}
-		log.debug("Setting up default http client");
-		return HttpClients.createDefault();
+		return httpClientBuilder.build();
 	}
 }
