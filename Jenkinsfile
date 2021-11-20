@@ -43,18 +43,24 @@ def springCloudCliPasswordTest(params) {
 	assert params.currentVersion != null : "Current Version at springCloudCliPasswordTest not set"
 
 	dir("../springCloudTest") {
+		// For most recent version look at https://repo.spring.io/release/org/springframework/boot/spring-boot-cli/
+		def springBootCLIVersion = "2.5.7"
+		
+		// For most recent version see also https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-cli
+		def springCloudCLIVersion = "2.2.4.RELEASE"
+	
 		sh """
-			wget -nv https://repo.spring.io/release/org/springframework/boot/spring-boot-cli/2.5.4/spring-boot-cli-2.5.4-bin.tar.gz
-			tar xzvf spring-boot-cli-2.5.4-bin.tar.gz
-			rm -f spring-boot-cli-2.5.4-bin.tar.gz
-			cd spring-2.5.4/bin
+			wget -nv https://repo.spring.io/release/org/springframework/boot/spring-boot-cli/${springBootCLIVersion}/spring-boot-cli-${springBootCLIVersion}-bin.tar.gz
+			tar xzvf spring-boot-cli-${springBootCLIVersion}-bin.tar.gz
+			rm -f spring-boot-cli-${springBootCLIVersion}-bin.tar.gz
+			cd spring-${springBootCLIVersion}/bin
 			
-			./spring install org.springframework.cloud:spring-cloud-cli:2.2.4.RELEASE
+			./spring install org.springframework.cloud:spring-cloud-cli:${springCloudCLIVersion}
 		"""
 		
 		withCredentials([usernamePassword(credentialsId: 'bluemix-ibm-cf-platform', passwordVariable: 'CFPASSWORD', usernameVariable: 'CFUSER')]) {
 			sh """#!/bin/bash -xe
-				spring-2.5.4/bin/spring encrypt '${CFPASSWORD}' --key somekey > encrypted.txt
+				spring-${springBootCLIVersion}/bin/spring encrypt '${CFPASSWORD}' --key somekey > encrypted.txt
 				
 			"""
 		}
