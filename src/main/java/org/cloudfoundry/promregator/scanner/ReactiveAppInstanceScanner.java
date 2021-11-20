@@ -32,7 +32,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	private static final Logger log = LoggerFactory.getLogger(ReactiveAppInstanceScanner.class);
 	private static final String INVALID_ORG_ID = "***invalid***";
 	private static final String INVALID_SPACE_ID = "***invalid***";
-	private static final Map<String, SpaceApplicationSummary> INVALID_SUMMARY = new HashMap<>();	
+	private static final Map<String, SpaceApplicationSummary> INVALID_SUMMARY = new HashMap<>();
 
 	@Value("${promregator.defaultInternalRoutePort:8080}")
 	private int defaultInternalRoutePort;
