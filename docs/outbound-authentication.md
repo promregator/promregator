@@ -4,11 +4,13 @@
 
 Promregator is capable of authenticating towards scraping targets with different schemes. The supported types are
 
-| Type identifier | Description |
-|-----------------|-------------|
-| null            | A null-authentication, i.e. no addition authentication takes place (may become handy in certain configuration cases |
-| basic           | Basic Authentication scheme using plain-text-based Basic Authentication as defined in [RFC2617](https://www.ietf.org/rfc/rfc2617.txt) |
-| OAuth2XSUAA     | OAuth2/JWT-based authentication scheme using grant type "Client Credentials" as used for XSUAA servers |
+| Type identifier        | Description |
+|------------------------|-------------|
+| null                   | A null-authentication, i.e. no addition authentication takes place (may become handy in certain configuration cases) |
+| basic                  | Basic Authentication scheme using plain-text-based Basic Authentication as defined in [RFC2617](https://www.ietf.org/rfc/rfc2617.txt) |
+| OAuth2XSUAA            | OAuth2/JWT-based authentication scheme using grant type "Client Credentials" with basic authentication as used for XSUAA servers. **Deprecated**, use OAuth2XSUAABasic instead |
+| OAuth2XSUAABasic       | OAuth2/JWT-based authentication scheme using grant type "Client Credentials" with basic authentication as used for XSUAA servers |
+| OAuth2XSUAACertificate | OAuth2/JWT-based authentication scheme using grant type "Client Credentials" with certificate-based authentication as used for XSUAA servers |
 
 Depending on the different authentication schemes, additional configurations may need to be added to enable them. 
 
@@ -68,23 +70,50 @@ basic:
 
 ### Authentication Configuration for OAuth2XSUAA Authentication
 
-The OAuth2XSUAA Authentication scheme allows to set the following additional configuration options:
+The OAuth2XSUAA Authentication type is deprecated and remains present due to backward compatibility. It is replaced by OAuth2XSUAABasic and behaves in the
+same way like that authentication type.
+
+### Authentication Configuration for OAuth2XSUAABasic Authentication
+
+The OAuth2XSUAABasic Authentication scheme allows to set the following configuration options:
 
 * `tokenServiceURL` (mandatory): specifies the URL of the OAuth2 server, which shall be used to retrieve the token.
 * `client_id` (mandatory): specifies the client identifier which shall be used when authenticating at the OAuth2 server.
 * `client_secret` (mandatory): specifies the client secret which shall be used when authenticating at the OAuth2 server.
-* `scope` (optional): specifies the scopes which shall be requested from the OAuth2 server during the call. If not specified, an empty string is assumed, which will suppress a dedicated request of scopes. Usually, OAuth2 servers then provide a JWT, which contains all scopes allowed for the set of credentials provided.
+* `scopes` (optional): specifies the scopes which shall be requested from the OAuth2 server during the call. If not specified, an empty string is assumed, which will suppress a dedicated request of scopes. Usually, OAuth2 servers then provide a JWT, which contains all scopes allowed for the set of credentials provided.
 
 Note that specifying the secret plain-text in the configuration file is highly discouraged due to security reasons. For an alternative solution, please refer to [this page](./passwords-in-config.md).
 
 An example of a authentication configuration using basic authentication looks like this:
 
 ``` yaml
-type: oauth2xsuaa
-oauth2xsuaa: 
+type: oauth2xsuaaBasic
+oauth2xsuaaBasic:
   tokenServiceURL: https://instance.subdomain.example.org/oauth/token
   client_id: myclientid
   client_secret: mysecret
+  scopes: scopea,scopeb
+```
+
+### Authentication Configuration for OAuth2XSUAACertificate Authentication
+
+The OAuth2XSUAACertificate Authentication scheme allows to set the following configuration options:
+
+* `tokenServiceCertURL` (mandatory): specifies the URL of the OAuth2 server, which shall be used to retrieve the token.
+* `client_id` (mandatory): specifies the client identifier which shall be used when authenticating at the OAuth2 server.
+* `client_certificates` (mandatory): specifies the certificate (chain) which shall be used when authenticating at the OAuth2 server.
+* `client_key` (mandatory): specifies the key which shall be used when authentication at the OAuth2 server. The key must fit to the certificate used above.
+* `scopes` (optional): specifies the scopes which shall be requested from the OAuth2 server during the call. If not specified, an empty string is assumed, which will suppress a dedicated request of scopes. Usually, OAuth2 servers then provide a JWT, which contains all scopes allowed for the set of credentials provided.
+
+An example of an authentication configuration using certificate-based authentication looks like this:
+
+``` yaml
+type: oauth2xsuaaCertificate
+oauth2xsuaaCertificate:
+  tokenServiceCertURL: https://instance.subdomain.example.org/oauth/token
+  client_id: myclientid
+  client_certificates: "-----BEGIN CERTIFICATE-----..."
+  client_key: "-----BEGIN RSA PRIVATE KEY-----..."
   scopes: scopea,scopeb
 ```
 

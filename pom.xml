@@ -109,6 +109,45 @@
 			<artifactId>activemq-broker</artifactId>
 		</dependency>
 
+		<!-- 
+		Warning!
+		com.sap.cloud.security.xsuaa:token-client declares a (transitive)
+		dependency to org.json:json.
+		
+		org.springframework.boot:spring-boot-starter-test declares a 
+		(transitive) dependency to com.vaadin.external.google:android-json
+		
+		Both org.json:json and com.vaadin.external.google:android-json
+		declare classes in the package org.json. In particular, the class
+		org.json.JsonObject is declared. However, the variant provided by 
+		com.vaadin.external.google:android-json is a significantly reduced
+		one, and - for instance - does not provide a method called 
+		".toMap()", which org.json:json does.
+		
+		com.sap.cloud.security.xsuaa:token-client expects to see the org.json:json
+		variant - and particular makes use of org.json.JsonObject.toMap().
+		
+		However, a class is a highlander: There can only be one class being loaded
+		under a given name (for the same classloader - Promregator only has
+		one classloader in its entire configuration). So, it is important,
+		which of the two libraries is stated *first* in the classpath.
+		The classpath has the same order as the order of XML dependency 
+		declarations in your pom.xml.
+		See also https://github.com/SAP/cloud-security-xsuaa-integration/blob/1c133ee17b629b07d58a7aec512daf98b067c031/docs/Troubleshooting_JsonClasspathIssues.md
+		
+		That is why, the dependency declaration of com.sap.cloud.security.xsuaa:token-client
+		should be stated in the pom.xml before the dependency declaration of 
+		org.springframework.boot:spring-boot-starter-test takes place.
+		Note that the difference in scope does not have any effect in this
+		case (i.e. a wrong order will "only" break the execution of the
+		unit tests).
+		-->
+		<dependency>
+			<groupId>com.sap.cloud.security.xsuaa</groupId>
+			<artifactId>token-client</artifactId>
+			<version>2.11.1</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
@@ -191,6 +230,11 @@
 			<artifactId>httpclient</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+		</dependency>
+
 		<!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
@@ -260,8 +304,6 @@
 			<artifactId>guava</artifactId>
 			<version>${guava-version}</version>
 		</dependency>
-
-
 	</dependencies>
 
 	<dependencyManagement>

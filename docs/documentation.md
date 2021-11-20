@@ -33,7 +33,7 @@ The suggested approach is to create a configuration YAML file, such as `myconfig
 java -Dspring.config.location=file:/path/to/your/myconfig.yaml -jar promregator-x.y.z-SNAPSHOT.jar
 ```
 
-Here is an dummy example for such a configuration yaml file:
+Here is an dummy example for such a configuration yaml file when using basic authentication:
 ```yaml
 cf:
   api_host: api.cf.example.org
@@ -44,16 +44,48 @@ cf:
 
 promregator:
   authenticator:
-    type: OAuth2XSUAA
-    oauth2xsuaa:
+    type: oauth2xsuaaBasic
+    oauth2xsuaaBasic:
       tokenServiceURL: https://jwt.token.server.example.org/oauth/token
       client_id: myOAuth2ClientId
-    
+#     client_secret: <should be provided via environment variable PROMREGATOR_AUTHENTICATOR_OAUTH2XSUAABASIC_CLIENT_SECRET>
+
   targets:
     - orgName: myCfOrgName
       spaceName: mySpaceName
       applicationName: myApplication1
-      
+
+    - orgName: myOtherCfOrgName
+      spaceName: myOtherSpaceName
+      applicationName: myOtherApplication
+```
+
+Here is an dummy example for such a configuration yaml file when using certificate-based authentication:
+```yaml
+cf:
+  api_host: api.cf.example.org
+  username: myCFUserName
+  proxy:
+    host: 192.168.111.1
+    port: 8080
+
+promregator:
+  authenticator:
+    type: oauth2xsuaaCertificate
+    oauth2xsuaaCertificate:
+      tokenServiceCertURL: https://jwt.cert.token.server.example.org/oauth/token
+      client_id: myOAuth2ClientId
+      client_certificates: |
+          -----BEGIN CERTIFICATE-----
+          MyIFu...IxZ
+          -----END CERTIFICATE-----
+#     client_key: <should be provided via environment variable PROMREGATOR_AUTHENTICATOR_OAUTH2XSUAACERTIFICATE_CLIENT_KEY>
+
+  targets:
+    - orgName: myCfOrgName
+      spaceName: mySpaceName
+      applicationName: myApplication1
+
     - orgName: myOtherCfOrgName
       spaceName: myOtherSpaceName
       applicationName: myOtherApplication
