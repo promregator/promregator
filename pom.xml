@@ -64,7 +64,11 @@
 		  
 		  Further impact assessment especially on the second topic is needed
 		 -->
-		<cloudfoundry.client.version>4.16.0.RELEASE</cloudfoundry.client.version>
+
+		<!-- https://mvnrepository.com/artifact/org.cloudfoundry/cloudfoundry-client-reactor -->
+		<cloudfoundry.client.version>5.6.0.RELEASE</cloudfoundry.client.version>
+		<!-- see also https://github.com/cloudfoundry/cf-java-client -->
+		
 		<logback.contrib.version>0.1.5</logback.contrib.version>
 
 		<sonar.projectKey>promregator</sonar.projectKey>
