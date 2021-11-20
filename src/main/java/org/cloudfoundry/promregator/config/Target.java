@@ -142,6 +142,13 @@ public class Target {
 		return kubernetesAnnotations;
 	}
 
+	@SuppressWarnings("PMD.SimplifiedTernary")
+	/*
+	 * Applying the rule does not simplify the statement, but makes it even
+	 * harder to read.
+	 * Additionally, implicit conversion of hull type requires, which then is 
+	 * becoming non-obvious.
+	 */
 	public void setKubernetesAnnotations(Boolean kubernetesAnnotations) {
 		this.kubernetesAnnotations = kubernetesAnnotations != null ? kubernetesAnnotations : false;
 	}
