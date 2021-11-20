@@ -34,8 +34,14 @@ public class PromregatorHttpClientFactory implements com.sap.cloud.security.clie
 	public CloseableHttpClient createClient(ClientIdentity clientIdentity) throws HttpClientException {
 
 		log.info("Using '{}' http client factory.", getClass().getSimpleName());
+		
 		HttpClientBuilder httpClientBuilder = HttpClients.custom();
+		/*
+		 * For why this is necessary and should not be harmful in practice, refer
+		 * to https://github.com/promregator/promregator/pull/206#discussion_r752164423
+		 */
 		httpClientBuilder.setDefaultHeaders(Lists.newArrayList(new BasicHeader(HttpHeaders.CONNECTION, "close")));
+		
 		if (clientIdentity != null && clientIdentity.isCertificateBased()) {
 			log.debug("Setting up HTTPS client with: certificate: {}\n", clientIdentity.getCertificate());
 			SSLContext sslContext;
