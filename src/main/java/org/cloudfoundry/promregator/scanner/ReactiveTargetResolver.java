@@ -1,11 +1,12 @@
 package org.cloudfoundry.promregator.scanner;
 
+import static org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl.INVALID_APPLICATIONS_RESPONSE;
+
 import java.util.List;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
@@ -22,8 +23,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
-
-import static org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl.INVALID_APPLICATIONS_RESPONSE;
 
 public class ReactiveTargetResolver implements TargetResolver {
 	private static final Logger log = LoggerFactory.getLogger(ReactiveTargetResolver.class);
