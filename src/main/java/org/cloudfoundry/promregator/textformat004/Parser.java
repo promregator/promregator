@@ -33,7 +33,22 @@ public class Parser {
 	private static final Pattern PATTERN_COMMENT = Pattern.compile("^#");
 	private static final Pattern PATTERN_EMPTYLINE = Pattern.compile("^[ \t]*$");
 	
-	private static final Pattern PATTERN_PARSE_HELP = Pattern.compile("^#[ \t]+HELP[ \t]+([a-zA-Z0-9:_\\\"]+)[ \\t]+(.*)$");
+	private static final Pattern PATTERN_PARSE_HELP = Pattern.compile("^#[ \t]+HELP[ \t]+([a-zA-Z0-9:_\\\"]+)[ \\t]+(.*+)$");
+	/*
+	 * Note: Originally this regex had been
+	 * 
+	 * ^#[ \t]+HELP[ \t]+([a-zA-Z0-9:_\\\"]+)[ \\t]+(.*)$
+	 * 
+	 * However this (.*)$ at the end poses a security risk due to exponential backtracking.
+	 * The idea is to solve this issue by making the last star possessive.
+	 * For a detailed discussion how this works, see https://www.regular-expressions.info/possessive.html
+	 * 
+	 * (.*)$ therefore becomes (.*+)$
+	 * 
+	 * Note that no backtracking is needed as . matches any char and the only 
+	 * event that still may occur at the end is the end of the string.
+	 */
+	
 	private static final Pattern PATTERN_PARSE_TYPE = Pattern.compile("^#[ \t]+TYPE[ \t]+([a-zA-Z0-9:_\\\"]+)[ \\t]+([a-zA-Z]*)$");
 	
 	public Parser(String textFormat004data) {
