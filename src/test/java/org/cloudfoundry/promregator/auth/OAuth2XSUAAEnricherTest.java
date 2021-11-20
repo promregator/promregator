@@ -11,8 +11,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.config.OAuth2XSUAABasicAuthenticationConfiguration;
 import org.cloudfoundry.promregator.mockServer.AuthenticationMockServer;
-import org.cloudfoundry.promregator.mockServer.DefaultOAuthHttpHandler;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,29 +53,30 @@ class OAuth2XSUAAEnricherTest {
 	}
 
 	@Test
-	void testAppropriateJWTCall() {
+	void testAppropriateJWTCall() throws IOException {
 		this.ams.getOauthTokenHandler().setStatus(200);
 		this.ams.getOauthTokenHandler().setResponse(this.oAuthServer200Response);
-
-		OAuth2XSUAAEnricher subject = new OAuth2XSUAAEnricher(getConfig());
 
 		HttpGet mockGet = Mockito.mock(HttpGet.class);
 		Mockito.when(mockGet.getURI()).thenAnswer((Answer<URI>) invocation -> new URI("http://localhost/target"));
 
-		subject.enrichWithAuthentication(mockGet);
+		try (OAuth2XSUAAEnricher subject = new OAuth2XSUAAEnricher(getConfig())) {
+			subject.enrichWithAuthentication(mockGet);
+		}
 
 		verify(mockGet).setHeader("Authorization", "Bearer someAccessToken");
 	}
 
 	@Test
-	void testBadJWTCall() {
+	void testBadJWTCall() throws IOException {
 		this.ams.getOauthTokenHandler().setStatus(401);
 		this.ams.getOauthTokenHandler().setResponse(this.oAuthServer401Response);
 
-		OAuth2XSUAAEnricher subject = new OAuth2XSUAAEnricher(getConfig());
-
 		HttpGet get = new HttpGet();
-		subject.enrichWithAuthentication(get);
+
+		try (OAuth2XSUAAEnricher subject = new OAuth2XSUAAEnricher(getConfig())) {
+			subject.enrichWithAuthentication(get);
+		}
 
 		// No header has been added (especially no Authorization header).
 		// And we did not get an exception
@@ -85,11 +84,9 @@ class OAuth2XSUAAEnricherTest {
 	}
 
 	@Test
-	void testJWTCallIsBuffered() {
+	void testJWTCallIsBuffered() throws IOException {
 		this.ams.getOauthTokenHandler().setStatus(200);
 		this.ams.getOauthTokenHandler().setResponse(this.oAuthServer200Response);
-
-		OAuth2XSUAAEnricher subject = new OAuth2XSUAAEnricher(getConfig());
 
 		HttpGet mockGet = Mockito.mock(HttpGet.class);
 		Mockito.when(mockGet.getURI()).thenAnswer(new Answer<URI>() {
@@ -101,11 +98,13 @@ class OAuth2XSUAAEnricherTest {
 
 		});
 
-		// first call will trigger OAuth request
-		subject.enrichWithAuthentication(mockGet);
-
-		// second one should not
-		subject.enrichWithAuthentication(mockGet);
+		try (OAuth2XSUAAEnricher subject = new OAuth2XSUAAEnricher(getConfig())) {
+			// first call will trigger OAuth request
+			subject.enrichWithAuthentication(mockGet);
+	
+			// second one should not
+			subject.enrichWithAuthentication(mockGet);
+		}
 
 		assertThat(this.ams.getOauthTokenHandler().getCounterCalled()).isEqualTo(1);
 	}
@@ -118,13 +117,12 @@ class OAuth2XSUAAEnricherTest {
 
 		ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
 
-		OAuth2XSUAAEnricher subject = new OAuth2XSUAAEnricher(getConfig("aScope anotherScope"), tokenClientMock);
-
 		HttpGet get = new HttpGet();
-
 		assertThat(get.getAllHeaders()).isEmpty();
-
-		subject.enrichWithAuthentication(get);
+		
+		try (OAuth2XSUAAEnricher subject = new OAuth2XSUAAEnricher(getConfig("aScope anotherScope"), tokenClientMock)) {
+			subject.enrichWithAuthentication(get);
+		}
 
 		Mockito.verify(tokenClientMock).scopes(captor.capture());
 		assertThat(captor.getAllValues()).contains("aScope", "anotherScope");
@@ -138,11 +136,11 @@ class OAuth2XSUAAEnricherTest {
 		ClientCredentialsTokenFlow tokenClientMock = Mockito.mock(ClientCredentialsTokenFlow.class);
 		Mockito.when(tokenClientMock.execute()).thenThrow(new TokenFlowException("ups, something went wrong"));
 
-		OAuth2XSUAAEnricher subject = new OAuth2XSUAAEnricher(getConfig(), tokenClientMock);
-
 		HttpGet get = new HttpGet();
 
-		subject.enrichWithAuthentication(get);
+		try (OAuth2XSUAAEnricher subject = new OAuth2XSUAAEnricher(getConfig(), tokenClientMock)) {
+			subject.enrichWithAuthentication(get);
+		}
 
 		assertThat(get.getAllHeaders()).isEmpty();
 	}
@@ -153,11 +151,11 @@ class OAuth2XSUAAEnricherTest {
 		OAuth2TokenResponse tokenResponse = new OAuth2TokenResponse("", 42l, "");
 		Mockito.when(tokenClientMock.execute()).thenReturn(tokenResponse);
 
-		OAuth2XSUAAEnricher subject = new OAuth2XSUAAEnricher(getConfig(), tokenClientMock);
-
 		HttpGet get = new HttpGet();
 
-		subject.enrichWithAuthentication(get);
+		try (OAuth2XSUAAEnricher subject = new OAuth2XSUAAEnricher(getConfig(), tokenClientMock)) {
+			subject.enrichWithAuthentication(get);
+		}
 
 		assertThat(get.getAllHeaders()).isEmpty();
 	}
