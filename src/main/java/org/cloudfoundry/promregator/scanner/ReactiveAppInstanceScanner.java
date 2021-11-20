@@ -34,9 +34,6 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	private static final String INVALID_SPACE_ID = "***invalid***";
 	private static final Map<String, SpaceApplicationSummary> INVALID_SUMMARY = new HashMap<>();	
 
-	@Value("${cf.cache.timeout.application:300}")
-	private int timeoutCacheApplicationLevel;
-
 	@Value("${promregator.defaultInternalRoutePort:8080}")
 	private int defaultInternalRoutePort;
 
@@ -309,7 +306,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			List<Instance> instances = new ArrayList<>(v.getNumberOfInstances());
 			for (int i = 0; i < v.numberOfInstances; i++) {
 				Instance inst = new Instance(v.getTarget(), String.format("%s:%d", v.getApplicationId(), i),
-						v.getAccessURL(), v.isInternal());				
+						v.getAccessURL(), v.isInternal());
 
 				if (v.isInternal()) {
 					inst.setAccessUrl(this.formatInternalAccessURL(v.getAccessURL(), v.getTarget().getPath(),
