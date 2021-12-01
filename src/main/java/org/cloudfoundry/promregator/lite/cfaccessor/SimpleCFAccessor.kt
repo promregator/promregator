@@ -281,7 +281,7 @@ class SimpleCFAccessor(
             error("V3 API is not supported on your foundation.")
         }
 
-        return cfQueryV3<OrganizationResourceV3, ListOrganizationsResponseV3, ListOrganizationsRequestV3>(api, ALL_APPS_IN_SPACE) {
+        return cfQueryV3<OrganizationResourceV3, ListOrganizationsResponseV3, ListOrganizationsRequestV3>(api, ORG) {
             request { pageNumber, resultsPerPage ->
                 ListOrganizationsRequestV3.builder()
                     .perPage(resultsPerPage)
@@ -297,7 +297,7 @@ class SimpleCFAccessor(
             error("V3 API is not supported on your foundation.")
         }
 
-        return cfQueryV3<SpaceResourceV3, ListSpacesResponseV3, ListSpacesRequestV3>(api, ALL_APPS_IN_SPACE) {
+        return cfQueryV3<SpaceResourceV3, ListSpacesResponseV3, ListSpacesRequestV3>(api, SPACE_IN_ORG) {
             request { pageNumber, resultsPerPage ->
                 ListSpacesRequestV3.builder()
                         .organizationId(orgId)
@@ -331,7 +331,7 @@ class SimpleCFAccessor(
             error("V3 API is not supported on your foundation.")
         }
 
-        return cfQueryV3<RouteResource, ListApplicationRoutesResponse, ListApplicationRoutesRequest>(api, ALL_APPS_IN_SPACE) {
+        return cfQueryV3<RouteResource, ListApplicationRoutesResponse, ListApplicationRoutesRequest>(api, OTHER) {
             request { pageNumber, resultsPerPage ->
                 ListApplicationRoutesRequest.builder()
                         .applicationId(appId)
