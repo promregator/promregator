@@ -16,6 +16,7 @@ import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
 import org.cloudfoundry.client.v2.routes.Route;
+import org.apache.logging.log4j.util.Strings;
 import org.cloudfoundry.client.v2.domains.DomainResource;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.slf4j.Logger;
@@ -193,7 +194,6 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			v.setTarget(target);
 			v.setApplicationId(target.getApplicationId());
 			v.setInternalRoutePort(target.getOriginalTarget().getInternalRoutePort());
-
 			return v;
 		});
 
@@ -279,13 +279,16 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				return Mono.empty();
 			}
 
+			if (useExcplicitAccessUrl(v))
+			{
+			  v.setInternal(true);
+			}
 			// we should only run this if we found a domain in the above step
 			// this is to make sure we have compatibility with existing behaviour
-			if( !v.getDomainId().isEmpty()) {
+			else if( !v.getDomainId().isEmpty()) {
 				try {
 					DomainResource domain = domains.stream().filter(r -> r.getMetadata().getId().equals(v.getDomainId()))
 						.findFirst().get();
-
 					v.setInternal(domain.getEntity().getInternal());
 				} catch (Exception e) {
 					log.warn(String.format("unable to find matching domain for the domain with id %s", v.getDomainId()));
@@ -308,7 +311,12 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				Instance inst = new Instance(v.getTarget(), String.format("%s:%d", v.getApplicationId(), i),
 						v.getAccessURL(), v.isInternal());
 
-				if (v.isInternal()) {
+				if(useExcplicitAccessUrl(v))
+				{
+					inst.setAccessUrl(this.formatAccessURL(v.getTarget().getProtocol(), v.getTarget().getOriginalTarget().getExplicitAccessUrl(),
+							v.getTarget().getPath()));
+				}
+				else if (v.isInternal()) {
 					inst.setAccessUrl(this.formatInternalAccessURL(v.getAccessURL(), v.getTarget().getPath(),
 							v.getInternalRoutePort(), i));
 				} else {
@@ -338,6 +346,10 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		}
 
 		return result;
+	}
+
+	private boolean useExcplicitAccessUrl(OSAVector v) {
+		return Strings.isNotEmpty(v.getTarget().getOriginalTarget().getExplicitAccessUrl());
 	}
 
 	private Mono<String> getOrgId(String orgNameString) {
