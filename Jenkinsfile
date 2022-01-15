@@ -298,10 +298,14 @@ timestamps {
 				// determine jar file hash values
 				sh """
 					cd target
-					cat >../promregator-${currentVersion}.hashsums <<EOT
-commit(promregator.git)=`git rev-parse HEAD`
-`openssl dgst -sha256 -hex promregator-${currentVersion}.jar`
-`openssl dgst -md5 -hex promregator-${currentVersion}.jar`
+					cat >../promregator-${currentVersion}.hashsums.json <<EOT
+{
+	"commit" : "`git rev-parse HEAD`",
+	"jar": {
+		"sha256": "`../tools/hash.sh -sha256 promregator-${currentVersion}.jar`",
+		"md5": "`../tools/hash.sh -md5 promregator-${currentVersion}.jar`"
+	}
+}
 EOT
 				"""
 			
@@ -322,10 +326,17 @@ EOT
 						docker inspect --format='{{.Id}}' ${imageName}
 					"""
 					sh """
-					cat >>promregator-${currentVersion}.hashsums <<EOT
-Docker Image Repo Digest: ${dockerImageIdentifier}
-Docker Image Id: ${dockerImageIdentifierCanonical}
+					cat >promregator-${currentVersion}-docker.hashsums.json <<EOT
+{
+	"docker-image" : {
+		"repo-digest": "${dockerImageIdentifier}",
+		"image-digest": "${dockerImageIdentifierCanonical}"
+	}
+}
 EOT
+					mv promregator-${currentVersion}.hashsums.json promregator-${currentVersion}-jar.hashsums.json
+					jq -s '.[0] * .[1]' promregator-${currentVersion}-jar.hashsums.json promregator-${currentVersion}-docker.hashsums.json > promregator-${currentVersion}.hashsums.json
+					rm -f promregator-${currentVersion}-jar.hashsums.json promregator-${currentVersion}-docker.hashsums.json
 					"""
 				}
 				
@@ -342,22 +353,20 @@ EOT
 				
 				runWithGPG() {
 					sh """
-						gpg --clearsign --personal-digest-preferences SHA512,SHA384,SHA256,SHA224,SHA1 promregator-${currentVersion}.hashsums
+						gpg --sign --personal-digest-preferences SHA512,SHA384,SHA256,SHA224,SHA1 promregator-${currentVersion}.hashsums.json
 					"""
 				}
 				
 				sh """
-					mv promregator-${currentVersion}.hashsums.asc promregator-${currentVersion}.hashsums
-					cat promregator-${currentVersion}.hashsums
+					cat promregator-${currentVersion}.hashsums.json
 				"""
 				
-				archiveArtifacts "promregator-${currentVersion}.hashsums"
+				archiveArtifacts "promregator-${currentVersion}.hashsums.json"
+				archiveArtifacts "promregator-${currentVersion}.hashsums.json.asc"
 				
 				archiveArtifacts 'target/promregator*.jar'
 				
 			}
 		}
-		
-		
 	}
 }
