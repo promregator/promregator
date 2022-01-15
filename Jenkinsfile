@@ -362,7 +362,7 @@ EOT
 				"""
 				
 				archiveArtifacts "promregator-${currentVersion}.hashsums.json"
-				archiveArtifacts "promregator-${currentVersion}.hashsums.json.asc"
+				archiveArtifacts "promregator-${currentVersion}.hashsums.json.gpg"
 				
 				archiveArtifacts 'target/promregator*.jar'
 				
