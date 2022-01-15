@@ -337,16 +337,6 @@
 
 	<suppress>
 		<notes><![CDATA[
-	   file name: log4j-api-2.17.0.jar
-	   SecScan tools misdetects this object via CPE as being vulnerable; but only log4j-core is vulnerable.
-	   ]]></notes>
-		<packageUrl regex="true">^pkg:maven/org\.apache\.logging\.log4j/log4j\-api@.*$
-		</packageUrl>
-		<cve>CVE-2021-44832</cve>
-	</suppress>
-
-	<suppress>
-		<notes><![CDATA[
 	   file name: netty-incubator-codec-classes-quic-0.0.24.Final.jar
 	   Misdetected as "general netty", but is a specific vector
 	   ]]></notes>
@@ -371,4 +361,13 @@
 	   <filePath regex="true">.*/wire-runtime-2\.2\.0\.jar</filePath>
 	   <cpe>cpe:/a:wire:wire</cpe>
 	</suppress>
+	
+	<suppress>
+		<notes><![CDATA[
+		   file name: log4j-to-slf4j-2.17.0.jar
+		   SecScan tools misdetects this object via CPE as being vulnerable; but only log4j-core is vulnerable.
+		   ]]></notes>
+		<filePath regex="true">.*/log4j-to-slf4j-2\.17\.0\.jar</filePath>
+		<cpe>cpe:/a:apache:log4j</cpe>
+</suppress>
 </suppressions>
