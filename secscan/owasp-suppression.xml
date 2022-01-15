@@ -343,7 +343,7 @@
 	   file name: netty-incubator-codec-classes-quic-0.0.24.Final.jar
 	   Misdetected as "general netty", but is a specific vector
 	   ]]></notes>
-		<filePath regex="true">.*/netty-incubator-codec-native-quic-0\.0\.24\.Final-linux-x86_64\.jar</filePath>
+		<filePath regex="true">.*/netty-incubator-codec-classes-quic-0\.0\.24\.Final\.jar</filePath>
 		<cpe>cpe:/a:netty:netty</cpe>
 	</suppress>
 
@@ -372,5 +372,14 @@
 		   ]]></notes>
 		<filePath regex="true">.*/log4j-to-slf4j-2\.17\.0\.jar</filePath>
 		<cpe>cpe:/a:apache:log4j</cpe>
-</suppress>
+	</suppress>
+	
+	<suppress>
+		<notes><![CDATA[
+		   file name: log4j-api-2.17.0.jar
+		   SecScan tools misdetects this object via CPE as being vulnerable; but only log4j-core is vulnerable.
+		   ]]></notes>
+		<filePath regex="true">.*/log4j-api-2\.17\.0\.jar</filePath>
+		<cpe>cpe:/a:apache:log4j</cpe>
+	</suppress>
 </suppressions>
