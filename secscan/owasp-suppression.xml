@@ -346,6 +346,14 @@
 		<filePath regex="true">.*/netty-incubator-codec-classes-quic-0\.0\.24\.Final\.jar</filePath>
 		<cpe>cpe:/a:netty:netty</cpe>
 	</suppress>
+	
+	<suppress>
+		<notes><![CDATA[
+	   Misdetected as "general netty", but is a specific vector
+	   ]]></notes>
+		<filePath regex="true">.*/netty-incubator-codec-native-quic-0\.0\.24\.Final-linux-x86_64\.jar</filePath>
+		<cpe>cpe:/a:netty:netty</cpe>
+	</suppress>
 
 	<suppress>
 		<notes><![CDATA[
