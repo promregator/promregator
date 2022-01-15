@@ -2,6 +2,9 @@
 <suppressions
 	xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
 
+	<!--  Note: on the format of this file, please read https://jeremylong.github.io/DependencyCheck/general/suppression.html
+	carefully! -->
+
 	<suppress>
 		<notes><![CDATA[
       file name: spring-cloud-cloudfoundry-connector-2.0.6.RELEASE.jar
