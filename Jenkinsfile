@@ -44,10 +44,10 @@ def springCloudCliPasswordTest(params) {
 
 	dir("../springCloudTest") {
 		// For most recent version look at https://repo.spring.io/release/org/springframework/boot/spring-boot-cli/
-		def springBootCLIVersion = "2.5.7"
+		def springBootCLIVersion = "2.6.2"
 		
 		// For most recent version see also https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-cli
-		def springCloudCLIVersion = "2.2.4.RELEASE"
+		def springCloudCLIVersion = "3.1.0"
 	
 		sh """
 			wget -nv https://repo.spring.io/release/org/springframework/boot/spring-boot-cli/${springBootCLIVersion}/spring-boot-cli-${springBootCLIVersion}-bin.tar.gz
@@ -185,7 +185,7 @@ timestamps {
 			
 			stage("SecDependency Scan") {
 				sh """
-					mvn -B -DsuppressionFiles=./secscan/owasp-suppression.xml org.owasp:dependency-check-maven:6.5.0:check
+					mvn -B -DsuppressionFiles=./secscan/owasp-suppression.xml org.owasp:dependency-check-maven:6.5.3:check
 				"""
 				
 				archiveArtifacts "target/dependency-check-report.html"
@@ -298,10 +298,14 @@ timestamps {
 				// determine jar file hash values
 				sh """
 					cd target
-					cat >../promregator-${currentVersion}.hashsums <<EOT
-commit(promregator.git)=`git rev-parse HEAD`
-`openssl dgst -sha256 -hex promregator-${currentVersion}.jar`
-`openssl dgst -md5 -hex promregator-${currentVersion}.jar`
+					cat >../promregator-${currentVersion}.hashsums.json <<EOT
+{
+	"commit" : "`git rev-parse HEAD`",
+	"jar": {
+		"sha256": "`../tools/hash.sh -sha256 promregator-${currentVersion}.jar`",
+		"md5": "`../tools/hash.sh -md5 promregator-${currentVersion}.jar`"
+	}
+}
 EOT
 				"""
 			
@@ -322,10 +326,17 @@ EOT
 						docker inspect --format='{{.Id}}' ${imageName}
 					"""
 					sh """
-					cat >>promregator-${currentVersion}.hashsums <<EOT
-Docker Image Repo Digest: ${dockerImageIdentifier}
-Docker Image Id: ${dockerImageIdentifierCanonical}
+					cat >promregator-${currentVersion}-docker.hashsums.json <<EOT
+{
+	"docker-image" : {
+		"repo-digest": "${dockerImageIdentifier}",
+		"image-digest": "${dockerImageIdentifierCanonical}"
+	}
+}
 EOT
+					mv promregator-${currentVersion}.hashsums.json promregator-${currentVersion}-jar.hashsums.json
+					jq -s '.[0] * .[1]' promregator-${currentVersion}-jar.hashsums.json promregator-${currentVersion}-docker.hashsums.json > promregator-${currentVersion}.hashsums.json
+					rm -f promregator-${currentVersion}-jar.hashsums.json promregator-${currentVersion}-docker.hashsums.json
 					"""
 				}
 				
@@ -342,22 +353,20 @@ EOT
 				
 				runWithGPG() {
 					sh """
-						gpg --clearsign --personal-digest-preferences SHA512,SHA384,SHA256,SHA224,SHA1 promregator-${currentVersion}.hashsums
+						gpg --sign --personal-digest-preferences SHA512,SHA384,SHA256,SHA224,SHA1 promregator-${currentVersion}.hashsums.json
 					"""
 				}
 				
 				sh """
-					mv promregator-${currentVersion}.hashsums.asc promregator-${currentVersion}.hashsums
-					cat promregator-${currentVersion}.hashsums
+					cat promregator-${currentVersion}.hashsums.json
 				"""
 				
-				archiveArtifacts "promregator-${currentVersion}.hashsums"
+				archiveArtifacts "promregator-${currentVersion}.hashsums.json"
+				archiveArtifacts "promregator-${currentVersion}.hashsums.json.gpg"
 				
 				archiveArtifacts 'target/promregator*.jar'
 				
 			}
 		}
-		
-		
 	}
 }
