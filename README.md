@@ -1,6 +1,5 @@
-<p style="font-size:large">Promregator is looking for <a href="https://github.com/promregator/promregator/wiki/Supporters-Wanted!">contributors/supporters</a>!</p>
+<p style="font-size:large">Statement on <a href="https://github.com/promregator/promregator/wiki/Statement-on-Promregator-and-CVE-2021-44228">CVE-2021-44228</a>!</p>
 
-<p style="font-size:large"><b>Attention Users of Promregator!</b> Influence development of Promregator by answering our <a href="https://github.com/promregator/promregator/labels/Polls">polls</a>!</p>
 
 
 # Status
@@ -46,7 +45,7 @@ Here is the list of major features provided by Promregator:
 * Fetching of the **Prometheus Metric endpoints** of multiple app instances is performed in **parallel** (number of concurrent threads used for retrieving metrics can be configured).
 * **Support of Authentication Schemes** at the CF app's endpoint. The following Authentication schemes are currently available:
   - Basic HTTP Authentication (as of [RFC2617](https://www.ietf.org/rfc/rfc2617.txt))
-  - [JWT](https://jwt.io/)-based authentication (with retrieval of JWT from [OAuth2](https://oauth.net/2/) server, JWT is cached)
+  - [JWT](https://jwt.io/)-based authentication (with retrieval of JWT from [OAuth2](https://oauth.net/2/) server, JWT is cached), (since *>= 0.10.0* both support for basic authentication against the OAuth2 authentication server and certificate-based authentication)
   - Null Authentication (not recommended for productive environments!)
   
   The available authentication schemes are easily extensible.

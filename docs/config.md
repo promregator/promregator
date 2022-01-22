@@ -653,7 +653,7 @@ Specifies the password which is being used for authenticating the call to the Pr
 
 *WARNING!* 
 Due to security reasons, it is *neither* recommended to store this value in your YAML file, nor to put it into the command line when starting Promregator.
-Instead it is suggested to set the identically named environment variable `PROMREGATOR_AUTHENTICATOR_BASIC_PASSWORD` when starting the application.
+Instead it is suggested to set the corresponding environment variable `PROMREGATOR_AUTHENTICATOR_BASIC_PASSWORD` when starting the application.
 
 Example:
 
@@ -662,28 +662,77 @@ export PROMREGATOR_AUTHENTICATOR_BASIC_PASSWORD=myPassword
 java -Dspring.config.location=file:/path/to/your/myconfig.yaml -jar promregator-0.0.1-SNAPSHOT.jar
 ```
 
-#### Option "promregator.authenticator.oauth2xsuaa.tokenServiceURL" (mandatory, if using promregator.authenticator.type=OAuth2XSUAA)
-Specifies the URL of the OAuth2 endpoint, which contains the token service of your authorization server in case of global authentication. Typically, this is the endpoint with the path `/oauth/token`, as Promregator will try to perform to establish a ["Client Credentials"-based authentication](https://www.digitalocean.com/community/tutorials/an-introduction-to-oauth-2#grant-type-client-credentials).
+#### Option "promregator.authenticator.oauth2xsuaa.tokenServiceURL" (mandatory, if using promregator.authenticator.type=OAuth2XSUAA, *deprecated*)
+Specifies the URL of the OAuth2 endpoint, which contains the token service of your authorization server in case of global authentication. Typically, this is the endpoint with the path `/oauth/token`, as Promregator will try to perform to establish a ["Client Credentials"-based authentication](https://www.digitalocean.com/community/tutorials/an-introduction-to-oauth-2#grant-type-client-credentials). Deprecated, please use `promregator.authenticator.oauth2xsuaaBasic.tokenServiceURL` instead.
 
-#### Option "promregator.authenticator.oauth2xsuaa.client_id" (mandatory, if using promregator.authenticator.type=OAuth2XSUAA)
-Specifies the client identifier (a.k.a. "client_id") which shall be used during the OAuth2 request based on the Grant Type Client Credentials flow in case of global authentication.
+#### Option "promregator.authenticator.oauth2xsuaa.client_id" (mandatory, if using promregator.authenticator.type=OAuth2XSUAA, *deprecated*)
+Specifies the client identifier (a.k.a. "client_id") which shall be used during the OAuth2 request based on the Grant Type Client Credentials flow in case of global authentication. Deprecated, please use `promregator.authenticator.oauth2xsuaaBasic.client_id` instead.
 
-#### Option "promregator.authenticator.oauth2xsuaa.client_secret" (mandatory, if using promregator.authenticator.type=OAuth2XSUAA)
-Specifies the client secret (a.k.a. "client_secret") which shall be used during the OAuth2 request based on the Grant Type Client Credentials flow in case of global authentication.
+#### Option "promregator.authenticator.oauth2xsuaa.client_secret" (mandatory, if using promregator.authenticator.type=OAuth2XSUAA, *deprecated*)
+Specifies the client secret (a.k.a. "client_secret") which shall be used during the OAuth2 request based on the Grant Type Client Credentials flow in case of global authentication. Deprecated, please use `promregator.authenticator.oauth2xsuaaBasic.client_secret` instead.
 
-*WARNING!* 
+*WARNING!*
 Due to security reasons, it is *neither* recommended to store this value in your YAML file, nor to put it into the command line when starting Promregator.
-Instead it is suggested to set the identically named environment variable `promregator.authenticator.oauth2xsuaa.client_secret` when starting the application.
+Instead it is suggested to set the corresponding environment variables `PROMREGATOR_AUTHENTICATOR_OAUTH2XSUAA_CLIENT_SECRET` when starting the application.
 
 Example:
 
 ```bash
-export promregator.authenticator.oauth2xsuaa.client_secret=myClientSecret
+export PROMREGATOR_AUTHENTICATOR_OAUTH2XSUAA_CLIENT_SECRET=myClientSecret
 java -Dspring.config.location=file:/path/to/your/myconfig.yaml -jar promregator-0.0.1-SNAPSHOT.jar
 ```
 
-#### Option "promregator.authenticator.oauth2xsuaa.scopes" (optional, only available if using promregator.authenticator.type=OAuth2XSUAA)
-Specifies the set of scopes/authorities (format itself is a comma-separated string of explicit scopes, see also https://www.oauth.com/oauth2-servers/access-tokens/client-credentials/), which shall be requested from the OAuth2 server when using the Grant Type Client Credentials flow in case of global authentication. 
+#### Option "promregator.authenticator.oauth2xsuaa.scopes" (optional, only available if using promregator.authenticator.type=OAuth2XSUAA, *deprecated*)
+Specifies the set of scopes/authorities (format itself is a comma-separated string of explicit scopes, see also https://www.oauth.com/oauth2-servers/access-tokens/client-credentials/), which shall be requested from the OAuth2 server when using the Grant Type Client Credentials flow in case of global authentication.  Deprecated, please use `promregator.authenticator.oauth2xsuaaBasic.scopes` instead.
+
+#### Option "promregator.authenticator.oauth2xsuaaBasic.tokenServiceURL" (mandatory, if using promregator.authenticator.type=OAuth2XSUAABasic)
+Specifies the URL of the OAuth2 endpoint, which contains the token service of your authorization server in case of global authentication. Typically, this is the endpoint with the path `/oauth/token`, as Promregator will try to perform to establish a ["Client Credentials"-based authentication](https://www.digitalocean.com/community/tutorials/an-introduction-to-oauth-2#grant-type-client-credentials).
+
+#### Option "promregator.authenticator.oauth2xsuaaBasic.client_id" (mandatory, if using promregator.authenticator.type=OAuth2XSUAABasic)
+Specifies the client identifier (a.k.a. "client_id") which shall be used during the OAuth2 request based on the Grant Type Client Credentials flow in case of global authentication.
+
+#### Option "promregator.authenticator.oauth2xsuaaBasic.client_secret" (mandatory, if using promregator.authenticator.type=OAuth2XSUAABasic)
+Specifies the client secret (a.k.a. "client_secret") which shall be used during the OAuth2 request based on the Grant Type Client Credentials flow in case of global authentication.
+
+*WARNING!*
+Due to security reasons, it is *neither* recommended to store this value in your YAML file, nor to put it into the command line when starting Promregator.
+Instead it is suggested to set the corresponding environment variables `PROMREGATOR_AUTHENTICATOR_OAUTH2XSUAA_BASIC_CLIENT_SECRET` when starting the application.
+
+Example:
+
+```bash
+export PROMREGATOR_AUTHENTICATOR_OAUTH2XSUAA_BASIC_CLIENT_SECRET=myClientSecret
+java -Dspring.config.location=file:/path/to/your/myconfig.yaml -jar promregator-0.0.1-SNAPSHOT.jar
+```
+
+#### Option "promregator.authenticator.oauth2xsuaaBasic.scopes" (optional, only available if using promregator.authenticator.type=OAuth2XSUAABasic)
+Specifies the set of scopes/authorities (format itself is a comma-separated string of explicit scopes, see also https://www.oauth.com/oauth2-servers/access-tokens/client-credentials/), which shall be requested from the OAuth2 server when using the Grant Type Client Credentials flow in case of global authentication.
+
+#### Option "promregator.authenticator.oauth2xsuaaCertificate.tokenServiceCertURL" (mandatory for if using promregator.authenticator.type=OAuth2XSUAACertificate)
+Specifies the URL of the OAuth2 endpoint for certificate-based authentication, which contains the token service of your authorization server in case of global authentication. Typically, this is the endpoint with the path `/oauth/token`, as Promregator will try to perform to establish a ["Client Credentials"-based authentication](https://www.digitalocean.com/community/tutorials/an-introduction-to-oauth-2#grant-type-client-credentials). Note that this attribute is called `tokenServiceCertURL` and not `tokenServiceURL`!
+
+#### Option "promregator.authenticator.oauth2xsuaaCertificate.client_id" (mandatory, if using promregator.authenticator.type=OAuth2XSUAACertificate)
+Specifies the client identifier (a.k.a. "client_id") which shall be used during the OAuth2 request based on the Grant Type Client Credentials flow in case of global authentication.
+
+#### Option "promregator.authenticator.oauth2xsuaaCertificate.client_certificates" (mandatory if using promregator.authenticator.type=OAuth2XSUAACertificate)
+Specifies the certificate chain which shall be used during the OAuth2 request.
+
+#### Option "promregator.authenticator.oauth2xsuaaCertificate.client_key" (mandatory, if using promregator.authenticator.type=OAuth2XSUAACertificate)
+Specifies the private key which shall be used during the OAuth2 request.
+
+*WARNING!* 
+Due to security reasons, it is *neither* recommended to store this value in your YAML file, nor to put it into the command line when starting Promregator.
+Instead it is suggested to set the corresponding environment variables `PROMREGATOR_AUTHENTICATOR_OAUTH2XSUAA_CERTIFICATE_CLIENT_KEY` when starting the application.
+
+Example:
+
+```bash
+export PROMREGATOR_AUTHENTICATOR_OAUTH2XSUAA_CERTIFICATE_CLIENT_KEY=myClientKey
+java -Dspring.config.location=file:/path/to/your/myconfig.yaml -jar promregator-0.0.1-SNAPSHOT.jar
+```
+
+#### Option "promregator.authenticator.oauth2xsuaaCertificates.scopes" (optional, only available if using promregator.authenticator.type=OAuth2XSUAACertificate)
+Specifies the set of scopes/authorities (format itself is a comma-separated string of explicit scopes, see also https://www.oauth.com/oauth2-servers/access-tokens/client-credentials/), which shall be requested from the OAuth2 server when using the Grant Type Client Credentials flow in case of global authentication.
 
 ### Subgroup "promregator.targetAuthenticators[]"
 Configures the way how authentication shall happen between Promregator and the targets configured above (**outbound** authentication). Mind the difference to the settings provided in `promregator.authentication`!

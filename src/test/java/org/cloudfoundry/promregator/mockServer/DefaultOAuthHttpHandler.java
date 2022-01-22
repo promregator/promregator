@@ -17,6 +17,7 @@ import com.sun.net.httpserver.HttpHandler;
 public class DefaultOAuthHttpHandler implements HttpHandler {
 	private int counterCalled = 0;
 	
+	private int status = 200;
 	private String response = "";
 
 	
@@ -30,7 +31,7 @@ public class DefaultOAuthHttpHandler implements HttpHandler {
 		URI requestedUri = he.getRequestURI();
 
 		Assertions.assertEquals("/oauth/token", requestedUri.getPath());
-		Assertions.assertEquals("grant_type=client_credentials", requestedUri.getRawQuery());
+
 		Assertions.assertEquals("POST", he.getRequestMethod());
 
 		// check the body
@@ -38,21 +39,29 @@ public class DefaultOAuthHttpHandler implements HttpHandler {
 		BufferedReader br = new BufferedReader(isr);
 		String query = br.readLine();
 
-		Assertions.assertEquals("response_type=token", query);
-		
-		// check the credentials
-		String authValue = he.getRequestHeaders().getFirst("Authorization");
-		Assertions.assertEquals("Basic Y2xpZW50X2lkOmNsaWVudF9zZWNyZXQ=", authValue);
+		Assertions.assertAll(
+				() -> Assertions.assertTrue(query.contains("grant_type=client_credentials")),
+				() -> Assertions.assertTrue(query.contains("client_secret=client_secret")),
+				() -> Assertions.assertTrue(query.contains("client_id=client_id"))
+		);
 
 		String contentTypeValue = he.getRequestHeaders().getFirst("Content-Type");
-		Assertions.assertEquals("application/json", contentTypeValue);
-		
+		Assertions.assertEquals("application/x-www-form-urlencoded", contentTypeValue);
+
 		// send response
-		he.sendResponseHeaders(200, this.response.length());
+		he.sendResponseHeaders(getStatus(), this.response.length());
 
 		OutputStream os = he.getResponseBody();
 		os.write(response.getBytes());
 		os.flush();
+	}
+
+	public int getStatus() {
+		return this.status;
+	}
+
+	public void setStatus(int status) {
+		this.status = status;
 	}
 
 	public String getResponse() {

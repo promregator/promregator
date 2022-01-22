@@ -39,6 +39,79 @@ def runWithGPG(Closure job) {
 
 }
 
+def springCloudCliPasswordTest(params) {
+	assert params.currentVersion != null : "Current Version at springCloudCliPasswordTest not set"
+
+	dir("../springCloudTest") {
+		// For most recent version look at https://repo.spring.io/release/org/springframework/boot/spring-boot-cli/
+		def springBootCLIVersion = "2.6.2"
+		
+		// For most recent version see also https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-cli
+		def springCloudCLIVersion = "3.1.0"
+	
+		sh """
+			wget -nv https://repo.spring.io/release/org/springframework/boot/spring-boot-cli/${springBootCLIVersion}/spring-boot-cli-${springBootCLIVersion}-bin.tar.gz
+			tar xzvf spring-boot-cli-${springBootCLIVersion}-bin.tar.gz
+			rm -f spring-boot-cli-${springBootCLIVersion}-bin.tar.gz
+			cd spring-${springBootCLIVersion}/bin
+			
+			./spring install org.springframework.cloud:spring-cloud-cli:${springCloudCLIVersion}
+		"""
+		
+		withCredentials([usernamePassword(credentialsId: 'bluemix-ibm-cf-platform', passwordVariable: 'CFPASSWORD', usernameVariable: 'CFUSER')]) {
+			sh """#!/bin/bash -xe
+				spring-${springBootCLIVersion}/bin/spring encrypt '${CFPASSWORD}' --key somekey > encrypted.txt
+				
+			"""
+		}
+		
+		// prepare configuration file
+		sh """
+			cp ../build/test/integration/springCloudCliPassword/bluemix.yaml .
+		"""
+		
+		sh """#!/bin/bash +xe
+			CFPASSWORDENC=`cat encrypted.txt`
+			sed -i -e "s/%%CRYPTEDPASSWORD%%/\$CFPASSWORDENC/g" bluemix.yaml
+		"""
+		
+		sh """
+			rm -f encrypted.txt
+		"""
+		
+		// Run Test itself
+		sh """#!/bin/bash -xe
+			ls -al .
+		
+			# see also https://docs.spring.io/spring-boot/docs/2.0.5.RELEASE/reference/html/boot-features-external-config.html
+			ENCRYPT_KEY=somekey java -jar ../build/target/promregator-${params.currentVersion}.jar --spring.config.name=bluemix &
+			# on ENCRYPT_KEY see also https://cloud.spring.io/spring-cloud-config/reference/html/#_key_management
+			
+			export PROMREGATOR_PID=\$!
+			
+			echo "Promregator is running on \$PROMREGATOR_PID; giving it 30 seconds to start up"
+			
+			sleep 30
+			
+			curl -m 10 http://localhost:8080/discovery > discovery.json
+			cat discovery.json
+
+			kill \$PROMREGATOR_PID
+		"""
+		
+		// verify that the expected app could be discovered (i.e. the discovery file isn't empty)
+		sh """#!/bin/bash -xe
+			CHECKRESULT=`jq -r '.[] | select(.labels.__meta_promregator_target_applicationName=="testapp2") | .labels.__meta_promregator_target_applicationName' discovery.json`
+			if [ "\$CHECKRESULT" != "testapp2" ]; then
+				echo "Test has failed: Discovery response does not include the expected application name 'testapp2'"
+				exit 1
+			fi
+			
+			rm -f discovery.json bluemix.yaml
+		"""
+	}
+}
+
 timestamps {
 	node("slave") {
 		def checkoutBranchName = env.BRANCH_NAME // see also https://stackoverflow.com/a/36332154
@@ -106,9 +179,13 @@ timestamps {
 					]
 			}
 			
+			stage("Integration Test") {
+				springCloudCliPasswordTest currentVersion: currentVersion
+			}
+			
 			stage("SecDependency Scan") {
 				sh """
-					mvn -B -DsuppressionFiles=./secscan/owasp-suppression.xml org.owasp:dependency-check-maven:5.2.4:check
+					mvn -B -DsuppressionFiles=./secscan/owasp-suppression.xml org.owasp:dependency-check-maven:6.5.3:check
 				"""
 				
 				archiveArtifacts "target/dependency-check-report.html"
@@ -221,10 +298,14 @@ timestamps {
 				// determine jar file hash values
 				sh """
 					cd target
-					cat >../promregator-${currentVersion}.hashsums <<EOT
-commit(promregator.git)=`git rev-parse HEAD`
-`openssl dgst -sha256 -hex promregator-${currentVersion}.jar`
-`openssl dgst -md5 -hex promregator-${currentVersion}.jar`
+					cat >../promregator-${currentVersion}.hashsums.json <<EOT
+{
+	"commit" : "`git rev-parse HEAD`",
+	"jar": {
+		"sha256": "`../tools/hash.sh -sha256 promregator-${currentVersion}.jar`",
+		"md5": "`../tools/hash.sh -md5 promregator-${currentVersion}.jar`"
+	}
+}
 EOT
 				"""
 			
@@ -245,10 +326,17 @@ EOT
 						docker inspect --format='{{.Id}}' ${imageName}
 					"""
 					sh """
-					cat >>promregator-${currentVersion}.hashsums <<EOT
-Docker Image Repo Digest: ${dockerImageIdentifier}
-Docker Image Id: ${dockerImageIdentifierCanonical}
+					cat >promregator-${currentVersion}-docker.hashsums.json <<EOT
+{
+	"docker-image" : {
+		"repo-digest": "${dockerImageIdentifier}",
+		"image-digest": "${dockerImageIdentifierCanonical}"
+	}
+}
 EOT
+					mv promregator-${currentVersion}.hashsums.json promregator-${currentVersion}-jar.hashsums.json
+					jq -s '.[0] * .[1]' promregator-${currentVersion}-jar.hashsums.json promregator-${currentVersion}-docker.hashsums.json > promregator-${currentVersion}.hashsums.json
+					rm -f promregator-${currentVersion}-jar.hashsums.json promregator-${currentVersion}-docker.hashsums.json
 					"""
 				}
 				
@@ -265,22 +353,20 @@ EOT
 				
 				runWithGPG() {
 					sh """
-						gpg --clearsign --personal-digest-preferences SHA512,SHA384,SHA256,SHA224,SHA1 promregator-${currentVersion}.hashsums
+						gpg --sign --personal-digest-preferences SHA512,SHA384,SHA256,SHA224,SHA1 promregator-${currentVersion}.hashsums.json
 					"""
 				}
 				
 				sh """
-					mv promregator-${currentVersion}.hashsums.asc promregator-${currentVersion}.hashsums
-					cat promregator-${currentVersion}.hashsums
+					cat promregator-${currentVersion}.hashsums.json
 				"""
 				
-				archiveArtifacts "promregator-${currentVersion}.hashsums"
+				archiveArtifacts "promregator-${currentVersion}.hashsums.json"
+				archiveArtifacts "promregator-${currentVersion}.hashsums.json.gpg"
 				
 				archiveArtifacts 'target/promregator*.jar'
 				
 			}
 		}
-		
-		
 	}
 }

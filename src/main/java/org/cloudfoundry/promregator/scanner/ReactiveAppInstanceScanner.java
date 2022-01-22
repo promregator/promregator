@@ -32,10 +32,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	private static final Logger log = LoggerFactory.getLogger(ReactiveAppInstanceScanner.class);
 	private static final String INVALID_ORG_ID = "***invalid***";
 	private static final String INVALID_SPACE_ID = "***invalid***";
-	private static final Map<String, SpaceApplicationSummary> INVALID_SUMMARY = new HashMap<>();	
-
-	@Value("${cf.cache.timeout.application:300}")
-	private int timeoutCacheApplicationLevel;
+	private static final Map<String, SpaceApplicationSummary> INVALID_SUMMARY = new HashMap<>();
 
 	@Value("${promregator.defaultInternalRoutePort:8080}")
 	private int defaultInternalRoutePort;
@@ -59,7 +56,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 
 		private String orgId;
 		private String spaceId;
-		private String applicationId;		
+		private String applicationId;
 		private String domainId;
 		private String accessURL;
 		private int numberOfInstances;
@@ -251,13 +248,16 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				// Set the access url to the selected route (without any protocol or path yet)
 				v.setAccessURL(this.determineApplicationRoute(urls,
 						v.getTarget().getOriginalTarget().getPreferredRouteRegexPatterns()));
+			} else {
+				// if there is no url, skip this one
+				return Mono.empty();
 			}
 
 			// In the interest of backwards compatibility lest do this inside a try.
 			// There is little reason why this should not find the correct domain
 			try {
 				Route route = sas.getRoutes().stream().filter(rt -> v.getAccessURL().startsWith(rt.getHost()+"."+rt.getDomain().getName())).findFirst().get();
-				v.setDomainId(route.getDomain().getId());	
+				v.setDomainId(route.getDomain().getId());
 			} catch (Exception e) {
 				log.warn(String.format("unable to find matching domain for the url %s", v.getAccessURL()));
 			}
@@ -274,7 +274,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			OSAVector v = tuple.getT1();
 			List<DomainResource> domains = tuple.getT2();
 
-			if (domains.size() == 0) {
+			if (domains.size() == 0 || v.getDomainId() == null) {
 				// NB: This drops the current target!
 				return Mono.empty();
 			}
@@ -282,11 +282,11 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			// we should only run this if we found a domain in the above step
 			// this is to make sure we have compatibility with existing behaviour
 			if( !v.getDomainId().isEmpty()) {
-				try {			
+				try {
 					DomainResource domain = domains.stream().filter(r -> r.getMetadata().getId().equals(v.getDomainId()))
 						.findFirst().get();
 
-					v.setInternal(domain.getEntity().getInternal());							
+					v.setInternal(domain.getEntity().getInternal());
 				} catch (Exception e) {
 					log.warn(String.format("unable to find matching domain for the domain with id %s", v.getDomainId()));
 				}
@@ -306,7 +306,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			List<Instance> instances = new ArrayList<>(v.getNumberOfInstances());
 			for (int i = 0; i < v.numberOfInstances; i++) {
 				Instance inst = new Instance(v.getTarget(), String.format("%s:%d", v.getApplicationId(), i),
-						v.getAccessURL(), v.isInternal());				
+						v.getAccessURL(), v.isInternal());
 
 				if (v.isInternal()) {
 					inst.setAccessUrl(this.formatInternalAccessURL(v.getAccessURL(), v.getTarget().getPath(),
