@@ -23,7 +23,7 @@ import org.cloudfoundry.promregator.meta.Released;
  * CFApiCredentials</li>
  * </ul>
  */
-@Released(since="0.10.0")
+@Released(since="0.11.0")
 public interface CFApiCredentials {
 	String getUsername();
 	String getPassword();

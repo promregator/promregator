@@ -364,4 +364,4 @@ If you want to have your logs formatted based on JSON, remember that Promregator
 ```
 
 ## Extending Promregator
-Promregator supports extension since version 0.10.0. For details refer to the ["Extending Promregator" documentation](./extension/README.md).
+Promregator supports extension since version 0.11.0. For details refer to the ["Extending Promregator" documentation](./extension/README.md).

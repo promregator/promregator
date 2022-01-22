@@ -1,13 +1,13 @@
 # Extending Promgregator
 
-Promregator supports extending it. Starting with 0.10.0, Promregator not just provides runnable artifacts like the `promregator.jar` file or the Docker image, but also `promregator-library` (available through Maven repositories) is delivered. You may include this library as a dependency to your own project, for example by using the following dependency declaration in your `pom.xml`:
+Promregator supports extending it. Starting with 0.11.0, Promregator not just provides runnable artifacts like the `promregator.jar` file or the Docker image, but also `promregator-library` (available through Maven repositories) is delivered. You may include this library as a dependency to your own project, for example by using the following dependency declaration in your `pom.xml`:
 
 ```xml
 <dependency>
 	<groupId>com.github.promregator</groupId>
 	<artifactId>promregator</artifactId>
 	<classifier>library</artifactId>
-	<version>0.10.0</version> <!-- or any other higher version number -->
+	<version>0.11.0</version> <!-- or any other higher version number -->
 </dependency>
 ```
 
