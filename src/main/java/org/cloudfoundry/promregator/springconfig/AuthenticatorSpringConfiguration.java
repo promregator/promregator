@@ -21,7 +21,7 @@ public class AuthenticatorSpringConfiguration {
 
 	@Bean
 	@ConditionalOnProperty(prefix="cf",name="username")
-	public CFApiCredentials defaultCFApiCredentials(@Value("${cf.username}") String username, @Value("${cf.password") String password) {
+	public CFApiCredentials defaultCFApiCredentials(@Value("${cf.username}") String username, @Value("${cf.password}") String password) {
 		log.debug("Found cf.username in configuration, using DefaultCFApiCredentials");
 		return new DefaultCFApiCredentials(username, password);
 	}
