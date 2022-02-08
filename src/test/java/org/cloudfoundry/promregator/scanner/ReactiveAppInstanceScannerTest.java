@@ -677,4 +677,34 @@ class ReactiveAppInstanceScannerTest {
 		assertThat(result).isEmpty();
 		// in particular, we should not dump/crash
 	}
+
+	@Test
+	void testTargetWithExplicitAccesurl() {
+		List<ResolvedTarget> targets = new LinkedList<>();
+		
+		ResolvedTarget t = new ResolvedTarget();
+		t.setOrgName("unittestorg");
+		t.setSpaceName("unittestspace");
+		t.setApplicationName("internalapp");
+		t.setProtocol("http");
+		t.setApplicationId(UNITTEST_APP_INTERNAL_UUID);
+		final Target targetWithExplicitAccessUrl = new Target();
+		targetWithExplicitAccessUrl.setOverrideRouteAndPath("someRouteAndPath.com");
+		t.setOriginalTarget(targetWithExplicitAccessUrl);
+		targets.add(t);
+		
+		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, null, null);
+		
+		assertThat(result).isNotEmpty();
+
+		assertThat(result).filteredOn( instance -> instance.getInstanceId().equals(UNITTEST_APP_INTERNAL_UUID+":0") )
+			.extracting("internal").containsOnly(true);
+
+		assertThat(result).filteredOn( instance -> instance.getInstanceId().equals(UNITTEST_APP_INTERNAL_UUID+":0") )
+			.extracting("accessUrl").containsOnly("http://someRouteAndPath.com/metrics");
+
+		assertThat(result).filteredOn( instance -> instance.getInstanceId().equals(UNITTEST_APP_INTERNAL_UUID+":1") )
+			.extracting("accessUrl").containsOnly("http://someRouteAndPath.com/metrics");
+	}
+
 }

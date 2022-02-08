@@ -26,7 +26,7 @@ public class Target {
 
 	private String applicationRegex;
 
-	private String explicitAccessUrl;
+	private String overrideRouteAndPath;
 
 	private String path;
 
@@ -65,7 +65,7 @@ public class Target {
 		this.spaceRegex = source.spaceRegex;
 		this.applicationName = source.applicationName;
 		this.applicationRegex = source.applicationRegex;
-		this.explicitAccessUrl = source.explicitAccessUrl;
+		this.overrideRouteAndPath = source.overrideRouteAndPath;
 		this.path = source.path;
 		if (source.kubernetesAnnotations != null)
 			this.kubernetesAnnotations = source.kubernetesAnnotations;
@@ -130,12 +130,12 @@ public class Target {
 		this.applicationRegex = applicationRegex;
 	}
 
-	public String getExplicitAccessUrl() {
-		return explicitAccessUrl;
+	public String getOverrideRouteAndPath() {
+		return overrideRouteAndPath;
 	}
 
-	public void setExplicitAccessUrl(String explicitAccessUrl) {
-		this.explicitAccessUrl = explicitAccessUrl;
+	public void setOverrideRouteAndPath(String overrideRouteAndPath) {
+		this.overrideRouteAndPath = overrideRouteAndPath;
 	}
 
 	public String getPath() {
@@ -253,7 +253,7 @@ public class Target {
 		builder.append(", applicationRegex=");
 		builder.append(applicationRegex);
 		builder.append(", explicitAccessUrl=");
-		builder.append(explicitAccessUrl);
+		builder.append(overrideRouteAndPath);
 		builder.append(", path=");
 		builder.append(path);
 		builder.append(", kubernetesAnnotations=");

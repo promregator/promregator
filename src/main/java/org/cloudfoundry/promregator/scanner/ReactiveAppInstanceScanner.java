@@ -8,23 +8,20 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import javax.annotation.Nullable;
-
+import org.apache.logging.log4j.util.Strings;
+import org.cloudfoundry.client.v2.domains.DomainResource;
 import org.cloudfoundry.client.v2.organizations.OrganizationResource;
+import org.cloudfoundry.client.v2.routes.Route;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
-import org.cloudfoundry.client.v2.routes.Route;
-import org.apache.logging.log4j.util.Strings;
-import org.cloudfoundry.client.v2.domains.DomainResource;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.CollectionUtils;
-
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -279,8 +276,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				return Mono.empty();
 			}
 
-			if (useExcplicitAccessUrl(v))
-			{
+			if (useExcplicitAccessUrl(v)) {
 			  v.setInternal(true);
 			}
 			// we should only run this if we found a domain in the above step
@@ -311,9 +307,8 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				Instance inst = new Instance(v.getTarget(), String.format("%s:%d", v.getApplicationId(), i),
 						v.getAccessURL(), v.isInternal());
 
-				if(useExcplicitAccessUrl(v))
-				{
-					inst.setAccessUrl(this.formatAccessURL(v.getTarget().getProtocol(), v.getTarget().getOriginalTarget().getExplicitAccessUrl(),
+				if(useExcplicitAccessUrl(v)) {
+					inst.setAccessUrl(this.formatAccessURL(v.getTarget().getProtocol(), v.getTarget().getOriginalTarget().getOverrideRouteAndPath(),
 							v.getTarget().getPath()));
 				}
 				else if (v.isInternal()) {
@@ -349,7 +344,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	}
 
 	private boolean useExcplicitAccessUrl(OSAVector v) {
-		return Strings.isNotEmpty(v.getTarget().getOriginalTarget().getExplicitAccessUrl());
+		return Strings.isNotEmpty(v.getTarget().getOriginalTarget().getOverrideRouteAndPath());
 	}
 
 	private Mono<String> getOrgId(String orgNameString) {
