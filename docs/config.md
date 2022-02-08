@@ -430,6 +430,11 @@ Defaults to `/metrics`, as this is the value which is suggested by Prometheus.
 Note that there may be frameworks out there, which expose their metrics in a different format using the same path `/metrics`, though.
 Note that setting `promregator.targets[].kubernetesAnnotations` to `true` will cause that any value set to this parameter is ignored by applications that have annotation `prometheus.io/path` set.
 
+### Item property "promregator.targets[].overrideRouteAndPath" (optional)
+This option became available starting with version 0.11.0.
+
+Specifies the route (and path) to an metric endpoint which is in front of the service metrics endpoint. For example if the service endpoint ist protected with a tool like Ory oathkeeper. So it's not possible to call the service endpoint from promregator because ORY oathkeeper blocks any access to the service endpoint with no authorization token. Promregator needs to call ORY oathkeeper with this override definition and with a valid token so that the oathkeeper forwards to the service metrics endpoint. The authorization token could be retrieved with promregator.authenticator.oauth2xsuaaBasic for example.
+
 #### Item property "promregator.targets[].kubernetesAnnotations" (optional)
 Enables support for the de facto standard Kubernetes Prometheus annotations on your CF applications. This allows each application to "opt-in" to scraping
 by specifying the annotation `prometheus.io/scrape: "true"`. Annotations support requires a version of Cloud Foundry with the V3 API otherwise this setting will be ignored. 
