@@ -307,7 +307,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				Instance inst = new Instance(v.getTarget(), String.format("%s:%d", v.getApplicationId(), i),
 						v.getAccessURL(), v.isInternal());
 
-				if(useExcplicitAccessUrl(v)) {
+				if(useOverrideRouteAndPath(v)) {
 					inst.setAccessUrl(this.formatAccessURL(v.getTarget().getProtocol(), v.getTarget().getOriginalTarget().getOverrideRouteAndPath(),
 							v.getTarget().getPath()));
 				}
@@ -343,7 +343,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		return result;
 	}
 
-	private boolean useExcplicitAccessUrl(OSAVector v) {
+	private boolean useOverrideRouteAndPath(OSAVector v) {
 		return Strings.isNotEmpty(v.getTarget().getOriginalTarget().getOverrideRouteAndPath());
 	}
 
