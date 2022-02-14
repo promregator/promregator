@@ -276,7 +276,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				return Mono.empty();
 			}
 
-			if (useExcplicitAccessUrl(v)) {
+			if (useOverrideRouteAndPath(v)) {
 			  v.setInternal(true);
 			}
 			// we should only run this if we found a domain in the above step
