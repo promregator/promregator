@@ -679,7 +679,7 @@ class ReactiveAppInstanceScannerTest {
 	}
 
 	@Test
-	void testTargetWithExplicitAccesurl() {
+	void testTargetWithOverrideRouteAndPath() {
 		List<ResolvedTarget> targets = new LinkedList<>();
 		
 		ResolvedTarget t = new ResolvedTarget();
