@@ -252,7 +252,7 @@ public class Target {
 		builder.append(applicationName);
 		builder.append(", applicationRegex=");
 		builder.append(applicationRegex);
-		builder.append(", explicitAccessUrl=");
+		builder.append(", overrideRouteAndPath=");
 		builder.append(overrideRouteAndPath);
 		builder.append(", path=");
 		builder.append(path);
