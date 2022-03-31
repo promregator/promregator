@@ -54,7 +54,7 @@
 			However, it breaks Eclipse debugging, and processes keep hanging on maven 
 			shutdown. See also https://stackoverflow.com/a/58701275/6350762 and https://github.com/spring-projects/spring-boot/issues/18638 -->
 
-		<spring-cloud.version>2020.0.1</spring-cloud.version>
+		<spring-cloud.version>2021.0.0</spring-cloud.version>
 		<prometheus.version>0.9.0</prometheus.version>
 		<!-- 
 		Warning on bumping to 0.10.0: 
