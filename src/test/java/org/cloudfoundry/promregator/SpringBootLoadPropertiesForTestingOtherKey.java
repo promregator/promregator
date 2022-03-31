@@ -7,7 +7,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.ConfigFileApplicationContextInitializer;
+import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -17,7 +17,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @SpringBootTest(classes = { SpringBootLoadPropertiesForTestingSpringApplication.class })
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(initializers = { ConfigFileApplicationContextInitializer.class })
+@ContextConfiguration(initializers = { ConfigDataApplicationContextInitializer.class })
 @ActiveProfiles(profiles= {"springBootLoadPropertiesForTestingOtherKey", "springBootLoadPropertiesForEncryptionTesting"})
 @TestPropertySource(properties = "encrypt.key=someotherkey")
 class SpringBootLoadPropertiesForTestingOtherKey {
