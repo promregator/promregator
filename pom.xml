@@ -70,7 +70,7 @@
 		 -->
 
 		<!-- https://mvnrepository.com/artifact/org.cloudfoundry/cloudfoundry-client-reactor -->
-		<cloudfoundry.client.version>5.6.0.RELEASE</cloudfoundry.client.version>
+		<cloudfoundry.client.version>5.7.0.RELEASE</cloudfoundry.client.version>
 		<!-- see also https://github.com/cloudfoundry/cf-java-client -->
 		
 		<logback.contrib.version>0.1.5</logback.contrib.version>
