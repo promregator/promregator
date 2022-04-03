@@ -26,6 +26,8 @@ public class Target {
 
 	private String applicationRegex;
 
+	private String overrideRouteAndPath;
+
 	private String path;
 
 	private Boolean kubernetesAnnotations = false;
@@ -63,6 +65,7 @@ public class Target {
 		this.spaceRegex = source.spaceRegex;
 		this.applicationName = source.applicationName;
 		this.applicationRegex = source.applicationRegex;
+		this.overrideRouteAndPath = source.overrideRouteAndPath;
 		this.path = source.path;
 		if (source.kubernetesAnnotations != null)
 			this.kubernetesAnnotations = source.kubernetesAnnotations;
@@ -125,6 +128,14 @@ public class Target {
 
 	public void setApplicationRegex(String applicationRegex) {
 		this.applicationRegex = applicationRegex;
+	}
+
+	public String getOverrideRouteAndPath() {
+		return overrideRouteAndPath;
+	}
+
+	public void setOverrideRouteAndPath(String overrideRouteAndPath) {
+		this.overrideRouteAndPath = overrideRouteAndPath;
 	}
 
 	public String getPath() {
@@ -241,6 +252,8 @@ public class Target {
 		builder.append(applicationName);
 		builder.append(", applicationRegex=");
 		builder.append(applicationRegex);
+		builder.append(", overrideRouteAndPath=");
+		builder.append(overrideRouteAndPath);
 		builder.append(", path=");
 		builder.append(path);
 		builder.append(", kubernetesAnnotations=");

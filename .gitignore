@@ -37,3 +37,6 @@ hs_err_pid*
 # files for intellij environment
 /.idea/
 *.iml
+
+# macos jenv config
+.java-version
