@@ -17,9 +17,11 @@ import org.cloudfoundry.promregator.cfaccessor.CFAccessorSimulator;
 import org.cloudfoundry.promregator.cfaccessor.CFWatchdog;
 import org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl;
 import org.cloudfoundry.promregator.config.ConfigurationValidations;
+import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.discovery.CFMultiDiscoverer;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.cloudfoundry.promregator.lifecycle.InstanceLifecycleHandler;
+import org.cloudfoundry.promregator.lite.config.PromregatorConfigurationV2;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.CachingTargetResolver;
 import org.cloudfoundry.promregator.scanner.ReactiveAppInstanceScanner;
@@ -36,6 +38,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
@@ -52,8 +55,13 @@ import reactor.core.publisher.Hooks;
 // Warning! This implies @ComponentScan - and we really must have that in place, e.g. due to JMS :(
 
 @EnableScheduling
-@Import({ BasicAuthenticationSpringConfiguration.class, SecurityConfig.class, ErrorSpringConfiguration.class, JMSSpringConfiguration.class, AuthenticatorSpringConfiguration.class })
+@Import({ BasicAuthenticationSpringConfiguration.class,
+	SecurityConfig.class,
+	ErrorSpringConfiguration.class,
+	JMSSpringConfiguration.class,
+	AuthenticatorSpringConfiguration.class })
 @EnableAsync
+@EnableConfigurationProperties({PromregatorConfiguration.class, PromregatorConfigurationV2.class})
 public class PromregatorApplication {
 	private static final Logger log = LoggerFactory.getLogger(PromregatorApplication.class);
 	
