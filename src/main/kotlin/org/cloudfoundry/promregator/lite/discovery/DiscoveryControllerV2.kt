@@ -3,7 +3,9 @@ package org.cloudfoundry.promregator.lite.discovery
 import com.fasterxml.jackson.annotation.JsonGetter
 import com.fasterxml.jackson.annotation.JsonInclude
 import kotlinx.coroutines.runBlocking
+import org.cloudfoundry.promregator.config.PromregatorConfiguration
 import org.cloudfoundry.promregator.endpoint.EndpointConstants.ENDPOINT_PATH_PROMREGATOR_METRICS
+import org.cloudfoundry.promregator.lite.config.PromregatorConfigurationV2
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -35,9 +37,7 @@ private val log = mu.KotlinLogging.logger {}
 
 @RestController
 class DiscoveryControllerV2(
-        @Value("\${promregator.discovery.hostname:#{null}}") private val promHostname: String?,
-        @Value("\${promregator.discovery.port:0}") val promPort: Int,
-        @Value("\${promregator.discovery.ownMetricsEndpoint:true}") private val promregatorMetricsEndpoint: Boolean,
+        private val promConfig: PromregatorConfigurationV2,
         private val discoveryService: DiscoveryService,
 ) {
 
@@ -52,8 +52,8 @@ class DiscoveryControllerV2(
         return runBlocking {
             val instances = if (bypassCache) discoveryService.discover() else discoveryService.discoverCached()
 
-            val localHostname: String = promHostname ?: request.localName
-            val localPort: Int = if (promPort != 0) promPort else request.localPort
+            val localHostname: String = promConfig.discovery.hostname ?: request.localName
+            val localPort: Int = if (promConfig.discovery.port != 0) promConfig.discovery.port else request.localPort
             val targets = listOf("$localHostname:$localPort")
             log.info { "Using scraping target ${targets.first()} in discovery response" }
 
@@ -72,7 +72,7 @@ class DiscoveryControllerV2(
                 DiscoveryV2Response(targets, dl)
             }
 
-            if (promregatorMetricsEndpoint) {
+            if (promConfig.discovery.ownMetricsEndpoint) {
                 // finally, also add our own metrics endpoint
                 val dl = DiscoveryLabelV2(ENDPOINT_PATH_PROMREGATOR_METRICS)
                 result = result + DiscoveryV2Response(targets, dl)

@@ -7,7 +7,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
-@Configuration
 @ConfigurationProperties(prefix="promregator")
 public class PromregatorConfiguration {
 	private List<Target> targets = new ArrayList<>();

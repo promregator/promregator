@@ -4,6 +4,7 @@ import org.cloudfoundry.promregator.config.AbstractOAuth2XSUAAAuthenticationConf
 import org.cloudfoundry.promregator.config.OAuth2XSUAABasicAuthenticationConfiguration
 import org.cloudfoundry.promregator.config.OAuth2XSUAACertificateAuthenticationConfiguration
 import org.cloudfoundry.promregator.lite.config.PromregatorConfigurationV2.Companion.DEFAULT_ID
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.ConstructorBinding
 
@@ -14,11 +15,18 @@ data class PromregatorConfigurationV2(
         val authenticator: AuthenticatorConfiguration = AuthenticatorConfiguration(),
         val targetAuthenticators: List<TargetAuthenticatorConfiguration> = ArrayList(),
         val internal: InternalConfig = InternalConfig(),
-) {
+        val discovery: DiscoveryConfig = DiscoveryConfig(),
+        ) {
     companion object {
         const val DEFAULT_ID = "__default__"
     }
 }
+
+data class DiscoveryConfig(
+        val hostname: String? = null,
+        val port: Int = 0,
+        val ownMetricsEndpoint: Boolean = true,
+)
 
 data class InternalConfig(
         val preCheckAPIVersion: Boolean = true,
