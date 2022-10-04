@@ -175,7 +175,7 @@ public class CFAccessorMassMock implements CFAccessor {
 	}	
 
 	@Override
-	public Mono<ListOrganizationDomainsResponse> retrieveAllDomains(String orgId) {		
+	public Mono<ListOrganizationDomainsResponse> retrieveAllDomains(String orgId) {
 		List<DomainResource> domains = new ArrayList<DomainResource>();
 
 
@@ -191,8 +191,8 @@ public class CFAccessorMassMock implements CFAccessor {
 					Metadata.builder().id(UNITTEST_SHARED_DOMAIN_UUID+i).createdAt(CREATED_AT_TIMESTAMP).build())    
 				.build();
 
-			domains.add(domain);			
-		}			
+			domains.add(domain);
+		}
 
 		ListOrganizationDomainsResponse response = ListOrganizationDomainsResponse.builder().addAllResources(domains).build();
 		return Mono.just(response);
