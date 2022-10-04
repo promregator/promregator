@@ -257,6 +257,8 @@ public class ReactiveTargetResolver implements TargetResolver {
 		
 		if (it.getConfigTarget().getOrgRegex() == null && it.getConfigTarget().getOrgName() != null) {
 			// Case 3: we have the orgName, but we also need its id
+			
+			// TODO V3 Adoption
 			Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveOrgId(it.getConfigTarget().getOrgName())
 					.map(ListOrganizationsResponse::getResources)
 					.flatMap(resList -> {
@@ -278,6 +280,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 		}
 		
 		// Case 1 & 2: Get all orgs from the platform
+		// TODO V3 Adoption
 		Mono<ListOrganizationsResponse> responseMono = this.cfAccessor.retrieveAllOrgIds();
 
 		Flux<OrganizationResource> orgResFlux = responseMono.map(ListOrganizationsResponse::getResources)
@@ -312,6 +315,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 		
 		if (it.getConfigTarget().getSpaceRegex() == null && it.getConfigTarget().getSpaceName() != null) {
 			// Case 3: we have the spaceName, but we also need its id
+			// TODO V3 Adoption
 			Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveSpaceId(it.getResolvedOrgId(), it.getConfigTarget().getSpaceName())
 					.map(ListSpacesResponse::getResources)
 					.flatMap(resList -> {
@@ -332,6 +336,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 		}
 		
 		// Case 1 & 2: Get all spaces in the current org
+		// TODO V3 Adoption
 		Mono<ListSpacesResponse> responseMono = this.cfAccessor.retrieveSpaceIdsInOrg(it.getResolvedOrgId());
 
 		Flux<SpaceResource> spaceResFlux = responseMono.map(ListSpacesResponse::getResources)
@@ -369,6 +374,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 			
 			String appNameToSearchFor = it.getConfigTarget().getApplicationName().toLowerCase(Locale.ENGLISH);
 			
+			// TODO V3 Adoption
 			Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveAllApplicationIdsInSpace(it.getResolvedOrgId(), it.getResolvedSpaceId())
 					.map(ListApplicationsResponse::getResources)
 					.flatMapMany(Flux::fromIterable)
@@ -394,6 +400,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 		}
 		
 		// Case 1 & 2: Get all applications in the current space
+		// TODO V3 Adoption
 		Mono<ListApplicationsResponse> responseMono = this.cfAccessor.retrieveAllApplicationIdsInSpace(it.getResolvedOrgId(), it.getResolvedSpaceId());
 
 		Flux<ApplicationResource> appResFlux = responseMono.map(ListApplicationsResponse::getResources)
@@ -426,6 +433,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 
 	private Flux<IntermediateTarget> resolveAnnotations(IntermediateTarget it) {
 		if (Boolean.TRUE.equals(it.getConfigTarget().getKubernetesAnnotations())) {
+			// TODO V3 Adoption
 			Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> response = this.cfAccessor
 				.retrieveAllApplicationsInSpaceV3(it.getResolvedOrgId(), it.getResolvedSpaceId());
 

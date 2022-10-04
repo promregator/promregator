@@ -265,6 +265,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		});
 
 		Flux<List<DomainResource>> domainFlux = osaVectorApplicationFlux.flatMapSequential(v -> {
+			// TODO Adoption V3
 			return this.cfAccessor.retrieveAllDomains(v.getOrgId()).map(mapper -> mapper.getResources());
 		});
 		Flux<OSAVector> osaVectorDomainApplicationFlux = Flux.zip(osaVectorApplicationFlux, domainFlux).flatMap(tuple -> {
@@ -348,6 +349,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	}
 
 	private Mono<String> getOrgId(String orgNameString) {
+		// TODO V3 Adoption
 		return this.cfAccessor.retrieveOrgId(orgNameString).flatMap(response -> {
 			List<OrganizationResource> resources = response.getResources();
 			if (resources == null) {
@@ -368,7 +370,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	}
 
 	private Mono<String> getSpaceId(String orgIdString, String spaceNameString) {
-
+		// TODO V3 Adoption
 		Mono<ListSpacesResponse> listSpacesResponse = this.cfAccessor.retrieveSpaceId(orgIdString, spaceNameString);
 
 		return listSpacesResponse.flatMap(response -> {
@@ -393,6 +395,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	}
 
 	private Mono<Map<String, SpaceApplicationSummary>> getSpaceSummary(String spaceIdString) {
+		// TODO V3 Adoption
 		return this.cfAccessor.retrieveSpaceSummary(spaceIdString).flatMap(response -> {
 			List<SpaceApplicationSummary> applications = response.getApplications();
 			if (applications == null) {
