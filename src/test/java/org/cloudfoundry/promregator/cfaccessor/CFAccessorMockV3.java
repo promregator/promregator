@@ -1,23 +1,15 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.assertj.core.util.Lists;
-import org.cloudfoundry.client.v2.Metadata;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
-import org.cloudfoundry.client.v2.domains.Domain;
-import org.cloudfoundry.client.v2.domains.DomainEntity;
-import org.cloudfoundry.client.v2.domains.DomainResource;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
-import org.cloudfoundry.client.v2.routes.Route;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
-import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v3.BuildpackData;
 import org.cloudfoundry.client.v3.Lifecycle;
 import org.cloudfoundry.client.v3.LifecycleType;
@@ -94,7 +86,7 @@ public class CFAccessorMockV3 implements CFAccessor {
 
 	@Override
 	public Mono<GetInfoResponse> getInfo() {
-		GetInfoResponse data = GetInfoResponse.builder().description("CFAccessorMock").name("CFAccessorMock").version(1)
+		GetInfoResponse data = GetInfoResponse.builder().description("CFAccessorMockV3").name("CFAccessorMockV3").version(1)
 											  .build();
 
 		return Mono.just(data);

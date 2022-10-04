@@ -10,7 +10,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
-import org.cloudfoundry.promregator.cfaccessor.CFAccessorMock;
+import org.cloudfoundry.promregator.cfaccessor.CFAccessorMockV2;
 import org.cloudfoundry.promregator.config.Target;
 import org.cloudfoundry.promregator.messagebus.MessageBusDestination;
 import org.cloudfoundry.promregator.scanner.Instance;
@@ -60,7 +60,7 @@ class CFMultiDiscovererTest {
 		aTarget.setOrgName("unittestorg");
 		aTarget.setSpaceName("unittestspace");
 		aTarget.setApplicationName("testapp");
-		aTarget.setApplicationId(CFAccessorMock.UNITTEST_APP1_UUID);
+		aTarget.setApplicationId(CFAccessorMockV2.UNITTEST_APP1_UUID);
 		aTarget.setProtocol("https");
 		aTarget.setPath("/metrics");
 		aTarget.setOriginalTarget(new Target());
@@ -80,15 +80,15 @@ class CFMultiDiscovererTest {
 		for (Instance instance : result) {
 			String instanceId = instance.getInstanceId();
 			
-			if (instanceId.equals(CFAccessorMock.UNITTEST_APP1_UUID+":0")) {
+			if (instanceId.equals(CFAccessorMockV2.UNITTEST_APP1_UUID+":0")) {
 				testapp1_instance1 = true;
 				Assertions.assertEquals("https://hostapp1.shared.domain.example.org/metrics", instance.getAccessUrl());
 				i1 = instance;
-			} else if (instanceId.equals(CFAccessorMock.UNITTEST_APP1_UUID+":1")) {
+			} else if (instanceId.equals(CFAccessorMockV2.UNITTEST_APP1_UUID+":1")) {
 				testapp1_instance2 = true;
 				Assertions.assertEquals("https://hostapp1.shared.domain.example.org/metrics", instance.getAccessUrl());
 				i2 = instance;
-			} else if (instanceId.equals(CFAccessorMock.UNITTEST_APP2_UUID+":0")) {
+			} else if (instanceId.equals(CFAccessorMockV2.UNITTEST_APP2_UUID+":0")) {
 				Assertions.fail("Should not have been returned");
 			}
 		}

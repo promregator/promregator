@@ -4,7 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
-import org.cloudfoundry.promregator.cfaccessor.CFAccessorMock;
+import org.cloudfoundry.promregator.cfaccessor.CFAccessorMockV2;
 import org.cloudfoundry.promregator.config.Target;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -100,7 +100,7 @@ public class MockedCachingTargetResolverSpringApplication {
 	
 	@Bean
 	public CFAccessor cfAccessor() {
-		return new CFAccessorMock();
+		return new CFAccessorMockV2();
 	}
 	
 	@Bean

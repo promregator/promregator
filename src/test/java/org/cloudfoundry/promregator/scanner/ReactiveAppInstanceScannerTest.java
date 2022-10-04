@@ -1,10 +1,10 @@
 package org.cloudfoundry.promregator.scanner;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.cloudfoundry.promregator.cfaccessor.CFAccessorMock.UNITTEST_APP1_UUID;
-import static org.cloudfoundry.promregator.cfaccessor.CFAccessorMock.UNITTEST_APP2_UUID;
-import static org.cloudfoundry.promregator.cfaccessor.CFAccessorMock.UNITTEST_APP3_UUID;
-import static org.cloudfoundry.promregator.cfaccessor.CFAccessorMock.UNITTEST_APP_INTERNAL_UUID;
+import static org.cloudfoundry.promregator.cfaccessor.CFAccessorMockV2.UNITTEST_APP1_UUID;
+import static org.cloudfoundry.promregator.cfaccessor.CFAccessorMockV2.UNITTEST_APP2_UUID;
+import static org.cloudfoundry.promregator.cfaccessor.CFAccessorMockV2.UNITTEST_APP3_UUID;
+import static org.cloudfoundry.promregator.cfaccessor.CFAccessorMockV2.UNITTEST_APP_INTERNAL_UUID;
 
 import java.util.Arrays;
 import java.util.LinkedList;

@@ -1,7 +1,7 @@
 package org.cloudfoundry.promregator.scanner;
 
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
-import org.cloudfoundry.promregator.cfaccessor.CFAccessorMock;
+import org.cloudfoundry.promregator.cfaccessor.CFAccessorMockV2;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,7 +16,7 @@ public class MockedReactiveAppInstanceScannerSpringApplication {
 
 	@Bean
 	public CFAccessor cfAccessor() {
-		return new CFAccessorMock();
+		return new CFAccessorMockV2();
 	}
 	
 	@Bean
