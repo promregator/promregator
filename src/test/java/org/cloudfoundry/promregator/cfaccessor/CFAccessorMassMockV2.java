@@ -200,46 +200,55 @@ public class CFAccessorMassMockV2 implements CFAccessor {
 
 	@Override
 	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> retrieveOrgIdV3(String orgName) {
+		Assertions.fail("retrieveOrgIdV3 called in a V2 test environment");
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> retrieveAllOrgIdsV3() {
+		Assertions.fail("retrieveAllOrgIdsV3 called in a V2 test environment");
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public Mono<org.cloudfoundry.client.v3.spaces.ListSpacesResponse> retrieveSpaceIdV3(String orgId, String spaceName) {
+		Assertions.fail("retrieveSpaceIdV3 called in a V2 test environment");
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public Mono<org.cloudfoundry.client.v3.spaces.ListSpacesResponse> retrieveSpaceIdsInOrgV3(String orgId) {
+		Assertions.fail("retrieveSpaceIdsInOrgV3 called in a V2 test environment");
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> retrieveAllApplicationsInSpaceV3(String orgId, String spaceId) {
+		Assertions.fail("retrieveAllApplicationsInSpaceV3 called in a V2 test environment");
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public Mono<GetSpaceResponse> retrieveSpaceV3(String spaceId) {
+		Assertions.fail("retrieveSpaceV3 called in a V2 test environment");
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse> retrieveAllDomainsV3(String orgId) {
+		Assertions.fail("retrieveAllDomainsV3 called in a V2 test environment");
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public Mono<ListApplicationRoutesResponse> retrieveRoutesForAppId(String appId) {
+		// TODO needs to be clarified
+		Assertions.fail("TODO CAN THIS BE CALLED IN V2 CONTEXT AS WELL?");
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public boolean isV3Enabled() {
-		return true;
+		return false;
 	}
 }
