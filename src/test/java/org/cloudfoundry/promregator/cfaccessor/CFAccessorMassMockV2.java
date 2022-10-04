@@ -31,7 +31,7 @@ import org.junit.jupiter.api.Assertions;
 
 import reactor.core.publisher.Mono;
 
-public class CFAccessorMassMock implements CFAccessor {
+public class CFAccessorMassMockV2 implements CFAccessor {
 	public static final String UNITTEST_ORG_UUID = "eb51aa9c-2fa3-11e8-b467-0ed5f89f718b";
 	public static final String UNITTEST_SPACE_UUID = "db08be9a-2fa4-11e8-b467-0ed5f89f718b";
 	public static final String UNITTEST_APP_UUID_PREFIX = "55820b2c-2fa5-11e8-b467-";
@@ -46,7 +46,7 @@ public class CFAccessorMassMock implements CFAccessor {
 	
 	private int amountInstances;
 	
-	public CFAccessorMassMock(int amountInstances) {
+	public CFAccessorMassMockV2(int amountInstances) {
 		super();
 		this.amountInstances = amountInstances;
 	}
@@ -161,8 +161,8 @@ public class CFAccessorMassMock implements CFAccessor {
 	@Override
 	public Mono<GetInfoResponse> getInfo() {
 		GetInfoResponse data = GetInfoResponse.builder()
-				.description("CFAccessorMassMock")
-				.name("CFAccessorMassMock")
+				.description("CFAccessorMassMockV2")
+				.name("CFAccessorMassMockV2")
 				.version(1)
 				.build();
 		

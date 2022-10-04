@@ -1,6 +1,6 @@
 package org.cloudfoundry.promregator.scanner;
 
-import static org.cloudfoundry.promregator.cfaccessor.CFAccessorMassMock.UNITTEST_APP_UUID_PREFIX;
+import static org.cloudfoundry.promregator.cfaccessor.CFAccessorMassMockV2.UNITTEST_APP_UUID_PREFIX;
 
 import java.time.Duration;
 import java.time.Instant;
