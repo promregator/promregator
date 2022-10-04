@@ -125,7 +125,7 @@ public class CFAccessorMassMockV2 implements CFAccessor {
 	public Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId) {
 		if (spaceId.equals(UNITTEST_SPACE_UUID)) {
 			List<SpaceApplicationSummary> list = new LinkedList<>();
-					
+			
 			for (int i = 0;i<100;i++) {
 				Domain sharedDomain = Domain.builder().id(UNITTEST_SHARED_DOMAIN_UUID+i).name(UNITTEST_SHARED_DOMAIN).build();
 				final String[] urls = { "hostapp"+i+"."+UNITTEST_SHARED_DOMAIN }; 
@@ -175,12 +175,12 @@ public class CFAccessorMassMockV2 implements CFAccessor {
 	}	
 
 	@Override
-	public Mono<ListOrganizationDomainsResponse> retrieveAllDomains(String orgId) {		
+	public Mono<ListOrganizationDomainsResponse> retrieveAllDomains(String orgId) {
 		List<DomainResource> domains = new ArrayList<DomainResource>();
 
 
 		for (int i = 0;i<100;i++) {
-							
+			
 			DomainResource domain = DomainResource.builder()
 				.entity(
 					DomainEntity.builder()
@@ -191,8 +191,8 @@ public class CFAccessorMassMockV2 implements CFAccessor {
 					Metadata.builder().id(UNITTEST_SHARED_DOMAIN_UUID+i).createdAt(CREATED_AT_TIMESTAMP).build())    
 				.build();
 
-			domains.add(domain);			
-		}			
+			domains.add(domain);
+		}
 
 		ListOrganizationDomainsResponse response = ListOrganizationDomainsResponse.builder().addAllResources(domains).build();
 		return Mono.just(response);
