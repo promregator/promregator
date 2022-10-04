@@ -7,8 +7,6 @@ import java.util.List;
 
 import org.assertj.core.util.Lists;
 import org.cloudfoundry.client.v2.Metadata;
-import org.cloudfoundry.client.v2.applications.ApplicationEntity;
-import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.domains.Domain;
 import org.cloudfoundry.client.v2.domains.DomainEntity;
@@ -16,14 +14,10 @@ import org.cloudfoundry.client.v2.domains.DomainResource;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
-import org.cloudfoundry.client.v2.organizations.OrganizationEntity;
-import org.cloudfoundry.client.v2.organizations.OrganizationResource;
 import org.cloudfoundry.client.v2.routes.Route;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
-import org.cloudfoundry.client.v2.spaces.SpaceEntity;
-import org.cloudfoundry.client.v2.spaces.SpaceResource;
 import org.cloudfoundry.client.v3.BuildpackData;
 import org.cloudfoundry.client.v3.Lifecycle;
 import org.cloudfoundry.client.v3.LifecycleType;
@@ -34,7 +28,7 @@ import org.junit.jupiter.api.Assertions;
 
 import reactor.core.publisher.Mono;
 
-public class CFAccessorMock implements CFAccessor {
+public class CFAccessorMockV3 implements CFAccessor {
 	public static final String UNITTEST_ORG_UUID = "eb51aa9c-2fa3-11e8-b467-0ed5f89f718b";
 	public static final String UNITTEST_SPACE_UUID = "db08be9a-2fa4-11e8-b467-0ed5f89f718b";
 	public static final String UNITTEST_SPACE_UUID_DOESNOTEXIST = "db08be9a-2fa4-11e8-b467-0ed5f89f718b-doesnotexist";
@@ -64,201 +58,38 @@ public class CFAccessorMock implements CFAccessor {
 
 	@Override
 	public Mono<ListOrganizationsResponse> retrieveOrgId(String orgName) {
-
-		if ("unittestorg".equalsIgnoreCase(orgName)) {
-
-			OrganizationResource or = OrganizationResource.builder()
-														  .entity(OrganizationEntity.builder().name("unittestorg").build())
-														  .metadata(Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_ORG_UUID).build()
-																	// Note that UpdatedAt is not set here, as this can also happen in real life!
-														  ).build();
-
-			List<org.cloudfoundry.client.v2.organizations.OrganizationResource> list = new LinkedList<>();
-			list.add(or);
-
-			ListOrganizationsResponse resp = org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse
-				.builder().addAllResources(list).build();
-
-			return Mono.just(resp);
-		}
-		else if ("doesnotexist".equals(orgName)) {
-			return Mono.just(org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse.builder()
-																							   .resources(new ArrayList<>()).build());
-		}
-		else if ("exception".equals(orgName)) {
-			return Mono.just(org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse.builder().build())
-					   .map(x -> {
-						   throw new Error("exception org name provided");
-					   });
-		}
-		Assertions.fail("Invalid OrgId request");
-		return null;
+		Assertions.fail("retrieveOrgId (V2) must not be called in V3 tests");
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public Mono<ListSpacesResponse> retrieveSpaceId(String orgId, String spaceName) {
-		if (orgId.equals(UNITTEST_ORG_UUID)) {
-			if ("unittestspace".equalsIgnoreCase(spaceName)) {
-				SpaceResource sr = SpaceResource.builder().entity(SpaceEntity.builder().name("unittestspace").build())
-												.metadata(Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_SPACE_UUID).build())
-												.build();
-				List<SpaceResource> list = new LinkedList<>();
-				list.add(sr);
-				ListSpacesResponse resp = ListSpacesResponse.builder().addAllResources(list).build();
-				return Mono.just(resp);
-			}
-			else if ("unittestspace-summarydoesnotexist".equals(spaceName)) {
-				SpaceResource sr = SpaceResource.builder().entity(SpaceEntity.builder().name(spaceName).build())
-												.metadata(Metadata.builder().createdAt(CREATED_AT_TIMESTAMP)
-																  .id(UNITTEST_SPACE_UUID_DOESNOTEXIST).build())
-												.build();
-				List<SpaceResource> list = new LinkedList<>();
-				list.add(sr);
-				ListSpacesResponse resp = ListSpacesResponse.builder().addAllResources(list).build();
-				return Mono.just(resp);
-			}
-			else if ("unittestspace-summaryexception".equals(spaceName)) {
-				SpaceResource sr = SpaceResource.builder().entity(SpaceEntity.builder().name(spaceName).build())
-												.metadata(Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_SPACE_UUID_EXCEPTION)
-																  .build())
-												.build();
-				List<SpaceResource> list = new LinkedList<>();
-				list.add(sr);
-				ListSpacesResponse resp = ListSpacesResponse.builder().addAllResources(list).build();
-				return Mono.just(resp);
-			}
-			else if ("doesnotexist".equals(spaceName)) {
-				return Mono.just(ListSpacesResponse.builder().resources(new ArrayList<>()).build());
-			}
-			else if ("exception".equals(spaceName)) {
-				return Mono.just(ListSpacesResponse.builder().build()).map(x -> {
-					throw new Error("exception space name provided");
-				});
-			}
-		}
-
-		Assertions.fail("Invalid SpaceId request");
-		return null;
+		Assertions.fail("retrieveSpaceId (V2) must not be called in V3 tests");
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String orgId, String spaceId) {
-		if (orgId.equals(UNITTEST_ORG_UUID) && spaceId.equals(UNITTEST_SPACE_UUID)) {
-			List<ApplicationResource> list = new LinkedList<>();
-
-			ApplicationResource ar = ApplicationResource.builder()
-														.entity(ApplicationEntity.builder().name("testapp").state("STARTED").build())
-														.metadata(Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP1_UUID).build())
-														.build();
-			list.add(ar);
-
-			ar = ApplicationResource.builder()
-									.entity(ApplicationEntity.builder().name("testapp2").state("STARTED").build())
-									.metadata(Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP2_UUID).build())
-									.build();
-			list.add(ar);
-
-			ar = ApplicationResource.builder()
-					.entity(ApplicationEntity.builder().name("testapp3").state("STARTED").build())
-					.metadata(Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP3_UUID).build())
-					.build();
-			list.add(ar);
-			
-			ar = ApplicationResource.builder()
-									.entity(ApplicationEntity.builder().name("internalapp").state("STARTED").build())
-									.metadata(Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP_INTERNAL_UUID).build())
-									.build();
-			list.add(ar);
-
-			ListApplicationsResponse resp = ListApplicationsResponse.builder().addAllResources(list).build();
-			return Mono.just(resp);
-		}
-		else if (UNITTEST_SPACE_UUID_DOESNOTEXIST.equals(spaceId)) {
-			return Mono.just(ListApplicationsResponse.builder().build());
-		}
-		else if (UNITTEST_SPACE_UUID_EXCEPTION.equals(spaceId)) {
-			return Mono.just(ListApplicationsResponse.builder().build()).map(x -> {
-				throw new Error("exception on AllAppIdsInSpace");
-			});
-		}
-
-		Assertions.fail("Invalid process request");
-		return null;
+		Assertions.fail("retrieveAllApplicationIdsinSpace (V2) must not be called in V3 tests");
+		throw new UnsupportedOperationException();
+		
 	}
 
 	@Override
 	public Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId) {
-		if (spaceId.equals(UNITTEST_SPACE_UUID)) {
-			List<SpaceApplicationSummary> list = new LinkedList<>();
-
-			Domain sharedDomain = Domain.builder().id(UNITTEST_SHARED_DOMAIN_UUID).name(UNITTEST_SHARED_DOMAIN).build();
-			Domain additionalSharedDomain = Domain.builder().id(UNITTEST_ADDITIONAL_SHARED_DOMAIN_UUID).name(UNITTEST_ADDITIONAL_SHARED_DOMAIN)
-												  .build();
-			Domain internalDomain = Domain.builder().id(UNITTEST_INTERNAL_DOMAIN_UUID).name(UNITTEST_INTERNAL_DOMAIN).build();
-
-			final String[] urls1 = {UNITTEST_APP1_HOST + "." + UNITTEST_SHARED_DOMAIN};
-			final Route[] routes1 = {Route.builder().domain(sharedDomain).host(UNITTEST_APP1_HOST).build()};
-			SpaceApplicationSummary sas = SpaceApplicationSummary.builder()
-																 .id(UNITTEST_APP1_UUID)
-																 .name("testapp")
-																 .addAllRoutes(Arrays.asList(routes1))
-																 .addAllUrls(Arrays.asList(urls1)).instances(2).build();
-			list.add(sas);
-
-			String additionalPath = "/additionalPath";
-
-			final String[] urls2 = {UNITTEST_APP2_HOST + "." + UNITTEST_SHARED_DOMAIN + additionalPath,
-				UNITTEST_APP2_HOST + "." + UNITTEST_ADDITIONAL_SHARED_DOMAIN + additionalPath};
-			final Route[] routes2 = {
-				Route.builder().domain(sharedDomain).host(UNITTEST_APP2_HOST).path(additionalPath).build(),
-				Route.builder().domain(additionalSharedDomain).host(UNITTEST_APP2_HOST).path(additionalPath).build()};
-			sas = SpaceApplicationSummary.builder()
-										 .id(UNITTEST_APP2_UUID)
-										 .name("testapp2")
-										 .addAllRoutes(Arrays.asList(routes2))
-										 .addAllUrls(Arrays.asList(urls2)).instances(1).build();
-			list.add(sas);
-			
-			sas = SpaceApplicationSummary.builder()
-					.id(UNITTEST_APP3_UUID)
-					.name("testapp3")
-					.addAllRoutes(Lists.emptyList())
-					.addAllUrls(Lists.emptyList()).instances(1).build();
-			list.add(sas);
-
-			final String[] urls3 = {UNITTEST_APP_INTERNAL_HOST + "." + UNITTEST_INTERNAL_DOMAIN};
-			final Route[] routes3 = {Route.builder().domain(internalDomain).host(UNITTEST_APP_INTERNAL_HOST).build()};
-			sas = SpaceApplicationSummary.builder()
-										 .id(UNITTEST_APP_INTERNAL_UUID)
-										 .name("internalapp")
-										 .addAllRoutes(Arrays.asList(routes3))
-										 .addAllUrls(Arrays.asList(urls3)).instances(2).build();
-			list.add(sas);
-
-			GetSpaceSummaryResponse resp = GetSpaceSummaryResponse.builder().addAllApplications(list).build();
-
-			return Mono.just(resp);
-		}
-		else if (spaceId.equals(UNITTEST_SPACE_UUID_DOESNOTEXIST)) {
-			return Mono.just(GetSpaceSummaryResponse.builder().build());
-		}
-		else if (spaceId.equals(UNITTEST_SPACE_UUID_EXCEPTION)) {
-			return Mono.just(GetSpaceSummaryResponse.builder().build()).map(x -> {
-				throw new Error("exception on application summary");
-			});
-		}
-
-		Assertions.fail("Invalid retrieveSpaceSummary request");
-		return null;
+		Assertions.fail("retrieveSpaceSummary (V2) must not be called in V3 tests");
+		throw new UnsupportedOperationException();
 	}
 
 	public Mono<ListOrganizationsResponse> retrieveAllOrgIds() {
-		return this.retrieveOrgId("unittestorg");
+		Assertions.fail("retrieveAllOrgIds (V2) must not be called in V3 tests");
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public Mono<ListSpacesResponse> retrieveSpaceIdsInOrg(String orgId) {
-		return this.retrieveSpaceId(UNITTEST_ORG_UUID, "unittestspace");
+		Assertions.fail("retrieveSpaceIdsInOrg (V2) must not be called in V3 tests");
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -276,45 +107,8 @@ public class CFAccessorMock implements CFAccessor {
 
 	@Override
 	public Mono<ListOrganizationDomainsResponse> retrieveAllDomains(String orgId) {
-		List<DomainResource> domains = new ArrayList<DomainResource>();
-		DomainResource domain = DomainResource.builder()
-											  .entity(
-												  DomainEntity.builder()
-															  .name(UNITTEST_INTERNAL_DOMAIN)
-															  .internal(true)
-															  .build())
-											  .metadata(
-												  Metadata.builder().id(UNITTEST_INTERNAL_DOMAIN_UUID).createdAt(CREATED_AT_TIMESTAMP).build())
-											  .build();
-
-		domains.add(domain);
-
-		domain = DomainResource.builder()
-							   .entity(
-								   DomainEntity.builder()
-											   .name(UNITTEST_SHARED_DOMAIN)
-											   .internal(false)
-											   .build())
-							   .metadata(
-								   Metadata.builder().id(UNITTEST_SHARED_DOMAIN_UUID).createdAt(CREATED_AT_TIMESTAMP).build())
-							   .build();
-
-		domains.add(domain);
-
-		domain = DomainResource.builder()
-							   .entity(
-								   DomainEntity.builder()
-											   .name(UNITTEST_ADDITIONAL_SHARED_DOMAIN)
-											   .internal(false)
-											   .build())
-							   .metadata(
-								   Metadata.builder().id(UNITTEST_ADDITIONAL_SHARED_DOMAIN_UUID).createdAt(CREATED_AT_TIMESTAMP).build())
-							   .build();
-
-		domains.add(domain);
-
-		ListOrganizationDomainsResponse response = ListOrganizationDomainsResponse.builder().addAllResources(domains).build();
-		return Mono.just(response);
+		Assertions.fail("retrieveAllDomains (V2) must not be called in V3 tests");
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -517,7 +311,7 @@ public class CFAccessorMock implements CFAccessor {
 
 	@Override
 	public boolean isV3Enabled() {
-		return false;
+		return true;
 	}
 
 }
