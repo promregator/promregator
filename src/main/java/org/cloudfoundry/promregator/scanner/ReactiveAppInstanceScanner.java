@@ -278,11 +278,11 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			}
 
 			if (useOverrideRouteAndPath(v)) {
-			  v.setInternal(true);
+				v.setInternal(true);
 			}
 			// we should only run this if we found a domain in the above step
 			// this is to make sure we have compatibility with existing behaviour
-			else if( !v.getDomainId().isEmpty()) {
+			else if (!v.getDomainId().isEmpty()) {
 				try {
 					DomainResource domain = domains.stream().filter(r -> r.getMetadata().getId().equals(v.getDomainId()))
 						.findFirst().get();
@@ -349,7 +349,30 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	}
 
 	private Mono<String> getOrgId(String orgNameString) {
-		// TODO V3 Adoption
+		
+		if (this.cfAccessor.isV3Enabled()) {
+			// V3 Variant
+			
+			return this.cfAccessor.retrieveOrgIdV3(orgNameString).flatMap(response -> {
+				List<org.cloudfoundry.client.v3.organizations.OrganizationResource> resources = response.getResources();
+				if (resources == null) {
+					return Mono.just(INVALID_ORG_ID);
+				}
+				
+				if (resources.isEmpty()) {
+					log.warn(String.format("Received empty result on requesting V3 org %s", orgNameString));
+					return Mono.just(INVALID_ORG_ID);
+				}
+				
+				org.cloudfoundry.client.v3.organizations.OrganizationResource organizationResource = resources.get(0);
+				return Mono.just(organizationResource.getId());
+			}).onErrorResume(e -> {
+				log.error(String.format("retrieving V3 Org Id for org Name '%s' resulted in an exception", orgNameString), e);
+				return Mono.just(INVALID_ORG_ID);
+			}).cache();
+		}
+		
+		// V2 Variant
 		return this.cfAccessor.retrieveOrgId(orgNameString).flatMap(response -> {
 			List<OrganizationResource> resources = response.getResources();
 			if (resources == null) {
