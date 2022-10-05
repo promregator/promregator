@@ -13,6 +13,7 @@ import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v3.BuildpackData;
 import org.cloudfoundry.client.v3.Lifecycle;
 import org.cloudfoundry.client.v3.LifecycleType;
+import org.cloudfoundry.client.v3.Metadata;
 import org.cloudfoundry.client.v3.applications.ApplicationState;
 import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
 import org.cloudfoundry.client.v3.spaces.GetSpaceResponse;
@@ -107,11 +108,13 @@ public class CFAccessorMockV3 implements CFAccessor {
 	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> retrieveOrgIdV3(String orgName) {
 		if ("unittestorg".equalsIgnoreCase(orgName)) {
 
+			final Metadata metadata = Metadata.builder().build();
 			org.cloudfoundry.client.v3.organizations.OrganizationResource or = org.cloudfoundry.client.v3.organizations.OrganizationResource.builder()
 																																			.name("unittestorg")
 																																			.createdAt(CREATED_AT_TIMESTAMP)
 																																			.id(UNITTEST_ORG_UUID)
 																																			// Note that UpdatedAt is not set here, as this can also happen in real life!
+																																			.metadata(metadata)
 																																			.build();
 
 			List<org.cloudfoundry.client.v3.organizations.OrganizationResource> list = new LinkedList<>();

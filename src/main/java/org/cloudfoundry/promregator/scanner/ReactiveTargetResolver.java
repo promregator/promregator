@@ -257,8 +257,12 @@ public class ReactiveTargetResolver implements TargetResolver {
 		
 		if (it.getConfigTarget().getOrgRegex() == null && it.getConfigTarget().getOrgName() != null) {
 			// Case 3: we have the orgName, but we also need its id
-			Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveOrgId(it.getConfigTarget().getOrgName())
-					.map(ListOrganizationsResponse::getResources)
+
+			final String orgName = it.getConfigTarget().getOrgName();
+			if (this.cfAccessor.isV3Enabled()) {
+				// CF API V3 variant
+				Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveOrgIdV3(orgName)
+					.map(org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse::getResources)
 					.flatMap(resList -> {
 						if (resList == null || resList.isEmpty()) {
 							return Mono.empty();
@@ -267,14 +271,35 @@ public class ReactiveTargetResolver implements TargetResolver {
 						return Mono.just(resList.get(0));
 					})
 					.map(res -> {
-						it.setResolvedOrgName(res.getEntity().getName());
-						it.setResolvedOrgId(res.getMetadata().getId());
+						it.setResolvedOrgName(res.getName());
+						it.setResolvedOrgId(res.getId());
 						return it;
 					})
-					.doOnError(e -> log.warn(String.format("Error on retrieving org id for org '%s'", it.getConfigTarget().getOrgName()), e))
+					.doOnError(e -> log.warn(String.format("Error on retrieving org id via V3 for org '%s'", orgName), e))
 					.onErrorResume(__ -> Mono.empty());
-			
-			return itMono.flux();
+				
+				return itMono.flux();
+			} else {
+				// CF API V2 variant
+				Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveOrgId(orgName)
+						.map(ListOrganizationsResponse::getResources)
+						.flatMap(resList -> {
+							if (resList == null || resList.isEmpty()) {
+								return Mono.empty();
+							}
+							
+							return Mono.just(resList.get(0));
+						})
+						.map(res -> {
+							it.setResolvedOrgName(res.getEntity().getName());
+							it.setResolvedOrgId(res.getMetadata().getId());
+							return it;
+						})
+						.doOnError(e -> log.warn(String.format("Error on retrieving org id via V2 for org '%s'", orgName), e))
+						.onErrorResume(__ -> Mono.empty());
+				
+				return itMono.flux();
+			}
 		}
 		
 		// Case 1 & 2: Get all orgs from the platform
