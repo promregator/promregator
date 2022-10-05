@@ -437,7 +437,7 @@ Specifies the route (and path) to a metric endpoint which is in front of the ser
 
 #### Item property "promregator.targets[].kubernetesAnnotations" (optional)
 Enables support for the de facto standard Kubernetes Prometheus annotations on your CF applications. This allows each application to "opt-in" to scraping
-by specifying the annotation `prometheus.io/scrape: "true"`. Annotations support requires a version of Cloud Foundry with the V3 API otherwise this setting will be ignored. 
+by specifying the annotation `prometheus.io/scrape: "true"`. Annotations support requires a version of Cloud Foundry with the V3 API otherwise configuration validation during startup of promregator fails. 
 
 For an example on deploying an app with these annotations see [here](https://github.com/cloudfoundry/cf-for-k8s-metric-examples).
 
