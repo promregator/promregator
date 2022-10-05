@@ -9,7 +9,7 @@ import org.cloudfoundry.promregator.cfaccessor.CFAccessorMockV2;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
-import org.cloudfoundry.promregator.scanner.ReactiveAppInstanceScanner;
+import org.cloudfoundry.promregator.scanner.ReactiveAppInstanceScannerV2;
 import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.cloudfoundry.promregator.springconfig.JMSSpringConfiguration;
 import org.mockito.Mockito;
@@ -29,7 +29,7 @@ public class CFDiscovererTestSpringApplicationCFAPIV2 {
 	
 	@Bean
 	public AppInstanceScanner appInstanceScanner() {
-		return new ReactiveAppInstanceScanner();
+		return new ReactiveAppInstanceScannerV2();
 	}
 
 	

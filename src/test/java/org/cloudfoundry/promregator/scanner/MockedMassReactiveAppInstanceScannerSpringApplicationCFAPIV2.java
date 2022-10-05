@@ -21,7 +21,7 @@ public class MockedMassReactiveAppInstanceScannerSpringApplicationCFAPIV2 {
 	
 	@Bean
 	public AppInstanceScanner appInstanceScanner() {
-		return new ReactiveAppInstanceScanner();
+		return new ReactiveAppInstanceScannerV2();
 	}
 	
 }

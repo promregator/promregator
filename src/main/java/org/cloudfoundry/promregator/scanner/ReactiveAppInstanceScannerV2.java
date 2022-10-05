@@ -25,9 +25,9 @@ import org.springframework.util.CollectionUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-public class ReactiveAppInstanceScanner implements AppInstanceScanner {
+public class ReactiveAppInstanceScannerV2 implements AppInstanceScanner {
 
-	private static final Logger log = LoggerFactory.getLogger(ReactiveAppInstanceScanner.class);
+	private static final Logger log = LoggerFactory.getLogger(ReactiveAppInstanceScannerV2.class);
 	private static final String INVALID_ORG_ID = "***invalid***";
 	private static final String INVALID_SPACE_ID = "***invalid***";
 	private static final Map<String, SpaceApplicationSummary> INVALID_SUMMARY = new HashMap<>();

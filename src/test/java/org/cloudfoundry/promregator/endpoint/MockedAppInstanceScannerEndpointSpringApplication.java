@@ -12,7 +12,7 @@ import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.CachingTargetResolver;
-import org.cloudfoundry.promregator.scanner.ReactiveAppInstanceScanner;
+import org.cloudfoundry.promregator.scanner.ReactiveAppInstanceScannerV2;
 import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -112,7 +112,7 @@ public class MockedAppInstanceScannerEndpointSpringApplication {
 	
 	@Bean
 	public AppInstanceScanner appInstanceScanner() {
-		return new ReactiveAppInstanceScanner();
+		return new ReactiveAppInstanceScannerV2();
 	}
 
 	@Bean
