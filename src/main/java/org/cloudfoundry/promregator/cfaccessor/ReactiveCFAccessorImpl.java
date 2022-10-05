@@ -26,6 +26,8 @@ import org.cloudfoundry.client.v2.spaces.ListSpacesRequest;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
 import org.cloudfoundry.client.v3.Pagination;
+import org.cloudfoundry.client.v3.applications.ListApplicationProcessesRequest;
+import org.cloudfoundry.client.v3.applications.ListApplicationProcessesResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
 import org.cloudfoundry.client.v3.spaces.GetSpaceRequest;
 import org.cloudfoundry.client.v3.spaces.GetSpaceResponse;
@@ -51,6 +53,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	private static final Logger log = LoggerFactory.getLogger(ReactiveCFAccessorImpl.class);
 	private boolean v3Enabled;
 	public static final org.cloudfoundry.client.v3.applications.ListApplicationsResponse INVALID_APPLICATIONS_RESPONSE = org.cloudfoundry.client.v3.applications.ListApplicationsResponse.builder().build();
+	private static final String CF_API_V3_PROCESS_TYPE = "web";
 
 	@Value("${cf.api_host}")
 	private String apiHost;
@@ -554,5 +557,29 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	@Override
 	public Mono<ListApplicationRoutesResponse> retrieveRoutesForAppId(String appId) {
 		throw new UnsupportedOperationException();
+	}
+	
+	@Override
+	public Mono<ListApplicationProcessesResponse> retrieveWebProcessesForApp(String applicationId) {
+		if (!isV3Enabled()) {
+			throw new UnsupportedOperationException("V3 API is not supported on your foundation.");
+		}
+		
+		PaginatedRequestGeneratorFunctionV3<ListApplicationProcessesRequest> requestGenerator = (resultsPerPage, pageNumber) ->
+			ListApplicationProcessesRequest.builder()
+				.applicationId(applicationId)
+				.type(CF_API_V3_PROCESS_TYPE)
+				.build();
+		
+		PaginatedResponseGeneratorFunctionV3<org.cloudfoundry.client.v3.processes.ProcessResource, ListApplicationProcessesResponse> responseGenerator = (list, numberOfPages) -> 
+			ListApplicationProcessesResponse.builder()
+			.addAllResources(list)
+			.pagination(Pagination.builder().totalPages(numberOfPages).totalResults(list.size()).build())
+			.build();
+		
+		return this.paginatedRequestFetcher.performGenericPagedRetrievalV3(RequestType.PROCESSES, applicationId, requestGenerator, 
+				r -> this.cloudFoundryClient.applicationsV3().listProcesses(r), 1000 /* TODO Create new request timeout config */, 
+				responseGenerator);
+		
 	}
 }
