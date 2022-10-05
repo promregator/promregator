@@ -625,7 +625,7 @@ class ReactiveTargetResolverTestCFAPIV3 {
 		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
 
 		Assertions.assertEquals(0, actualList.size());
-		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationsInSpaceV3(CFAccessorMockV2.UNITTEST_ORG_UUID,
+		Mockito.verify(this.cfAccessor, Mockito.times(2)).retrieveAllApplicationsInSpaceV3(CFAccessorMockV2.UNITTEST_ORG_UUID,
 																						   CFAccessorMockV2.UNITTEST_SPACE_UUID);
 	}
 
@@ -663,7 +663,7 @@ class ReactiveTargetResolverTestCFAPIV3 {
 		// Overrides pathing with annotations
 		Assertions.assertEquals("/actuator/prometheus", rt.getPath());
 		Assertions.assertEquals(t.getProtocol(), rt.getProtocol());
-		Mockito.verify(this.cfAccessor, Mockito.times(4)).retrieveAllApplicationsInSpaceV3(CFAccessorMockV2.UNITTEST_ORG_UUID,
+		Mockito.verify(this.cfAccessor, Mockito.times(5)).retrieveAllApplicationsInSpaceV3(CFAccessorMockV2.UNITTEST_ORG_UUID,
 																						   CFAccessorMockV2.UNITTEST_SPACE_UUID);
 	}
 }
