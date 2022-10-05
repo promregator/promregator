@@ -248,6 +248,69 @@ public class ReactiveTargetResolver implements TargetResolver {
 	}
 
 	private Flux<IntermediateTarget> resolveOrg(IntermediateTarget it) {
+		return this.cfAccessor.isV3Enabled() ? this.resolveOrgV3(it) : this.resolveOrgV2(it);
+	}
+	
+	private Flux<IntermediateTarget> resolveOrgV2(IntermediateTarget it) {
+		/* NB: Now we have to consider three cases:
+		 * Case 1: both orgName and orgRegex is empty => select all orgs
+		 * Case 2: orgName is null, but orgRegex is filled => filter all orgs with the regex
+		 * Case 3: orgName is filled, but orgRegex is null => select a single org
+		 * In cases 1 and 2, we need the list of all orgs on the platform.
+		 */
+		
+		if (it.getConfigTarget().getOrgRegex() == null && it.getConfigTarget().getOrgName() != null) {
+			// Case 3: we have the orgName, but we also need its id
+
+			final String orgName = it.getConfigTarget().getOrgName();
+
+			// CF API V2 variant
+			Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveOrgId(orgName)
+					.map(ListOrganizationsResponse::getResources)
+					.flatMap(resList -> {
+						if (resList == null || resList.isEmpty()) {
+							return Mono.empty();
+						}
+						
+						return Mono.just(resList.get(0));
+					})
+					.map(res -> {
+						it.setResolvedOrgName(res.getEntity().getName());
+						it.setResolvedOrgId(res.getMetadata().getId());
+						return it;
+					})
+					.doOnError(e -> log.warn(String.format("Error on retrieving org id via V2 for org '%s'", orgName), e))
+					.onErrorResume(__ -> Mono.empty());
+			
+			return itMono.flux();
+		}
+		
+		// Case 1 & 2: Get all orgs from the platform
+		Mono<ListOrganizationsResponse> responseMono = this.cfAccessor.retrieveAllOrgIds();
+
+		Flux<OrganizationResource> orgResFlux = responseMono.map(ListOrganizationsResponse::getResources)
+			.flatMapMany(Flux::fromIterable);
+		
+		if (it.getConfigTarget().getOrgRegex() != null) {
+			// Case 2
+			final Pattern filterPattern = Pattern.compile(it.getConfigTarget().getOrgRegex(), Pattern.CASE_INSENSITIVE);
+			
+			orgResFlux = orgResFlux.filter(orgRes -> {
+				Matcher m = filterPattern.matcher(orgRes.getEntity().getName());
+				return m.matches();
+			});
+		}
+		
+		return orgResFlux.map(orgRes -> {
+			IntermediateTarget itnew = new IntermediateTarget(it);
+			itnew.setResolvedOrgId(orgRes.getMetadata().getId());
+			itnew.setResolvedOrgName(orgRes.getEntity().getName());
+			
+			return itnew;
+		});
+	}
+
+	private Flux<IntermediateTarget> resolveOrgV3(IntermediateTarget it) {
 		/* NB: Now we have to consider three cases:
 		 * Case 1: both orgName and orgRegex is empty => select all orgs
 		 * Case 2: orgName is null, but orgRegex is filled => filter all orgs with the regex
@@ -279,26 +342,6 @@ public class ReactiveTargetResolver implements TargetResolver {
 					.onErrorResume(__ -> Mono.empty());
 				
 				return itMono.flux();
-			} else {
-				// CF API V2 variant
-				Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveOrgId(orgName)
-						.map(ListOrganizationsResponse::getResources)
-						.flatMap(resList -> {
-							if (resList == null || resList.isEmpty()) {
-								return Mono.empty();
-							}
-							
-							return Mono.just(resList.get(0));
-						})
-						.map(res -> {
-							it.setResolvedOrgName(res.getEntity().getName());
-							it.setResolvedOrgId(res.getMetadata().getId());
-							return it;
-						})
-						.doOnError(e -> log.warn(String.format("Error on retrieving org id via V2 for org '%s'", orgName), e))
-						.onErrorResume(__ -> Mono.empty());
-				
-				return itMono.flux();
 			}
 		}
 		
@@ -326,8 +369,12 @@ public class ReactiveTargetResolver implements TargetResolver {
 			return itnew;
 		});
 	}
-	
+
 	private Flux<IntermediateTarget> resolveSpace(IntermediateTarget it) {
+		return this.cfAccessor.isV3Enabled() ? this.resolveSpaceV3(it) : this.resolveSpaceV2(it);
+	}
+	
+	private Flux<IntermediateTarget> resolveSpaceV2(IntermediateTarget it) {
 		/* NB: Now we have to consider three cases:
 		 * Case 1: both spaceName and spaceRegex is empty => select all spaces (within the org)
 		 * Case 2: spaceName is null, but spaceRegex is filled => filter all spaces with the regex
@@ -339,10 +386,9 @@ public class ReactiveTargetResolver implements TargetResolver {
 		final String resolvedOrgId = it.getResolvedOrgId();
 		if (it.getConfigTarget().getSpaceRegex() == null && spaceName != null) {
 			// Case 3: we have the spaceName, but we also need its id
-			if (this.cfAccessor.isV3Enabled()) {
-				// CF API V3 variant
-				Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveSpaceIdV3(resolvedOrgId, spaceName)
-					.map(org.cloudfoundry.client.v3.spaces.ListSpacesResponse::getResources)
+			// CF API V2 variant
+			Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveSpaceId(resolvedOrgId, spaceName)
+					.map(ListSpacesResponse::getResources)
 					.flatMap(resList -> {
 						if (resList == null || resList.isEmpty()) {
 							return Mono.empty();
@@ -351,33 +397,69 @@ public class ReactiveTargetResolver implements TargetResolver {
 						return Mono.just(resList.get(0));
 					})
 					.map(res -> {
-						it.setResolvedSpaceName(res.getName());
-						it.setResolvedSpaceId(res.getId());
+						it.setResolvedSpaceName(res.getEntity().getName());
+						it.setResolvedSpaceId(res.getMetadata().getId());
 						return it;
-					}).doOnError(e -> log.warn(String.format("Error on retrieving space id for org '%s' and space '%s' using V3", it.getResolvedOrgName(), spaceName), e))
+					}).doOnError(e -> log.warn(String.format("Error on retrieving space id for org '%s' and space '%s' using V2", it.getResolvedOrgName(), spaceName), e))
 					.onErrorResume(__ -> Mono.empty());
-				
-				return itMono.flux();
-			} else {
-				// CF API V2 variant
-				Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveSpaceId(resolvedOrgId, spaceName)
-						.map(ListSpacesResponse::getResources)
-						.flatMap(resList -> {
-							if (resList == null || resList.isEmpty()) {
-								return Mono.empty();
-							}
-							
-							return Mono.just(resList.get(0));
-						})
-						.map(res -> {
-							it.setResolvedSpaceName(res.getEntity().getName());
-							it.setResolvedSpaceId(res.getMetadata().getId());
-							return it;
-						}).doOnError(e -> log.warn(String.format("Error on retrieving space id for org '%s' and space '%s' using V2", it.getResolvedOrgName(), spaceName), e))
-						.onErrorResume(__ -> Mono.empty());
-				
-				return itMono.flux();
-			}
+			
+			return itMono.flux();
+		}
+		
+		// Case 1 & 2: Get all spaces in the current org
+		Mono<ListSpacesResponse> responseMono = this.cfAccessor.retrieveSpaceIdsInOrg(resolvedOrgId);
+
+		Flux<SpaceResource> spaceResFlux = responseMono.map(ListSpacesResponse::getResources)
+			.flatMapMany(Flux::fromIterable);
+		
+		if (it.getConfigTarget().getSpaceRegex() != null) {
+			// Case 2
+			final Pattern filterPattern = Pattern.compile(it.getConfigTarget().getSpaceRegex(), Pattern.CASE_INSENSITIVE);
+			
+			spaceResFlux = spaceResFlux.filter(spaceRes -> {
+				Matcher m = filterPattern.matcher(spaceRes.getEntity().getName());
+				return m.matches();
+			});
+		}
+		
+		return spaceResFlux.map(spaceRes -> {
+			IntermediateTarget itnew = new IntermediateTarget(it);
+			itnew.setResolvedSpaceId(spaceRes.getMetadata().getId());
+			itnew.setResolvedSpaceName(spaceRes.getEntity().getName());
+			
+			return itnew;
+		});
+	}
+	
+	private Flux<IntermediateTarget> resolveSpaceV3(IntermediateTarget it) {
+		/* NB: Now we have to consider three cases:
+		 * Case 1: both spaceName and spaceRegex is empty => select all spaces (within the org)
+		 * Case 2: spaceName is null, but spaceRegex is filled => filter all spaces with the regex
+		 * Case 3: spaceName is filled, but spaceRegex is null => select a single space
+		 * In cases 1 and 2, we need the list of all spaces in the org.
+		 */
+		
+		final String spaceName = it.getConfigTarget().getSpaceName();
+		final String resolvedOrgId = it.getResolvedOrgId();
+		if (it.getConfigTarget().getSpaceRegex() == null && spaceName != null) {
+			// Case 3: we have the spaceName, but we also need its id
+			Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveSpaceIdV3(resolvedOrgId, spaceName)
+				.map(org.cloudfoundry.client.v3.spaces.ListSpacesResponse::getResources)
+				.flatMap(resList -> {
+					if (resList == null || resList.isEmpty()) {
+						return Mono.empty();
+					}
+					
+					return Mono.just(resList.get(0));
+				})
+				.map(res -> {
+					it.setResolvedSpaceName(res.getName());
+					it.setResolvedSpaceId(res.getId());
+					return it;
+				}).doOnError(e -> log.warn(String.format("Error on retrieving space id for org '%s' and space '%s' using V3", it.getResolvedOrgName(), spaceName), e))
+				.onErrorResume(__ -> Mono.empty());
+			
+			return itMono.flux();
 		}
 		
 		// Case 1 & 2: Get all spaces in the current org
