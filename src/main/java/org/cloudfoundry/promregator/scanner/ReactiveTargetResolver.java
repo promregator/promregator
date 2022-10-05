@@ -631,10 +631,6 @@ public class ReactiveTargetResolver implements TargetResolver {
 
 	private Flux<IntermediateTarget> resolveAnnotations(IntermediateTarget it) {
 		if (Boolean.TRUE.equals(it.getConfigTarget().getKubernetesAnnotations())) {
-			if (!this.cfAccessor.isV3Enabled()) {
-				return Flux.empty();
-			}
-			
 			Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> response = this.cfAccessor
 				.retrieveAllApplicationsInSpaceV3(it.getResolvedOrgId(), it.getResolvedSpaceId());
 
