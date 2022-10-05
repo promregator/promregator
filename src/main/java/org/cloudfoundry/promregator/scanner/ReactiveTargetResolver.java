@@ -335,10 +335,14 @@ public class ReactiveTargetResolver implements TargetResolver {
 		 * In cases 1 and 2, we need the list of all spaces in the org.
 		 */
 		
-		if (it.getConfigTarget().getSpaceRegex() == null && it.getConfigTarget().getSpaceName() != null) {
+		final String spaceName = it.getConfigTarget().getSpaceName();
+		final String resolvedOrgId = it.getResolvedOrgId();
+		if (it.getConfigTarget().getSpaceRegex() == null && spaceName != null) {
 			// Case 3: we have the spaceName, but we also need its id
-			Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveSpaceId(it.getResolvedOrgId(), it.getConfigTarget().getSpaceName())
-					.map(ListSpacesResponse::getResources)
+			if (this.cfAccessor.isV3Enabled()) {
+				// CF API V3 variant
+				Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveSpaceIdV3(resolvedOrgId, spaceName)
+					.map(org.cloudfoundry.client.v3.spaces.ListSpacesResponse::getResources)
 					.flatMap(resList -> {
 						if (resList == null || resList.isEmpty()) {
 							return Mono.empty();
@@ -347,17 +351,37 @@ public class ReactiveTargetResolver implements TargetResolver {
 						return Mono.just(resList.get(0));
 					})
 					.map(res -> {
-						it.setResolvedSpaceName(res.getEntity().getName());
-						it.setResolvedSpaceId(res.getMetadata().getId());
+						it.setResolvedSpaceName(res.getName());
+						it.setResolvedSpaceId(res.getId());
 						return it;
-					}).doOnError(e -> log.warn(String.format("Error on retrieving space id for org '%s' and space '%s'", it.getResolvedOrgName(), it.getConfigTarget().getSpaceName()), e))
+					}).doOnError(e -> log.warn(String.format("Error on retrieving space id for org '%s' and space '%s' using V3", it.getResolvedOrgName(), spaceName), e))
 					.onErrorResume(__ -> Mono.empty());
-			
-			return itMono.flux();
+				
+				return itMono.flux();
+			} else {
+				// CF API V2 variant
+				Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveSpaceId(resolvedOrgId, spaceName)
+						.map(ListSpacesResponse::getResources)
+						.flatMap(resList -> {
+							if (resList == null || resList.isEmpty()) {
+								return Mono.empty();
+							}
+							
+							return Mono.just(resList.get(0));
+						})
+						.map(res -> {
+							it.setResolvedSpaceName(res.getEntity().getName());
+							it.setResolvedSpaceId(res.getMetadata().getId());
+							return it;
+						}).doOnError(e -> log.warn(String.format("Error on retrieving space id for org '%s' and space '%s' using V2", it.getResolvedOrgName(), spaceName), e))
+						.onErrorResume(__ -> Mono.empty());
+				
+				return itMono.flux();
+			}
 		}
 		
 		// Case 1 & 2: Get all spaces in the current org
-		Mono<ListSpacesResponse> responseMono = this.cfAccessor.retrieveSpaceIdsInOrg(it.getResolvedOrgId());
+		Mono<ListSpacesResponse> responseMono = this.cfAccessor.retrieveSpaceIdsInOrg(resolvedOrgId);
 
 		Flux<SpaceResource> spaceResFlux = responseMono.map(ListSpacesResponse::getResources)
 			.flatMapMany(Flux::fromIterable);
