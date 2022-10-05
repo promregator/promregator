@@ -14,6 +14,7 @@ import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.organizations.OrganizationResource;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
+import org.cloudfoundry.client.v3.applications.ApplicationState;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.config.Target;
 import org.slf4j.Logger;
@@ -488,6 +489,10 @@ public class ReactiveTargetResolver implements TargetResolver {
 	}
 	
 	private Flux<IntermediateTarget> resolveApplication(IntermediateTarget it) {
+		return this.cfAccessor.isV3Enabled() ? this.resolveApplicationV3(it) : this.resolveApplicationV2(it);
+	}
+	
+	private Flux<IntermediateTarget> resolveApplicationV2(IntermediateTarget it) {
 		/* NB: Now we have to consider three cases:
 		 * Case 1: both applicationName and applicationRegex is empty => select all applications (in the space)
 		 * Case 2: applicationName is null, but applicationRegex is filled => filter all applications with the regex
@@ -507,7 +512,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 					.single()
 					.doOnError(e -> {
 						if (e instanceof NoSuchElementException) {
-							logEmptyTarget.warn(String.format("Application id could not be found for org '%s', space '%s' and application '%s'. Check your configuration of targets; skipping it for now; this message may be muted by setting the log level of the emitting logger accordingly!", it.getResolvedOrgName(), it.getResolvedSpaceName(), it.getConfigTarget().getApplicationName()));
+							logEmptyTarget.warn(String.format("Application id could not be found for org '%s', space '%s' and application '%s' using CF API V2. Check your configuration of targets; skipping it for now; this message may be muted by setting the log level of the emitting logger accordingly!", it.getResolvedOrgName(), it.getResolvedSpaceName(), it.getConfigTarget().getApplicationName()));
 						}
 					})
 					.onErrorResume(e -> Mono.empty())
@@ -517,7 +522,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 						it.setResolvedApplicationId(res.getMetadata().getId());
 						return it;
 					}).doOnError(e ->
-						log.warn(String.format("Error on retrieving application id for org '%s', space '%s' and application '%s'", it.getResolvedOrgName(), it.getResolvedSpaceName(), it.getConfigTarget().getApplicationName()), e)
+						log.warn(String.format("Error on retrieving application id for org '%s', space '%s' and application '%s' using CF API V2", it.getResolvedOrgName(), it.getResolvedSpaceName(), it.getConfigTarget().getApplicationName()), e)
 					)
 					.onErrorResume(__ -> Mono.empty());
 			
@@ -530,7 +535,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 		Flux<ApplicationResource> appResFlux = responseMono.map(ListApplicationsResponse::getResources)
 			.flatMapMany(Flux::fromIterable)
 			.doOnError(e ->
-				log.warn(String.format("Error on retrieving list of applications in org '%s' and space '%s'", it.getResolvedOrgName(), it.getResolvedSpaceName()), e))
+				log.warn(String.format("Error on retrieving list of applications in org '%s' and space '%s' using CF API V2", it.getResolvedOrgName(), it.getResolvedSpaceName()), e))
 			.onErrorResume(__ -> Flux.empty());
 		
 		if (it.getConfigTarget().getApplicationRegex() != null) {
@@ -550,6 +555,74 @@ public class ReactiveTargetResolver implements TargetResolver {
 			IntermediateTarget itnew = new IntermediateTarget(it);
 			itnew.setResolvedApplicationId(appRes.getMetadata().getId());
 			itnew.setResolvedApplicationName(appRes.getEntity().getName());
+			
+			return itnew;
+		});
+	}
+	
+	private Flux<IntermediateTarget> resolveApplicationV3(IntermediateTarget it) {
+		/* NB: Now we have to consider three cases:
+		 * Case 1: both applicationName and applicationRegex is empty => select all applications (in the space)
+		 * Case 2: applicationName is null, but applicationRegex is filled => filter all applications with the regex
+		 * Case 3: applicationName is filled, but applicationRegex is null => select a single application
+		 * In cases 1 and 2, we need the list of all applications in the space.
+		 */
+		
+		if (it.getConfigTarget().getApplicationRegex() == null && it.getConfigTarget().getApplicationName() != null) {
+			// Case 3: we have the applicationName, but we also need its id
+			
+			String appNameToSearchFor = it.getConfigTarget().getApplicationName().toLowerCase(Locale.ENGLISH);
+			
+			Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveAllApplicationsInSpaceV3(it.getResolvedOrgId(), it.getResolvedSpaceId())
+					.map(org.cloudfoundry.client.v3.applications.ListApplicationsResponse::getResources)
+					.flatMapMany(Flux::fromIterable)
+					.filter(appResource -> appNameToSearchFor.equals(appResource.getName().toLowerCase(Locale.ENGLISH)))
+					.single()
+					.doOnError(e -> {
+						if (e instanceof NoSuchElementException) {
+							logEmptyTarget.warn(String.format("Application id could not be found for org '%s', space '%s' and application '%s' using CF API V3. Check your configuration of targets; skipping it for now; this message may be muted by setting the log level of the emitting logger accordingly!", it.getResolvedOrgName(), it.getResolvedSpaceName(), it.getConfigTarget().getApplicationName()));
+						}
+					})
+					.onErrorResume(e -> Mono.empty())
+					.filter( res -> this.isApplicationInScrapableState(res.getState()))
+					.map(res -> {
+						it.setResolvedApplicationName(res.getName());
+						it.setResolvedApplicationId(res.getId());
+						return it;
+					}).doOnError(e ->
+						log.warn(String.format("Error on retrieving application id for org '%s', space '%s' and application '%s' using CF API V3", it.getResolvedOrgName(), it.getResolvedSpaceName(), it.getConfigTarget().getApplicationName()), e)
+					)
+					.onErrorResume(__ -> Mono.empty());
+			
+			return itMono.flux();
+		}
+		
+		// Case 1 & 2: Get all applications in the current space
+		Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> responseMono = this.cfAccessor.retrieveAllApplicationsInSpaceV3(it.getResolvedOrgId(), it.getResolvedSpaceId());
+
+		Flux<org.cloudfoundry.client.v3.applications.ApplicationResource> appResFlux = responseMono.map(org.cloudfoundry.client.v3.applications.ListApplicationsResponse::getResources)
+			.flatMapMany(Flux::fromIterable)
+			.doOnError(e ->
+				log.warn(String.format("Error on retrieving list of applications in org '%s' and space '%s' using CF API V3", it.getResolvedOrgName(), it.getResolvedSpaceName()), e))
+			.onErrorResume(__ -> Flux.empty());
+		
+		if (it.getConfigTarget().getApplicationRegex() != null) {
+			// Case 2
+			final Pattern filterPattern = Pattern.compile(it.getConfigTarget().getApplicationRegex(), Pattern.CASE_INSENSITIVE);
+			
+			appResFlux = appResFlux.filter(appRes -> {
+				Matcher m = filterPattern.matcher(appRes.getName());
+				return m.matches();
+			});
+		}
+		
+		Flux<org.cloudfoundry.client.v3.applications.ApplicationResource> scrapableFlux = appResFlux.filter(appRes ->
+				this.isApplicationInScrapableState(appRes.getState()));
+		
+		return scrapableFlux.map(appRes -> {
+			IntermediateTarget itnew = new IntermediateTarget(it);
+			itnew.setResolvedApplicationId(appRes.getId());
+			itnew.setResolvedApplicationName(appRes.getName());
 			
 			return itnew;
 		});
@@ -600,9 +673,22 @@ public class ReactiveTargetResolver implements TargetResolver {
 		}
 		
 		/* TODO: To be enhanced, once we know of further states, which are
-		 * also scrapeable.
+		 * also scrapable.
 		 */
 		
 		return false;
 	}
+	
+	private boolean isApplicationInScrapableState(ApplicationState state) {
+		if (state == ApplicationState.STARTED) {
+			return true;
+		}
+		
+		/* TODO: To be enhanced, once we know of further states, which are
+		 * also scrapable.
+		 */
+		
+		return false;
+	}
+
 }
