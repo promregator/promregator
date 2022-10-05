@@ -28,9 +28,9 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
-@SpringBootTest(classes = CFDiscovererTestSpringApplication.class)
+@SpringBootTest(classes = CFDiscovererTestSpringApplicationCFAPIV2.class)
 @TestPropertySource(locations="default.properties")
-class CFMultiDiscovererTest {
+class CFMultiDiscovererTestCFAPIV2 {
 	
 	@AfterAll
 	public static void cleanUp() {

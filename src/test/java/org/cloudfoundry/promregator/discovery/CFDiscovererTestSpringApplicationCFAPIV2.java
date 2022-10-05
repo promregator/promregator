@@ -19,7 +19,7 @@ import org.springframework.context.annotation.Import;
 
 @SpringBootApplication
 @Import({JMSSpringConfiguration.class})
-public class CFDiscovererTestSpringApplication {
+public class CFDiscovererTestSpringApplicationCFAPIV2 {
 	
 	@Bean
 	public TargetResolver targetResolver() {

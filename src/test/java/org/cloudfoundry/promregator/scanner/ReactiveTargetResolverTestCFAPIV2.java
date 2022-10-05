@@ -3,7 +3,6 @@ package org.cloudfoundry.promregator.scanner;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorMockV2;
@@ -17,13 +16,10 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import reactor.core.publisher.Mono;
-
-import static org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl.INVALID_APPLICATIONS_RESPONSE;
 
 @ExtendWith(SpringExtension.class)
-@SpringBootTest(classes = MockedReactiveTargetResolverSpringApplication.class)
-class ReactiveTargetResolverTest {
+@SpringBootTest(classes = MockedReactiveTargetResolverSpringApplicationCFAPIV2.class)
+class ReactiveTargetResolverTestCFAPIV2 {
 	@AfterAll
 	static void cleanupEnvironment() {
 		JUnitTestUtils.cleanUpAll();
@@ -613,40 +609,16 @@ class ReactiveTargetResolverTest {
 
 	@Test
 	void testWithV3Unsupported() {
-		Mono<ListApplicationsResponse> errorResponse = Mono.just(INVALID_APPLICATIONS_RESPONSE);
-		Mockito.when(this.cfAccessor.retrieveAllApplicationsInSpaceV3(CFAccessorMockV2.UNITTEST_ORG_UUID, CFAccessorMockV2.UNITTEST_SPACE_UUID))
-			   .thenReturn(errorResponse);
-
-		List<Target> list = new LinkedList<>();
-
-		Target t = new Target();
-		t.setOrgName("unittestorg");
-		t.setSpaceName("unittestspace");
-		t.setApplicationRegex(".*2");
-		t.setPath("path");
-		t.setProtocol("https");
-		t.setKubernetesAnnotations(true);
-		list.add(t);
-
-		List<ResolvedTarget> actualList = this.targetResolver.resolveTargets(list);
-
-		// Still returns 1 even though the annotations do not exist
-		Assertions.assertEquals(1, actualList.size());
-
-		ResolvedTarget rt = actualList.get(0);
-		Assertions.assertEquals(t, rt.getOriginalTarget());
-		Assertions.assertEquals(t.getOrgName(), rt.getOrgName());
-		Assertions.assertEquals(t.getSpaceName(), rt.getSpaceName());
-		Assertions.assertEquals("testapp2", rt.getApplicationName());
-		Assertions.assertEquals(t.getPath(), rt.getPath());
-		Assertions.assertEquals(t.getProtocol(), rt.getProtocol());
-
-		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationsInSpaceV3(CFAccessorMockV2.UNITTEST_ORG_UUID,
-																						   CFAccessorMockV2.UNITTEST_SPACE_UUID);
+		/* 
+		 * Due to https://github.com/promregator/promregator/blob/3796954ab51bd0f9297303ca308721534bdc9951/src/main/java/org/cloudfoundry/promregator/config/validations/CompatibleCAPIVersion.java#L20
+		 * this test does not make sense.
+		 */
+		Assertions.assertTrue(true);
 	}
 
 	@Test
 	void testWithAnnotationsUnexpectedValue() {
+		// V3 test only!
 		List<Target> list = new LinkedList<>();
 
 		Target t = new Target();
@@ -668,6 +640,7 @@ class ReactiveTargetResolverTest {
 
 	@Test
 	void testWithAnnotations() {
+		// V3 test only!
 		List<Target> list = new LinkedList<>();
 
 		Target t = new Target();

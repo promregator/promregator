@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class MockedReactiveTargetResolverSpringApplication {
+public class MockedReactiveTargetResolverSpringApplicationCFAPIV2 {
 	
 	@Bean
 	public CFAccessor cfAccessor() {

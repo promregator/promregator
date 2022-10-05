@@ -1,13 +1,13 @@
 package org.cloudfoundry.promregator.scanner;
 
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
-import org.cloudfoundry.promregator.cfaccessor.CFAccessorMassMockV2;
+import org.cloudfoundry.promregator.cfaccessor.CFAccessorMockV2;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class MockedMassReactiveAppInstanceScannerSpringApplication {
+public class MockedReactiveAppInstanceScannerSpringApplicationCFAPIV2 {
 	
 	@Bean
 	public InternalMetrics internalMetrics() {
@@ -16,7 +16,7 @@ public class MockedMassReactiveAppInstanceScannerSpringApplication {
 
 	@Bean
 	public CFAccessor cfAccessor() {
-		return new CFAccessorMassMockV2(10);
+		return new CFAccessorMockV2();
 	}
 	
 	@Bean

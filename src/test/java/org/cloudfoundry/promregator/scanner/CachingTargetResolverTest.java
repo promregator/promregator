@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.config.Target;
-import org.cloudfoundry.promregator.scanner.MockedCachingTargetResolverSpringApplication.MockedTargetResolver;
+import org.cloudfoundry.promregator.scanner.MockedCachingTargetResolverSpringApplicationCFAPIV2.MockedTargetResolver;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -16,7 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
-@SpringBootTest(classes = MockedCachingTargetResolverSpringApplication.class)
+@SpringBootTest(classes = MockedCachingTargetResolverSpringApplicationCFAPIV2.class)
 class CachingTargetResolverTest {
 	@AfterAll
 	static void cleanupEnvironment() {

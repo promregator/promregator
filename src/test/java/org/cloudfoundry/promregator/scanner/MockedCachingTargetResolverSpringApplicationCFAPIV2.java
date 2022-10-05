@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class MockedCachingTargetResolverSpringApplication {
+public class MockedCachingTargetResolverSpringApplicationCFAPIV2 {
 	
 	public static class MockedTargetResolver implements TargetResolver {
 		public static final Target target1 = new Target();
