@@ -98,7 +98,7 @@ class ReactiveTargetResolverTestCFAPIV3 {
 		Assertions.assertEquals(t.getPath(), rt.getPath());
 		Assertions.assertEquals(t.getProtocol(), rt.getProtocol());
 		
-		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMockV2.UNITTEST_ORG_UUID, CFAccessorMockV2.UNITTEST_SPACE_UUID);
+		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationsInSpaceV3(CFAccessorMockV3.UNITTEST_ORG_UUID, CFAccessorMockV3.UNITTEST_SPACE_UUID);
 	}
 
 	@Test
@@ -125,7 +125,7 @@ class ReactiveTargetResolverTestCFAPIV3 {
 		Assertions.assertEquals(t.getPath(), rt.getPath());
 		Assertions.assertEquals(t.getProtocol(), rt.getProtocol());
 		
-		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMockV2.UNITTEST_ORG_UUID, CFAccessorMockV2.UNITTEST_SPACE_UUID);
+		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationsInSpaceV3(CFAccessorMockV3.UNITTEST_ORG_UUID, CFAccessorMockV3.UNITTEST_SPACE_UUID);
 	}
 	
 	@Test
@@ -152,7 +152,7 @@ class ReactiveTargetResolverTestCFAPIV3 {
 		Assertions.assertEquals(t.getPath(), rt.getPath());
 		Assertions.assertEquals(t.getProtocol(), rt.getProtocol());
 		
-		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMockV2.UNITTEST_ORG_UUID, CFAccessorMockV2.UNITTEST_SPACE_UUID);
+		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationsInSpaceV3(CFAccessorMockV3.UNITTEST_ORG_UUID, CFAccessorMockV3.UNITTEST_SPACE_UUID);
 	}
 	
 	@Test
@@ -199,7 +199,7 @@ class ReactiveTargetResolverTestCFAPIV3 {
 		
 		Assertions.assertEquals(0, actualList.size());
 		
-		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMockV2.UNITTEST_ORG_UUID, CFAccessorMockV2.UNITTEST_SPACE_UUID_EXCEPTION);
+		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationsInSpaceV3(CFAccessorMockV3.UNITTEST_ORG_UUID, CFAccessorMockV3.UNITTEST_SPACE_UUID_EXCEPTION);
 	}
 	
 	@Test
@@ -438,8 +438,8 @@ class ReactiveTargetResolverTestCFAPIV3 {
 		Assertions.assertEquals(t.getPath(), rt.getPath());
 		Assertions.assertEquals(t.getProtocol(), rt.getProtocol());
 		
-		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllOrgIds();
-		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMockV2.UNITTEST_ORG_UUID, CFAccessorMockV2.UNITTEST_SPACE_UUID);
+		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllOrgIdsV3();
+		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationsInSpaceV3(CFAccessorMockV3.UNITTEST_ORG_UUID, CFAccessorMockV3.UNITTEST_SPACE_UUID);
 	}
 	
 	@Test
@@ -492,8 +492,8 @@ class ReactiveTargetResolverTestCFAPIV3 {
 		Assertions.assertEquals(t.getPath(), rt.getPath());
 		Assertions.assertEquals(t.getProtocol(), rt.getProtocol());
 		
-		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveSpaceIdsInOrg(CFAccessorMockV2.UNITTEST_ORG_UUID);
-		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMockV2.UNITTEST_ORG_UUID, CFAccessorMockV2.UNITTEST_SPACE_UUID);
+		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveSpaceIdsInOrgV3(CFAccessorMockV3.UNITTEST_ORG_UUID);
+		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationsInSpaceV3(CFAccessorMockV3.UNITTEST_ORG_UUID, CFAccessorMockV3.UNITTEST_SPACE_UUID);
 	}
 
 	@Test
@@ -520,8 +520,8 @@ class ReactiveTargetResolverTestCFAPIV3 {
 		Assertions.assertEquals(t.getPath(), rt.getPath());
 		Assertions.assertEquals(t.getProtocol(), rt.getProtocol());
 		
-		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveSpaceIdsInOrg(CFAccessorMockV2.UNITTEST_ORG_UUID);
-		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMockV2.UNITTEST_ORG_UUID, CFAccessorMockV2.UNITTEST_SPACE_UUID);
+		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveSpaceIdsInOrgV3(CFAccessorMockV3.UNITTEST_ORG_UUID);
+		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationsInSpaceV3(CFAccessorMockV3.UNITTEST_ORG_UUID, CFAccessorMockV3.UNITTEST_SPACE_UUID);
 	}
 	
 	@Test
@@ -548,8 +548,8 @@ class ReactiveTargetResolverTestCFAPIV3 {
 		Assertions.assertEquals(t.getPath(), rt.getPath());
 		Assertions.assertEquals(t.getProtocol(), rt.getProtocol());
 		
-		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveSpaceIdsInOrg(CFAccessorMockV2.UNITTEST_ORG_UUID);
-		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMockV2.UNITTEST_ORG_UUID, CFAccessorMockV2.UNITTEST_SPACE_UUID);
+		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveSpaceIdsInOrgV3(CFAccessorMockV3.UNITTEST_ORG_UUID);
+		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationsInSpaceV3(CFAccessorMockV3.UNITTEST_ORG_UUID, CFAccessorMockV3.UNITTEST_SPACE_UUID);
 	}
 	
 	@Test
