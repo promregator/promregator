@@ -642,19 +642,17 @@ public class ReactiveTargetResolver implements TargetResolver {
 				}
 
 				return res.getResources().stream()
-						  .filter(app -> it.getResolvedApplicationName()
-										   .equals(app.getName().toLowerCase(Locale.ENGLISH)))
-						  .filter(app -> this.isApplicationInScrapableState(app.getState().toString()))
-						  .filter(app -> app.getMetadata() != null)
-						  .filter(app -> app.getMetadata().getAnnotations() != null)
-						  .filter(app -> app.getMetadata().getAnnotations()
+						.filter(app -> it.getResolvedApplicationName().equals(app.getName().toLowerCase(Locale.ENGLISH)))
+						.filter(app -> this.isApplicationInScrapableState(app.getState().toString()))
+						.filter(app -> app.getMetadata() != null)
+						.filter(app -> app.getMetadata().getAnnotations() != null)
+						.filter(app -> app.getMetadata().getAnnotations()
 											.getOrDefault(PROMETHEUS_IO_SCRAPE, "false")
 											.equals("true"))
-						  .map(app -> {
-							  it.setResolvedMetricsPath(app.getMetadata().getAnnotations()
-														   .getOrDefault(PROMETHEUS_IO_PATH, null));
-							  return Mono.just(it);
-						  }).findFirst().orElseGet(Mono::empty);
+						.map(app -> {
+							it.setResolvedMetricsPath(app.getMetadata().getAnnotations().getOrDefault(PROMETHEUS_IO_PATH, null));
+							return Mono.just(it);
+						}).findFirst().orElseGet(Mono::empty);
 			}).doOnError(e ->
 				log.warn(String.format("Error on retrieving application annotations for org '%s', space '%s' and application '%s'.",
 										it.getResolvedOrgName(), it.getResolvedSpaceName(), it.getConfigTarget().getApplicationName()), e))
