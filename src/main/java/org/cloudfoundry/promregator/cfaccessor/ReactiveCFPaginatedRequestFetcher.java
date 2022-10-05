@@ -305,8 +305,7 @@ class ReactiveCFPaginatedRequestFetcher {
 
 		Mono<P> firstPage = Mono.just(reactiveTimer).doOnNext(ReactiveTimer::start).flatMap(dummy ->
 																								this.performGenericRetrieval(requestType, key, requestGenerator
-																									.
-																										apply(RESULTS_PER_PAGE, 1), requestFunction, timeoutInMS));
+																									.apply(RESULTS_PER_PAGE, 1), requestFunction, timeoutInMS));
 
 		Flux<R> requestFlux = firstPage.map(page -> page.getPagination().getTotalPages() - 1)
 									   .flatMapMany(pagesCount -> Flux.range(2, pagesCount))
@@ -318,7 +317,7 @@ class ReactiveCFPaginatedRequestFetcher {
 
 		/*
 		 * Word on error handling: We can't judge here what will be the consequence, if
-		 * the first page could be retrieved properly, but retrieving some some later
+		 * the first page could be retrieved properly, but retrieving some later
 		 * page fails. The implication would depend on the consumer (whether incomplete
 		 * data was ok or not). So the safe answer here is to raise an error for the
 		 * entire request. That, however, is already in place with the error handling in
