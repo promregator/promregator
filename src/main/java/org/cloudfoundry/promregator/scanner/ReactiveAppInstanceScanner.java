@@ -10,12 +10,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import org.apache.logging.log4j.util.Strings;
+import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.client.v2.domains.DomainResource;
 import org.cloudfoundry.client.v2.organizations.OrganizationResource;
 import org.cloudfoundry.client.v2.routes.Route;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
+import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +33,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	private static final String INVALID_ORG_ID = "***invalid***";
 	private static final String INVALID_SPACE_ID = "***invalid***";
 	private static final Map<String, SpaceApplicationSummary> INVALID_SUMMARY = new HashMap<>();
+	private static final Map<String, org.cloudfoundry.client.v3.applications.ApplicationResource> INVALID_APPSINSPACEV3 = new HashMap<>();
 
 	@Value("${promregator.defaultInternalRoutePort:8080}")
 	private int defaultInternalRoutePort;
@@ -217,6 +220,62 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			return Mono.just(v);
 		});
 
+		Flux<OSAVector> osaVectorDomainApplicationFlux;
+		if (this.cfAccessor.isV3Enabled()) {
+			osaVectorDomainApplicationFlux = determineApplicationUrlAndInstanceCountV3(osaVectorSpaceFlux);
+		} else {
+			osaVectorDomainApplicationFlux = determineApplicationUrlAndInstanceCountV2(osaVectorSpaceFlux);
+		}
+
+		// perform pre-filtering, if available
+		if (applicationIdFilter != null) {
+			osaVectorDomainApplicationFlux = osaVectorDomainApplicationFlux
+					.filter(v -> applicationIdFilter.test(v.getApplicationId()));
+		}
+
+		Flux<Instance> instancesFlux = osaVectorDomainApplicationFlux.flatMapSequential(v -> {
+			List<Instance> instances = new ArrayList<>(v.getNumberOfInstances());
+			for (int i = 0; i < v.numberOfInstances; i++) {
+				Instance inst = new Instance(v.getTarget(), String.format("%s:%d", v.getApplicationId(), i),
+						v.getAccessURL(), v.isInternal());
+
+				if(useOverrideRouteAndPath(v)) {
+					inst.setAccessUrl(this.formatAccessURL(v.getTarget().getProtocol(), v.getTarget().getOriginalTarget().getOverrideRouteAndPath(),
+							v.getTarget().getPath()));
+				}
+				else if (v.isInternal()) {
+					inst.setAccessUrl(this.formatInternalAccessURL(v.getAccessURL(), v.getTarget().getPath(),
+							v.getInternalRoutePort(), i));
+				} else {
+					inst.setAccessUrl(this.formatAccessURL(v.getTarget().getProtocol(), v.getAccessURL(),
+							v.getTarget().getPath()));
+				}
+
+				instances.add(inst);
+			}
+
+			return Flux.fromIterable(instances);
+		});
+
+		// perform pre-filtering, if available
+		if (instanceFilter != null) {
+			instancesFlux = instancesFlux.filter(instanceFilter);
+		}
+
+		Mono<List<Instance>> listInstancesMono = instancesFlux.collectList();
+
+		List<Instance> result = null;
+		try {
+			result = listInstancesMono.block();
+		} catch (RuntimeException e) {
+			log.error("Error during retrieving the instances of a list of targets", e);
+			result = null;
+		}
+
+		return result;
+	}
+
+	private Flux<OSAVector> determineApplicationUrlAndInstanceCountV2(Flux<OSAVector> osaVectorSpaceFlux) {
 		Flux<Map<String, SpaceApplicationSummary>> spaceSummaryFlux = osaVectorSpaceFlux
 				.flatMapSequential(v -> this.getSpaceSummary(v.getSpaceId()));
 		Flux<OSAVector> osaVectorApplicationFlux = Flux.zip(osaVectorSpaceFlux, spaceSummaryFlux).flatMap(tuple -> {
@@ -293,56 +352,51 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 
 			return Mono.just(v);
 		});
-
-
-		// perform pre-filtering, if available
-		if (applicationIdFilter != null) {
-			osaVectorDomainApplicationFlux = osaVectorDomainApplicationFlux
-					.filter(v -> applicationIdFilter.test(v.getApplicationId()));
-		}
-
-		Flux<Instance> instancesFlux = osaVectorDomainApplicationFlux.flatMapSequential(v -> {
-			List<Instance> instances = new ArrayList<>(v.getNumberOfInstances());
-			for (int i = 0; i < v.numberOfInstances; i++) {
-				Instance inst = new Instance(v.getTarget(), String.format("%s:%d", v.getApplicationId(), i),
-						v.getAccessURL(), v.isInternal());
-
-				if(useOverrideRouteAndPath(v)) {
-					inst.setAccessUrl(this.formatAccessURL(v.getTarget().getProtocol(), v.getTarget().getOriginalTarget().getOverrideRouteAndPath(),
-							v.getTarget().getPath()));
-				}
-				else if (v.isInternal()) {
-					inst.setAccessUrl(this.formatInternalAccessURL(v.getAccessURL(), v.getTarget().getPath(),
-							v.getInternalRoutePort(), i));
-				} else {
-					inst.setAccessUrl(this.formatAccessURL(v.getTarget().getProtocol(), v.getAccessURL(),
-							v.getTarget().getPath()));
-				}
-
-				instances.add(inst);
-			}
-
-			return Flux.fromIterable(instances);
-		});
-
-		// perform pre-filtering, if available
-		if (instanceFilter != null) {
-			instancesFlux = instancesFlux.filter(instanceFilter);
-		}
-
-		Mono<List<Instance>> listInstancesMono = instancesFlux.collectList();
-
-		List<Instance> result = null;
-		try {
-			result = listInstancesMono.block();
-		} catch (RuntimeException e) {
-			log.error("Error during retrieving the instances of a list of targets", e);
-			result = null;
-		}
-
-		return result;
+		return osaVectorDomainApplicationFlux;
 	}
 
+	private Flux<OSAVector> determineApplicationUrlAndInstanceCountV3(Flux<OSAVector> osaVectorSpaceFlux) {
+		/*
+		 * For V3 it is no longer possible to get the SpaceSummary.
+		 * This implies that we need to retrieve data on application level :-(
+		 * Instead, the instance count can be found at the Processes endpoint.
+		 * The ApplicationURL is buried in the Routes.
+		 * Fortunately, we can retrieve this information in parallel.
+		 */
+		
+		// first, we need to determine all apps in the space
+		Flux<Map<String, org.cloudfoundry.client.v3.applications.ApplicationResource>> applicationMapFlux = osaVectorSpaceFlux.flatMapSequential(v -> this.cfAccessor.retrieveAllApplicationsInSpaceV3(v.getOrgId(), v.getSpaceId()))
+			.flatMapSequential(response -> {
+				List<org.cloudfoundry.client.v3.applications.ApplicationResource> resources = response.getResources();
+				if (resources == null) {
+					return Mono.just(INVALID_APPSINSPACEV3);
+				}
+				Map<String, org.cloudfoundry.client.v3.applications.ApplicationResource> map = new HashMap<>(resources.size());
+				for (org.cloudfoundry.client.v3.applications.ApplicationResource ar: resources) {
+					map.put(ar.getName(), ar);
+				}
+				
+				return Mono.just(map);
+			});
+		
+		Flux.zip(osaVectorSpaceFlux, applicationMapFlux).flatMap(tuple -> {
+			OSAVector v = tuple.getT1();
+			
+			if (INVALID_APPSINSPACEV3 == tuple.getT2()) {
+				// NB: This drops the current target!
+				return Mono.empty();
+			}
+			
+			Map<String, org.cloudfoundry.client.v3.applications.ApplicationResource> applicationMap = tuple.getT2();
+			org.cloudfoundry.client.v3.applications.ApplicationResource ar = applicationMap.get(v.getTarget().getApplicationName().toLowerCase(LOCALE_OF_LOWER_CASE_CONVERSION_FOR_IDENTIFIER_COMPARISON));
+			if (ar == null) {
+				// NB: This drops the current target!
+				return Mono.empty();
+			}
+		});
+		
+	}
+	
 	private boolean useOverrideRouteAndPath(OSAVector v) {
 		return Strings.isNotEmpty(v.getTarget().getOriginalTarget().getOverrideRouteAndPath());
 	}
