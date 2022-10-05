@@ -277,7 +277,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			}
 
 			if (useOverrideRouteAndPath(v)) {
-			  v.setInternal(true);
+				v.setInternal(true);
 			}
 			// we should only run this if we found a domain in the above step
 			// this is to make sure we have compatibility with existing behaviour
@@ -347,7 +347,12 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		return Strings.isNotEmpty(v.getTarget().getOriginalTarget().getOverrideRouteAndPath());
 	}
 
+	
 	private Mono<String> getOrgId(String orgNameString) {
+		return this.cfAccessor.isV3Enabled() ? this.getOrgIdV3(orgNameString) : this.getOrgIdV2(orgNameString);
+	}
+	
+	private Mono<String> getOrgIdV2(String orgNameString) {
 		return this.cfAccessor.retrieveOrgId(orgNameString).flatMap(response -> {
 			List<OrganizationResource> resources = response.getResources();
 			if (resources == null) {
@@ -355,19 +360,43 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			}
 
 			if (resources.isEmpty()) {
-				log.warn(String.format("Received empty result on requesting org %s", orgNameString));
+				log.warn(String.format("Received empty result on requesting org %s using CF API V2", orgNameString));
 				return Mono.just(INVALID_ORG_ID);
 			}
 
 			OrganizationResource organizationResource = resources.get(0);
 			return Mono.just(organizationResource.getMetadata().getId());
 		}).onErrorResume(e -> {
-			log.error(String.format("retrieving Org Id for org Name '%s' resulted in an exception", orgNameString), e);
+			log.error(String.format("retrieving Org Id for org Name '%s' via CF API V2 resulted in an exception", orgNameString), e);
+			return Mono.just(INVALID_ORG_ID);
+		}).cache();
+	}
+	
+	private Mono<String> getOrgIdV3(String orgNameString) {
+		return this.cfAccessor.retrieveOrgIdV3(orgNameString).flatMap(response -> {
+			List<org.cloudfoundry.client.v3.organizations.OrganizationResource> resources = response.getResources();
+			if (resources == null) {
+				return Mono.just(INVALID_ORG_ID);
+			}
+
+			if (resources.isEmpty()) {
+				log.warn(String.format("Received empty result on requesting org %s using CF API V3", orgNameString));
+				return Mono.just(INVALID_ORG_ID);
+			}
+
+			org.cloudfoundry.client.v3.organizations.OrganizationResource organizationResource = resources.get(0);
+			return Mono.just(organizationResource.getId());
+		}).onErrorResume(e -> {
+			log.error(String.format("retrieving Org Id for org Name '%s' via CF API V3 resulted in an exception", orgNameString), e);
 			return Mono.just(INVALID_ORG_ID);
 		}).cache();
 	}
 
 	private Mono<String> getSpaceId(String orgIdString, String spaceNameString) {
+		return this.cfAccessor.isV3Enabled() ? this.getSpaceIdV3(orgIdString, spaceNameString) : this.getSpaceIdV2(orgIdString, spaceNameString);
+	}
+	
+	private Mono<String> getSpaceIdV2(String orgIdString, String spaceNameString) {
 
 		Mono<ListSpacesResponse> listSpacesResponse = this.cfAccessor.retrieveSpaceId(orgIdString, spaceNameString);
 
@@ -378,18 +407,43 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			}
 
 			if (resources.isEmpty()) {
-				log.warn(String.format("Received empty result on requesting space %s", spaceNameString));
+				log.warn(String.format("Received empty result on requesting space %s using CF API V2", spaceNameString));
 				return Mono.just(INVALID_SPACE_ID);
 			}
 
 			SpaceResource spaceResource = resources.get(0);
 			return Mono.just(spaceResource.getMetadata().getId());
 		}).onErrorResume(e -> {
-			log.error(String.format("retrieving space id for org id '%s' and space name '%s' resulted in an exception",
+			log.error(String.format("retrieving space id for org id '%s' and space name '%s' via CF API V2 resulted in an exception",
 					orgIdString, spaceNameString), e);
 			return Mono.just(INVALID_SPACE_ID);
 		}).cache();
 
+	}
+	
+	private Mono<String> getSpaceIdV3(String orgIdString, String spaceNameString) {
+		
+		Mono<ListSpacesResponse> listSpacesResponse = this.cfAccessor.retrieveSpaceId(orgIdString, spaceNameString);
+		
+		return listSpacesResponse.flatMap(response -> {
+			List<SpaceResource> resources = response.getResources();
+			if (resources == null) {
+				return Mono.just(INVALID_SPACE_ID);
+			}
+			
+			if (resources.isEmpty()) {
+				log.warn(String.format("Received empty result on requesting space %s using CF API V3", spaceNameString));
+				return Mono.just(INVALID_SPACE_ID);
+			}
+			
+			SpaceResource spaceResource = resources.get(0);
+			return Mono.just(spaceResource.getMetadata().getId());
+		}).onErrorResume(e -> {
+			log.error(String.format("retrieving space id for org id '%s' and space name '%s' via CF API V3 resulted in an exception",
+					orgIdString, spaceNameString), e);
+			return Mono.just(INVALID_SPACE_ID);
+		}).cache();
+		
 	}
 
 	private Mono<Map<String, SpaceApplicationSummary>> getSpaceSummary(String spaceIdString) {
