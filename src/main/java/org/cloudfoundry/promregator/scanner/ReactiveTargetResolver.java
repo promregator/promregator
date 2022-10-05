@@ -426,6 +426,10 @@ public class ReactiveTargetResolver implements TargetResolver {
 
 	private Flux<IntermediateTarget> resolveAnnotations(IntermediateTarget it) {
 		if (Boolean.TRUE.equals(it.getConfigTarget().getKubernetesAnnotations())) {
+			if (!this.cfAccessor.isV3Enabled()) {
+				return Flux.empty();
+			}
+			
 			Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> response = this.cfAccessor
 				.retrieveAllApplicationsInSpaceV3(it.getResolvedOrgId(), it.getResolvedSpaceId());
 
@@ -451,8 +455,9 @@ public class ReactiveTargetResolver implements TargetResolver {
 							  return Mono.just(it);
 						  }).findFirst().orElseGet(Mono::empty);
 			}).doOnError(e ->
-				 log.warn(String.format("Error on retrieving application annotations for org '%s', space '%s' and application '%s'.",
-										it.getResolvedOrgName(), it.getResolvedSpaceName(), it.getConfigTarget().getApplicationName()), e)).flux();
+				log.warn(String.format("Error on retrieving application annotations for org '%s', space '%s' and application '%s'.",
+										it.getResolvedOrgName(), it.getResolvedSpaceName(), it.getConfigTarget().getApplicationName()), e))
+			.flux();
 		}
 
 		return Mono.just(it).flux();
