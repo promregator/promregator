@@ -280,7 +280,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 						it.setResolvedOrgId(res.getMetadata().getId());
 						return it;
 					})
-					.doOnError(e -> log.warn(String.format("Error on retrieving org id via V2 for org '%s'", orgName), e))
+					.doOnError(e -> log.warn(String.format("Error on retrieving org id via CF API V2 for org '%s'", orgName), e))
 					.onErrorResume(__ -> Mono.empty());
 			
 			return itMono.flux();
@@ -339,7 +339,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 						it.setResolvedOrgId(res.getId());
 						return it;
 					})
-					.doOnError(e -> log.warn(String.format("Error on retrieving org id via V3 for org '%s'", orgName), e))
+					.doOnError(e -> log.warn(String.format("Error on retrieving org id via CF API V3 for org '%s'", orgName), e))
 					.onErrorResume(__ -> Mono.empty());
 				
 				return itMono.flux();
@@ -402,7 +402,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 						it.setResolvedSpaceName(res.getEntity().getName());
 						it.setResolvedSpaceId(res.getMetadata().getId());
 						return it;
-					}).doOnError(e -> log.warn(String.format("Error on retrieving space id for org '%s' and space '%s' using V2", it.getResolvedOrgName(), spaceName), e))
+					}).doOnError(e -> log.warn(String.format("Error on retrieving space id for org '%s' and space '%s' using CF API V2", it.getResolvedOrgName(), spaceName), e))
 					.onErrorResume(__ -> Mono.empty());
 			
 			return itMono.flux();
@@ -458,7 +458,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 					it.setResolvedSpaceName(res.getName());
 					it.setResolvedSpaceId(res.getId());
 					return it;
-				}).doOnError(e -> log.warn(String.format("Error on retrieving space id for org '%s' and space '%s' using V3", it.getResolvedOrgName(), spaceName), e))
+				}).doOnError(e -> log.warn(String.format("Error on retrieving space id for org '%s' and space '%s' using CF API V3", it.getResolvedOrgName(), spaceName), e))
 				.onErrorResume(__ -> Mono.empty());
 			
 			return itMono.flux();
@@ -636,8 +636,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 
 			return response.flatMap(res -> {
 				if (res == null || INVALID_APPLICATIONS_RESPONSE == res) {
-					logEmptyTarget
-						.debug("Your foundation does not support V3 APIs, yet you have enabled Kubernetes Annotation filtering. Ignoring annotation filtering.");
+					logEmptyTarget.debug("Your foundation does not support V3 APIs, yet you have enabled Kubernetes Annotation filtering. Ignoring annotation filtering.");
 					return Mono.just(it);
 				}
 
@@ -654,7 +653,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 							return Mono.just(it);
 						}).findFirst().orElseGet(Mono::empty);
 			}).doOnError(e ->
-				log.warn(String.format("Error on retrieving application annotations for org '%s', space '%s' and application '%s'.",
+				log.warn(String.format("Error on retrieving application annotations for org '%s', space '%s' and application '%s' using CF API V3.",
 										it.getResolvedOrgName(), it.getResolvedSpaceName(), it.getConfigTarget().getApplicationName()), e))
 			.flux();
 		}
@@ -669,6 +668,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 		
 		/* TODO: To be enhanced, once we know of further states, which are
 		 * also scrapable.
+		 * Adjustment here will also require adjustment below!
 		 */
 		
 		return false;
@@ -681,6 +681,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 		
 		/* TODO: To be enhanced, once we know of further states, which are
 		 * also scrapable.
+		 * Adjustment here will also require adjustment above!
 		 */
 		
 		return false;
