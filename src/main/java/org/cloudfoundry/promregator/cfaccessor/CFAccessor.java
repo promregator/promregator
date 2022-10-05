@@ -7,6 +7,8 @@ import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationProcessesResponse;
+import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
+import org.cloudfoundry.client.v3.domains.GetDomainResponse;
 import org.cloudfoundry.client.v3.spaces.GetSpaceResponse;
 
 import reactor.core.publisher.Mono;
@@ -40,13 +42,17 @@ public interface CFAccessor {
 
 	Mono<GetSpaceResponse> retrieveSpaceV3(String spaceId);
 
-	Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse> retrieveAllDomainsV3(String orgId);
-
 	Mono<org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse> retrieveRoutesForAppId(String appId);
 
 	Mono<ListApplicationProcessesResponse> retrieveWebProcessesForApp(String applicationId);
 	
+	Mono<ListApplicationRoutesResponse> retrieveRoutesForAppIdV3(String applicationId);
+
+	Mono<GetDomainResponse> retrieveDomainV3(String domainId);
+
 	boolean isV3Enabled();
 	
 	void reset();
+
+
 }

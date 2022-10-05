@@ -9,6 +9,7 @@ public enum RequestType {
 	SPACE_SUMMARY("spaceSummary", "retrieveSpaceSummary"),
 	DOMAINS("domains", "retrieveDomains"),	
 	PROCESSES("processes", "retrieveProcesses"),
+	ROUTES("routes", "retrieveRoutes"),
 	OTHER("other", "other"); // used for unit testing only
 	
 	private final String metricName;

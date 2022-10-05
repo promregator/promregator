@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Predicate;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
 import javax.annotation.Nullable;
+
 import org.apache.logging.log4j.util.Strings;
 import org.cloudfoundry.client.v2.domains.DomainResource;
 import org.cloudfoundry.client.v2.organizations.OrganizationResource;
@@ -21,7 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.util.CollectionUtils;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -243,7 +243,7 @@ public class ReactiveAppInstanceScannerV2 implements AppInstanceScanner {
 			List<String> urls = sas.getUrls();
 			if (urls != null && !urls.isEmpty()) {
 				// Set the access url to the selected route (without any protocol or path yet)
-				v.setAccessURL(this.determineApplicationRoute(urls,
+				v.setAccessURL(RouteUtils.determineApplicationRoute(urls,
 						v.getTarget().getOriginalTarget().getPreferredRouteRegexPatterns()));
 			} else {
 				// if there is no url, skip this one
@@ -308,14 +308,14 @@ public class ReactiveAppInstanceScannerV2 implements AppInstanceScanner {
 						v.getAccessURL(), v.isInternal());
 
 				if(useOverrideRouteAndPath(v)) {
-					inst.setAccessUrl(this.formatAccessURL(v.getTarget().getProtocol(), v.getTarget().getOriginalTarget().getOverrideRouteAndPath(),
+					inst.setAccessUrl(RouteUtils.formatAccessURL(v.getTarget().getProtocol(), v.getTarget().getOriginalTarget().getOverrideRouteAndPath(),
 							v.getTarget().getPath()));
 				}
 				else if (v.isInternal()) {
-					inst.setAccessUrl(this.formatInternalAccessURL(v.getAccessURL(), v.getTarget().getPath(),
+					inst.setAccessUrl(RouteUtils.formatInternalAccessURL(v.getAccessURL(), v.getTarget().getPath(), this.defaultInternalRoutePort,
 							v.getInternalRoutePort(), i));
 				} else {
-					inst.setAccessUrl(this.formatAccessURL(v.getTarget().getProtocol(), v.getAccessURL(),
+					inst.setAccessUrl(RouteUtils.formatAccessURL(v.getTarget().getProtocol(), v.getAccessURL(),
 							v.getTarget().getPath()));
 				}
 
@@ -411,65 +411,6 @@ public class ReactiveAppInstanceScannerV2 implements AppInstanceScanner {
 		});
 	}
 
-	private String formatAccessURL(final String protocol, final String hostnameDomain, final String path) {
-		final String applicationUrl = String.format("%s://%s", protocol, hostnameDomain);
-		log.debug(String.format("Using Application URL: '%s'", applicationUrl));
 
-		String applUrl = applicationUrl;
-		if (!applicationUrl.endsWith("/")) {
-			applUrl += '/';
-		}
 
-		String internalPath = path;
-		while (internalPath.startsWith("/")) {
-			internalPath = internalPath.substring(1);
-		}
-
-		return applUrl + internalPath;
-	}
-
-	private String formatInternalAccessURL(final String hostnameDomain, final String path, final int internalRoutePort,
-			final int instanceId) {
-		int port = internalRoutePort;
-		if(port == 0) {
-			port = defaultInternalRoutePort;
-		}
-		
-		String internalURL = String.format("%s.%s:%s", instanceId, hostnameDomain, port);
-		log.debug(String.format("Using internal Application URL: '%s'", internalURL));
-
-		return formatAccessURL("http", internalURL, path);
-	}
-
-	private String determineApplicationRoute(final List<String> urls, final List<Pattern> patterns) {
-		if (urls == null || urls.isEmpty()) {
-			log.debug("No URLs provided to determine ApplicationURL with");
-			return null;
-		}
-
-		if (CollectionUtils.isEmpty(patterns)) {
-			log.debug("No Preferred Route URL (Regex) provided; taking first Application Route in the list provided");
-			return urls.get(0);
-		}
-
-		for (Pattern pattern : patterns) {
-			for (String url : urls) {
-				log.debug(String.format("Attempting to match Application Route '%s' against pattern '%s'", url,
-						pattern.toString()));
-				Matcher m = pattern.matcher(url);
-				if (m.matches()) {
-					log.debug(String.format("Match found, using Application Route '%s'", url));
-					return url;
-				}
-			}
-		}
-
-		// if we reach this here, then we did not find any match in the regex.
-		// The fallback then is the old behavior by returned just the first-guess
-		// element
-		log.debug(String.format(
-				"Though Preferred Router URLs were provided, no route matched; taking the first route as fallback (compatibility!), which is '%s'",
-				urls.get(0)));
-		return urls.get(0);
-	}
 }

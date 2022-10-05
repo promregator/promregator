@@ -7,8 +7,6 @@ import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import org.apache.http.conn.util.InetAddressUtils;
 import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.client.v2.applications.ListApplicationsRequest;
@@ -29,6 +27,8 @@ import org.cloudfoundry.client.v3.Pagination;
 import org.cloudfoundry.client.v3.applications.ListApplicationProcessesRequest;
 import org.cloudfoundry.client.v3.applications.ListApplicationProcessesResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
+import org.cloudfoundry.client.v3.domains.GetDomainRequest;
+import org.cloudfoundry.client.v3.domains.GetDomainResponse;
 import org.cloudfoundry.client.v3.spaces.GetSpaceRequest;
 import org.cloudfoundry.client.v3.spaces.GetSpaceResponse;
 import org.cloudfoundry.promregator.cfaccessor.client.ReactorInfoV3;
@@ -45,6 +45,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 
 import reactor.core.publisher.Mono;
 
@@ -543,18 +546,6 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	}
 
 	@Override
-	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse> retrieveAllDomainsV3(String orgId) {
-		if (!isV3Enabled()) {
-			throw new UnsupportedOperationException("V3 API is not supported on your foundation.");
-		}
-
-		org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsRequest request = org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsRequest.builder().organizationId(orgId).build();
-
-		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.DOMAINS, orgId,
-																	request, r -> this.cloudFoundryClient.organizationsV3().listDomains(request), this.requestTimeoutDomains);
-	}
-
-	@Override
 	public Mono<ListApplicationRoutesResponse> retrieveRoutesForAppId(String appId) {
 		throw new UnsupportedOperationException();
 	}
@@ -569,6 +560,8 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 			ListApplicationProcessesRequest.builder()
 				.applicationId(applicationId)
 				.type(CF_API_V3_PROCESS_TYPE)
+				.perPage(resultsPerPage)
+				.page(pageNumber)
 				.build();
 		
 		PaginatedResponseGeneratorFunctionV3<org.cloudfoundry.client.v3.processes.ProcessResource, ListApplicationProcessesResponse> responseGenerator = (list, numberOfPages) -> 
@@ -581,5 +574,39 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 				r -> this.cloudFoundryClient.applicationsV3().listProcesses(r), 1000 /* TODO Create new request timeout config */, 
 				responseGenerator);
 		
+	}
+	
+	@Override
+	public Mono<org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse> retrieveRoutesForAppIdV3(String applicationId) {
+		if (!isV3Enabled()) {
+			throw new UnsupportedOperationException("V3 API is not supported on your foundation.");
+		}
+		
+		PaginatedRequestGeneratorFunctionV3<org.cloudfoundry.client.v3.applications.ListApplicationRoutesRequest> requestGenerator = (resultsPerPage, pageNumber) ->
+			org.cloudfoundry.client.v3.applications.ListApplicationRoutesRequest.builder()
+				.perPage(resultsPerPage)
+				.page(pageNumber)
+				.applicationId(applicationId)
+				.build();
+		
+		PaginatedResponseGeneratorFunctionV3<org.cloudfoundry.client.v3.routes.RouteResource, org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse> responseGenerator = (list, numberOfPages) ->
+			org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse.builder()
+				.addAllResources(list)
+				.pagination(Pagination.builder().totalPages(numberOfPages).totalResults(list.size()).build())
+				.build();
+			
+		return this.paginatedRequestFetcher.performGenericPagedRetrievalV3(RequestType.ROUTES, applicationId, requestGenerator,
+				r -> this.cloudFoundryClient.applicationsV3().listRoutes(r), 1000 /* TODO Create new request timeout config */,
+				responseGenerator);
+	}
+	
+	@Override
+	public Mono<GetDomainResponse> retrieveDomainV3(String domainId) {
+		if (!isV3Enabled()) {
+			throw new UnsupportedOperationException("V3 API is not supported on your foundation.");
+		}
+		
+		GetDomainRequest request = GetDomainRequest.builder().domainId(domainId).build();
+		return this.cloudFoundryClient.domainsV3().get(request);
 	}
 }
