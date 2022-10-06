@@ -25,7 +25,9 @@ import org.cloudfoundry.client.v2.spaces.SpaceResource;
 import org.cloudfoundry.client.v2.domains.Domain;
 import org.cloudfoundry.client.v2.domains.DomainEntity;
 import org.cloudfoundry.client.v2.domains.DomainResource;
+import org.cloudfoundry.client.v3.applications.ListApplicationProcessesResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
+import org.cloudfoundry.client.v3.domains.GetDomainResponse;
 import org.cloudfoundry.client.v3.spaces.GetSpaceResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -257,17 +259,27 @@ public class CFAccessorSimulator implements CFAccessor {
 	}
 
 	@Override
-	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse> retrieveAllDomainsV3(String orgId) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public Mono<ListApplicationRoutesResponse> retrieveRoutesForAppId(String appId) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public boolean isV3Enabled() {
-		return true;
+		return false;
+	}
+
+	@Override
+	public Mono<ListApplicationProcessesResponse> retrieveWebProcessesForApp(String applicationId) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Mono<ListApplicationRoutesResponse> retrieveRoutesForAppIdV3(String applicationId) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Mono<GetDomainResponse> retrieveDomainV3(String domainId) {
+		throw new UnsupportedOperationException();
 	}
 }

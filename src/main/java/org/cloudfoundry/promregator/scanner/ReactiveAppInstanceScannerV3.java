@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import org.apache.logging.log4j.util.Strings;
 import org.cloudfoundry.client.v3.ToOneRelationship;
@@ -122,7 +123,13 @@ public class ReactiveAppInstanceScannerV3 implements AppInstanceScanner {
 			Predicate<? super String> applicationIdFilter, 
 			Predicate<? super Instance> instanceFilter) {
 		
-		Flux<OSAVector> initialOSAVectorFlux = Flux.fromStream(targets.stream().filter(t -> applicationIdFilter.test(t.getApplicationId())))
+		Stream<ResolvedTarget> targetsStream = targets.stream();
+		
+		if (applicationIdFilter != null) {
+			targetsStream = targetsStream.filter(t -> applicationIdFilter.test(t.getApplicationId()));
+		}
+		
+		Flux<OSAVector> initialOSAVectorFlux = Flux.fromStream(targetsStream)
 				.map(rt -> {
 					OSAVector osaVector = new OSAVector();
 					osaVector.setTarget(rt);

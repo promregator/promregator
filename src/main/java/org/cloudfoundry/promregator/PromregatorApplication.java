@@ -23,6 +23,7 @@ import org.cloudfoundry.promregator.lifecycle.InstanceLifecycleHandler;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.CachingTargetResolver;
 import org.cloudfoundry.promregator.scanner.ReactiveAppInstanceScannerV2;
+import org.cloudfoundry.promregator.scanner.ReactiveAppInstanceScannerV3;
 import org.cloudfoundry.promregator.scanner.ReactiveTargetResolver;
 import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.cloudfoundry.promregator.springconfig.AuthenticatorSpringConfiguration;
@@ -147,7 +148,10 @@ public class PromregatorApplication {
 	}
 	
 	@Bean
-	public AppInstanceScanner appInstanceScanner() {
+	public AppInstanceScanner appInstanceScanner(@Qualifier("mainCFAccessor") CFAccessor cfAccessor) {
+		if (cfAccessor.isV3Enabled()) {
+			return new ReactiveAppInstanceScannerV3();
+		}
 		return new ReactiveAppInstanceScannerV2();
 	}
 	

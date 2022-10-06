@@ -14,7 +14,9 @@ import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
+import org.cloudfoundry.client.v3.applications.ListApplicationProcessesResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
+import org.cloudfoundry.client.v3.domains.GetDomainResponse;
 import org.cloudfoundry.client.v3.spaces.GetSpaceResponse;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.slf4j.Logger;
@@ -52,7 +54,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	private int refreshCacheApplicationLevelInSeconds;
 
 	@Value("${cf.cache.timeout.domain:3600}")
-	private int refreshCacheDomainLevelInSeconds;	
+	private int refreshCacheDomainLevelInSeconds;
 		
 	@Value("${cf.cache.expiry.org:120}")
 	private int expiryCacheOrgLevelInSeconds;
@@ -64,7 +66,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	private int expiryCacheApplicationLevelInSeconds;
 	
 	@Value("${cf.cache.expiry.domain:300}")
-	private int expiryCacheDomainLevelInSeconds;	
+	private int expiryCacheDomainLevelInSeconds;
 	
 	@Autowired
 	private InternalMetrics internalMetrics;
@@ -325,12 +327,6 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	}
 
 	@Override
-	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse> retrieveAllDomainsV3(String orgId) {
-		// TODO: Implement cache
-		return this.parent.retrieveAllDomainsV3(orgId);
-	}
-
-	@Override
 	public Mono<ListApplicationRoutesResponse> retrieveRoutesForAppId(String appId) {
 		throw new UnsupportedOperationException();
 	}
@@ -366,11 +362,29 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	@Override
 	public void invalidateCacheDomain() {
 		log.info("Invalidating domain cache");
-		this.domainsInOrgCache.synchronous().invalidateAll();		
+		this.domainsInOrgCache.synchronous().invalidateAll();
 	}
 
 	@Override
 	public void reset() {
 		this.parent.reset();
+	}
+
+	@Override
+	public Mono<ListApplicationProcessesResponse> retrieveWebProcessesForApp(String applicationId) {
+		// TODO Implement Cache
+		return this.parent.retrieveWebProcessesForApp(applicationId);
+	}
+
+	@Override
+	public Mono<ListApplicationRoutesResponse> retrieveRoutesForAppIdV3(String applicationId) {
+		// TODO Implement Cache
+		return this.parent.retrieveRoutesForAppIdV3(applicationId);
+	}
+
+	@Override
+	public Mono<GetDomainResponse> retrieveDomainV3(String domainId) {
+		// TODO Implement cache
+		return this.parent.retrieveDomainV3(domainId);
 	}
 }
