@@ -28,6 +28,7 @@ import org.cloudfoundry.client.v2.domains.DomainResource;
 import org.cloudfoundry.client.v3.applications.ListApplicationProcessesResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
 import org.cloudfoundry.client.v3.domains.GetDomainResponse;
+import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
 import org.cloudfoundry.client.v3.spaces.GetSpaceResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -280,6 +281,11 @@ public class CFAccessorSimulator implements CFAccessor {
 
 	@Override
 	public Mono<GetDomainResponse> retrieveDomainV3(String domainId) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Mono<ListRoutesResponse> retrieveRoutesForAppIdsV3(Iterable<String> appIds) {
 		throw new UnsupportedOperationException();
 	}
 }

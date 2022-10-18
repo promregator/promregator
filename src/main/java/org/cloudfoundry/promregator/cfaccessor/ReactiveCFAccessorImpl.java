@@ -29,6 +29,8 @@ import org.cloudfoundry.client.v3.applications.ListApplicationProcessesResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
 import org.cloudfoundry.client.v3.domains.GetDomainRequest;
 import org.cloudfoundry.client.v3.domains.GetDomainResponse;
+import org.cloudfoundry.client.v3.routes.ListRoutesRequest;
+import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
 import org.cloudfoundry.client.v3.spaces.GetSpaceRequest;
 import org.cloudfoundry.client.v3.spaces.GetSpaceResponse;
 import org.cloudfoundry.promregator.cfaccessor.client.ReactorInfoV3;
@@ -597,6 +599,30 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 			
 		return this.paginatedRequestFetcher.performGenericPagedRetrievalV3(RequestType.ROUTES, applicationId, requestGenerator,
 				r -> this.cloudFoundryClient.applicationsV3().listRoutes(r), 1000 /* TODO Create new request timeout config */,
+				responseGenerator);
+	}
+	
+	@Override
+	public Mono<ListRoutesResponse> retrieveRoutesForAppIdsV3(Iterable<String> appIds) {
+		if (!isV3Enabled()) {
+			throw new UnsupportedOperationException("V3 API is not supported on your foundation.");
+		}
+		
+		PaginatedRequestGeneratorFunctionV3<org.cloudfoundry.client.v3.routes.ListRoutesRequest> requestGenerator = (resultsPerPage, pageNumber) ->
+		org.cloudfoundry.client.v3.routes.ListRoutesRequest.builder()
+			.perPage(resultsPerPage)
+			.page(pageNumber)
+			.applicationIds(appIds)
+			.build();
+	
+	PaginatedResponseGeneratorFunctionV3<org.cloudfoundry.client.v3.routes.RouteResource, org.cloudfoundry.client.v3.routes.ListRoutesResponse> responseGenerator = (list, numberOfPages) ->
+		org.cloudfoundry.client.v3.routes.ListRoutesResponse.builder()
+			.addAllResources(list)
+			.pagination(Pagination.builder().totalPages(numberOfPages).totalResults(list.size()).build())
+			.build();
+		
+	return this.paginatedRequestFetcher.performGenericPagedRetrievalV3(RequestType.ROUTES, "", requestGenerator,
+				r -> this.cloudFoundryClient.routesV3().list(r), 1000 /* TODO Create new request timeout config */,
 				responseGenerator);
 	}
 	

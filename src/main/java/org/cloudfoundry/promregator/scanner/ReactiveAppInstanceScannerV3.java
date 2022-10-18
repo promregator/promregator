@@ -2,8 +2,10 @@ package org.cloudfoundry.promregator.scanner;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.logging.log4j.util.Strings;
@@ -12,12 +14,15 @@ import org.cloudfoundry.client.v3.applications.ListApplicationProcessesResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
 import org.cloudfoundry.client.v3.domains.GetDomainResponse;
 import org.cloudfoundry.client.v3.processes.ProcessResource;
+import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
 import org.cloudfoundry.client.v3.routes.RouteResource;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+
+import com.google.common.base.Functions;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -144,6 +149,34 @@ public class ReactiveAppInstanceScannerV3 implements AppInstanceScanner {
 		 * The ApplicationURL is buried in the Routes.
 		 * Fortunately, we can retrieve this information in parallel.
 		 */
+		
+		/*
+		 * We need to retrieve data on application level.
+		 * However, sending a request for each application is too costly.
+		 * That is why we need to mass-enable our calls
+		 */
+		Flux<List<OSAVector>> bufferedInitialOSAVectorFlux = initialOSAVectorFlux.buffer(10).cache();
+		
+		Flux<ListRoutesResponse> massRoutesFlux = bufferedInitialOSAVectorFlux.flatMap(osaVList -> {
+			List<String> appIds = osaVList.stream().map(r -> r.getTarget().getApplicationId()).collect(Collectors.toList());
+			return this.cfAccessor.retrieveRoutesForAppIdsV3(appIds);
+		});
+		
+		Flux.zip(bufferedInitialOSAVectorFlux, massRoutesFlux).flatMap(t -> {
+			List<OSAVector> osaVList = t.getT1();
+			
+			Map<String, OSAVector> appIdOSAVMap = osaVList.stream().collect(Collectors.toMap(osaV -> osaV.getTarget().getApplicationId(), Functions.identity()));
+			
+			t.getT2().getResources().forEach(rr -> {
+				rr.getDestinations().forEach( dest -> {
+					String appId = dest.getApplication().getApplicationId();
+					appIdOSAVMap.computeIfPresent(appId, (notUsed, osaV) -> {
+						
+					});
+				});
+			});
+		});
+
 		
 		Flux<ListApplicationProcessesResponse> webProcessForAppFlux = initialOSAVectorFlux.flatMap(rt -> this.cfAccessor.retrieveWebProcessesForApp(rt.getTarget().getApplicationId()));
 		

@@ -14,6 +14,7 @@ import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationProcessesResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
 import org.cloudfoundry.client.v3.domains.GetDomainResponse;
+import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
 import org.cloudfoundry.client.v3.spaces.GetSpaceResponse;
 import org.cloudfoundry.promregator.cache.AutoRefreshingCacheMap;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
@@ -616,5 +617,11 @@ public class CFAccessorCacheClassic implements CFAccessorCache {
 	public Mono<GetDomainResponse> retrieveDomainV3(String domainId) {
 		// TODO: Implement cache
 		return this.parent.retrieveDomainV3(domainId);
-	}	
+	}
+
+	@Override
+	public Mono<ListRoutesResponse> retrieveRoutesForAppIdsV3(Iterable<String> appIds) {
+		// TODO: Implement cache
+		return this.parent.retrieveRoutesForAppIdsV3(appIds);
+	}
 }
