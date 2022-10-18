@@ -237,7 +237,8 @@ class ReactiveCFPaginatedRequestFetcher {
 
 		Mono<P> firstPage = Mono.just(reactiveTimer).doOnNext(ReactiveTimer::start).flatMap(dummy ->
 																								this.performGenericRetrieval(requestType, key, requestGenerator.
-																																								   apply(OrderDirection.ASCENDING, RESULTS_PER_PAGE, 1), requestFunction,	timeoutInMS));
+																																								   apply(OrderDirection.ASCENDING, RESULTS_PER_PAGE, 1), requestFunction,	timeoutInMS))
+				.cache(); // required: used twice below (once for fetching additional pages, plus second time in Mono.zip() below);
 
 		Flux<R> requestFlux = firstPage.map(page -> page.getTotalPages() - 1)
 									   .flatMapMany(pagesCount -> Flux.range(2, pagesCount))
