@@ -1,0 +1,41 @@
+name: "CodeQL"
+
+on:
+  push:
+    branches: [ "master", "eventBus", "issue-35-applicationwildcard", "issue-35-applicationwildcard2", "issue-96-cfccdowntime-workaround", "issue-97", "issue-109", "nettyFetcher", "promcon2018", "reactor-netty-metricsfetcher", "rel-0.1", "rel-0.2", "rel-0.3", "rel-0.4", "rel-0.5", "rel-0.6", "rel-0.7", "rel-0.8", "rel-0.9", "rel-0.10", "reload", "simplifiedProm", "trecnoc-master", "upsDiscovery", "v3enablement-AppInstanceScannerV3", "v3enablement-combinedinvalidapproach", "v3enablement-packagedRead", "v3enablement-prep1" ]
+  pull_request:
+    branches: [ "master" ]
+  schedule:
+    - cron: "46 10 * * 5"
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ java ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: ${{ matrix.language }}
+          queries: +security-and-quality
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v2
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+        with:
+          category: "/language:${{ matrix.language }}"
