@@ -71,7 +71,7 @@ If you are still using the old `OAuth2XSUAA` authenticator, then you must migrat
 
 Note that you also will have to change the other configuration option's names from `promregator.authenticator.oauth2xsuaa` to `promregator.authenticator.oauth2xsuaabasic`.
 
-For further information, please refer to the [configuration documentation in release 0.11](https://github.com/promregator/promregator/blob/rel-0.11/docs/config.md).
+For further information, please refer to the [configuration documentation in version 0.11](https://github.com/promregator/promregator/blob/rel-0.11/docs/config.md).
 
 ## Switch to new Scraping Limiting Nomenclature
 
