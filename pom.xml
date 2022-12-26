@@ -151,7 +151,7 @@
 		<dependency>
 			<groupId>com.sap.cloud.security.xsuaa</groupId>
 			<artifactId>token-client</artifactId>
-			<version>2.11.11</version>
+			<version>2.13.4</version>
 			<!--  see also https://mvnrepository.com/artifact/com.sap.cloud.security.xsuaa/token-client -->
 		</dependency>
 
