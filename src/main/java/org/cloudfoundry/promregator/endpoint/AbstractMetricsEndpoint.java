@@ -5,7 +5,6 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -79,13 +78,7 @@ public abstract class AbstractMetricsEndpoint {
 
 	/**
 	 * The maximal processing time permitted for Scraping (in milliseconds).
-	 * The value is deprecated as it originates from the deprecated configuration option <pre>promregator.endpoint.maxProcessingTime</pre>.
-	 * @deprecated Use maxProcessingTime instead.
 	 */
-	@Value("${promregator.endpoint.maxProcessingTime:#{null}}")
-	@Deprecated
-	private Optional<Integer> maxProcessingTimeOld;
-
 	@Value("${promregator.scraping.maxProcessingTime:5000}")
 	private int maxProcessingTime;
 	
@@ -131,26 +124,18 @@ public abstract class AbstractMetricsEndpoint {
 	}
 	
 	@PostConstruct
-	public void warnOnDeprecatedMaxProcessingTime() {
-		if (this.maxProcessingTimeOld.isPresent()) {
-			log.warn("You are still using the deprecated option promregator.endpoint.maxProcessingTime. "
-					+ "Please switch to promregator.scraping.maxProcessingTime (same meaning) instead and remove the old one.");
-		}
-	}
-	
-	@PostConstruct
 	public void validateAndFixFetcherTimeouts() {
 		long localMaxProcessingTime = this.getMaxProcessingTime();
 		
 		if (this.fetcherConnectionTimeout > localMaxProcessingTime) {
 			log.warn("Fetcher's Connection Timeout is longer than the configured Maximal Processing Time of all fetchers; shortening timeout value to that value, as this does not make sense. "+
-					"Check your configured values for configuration options promregator.scraping.connectionTimeout and promregator.scraping.maxProcessingTime respectively promregator.endpoint.maxProcessingTime (deprecated)");
+					"Check your configured values for configuration options promregator.scraping.connectionTimeout and promregator.scraping.maxProcessingTime");
 			this.fetcherConnectionTimeout = (int) localMaxProcessingTime;
 		}
 		
 		if (this.fetcherSocketReadTimeout > localMaxProcessingTime) {
 			log.warn("Fetcher's Socket Read Timeout is longer than the configured Maximal Processing Time of all fetchers; shortening timeout value to that value, as this does not make sense. "+
-					"Check your configured values for configuration options promregator.scraping.socketReadTimeout and promregator.scraping.maxProcessingTime respectively promregator.endpoint.maxProcessingTime (deprecated)");
+					"Check your configured values for configuration options promregator.scraping.socketReadTimeout and promregator.scraping.maxProcessingTime");
 			this.fetcherSocketReadTimeout = (int) localMaxProcessingTime;
 		}
 	}
@@ -267,17 +252,7 @@ public abstract class AbstractMetricsEndpoint {
 	}
 
 	private long getMaxProcessingTime() {
-		if (this.maxProcessingTime != 4000) {
-			// different value than the default, so someone must have set it explicitly.
-			return this.maxProcessingTime;
-		}
-		
-		if (this.maxProcessingTimeOld.isPresent()) {
-			// the deprecated value still is set; use that one
-			return this.maxProcessingTimeOld.get();
-		}
-		
-		return this.maxProcessingTime; // must have been the value 4000
+		return this.maxProcessingTime;
 	}
 
 	private List<Future<HashMap<String, MetricFamilySamples>>> startMetricsFetchers(List<MetricsFetcher> callablesPrep) {

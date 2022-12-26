@@ -1,7 +1,6 @@
 package org.cloudfoundry.promregator;
 
 import java.time.Clock;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -180,24 +179,10 @@ public class PromregatorApplication {
 
 	/**
 	 * The number of threads of the scraping thread pool.
-	 * The value is coming from the deprecated configuration option <pre>promregator.endpoint.threads</pre>.
-	 * Use threadPoolSize instead
-	 * @deprecated
 	 */
-	@Value("${promregator.endpoint.threads:#{null}}")
-	@Deprecated
-	private Optional<Integer> threadPoolSizeOld;
-
 	@Value("${promregator.scraping.threads:5}")
 	private int threadPoolSize;
 	
-	@PostConstruct
-	public void warnOnDeprecatedThreadValue() {
-		if (this.threadPoolSizeOld.isPresent()) {
-			log.warn("You are still using the deprecated option promregator.endpoint.threads. "
-					+ "Please switch to promregator.scraping.threads (same meaning) instead and remove the old one.");
-		}
-	}
 	
 	@Bean
 	public ExecutorService metricsFetcherPool() {
@@ -206,17 +191,7 @@ public class PromregatorApplication {
 	}
 	
 	private int getThreadPoolSize() {
-		if (this.threadPoolSize != 5) {
-			// different value than the default, so someone must have set it explicitly.
-			return this.threadPoolSize;
-		}
-		
-		if (this.threadPoolSizeOld.isPresent()) {
-			// the deprecated value still is set; use that one
-			return this.threadPoolSizeOld.get();
-		}
-		
-		return this.threadPoolSize; // which means: 5
+		return this.threadPoolSize;
 	}
 
 	/* see also https://github.com/promregator/promregator/issues/54 */

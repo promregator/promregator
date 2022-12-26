@@ -67,11 +67,6 @@ basic:
   password: mypassword
 ```
 
-### Authentication Configuration for OAuth2XSUAA Authentication
-
-The OAuth2XSUAA Authentication type is deprecated and remains present due to backward compatibility. It is replaced by OAuth2XSUAABasic and behaves in the
-same way like that authentication type.
-
 ### Authentication Configuration for OAuth2XSUAABasic Authentication
 
 The OAuth2XSUAABasic Authentication scheme allows to set the following configuration options:

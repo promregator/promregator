@@ -515,12 +515,6 @@ The default value is 600 seconds (i.e. 10 minutes).
 ### Subgroup "promregator.endpoint"
 Configures the way how the metrics endpoints `/metrics` and `/singleTargetMetrics` behave.
 
-#### Option "promregator.endpoint.maxProcessingTime" (optional, *deprecated*)
-This option is deprecated since version 0.5.0. Please use `promregator.scraping.maxProcessingTime` instead.
-
-#### Option "promregator.endpoint.threads" (optional, *deprecated*)
-This option is deprecated since version 0.5.0. Please use `promregator.scraping.threads` instead.
-
 #### Option "promregator.endpoint.auth" (optional)
 Specifies the way how authentication shall be verified, if a request reaches the scraping endpoints of Promregator (e.g. `/metrics` and `/singleTargetMetrics`). Valid values are:
 

@@ -46,9 +46,17 @@ Note that you upgrade to Promregator V1 (or later), if your platform does not su
 ## Switch to new Proxy Nomenclature
 
 Check, if you still use the old `cf.proxyHost` or `cf.proxyPort` configuration options. They are deprecated since long.
-In case you do, rename those configuration attributes to `cf.proxy.host` and `cf.proxy.port`.
+In case you do, rename those configuration attributes to `cf.proxy.host` and `cf.proxy.port` respectively.
 
 In case you have both attribute variants set, you may safely delete `cf.proxyHost` and `cf.proxyPort`: The new one's took precedence in the past anyway.
+
+## Switch to new Scraping Limiting Nomenclature
+
+Check, if you still use the old `promregator.endpoint.maxProcessingTime` or `promregator.endpoint.threads` configuration option. They are deprecated since long.
+In case you do, rename those configuration attributes to `promregator.scraping.maxProcessingTime` and `promregator.scraping.threads`.
+
+In case you have both attribute variants set, you may safely delete `promregator.endpoint.maxProcessingTime` and `promregator.endpoint.threads`: The new one's took precedence in the past anyway.
+
 
 ## Switch to Caffeine Cache
 
