@@ -65,13 +65,13 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	private boolean skipSSLValidation;
 
 	/**
-	 * The hostname of the HTTP proxy based on the deprecated configuration option <pre>cf.proxyHost</pre>.
+	 * The hostname of the HTTP proxy.
 	 */
 	@Value("${cf.proxy.host:#{null}}") 
 	private String proxyHost;
 	
 	/**
-	 * The port of the HTTP proxy based on the deprecated configuration option <pre>cf.proxyPort</pre>.
+	 * The port of the HTTP proxy.
 	 */
 	@Value("${cf.proxy.port:0}") 
 	private int proxyPort;

@@ -70,22 +70,6 @@ public abstract class AbstractMetricsEndpoint {
 
 	@Autowired
 	private AuthenticatorController authenticatorController;
-
-	/**
-	 * The hostname of the HTTP proxy based on the deprecated configuration option <pre>cf.proxyHost</pre>.
-	 * @deprecated use <pre>proxyHost</pre> instead.
-	 */
-	@Value("${cf.proxyHost:@null}")
-	@Deprecated
-	private String proxyHostDeprecated;
-
-	/**
-	 * The port of the HTTP proxy based on the deprecated configuration option <pre>cf.proxyPort</pre>.
-	 * @deprecated use <pre>proxyPort</pre> instead.
-	 */
-	@Value("${cf.proxyPort:0}")
-	@Deprecated
-	private int proxyPortDeprecated;
 	
 	@Value("${promregator.scraping.proxy.host:@null}")
 	private String proxyHost;
@@ -376,18 +360,8 @@ public abstract class AbstractMetricsEndpoint {
 	}
 	
 	private void provideProxyConfiguration(CFMetricsFetcherConfig cfmfConfig) {
-		String effectiveProxyHost;
-		int effectiveProxyPort;
-		
-		if (this.proxyHost != null && this.proxyPort != 0) {
-			// using the new way
-			effectiveProxyHost = this.proxyHost;
-			effectiveProxyPort = this.proxyPort;
-		} else {
-			// possibly still using the old way
-			effectiveProxyHost = this.proxyHostDeprecated;
-			effectiveProxyPort = this.proxyPortDeprecated;
-		}
+		String effectiveProxyHost = this.proxyHost;
+		int effectiveProxyPort = this.proxyPort;
 		
 		if (effectiveProxyHost != null && effectiveProxyPort != 0) {
 			cfmfConfig.setProxyHost(effectiveProxyHost);
