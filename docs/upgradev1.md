@@ -53,13 +53,6 @@ In case you have both attribute variants set, you may safely delete `cf.proxyHos
 If you also want to make use of the same proxy configuration for scraping, copy the values of the configuration option to `promregator.scraping.proxy.host` and `promregator.scraping.proxy.port` respectively.
 
 
-## Switch to new Scraping Limiting Nomenclature
-
-Check, if you still use the old `promregator.endpoint.maxProcessingTime` or `promregator.endpoint.threads` configuration option. They are deprecated since long.
-In case you do, rename those configuration attributes to `promregator.scraping.maxProcessingTime` and `promregator.scraping.threads`.
-
-In case you have both attribute variants set, you may safely delete `promregator.endpoint.maxProcessingTime` and `promregator.endpoint.threads`: The new one's took precedence in the past anyway.
-
 
 ## Switch to Caffeine Cache
 
@@ -80,5 +73,31 @@ Note that you also will have to change the other configuration option's names fr
 
 For further information, please refer to the [configuration documentation in release 0.11](https://github.com/promregator/promregator/blob/rel-0.11/docs/config.md).
 
+## Switch to new Scraping Limiting Nomenclature
 
+Check, if you still use the old `promregator.endpoint.maxProcessingTime` or `promregator.endpoint.threads` configuration option. They are deprecated since long.
+In case you do, rename those configuration attributes to `promregator.scraping.maxProcessingTime` and `promregator.scraping.threads`.
+
+In case you have both attribute variants set, you may safely delete `promregator.endpoint.maxProcessingTime` and `promregator.endpoint.threads`: The new one's took precedence in the past anyway.
+
+## Switch to new Request Timeout Nomenclature (for Apps)
+
+Check, if you still use the old `cf.request.timeout.app` configuration option. It is  deprecated since long.
+In case you do, rename those configuration attributes to `cf.request.timeout.appInSpace`.
+
+In case you have both attribute variants set, you should check about Promregator's behavior: Due to a bug, it may have happened before that `cf.request.timeout.app` was ignored and the default of 2.5 seconds was applied - even though you *thought* to have advised otherwise. 
+
+
+## Switch to new Request Timeout Nomenclature (for Apps Details)
+
+Check, if you still use one of the old configuration options:
+
+* cf.request.timeout.routeMapping
+* cf.request.timeout.route
+* cf.request.timeout.sharedDomain
+* cf.request.timeout.process
+
+They are deprecated since long (version 0.5.0).
+
+They need to be replaced with the new configuration option `cf.request.timeout.appSummary`. Note that there is only one configuration option available for all of them. Consider this, when "merging" their values. If in doubt which value you should use, use the highest value.
 

@@ -278,10 +278,6 @@ This option defines the request timeout value for sending requests retrieving da
 
 By default, this value is set to 2500 milliseconds.
 
-### Option "cf.request.timeout.app" (deprecated)
-This option is no longer in use. Use `cf.request.timeout.appInSpace` instead.
-
-
 ### Option "cf.request.timeout.appInSpace" (optional)
 During discovery Promregator needs to retrieve metadata from the Cloud Foundry platform. To prevent congestion on requests, which may be caused by ongoing requests of scraping by Prometheus, requests sent to the Cloud Foundry platform have to respond within a certain timeframe (the "request timeout"). 
 
@@ -289,22 +285,6 @@ This option defines the request timeout value for sending requests retrieving a 
 
 By default, this value is set to 2500 milliseconds.
 
-
-### Option "cf.request.timeout.routeMapping" (optional)
-This option became obsolete with version 0.5.0. If applicable, consider using `cf.request.timeout.appSummary` instead.
-Any value specified for this option will be ignored in higher versions.
-
-### Option "cf.request.timeout.route" (optional)
-This option became obsolete with version 0.5.0. If applicable, consider using `cf.request.timeout.appSummary` instead.
-Any value specified for this option will be ignored in higher versions.
-
-### Option "cf.request.timeout.sharedDomain" (optional)
-This option became obsolete with version 0.5.0. If applicable, consider using `cf.request.timeout.appSummary` instead.
-Any value specified for this option will be ignored in higher versions.
-
-### Option "cf.request.timeout.process" (optional)
-This option became obsolete with version 0.5.0. If applicable, consider using `cf.request.timeout.appSummary` instead.
-Any value specified for this option will be ignored in higher versions.
 
 ### Option "cf.request.timeout.appSummary" (optional)
 During discovery Promregator needs to retrieve metadata from the Cloud Foundry platform. To prevent congestion on requests, which may be caused by ongoing requests of scraping by Prometheus, requests sent to the Cloud Foundry platform have to respond within a certain timeframe (the "request timeout"). 
