@@ -1,7 +1,7 @@
 package org.cloudfoundry.promregator.endpoint;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
-import org.cloudfoundry.promregator.cfaccessor.CFAccessorCacheClassic;
+import org.cloudfoundry.promregator.cfaccessor.CFAccessorCacheCaffeine;
 import org.cloudfoundry.promregator.endpoint.MockedAppInstanceScannerEndpointSpringApplication.MockedCFAccessorCache;
 import org.cloudfoundry.promregator.endpoint.MockedAppInstanceScannerEndpointSpringApplication.MockedCachingTargetResolver;
 import org.cloudfoundry.promregator.scanner.TargetResolver;
@@ -31,7 +31,7 @@ class InvalidateCacheEndpointTest {
 	private InvalidateCacheEndpoint subject;
 	
 	@Autowired
-	private CFAccessorCacheClassic cfAccessorCache;
+	private CFAccessorCacheCaffeine cfAccessorCache;
 	
 	@Autowired
 	private TargetResolver targetResolver;

@@ -12,7 +12,6 @@ import org.cloudfoundry.promregator.cfaccessor.AccessorCacheType;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorCache;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorCacheCaffeine;
-import org.cloudfoundry.promregator.cfaccessor.CFAccessorCacheClassic;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorSimulator;
 import org.cloudfoundry.promregator.cfaccessor.CFWatchdog;
 import org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl;
@@ -69,7 +68,7 @@ public class PromregatorApplication {
 	@Value("${promregator.workaround.dnscache.timeout:-1}")
 	private int javaDnsCacheWorkaroundTimeout;
 
-	@Value("${cf.cache.type:CLASSIC}")
+	@Value("${cf.cache.type:CAFFEINE}")
 	// NB: Spring supports configuration values for enums to be both upper- and lowercased
 	private AccessorCacheType cacheType;
 	
@@ -109,9 +108,7 @@ public class PromregatorApplication {
 	
 	@Bean
 	public CFAccessorCache cfAccessorCache(@Qualifier("mainCFAccessor") CFAccessor cfMainAccessor) {
-		if (this.cacheType == AccessorCacheType.CLASSIC) {
-			return new CFAccessorCacheClassic(cfMainAccessor);
-		} else if (this.cacheType == AccessorCacheType.CAFFEINE) {
+		if (this.cacheType == AccessorCacheType.CAFFEINE) {
 			return new CFAccessorCacheCaffeine(cfMainAccessor);
 		} else {
 			throw new UnknownCacheTypeError("Unknown CF Accessor Cache selected: "+this.cacheType);
