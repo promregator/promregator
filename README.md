@@ -80,7 +80,7 @@ Promregator is currently preparing to provide a new major version. Here are the 
 |--------------------|-------------------------------------|------------------------------------------|
 | CFCC API Version   | V3 only                             | V2 only (special cases with V3)          |
 | Classic Cache      | no longer supported                 | default, available in all minor versions |
-| Guava Cache        | default                             | optional, starting with 0.x.x            |
+| Caffeine Cache     | default                             | optional, starting with 0.x.x            |
 
 It is recommended that you upgrade to the new major version on next occassion. 
 An upgrade guide is provided [here](docs/upgrade.md).
