@@ -298,6 +298,12 @@
 			<artifactId>awaitility</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.ninja-squad</groupId>
+			<artifactId>springmockk</artifactId>
+			<version>3.0.1</version>
+			<scope>test</scope>
+		</dependency>
 
 		<!-- Prometheus stuff -->
 		<dependency>
@@ -344,6 +350,7 @@
 			<artifactId>guava</artifactId>
 			<version>${guava-version}</version>
 		</dependency>
+
 	</dependencies>
 
 	<dependencyManagement>
