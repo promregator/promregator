@@ -73,6 +73,18 @@ For further details on the architecture of Promregator, please look at the [arch
 
 During the course of action, we came across several other implementation alternatives. Due to one or the other reason they were not implemented. You may find a detailed discussion about these approaches on our [discarded ideas page](docs/discarded-ideas.md).
 
+## Differences on Major Versions
+Promregator is currently preparing to provide a new major version. Here are the main differences from a user perspective between the two versions.
+
+| Aspect             | Version 1.x.x                       | Version 0.x.x                            |
+|--------------------|-------------------------------------|------------------------------------------|
+| CFCC API Version   | V3 only                             | V2 only (special cases with V3)          |
+| Classic Cache      | no longer supported                 | default, available in all minor versions |
+| Guava Cache        | default                             | optional, starting with 0.x.x            |
+
+It is recommended that you upgrade to the new major version on next occassion. 
+An upgrade guide is provided [here](docs/upgrade.md).
+
 ## Prerequisites
 
 Running Promregator requires:
