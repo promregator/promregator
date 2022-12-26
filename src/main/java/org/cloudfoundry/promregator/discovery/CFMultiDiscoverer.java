@@ -14,7 +14,8 @@ import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
-import org.cloudfoundry.promregator.messagebus.MessageBusDestination;
+import org.cloudfoundry.promregator.messagebus.MessageBus;
+import org.cloudfoundry.promregator.messagebus.MessageBusTopic;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
@@ -23,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.jms.core.JmsTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 
 public class CFMultiDiscoverer implements CFDiscoverer {
@@ -39,8 +39,7 @@ public class CFMultiDiscoverer implements CFDiscoverer {
 	private PromregatorConfiguration promregatorConfiguration;
 
 	@Autowired
-	private JmsTemplate jmsTemplate;
-	
+	private MessageBus messageBus;
 
 	@Autowired
 	private Clock clock;
@@ -121,7 +120,7 @@ public class CFMultiDiscoverer implements CFDiscoverer {
 			log.info(String.format("Instance %s has timed out; cleaning up", entry.getKey()));
 			
 			// broadcast event to JMS topic, that the instance is to be deleted
-			this.jmsTemplate.convertAndSend(MessageBusDestination.DISCOVERER_INSTANCE_REMOVED, entry.getKey());
+			this.messageBus.notifyEvent(MessageBusTopic.DISCOVERER_INSTANCE_REMOVED, entry.getKey());
 			
 			it.remove();
 		}

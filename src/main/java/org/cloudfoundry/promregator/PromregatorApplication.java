@@ -19,6 +19,7 @@ import org.cloudfoundry.promregator.config.ConfigurationValidations;
 import org.cloudfoundry.promregator.discovery.CFMultiDiscoverer;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.cloudfoundry.promregator.lifecycle.InstanceLifecycleHandler;
+import org.cloudfoundry.promregator.messagebus.MessageBus;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.CachingTargetResolver;
 import org.cloudfoundry.promregator.scanner.ReactiveAppInstanceScanner;
@@ -27,7 +28,6 @@ import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.cloudfoundry.promregator.springconfig.AuthenticatorSpringConfiguration;
 import org.cloudfoundry.promregator.springconfig.BasicAuthenticationSpringConfiguration;
 import org.cloudfoundry.promregator.springconfig.ErrorSpringConfiguration;
-import org.cloudfoundry.promregator.springconfig.JMSSpringConfiguration;
 import org.cloudfoundry.promregator.websecurity.SecurityConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +51,7 @@ import reactor.core.publisher.Hooks;
 // Warning! This implies @ComponentScan - and we really must have that in place, e.g. due to JMS :(
 
 @EnableScheduling
-@Import({ BasicAuthenticationSpringConfiguration.class, SecurityConfig.class, ErrorSpringConfiguration.class, JMSSpringConfiguration.class, AuthenticatorSpringConfiguration.class })
+@Import({ BasicAuthenticationSpringConfiguration.class, SecurityConfig.class, ErrorSpringConfiguration.class, AuthenticatorSpringConfiguration.class })
 @EnableAsync
 public class PromregatorApplication {
 	private static final Logger log = LoggerFactory.getLogger(PromregatorApplication.class);
@@ -235,6 +235,11 @@ public class PromregatorApplication {
 	@Bean
 	public UUID promregatorInstanceIdentifier() {
 		return UUID.randomUUID();
+	}
+	
+	@Bean
+	public MessageBus messageBus() {
+		return new MessageBus();
 	}
 	
 	@PostConstruct

@@ -17,6 +17,7 @@ import org.cloudfoundry.promregator.auth.AuthenticatorController;
 import org.cloudfoundry.promregator.auth.NullEnricher;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.discovery.CFMultiDiscoverer;
+import org.cloudfoundry.promregator.messagebus.MessageBus;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
@@ -142,5 +143,10 @@ public class MockedMetricsEndpointSpringApplication {
 	@Bean
 	public HttpServletRequest httpServletRequest() {
 		return mockedHttpServletRequest;
+	}
+	
+	@Bean
+	public MessageBus messageBus() {
+		return new MessageBus();
 	}
 }

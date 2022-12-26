@@ -109,6 +109,9 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 
 	@Value("${promregator.internal.preCheckAPIVersion:true}")
 	private boolean performPrecheckOfAPIVersion;
+
+	@Value("${promregator.internal.checkAPIVersion3:true}")
+	private boolean performAPIVersion3Check;
 	
 	@Value("${cf.request.rateLimit:0}") 
 	private double requestRateLimit;
@@ -230,14 +233,16 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 			log.info("Target CF platform is running on API version {}", apiVersion);
 		}
 
-		// Ensures v3 API exists. The CF Java Client does not yet implement the info endpoint for V3, so we do it manually.
-		JsonNode v3Info = new ReactorInfoV3(this.cloudFoundryClient.getConnectionContext(), this.cloudFoundryClient.getRootV3(),
-											this.cloudFoundryClient.getTokenProvider(), this.cloudFoundryClient.getRequestTags())
-			.get().onErrorReturn(JsonNodeFactory.instance.nullNode()).block();
-
-		if (v3Info == null || v3Info.isNull()) {
-			log.error("Unable to get v3 info endpoint of CF platform. This version requires that CF API V3 is supported");
-			throw new UnsupportedOperationException("CF API V3 is not supported");
+		if (this.performAPIVersion3Check) {
+			// Ensures v3 API exists. The CF Java Client does not yet implement the info endpoint for V3, so we do it manually.
+			JsonNode v3Info = new ReactorInfoV3(this.cloudFoundryClient.getConnectionContext(), this.cloudFoundryClient.getRootV3(),
+												this.cloudFoundryClient.getTokenProvider(), this.cloudFoundryClient.getRequestTags())
+				.get().onErrorReturn(JsonNodeFactory.instance.nullNode()).block();
+	
+			if (v3Info == null || v3Info.isNull()) {
+				log.error("Unable to get v3 info endpoint of CF platform. This version requires that CF API V3 is supported");
+				throw new UnsupportedOperationException("CF API V3 is not supported");
+			}
 		}
 	}
 

@@ -12,25 +12,25 @@ import java.util.List;
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorMock;
 import org.cloudfoundry.promregator.config.Target;
-import org.cloudfoundry.promregator.messagebus.MessageBusDestination;
+import org.cloudfoundry.promregator.messagebus.MessageBus;
+import org.cloudfoundry.promregator.messagebus.MessageBusTopic;
+import org.cloudfoundry.promregator.messagebus.MessageSubscriber;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
 import org.cloudfoundry.promregator.scanner.TargetResolver;
-import org.cloudfoundry.promregator.springconfig.JMSSpringConfiguration;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.jms.annotation.JmsListener;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = CFDiscovererTestSpringApplication.class)
 @TestPropertySource(locations="default.properties")
-class CFMultiDiscovererTest {
+class CFMultiDiscovererTest implements MessageSubscriber {
 	
 	@AfterAll
 	public static void cleanUp() {
@@ -46,15 +46,24 @@ class CFMultiDiscovererTest {
 	@Autowired
 	private Clock clock;
 	
+	@Autowired
+	private MessageBus messageBus;
+	
 	private List<Instance> removerTriggerForInstances = new LinkedList<>();
 	
-	@JmsListener(destination=MessageBusDestination.DISCOVERER_INSTANCE_REMOVED, containerFactory=JMSSpringConfiguration.BEAN_NAME_JMS_LISTENER_CONTAINER_FACTORY)
-	public void receiver(Instance instance) {
+	@Override
+	public void receiveMessage(String topic, Object message) {
+		Assertions.assertEquals(MessageBusTopic.DISCOVERER_INSTANCE_REMOVED, topic);
+		
+		Instance instance = (Instance) message;
+		
 		this.removerTriggerForInstances.add(instance);
 	}
-	
+
 	@Test
 	void testDiscoverWithCleanup() throws InterruptedException {
+		this.messageBus.subscribe(MessageBusTopic.DISCOVERER_INSTANCE_REMOVED, this);
+		
 		List<ResolvedTarget> resolvedTargets = new ArrayList<>();
 		ResolvedTarget aTarget = new ResolvedTarget();
 		aTarget.setOrgName("unittestorg");
@@ -132,5 +141,6 @@ class CFMultiDiscovererTest {
 			Assertions.assertEquals(2, this.removerTriggerForInstances.size());
 		}
 	}
+
 
 }
