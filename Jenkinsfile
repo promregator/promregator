@@ -2,6 +2,20 @@
 
 import groovy.xml.XmlUtil
 
+properties([
+  // see also https://docs.cloudbees.com/docs/cloudbees-ci-kb/latest/client-and-managed-masters/how-do-i-set-discard-old-builds-for-a-multi-branch-pipeline-job
+  // only keep 25 builds to prevent disk usage from growing out of control
+  buildDiscarder(
+    logRotator(
+      artifactDaysToKeepStr: '', 
+      artifactNumToKeepStr: '', 
+      daysToKeepStr: '', 
+      numToKeepStr: '25',
+    ),
+  ),
+])
+
+
 def executeShell(command) {
 	def result = sh returnStdout: true, script: command
 	return result.trim()
