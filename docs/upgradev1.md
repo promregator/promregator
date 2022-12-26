@@ -50,6 +50,9 @@ In case you do, rename those configuration attributes to `cf.proxy.host` and `cf
 
 In case you have both attribute variants set, you may safely delete `cf.proxyHost` and `cf.proxyPort`: The new one's took precedence in the past anyway.
 
+If you also want to make use of the same proxy configuration for scraping, copy the values of the configuration option to `promregator.scraping.proxy.host` and `promregator.scraping.proxy.port` respectively.
+
+
 ## Switch to new Scraping Limiting Nomenclature
 
 Check, if you still use the old `promregator.endpoint.maxProcessingTime` or `promregator.endpoint.threads` configuration option. They are deprecated since long.

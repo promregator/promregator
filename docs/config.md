@@ -344,7 +344,7 @@ If you want to make the system establish the connection to the API host using an
 
 Please also make sure that you set "cf.proxy.port", too, as otherwise proxy support will be disabled.
 
-Note: In contrast to the deprecated option `cf.proxyHost`, this configuration option will *not* be used for accessing the targets in any case.
+Note: This configuration option will *not* be used for accessing the targets in any case. Use configuration options "promregator.scraping.proxy" instead.
 
 #### Option "cf.proxy.port" (optional)
 This option became available starting with version 0.6.4 and 0.7.0.
@@ -585,8 +585,6 @@ This option became available starting with version 0.6.4 and 0.7.0.
 If you want to make the system establish the connection to the application (containers) using an HTTP (sorry, HTTPS not supported yet) proxy, enter the IP address or the hostname of this server here. If a hostname is given, it must be resolvable locally (i.e. by Promregator).
 
 Please also make sure that you set "promregator.scraping.proxy.port", too, as otherwise proxy support will be disabled.
-
-Note: In contrast to the deprecated option `cf.proxyHost`, this configuration option will *not* be used for accessing the API host (Cloud Foundry Controller) in any case.
 
 ##### Option "promregator.scraping.proxy.port" (optional)
 This option became available starting with version 0.6.4 and 0.7.0.
