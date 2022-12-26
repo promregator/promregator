@@ -236,13 +236,12 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 				 */
 				final ConnectionContext connectionContext = this.cloudFoundryClient.getConnectionContext();
 				// Note: connectionContext is ensured to be non-null
-				if (connectionContext instanceof DefaultConnectionContext) {
+				if (connectionContext instanceof DefaultConnectionContext dcc) {
 					/*
 					 * For the idea see also 
 					 * https://github.com/cloudfoundry/cf-java-client/issues/777 and
 					 * https://issues.jenkins-ci.org/browse/JENKINS-53136
 					 */
-					DefaultConnectionContext dcc = (DefaultConnectionContext) connectionContext;
 					dcc.dispose();
 				}
 			}
