@@ -66,23 +66,13 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 
 	/**
 	 * The hostname of the HTTP proxy based on the deprecated configuration option <pre>cf.proxyHost</pre>.
-	 * @deprecated use <pre>proxyHost</pre> instead.
 	 */
-	@Value("${cf.proxyHost:#{null}}")
-	@Deprecated
-	private String proxyHostDeprecated;
-
-	/**
-	 * The port of the HTTP proxy based on the deprecated configuration option <pre>cf.proxyPort</pre>.
-	 * @deprecated use <pre>proxyPort</pre> instead.
-	 */
-	@Value("${cf.proxyPort:0}")
-	@Deprecated
-	private int proxyPortDeprecated;
-
 	@Value("${cf.proxy.host:#{null}}") 
 	private String proxyHost;
 	
+	/**
+	 * The port of the HTTP proxy based on the deprecated configuration option <pre>cf.proxyPort</pre>.
+	 */
 	@Value("${cf.proxy.port:0}") 
 	private int proxyPort;
 	
@@ -158,18 +148,8 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 
 	private ProxyConfiguration proxyConfiguration() throws ConfigurationException {
 		
-		String effectiveProxyHost;
-		int effectiveProxyPort;
-		
-		if (this.proxyHost != null && this.proxyPort != 0) {
-			// used the new way of defining proxies
-			effectiveProxyHost = this.proxyHost;
-			effectiveProxyPort = this.proxyPort;
-		} else {
-			// the old way *may* be used
-			effectiveProxyHost = this.proxyHostDeprecated;
-			effectiveProxyPort = this.proxyPortDeprecated;
-		}
+		String effectiveProxyHost = this.proxyHost;
+		int effectiveProxyPort = this.proxyPort;
 		
 		if (effectiveProxyHost != null && PATTERN_HTTP_BASED_PROTOCOL_PREFIX.matcher(effectiveProxyHost).find()) {
 			throw new ConfigurationException("Configuring of cf.proxyHost or cf.proxy.host configuration parameter must not contain an http(s)://-like prefix; specify the hostname only instead");

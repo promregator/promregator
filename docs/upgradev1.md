@@ -43,6 +43,11 @@ If your platform supports that API, you will see a JSON file like this:
 
 Note that you upgrade to Promregator V1 (or later), if your platform does not support API V3 (or later).
 
+## Switch to new Proxy Nomenclature
+
+Check, if you still use the old `cf.proxyHost` or `cf.proxyPort` configuration options. They are deprecated since long.
+In case you do, rename those configuration attributes to `cf.proxy.host` and `cf.proxy.port`.
+In case you have both attribute variants set, you may safely delete `cf.proxyHost` and `cf.proxyPort`: The new one's took precedence in the past anyway.
 
 ## Switch to Caffeine Cache
 

@@ -48,12 +48,6 @@ export CF_PASSWORD=mysecretPassword
 java -Dspring.config.location=file:/path/to/your/myconfig.yaml -jar promregator-0.0.1-SNAPSHOT.jar
 ```
 
-### Option "cf.proxyHost" (optional)
-This option is no longer in use. Use `cf.proxy.host` and/or `promregator.scraping.proxy.host` instead.
-
-### Option "cf.proxyPort" (optional)
-This option is no longer in use. Use `cf.proxy.port` and/or `promregator.scraping.proxy.port` instead.
-
 ### Option "cf.skipSslValidation" (optional)
 This option became available starting with version 0.2.0.
 
