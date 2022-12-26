@@ -4,7 +4,7 @@
 # Ownership will be adjusted by this script, though
 
 # we use the JDK as foundation.
-FROM openjdk:8-jdk
+FROM openjdk:17-jdk
 
 # Warning! We are currently unable to use openjdk9 due to https://github.com/docker-library/openjdk/issues/145
 # Warning! If changing to 9-jre, we also have to change the options "-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap" in data/promregator.sh
