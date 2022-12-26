@@ -15,10 +15,7 @@ public class AuthenticationEnricherFactory {
 		AuthenticationEnricher ae = null;
 		
 		String type = authConfig.getType();
-		if("OAuth2XSUAA".equalsIgnoreCase(type)) {
-			log.warn("You are using deprecated authentication configuration type 'OAuth2XSUAA'. Switch to 'OAuth2XSUAABasic' instead.");
-			ae = new OAuth2XSUAAEnricher(authConfig.getOauth2xsuaa());
-		} else if ("OAuth2XSUAABasic".equalsIgnoreCase(type)) {
+		if ("OAuth2XSUAABasic".equalsIgnoreCase(type)) {
 			ae = new OAuth2XSUAAEnricher(authConfig.getOauth2xsuaaBasic());
 		} else if ("OAuth2XSUAACertificate".equalsIgnoreCase(authConfig.getType())) {
 			ae = new OAuth2XSUAAEnricher(authConfig.getOauth2xsuaaCertificate());

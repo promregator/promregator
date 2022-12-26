@@ -76,11 +76,12 @@ During the course of action, we came across several other implementation alterna
 ## Differences on Major Versions
 Promregator is currently preparing to provide a new major version. Here are the main differences from a user perspective between the two versions.
 
-| Aspect             | Version 1.x.x                       | Version 0.x.x                            |
-|--------------------|-------------------------------------|------------------------------------------|
-| CFCC API Version   | V3 only                             | V2 only (special cases with V3)          |
-| Classic Cache      | no longer supported                 | default, available in all minor versions |
-| Caffeine Cache     | default                             | optional, starting with 0.7.x            |
+| Aspect                                              | Version 1.x.x                          | Version 0.x.x                                                                               |
+|-----------------------------------------------------|----------------------------------------|---------------------------------------------------------------------------------------------|
+| CFCC API Version                                    | V3 only                                | V2 only (special cases with V3)                                                             |
+| Classic Cache                                       | no longer supported                    | default, available in all minor versions                                                    |
+| Caffeine Cache                                      | default                                | optional, starting with 0.7.x                                                               |
+| OAuth2XSUAA Authenticator with Basic Authentication | Only `OAuth2XSUAABasic` supported | `OAuth2XSUAA` (old one) and `OAuth2XSUAABasic` supported (available since v0.10.0) |
 
 It is recommended that you upgrade to the new major version on next occassion. 
 An upgrade guide is provided [here](docs/upgrade.md).

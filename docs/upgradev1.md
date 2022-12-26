@@ -47,16 +47,27 @@ Note that you upgrade to Promregator V1 (or later), if your platform does not su
 
 Check, if you still use the old `cf.proxyHost` or `cf.proxyPort` configuration options. They are deprecated since long.
 In case you do, rename those configuration attributes to `cf.proxy.host` and `cf.proxy.port`.
+
 In case you have both attribute variants set, you may safely delete `cf.proxyHost` and `cf.proxyPort`: The new one's took precedence in the past anyway.
 
 ## Switch to Caffeine Cache
 
 If you have not done so, switch to the Caffeine Cache. For that, 
 
-1. set the configuration option `cf.cache.type` to `CAFFFEINE`.
+1. set the configuration option `cf.cache.type` to `CAFFEINE`.
 2. Read the [Cache Types documentation page](cache-types.md) for further configuration options you might have to change.
 
 ## (Optional) Remove Cache Type Configuration option.
 
 If you want you may remove configuration option `cf.cache.type` from your configuration: The new Caffeine Cache is the new default, and there is only one cache type option left anyway.
+
+## Migrate to new oAuth2XSUAABasic Authenticator
+
+If you are still using the old `OAuth2XSUAA` authenticator, then you must migrate to the new `OAuth2XSUAABasic`. In most cases, it is sufficient to switch the value of configuration option(s) `promregator.authenticator.type` from `OAuth2XSUAA` to `OAuth2XSUAABasic`.
+
+Note that you also will have to change the other configuration option's names from `promregator.authenticator.oauth2xsuaa` to `promregator.authenticator.oauth2xsuaabasic`.
+
+For further information, please refer to the [configuration documentation in release 0.11](https://github.com/promregator/promregator/blob/rel-0.11/docs/config.md).
+
+
 
