@@ -332,7 +332,8 @@
 			<version>3.0.1</version>
 		</dependency>
 
-		<!-- see also https://github.com/owasp/json-sanitizer - Apache 2.0 license -->
+		<!-- see also https://github.com/owasp/json-sanitizer - Apache 2.0 license 
+		most recent version https://mvnrepository.com/artifact/com.mikesamuel/json-sanitizer -->
 		<dependency>
 			<groupId>com.mikesamuel</groupId>
 			<artifactId>json-sanitizer</artifactId>
