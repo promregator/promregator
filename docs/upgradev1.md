@@ -63,7 +63,7 @@ If you have not done so, switch to the Caffeine Cache. For that,
 
 ## (Optional) Remove Cache Type Configuration option.
 
-If you want you may remove configuration option `cf.cache.type` from your configuration: The new Caffeine Cache is the new default, and there is only one cache type option left anyway.
+If you want to do so, you may remove configuration option `cf.cache.type` from your configuration: The new Caffeine Cache is the new default, and there is only one cache type option left anyway.
 
 ## Migrate to new oAuth2XSUAABasic Authenticator
 
