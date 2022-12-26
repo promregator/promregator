@@ -43,7 +43,5 @@ public interface CFAccessor {
 
 	Mono<org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse> retrieveRoutesForAppId(String appId);
 
-	boolean isV3Enabled();
-	
 	void reset();
 }

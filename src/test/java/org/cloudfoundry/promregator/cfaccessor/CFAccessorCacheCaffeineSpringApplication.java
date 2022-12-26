@@ -107,14 +107,9 @@ public class CFAccessorCacheCaffeineSpringApplication {
 		}
 
 		@Override
-		public boolean isV3Enabled() {
-			return true;
-		}
-
-		@Override
 		public void reset() {
 			// nothing to be done
-		}		
+		}
 	}
 	
 	@Bean

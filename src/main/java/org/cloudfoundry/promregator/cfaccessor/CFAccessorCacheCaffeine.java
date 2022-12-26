@@ -336,11 +336,6 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	}
 
 	@Override
-	public boolean isV3Enabled() {
-		return this.parent.isV3Enabled();
-	}
-
-	@Override
 	public void invalidateCacheApplications() {
 		log.info("Invalidating application cache");
 		
@@ -366,7 +361,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	@Override
 	public void invalidateCacheDomain() {
 		log.info("Invalidating domain cache");
-		this.domainsInOrgCache.synchronous().invalidateAll();		
+		this.domainsInOrgCache.synchronous().invalidateAll();
 	}
 
 	@Override
