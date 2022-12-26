@@ -25,3 +25,15 @@ If your platform supports that API, you will see a JSON file like this:
 
 Note that you upgrade to Promregator V1 (or later), if your platform does not support API V3 (or later).
 
+
+## Switch to Caffeine Cache
+
+If you have not done so, switch to the Caffeine Cache. For that, 
+
+1. Set the configuration option `cf.cache.type` to `CAFFFEINE`.
+2. Read the [Cache Types documentation page](cache-types.md) for further configuration options you might have to change.
+
+## (Optional) Remove Cache Type Configuration option.
+
+If you want you may remove configuration option `cf.cache.type` from your configuration: The new Caffeine Cache is the new default, and there is only one cache type option left anyway.
+

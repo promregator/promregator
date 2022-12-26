@@ -157,16 +157,15 @@ Do not exaggerate this value by going beyond the number of cores available! Othe
 ### Option "cf.cache.type" (optional)
 This option became available starting with version 0.7.1.
 
-Promregator highly relies on caching the metadata provided by the Cloud Controller of Cloud Foundry. In versions before 0.7.1 there was only the "classical" cache available, which is a custom implementation. Starting with 0.7.1 (and later) the open source library [Caffeine](https://github.com/ben-manes/caffeine) gets used.
+Promregator highly relies on caching the metadata provided by the Cloud Controller of Cloud Foundry. In earlier versions of Promregator, a "classic cache" was available, which was discontinued with version 1.0.0. Version 1.x.y makes use of the Caffeine-based cache by default
 
 Possible values for this option are:
 
 | Value         | Meaning |
 |---------------|---------|
-| CLASSIC       | The classical cache (used before 0.7.x) is being used (default) |
-| CAFFEINE      | The Caffeine-based cache is being used |
+| CAFFEINE      | The Caffeine-based cache is being used (default) |
 
-The default value of this option is `CLASSIC`.
+The default value of this option is `CAFFEINE`.
 
 The caches have differences in their behavior. For more details refer to the [page "Cache Types"](cache-types.md).
 
