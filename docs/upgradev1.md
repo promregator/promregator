@@ -92,10 +92,10 @@ In case you have both attribute variants set, you should check about Promregator
 
 Check, if you still use one of the old configuration options:
 
-* cf.request.timeout.routeMapping
-* cf.request.timeout.route
-* cf.request.timeout.sharedDomain
-* cf.request.timeout.process
+* `cf.request.timeout.routeMapping`
+* `cf.request.timeout.route`
+* `cf.request.timeout.sharedDomain`
+* `cf.request.timeout.process`
 
 They are deprecated since long (version 0.5.0).
 
