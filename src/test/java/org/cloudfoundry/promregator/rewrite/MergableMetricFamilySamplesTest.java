@@ -89,7 +89,7 @@ class MergableMetricFamilySamplesTest {
 		MergableMetricFamilySamples subject = new MergableMetricFamilySamples();
 		
 		List<Sample> samples = new LinkedList<>();
-		MetricFamilySamples mfs = new MetricFamilySamples("dummy", Type.UNTYPED, "somehelp", samples);
+		MetricFamilySamples mfs = new MetricFamilySamples("dummy", Type.UNKNOWN, "somehelp", samples);
 		
 		List<MetricFamilySamples> list = new LinkedList<>();
 		list.add(mfs);
