@@ -110,7 +110,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 		HttpSecurity sec = security;
 		sec = this.determineHttpSecurityForEndpoint(sec, EndpointConstants.ENDPOINT_PATH_DISCOVERY, this.discoveryAuth);
-		sec = this.determineHttpSecurityForEndpoint(sec, EndpointConstants.ENDPOINT_PATH_SINGLE_ENDPOINT_SCRAPING, this.endpointAuth);
 		sec = this.determineHttpSecurityForEndpoint(sec, EndpointConstants.ENDPOINT_PATH_SINGLE_TARGET_SCRAPING+"/**", this.endpointAuth);
 		sec = this.determineHttpSecurityForEndpoint(sec, EndpointConstants.ENDPOINT_PATH_PROMREGATOR_METRICS, this.promregatorMetricsAuth);
 		sec = this.determineHttpSecurityForEndpoint(sec, EndpointConstants.ENDPOINT_PATH_CACHE_INVALIDATION, this.cacheInvalidateAuth);
@@ -145,7 +144,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		WebSecurity web = webInitial;
 
 		web = this.determineWebSecurityForEndpoint(web, EndpointConstants.ENDPOINT_PATH_DISCOVERY, this.discoveryAuth);
-		web = this.determineWebSecurityForEndpoint(web, EndpointConstants.ENDPOINT_PATH_SINGLE_ENDPOINT_SCRAPING, this.endpointAuth);
 		web = this.determineWebSecurityForEndpoint(web, EndpointConstants.ENDPOINT_PATH_SINGLE_TARGET_SCRAPING+"/**", this.endpointAuth);
 		web = this.determineWebSecurityForEndpoint(web, EndpointConstants.ENDPOINT_PATH_PROMREGATOR_METRICS, this.promregatorMetricsAuth);
 		this.determineWebSecurityForEndpoint(web, EndpointConstants.ENDPOINT_PATH_CACHE_INVALIDATION, this.cacheInvalidateAuth);

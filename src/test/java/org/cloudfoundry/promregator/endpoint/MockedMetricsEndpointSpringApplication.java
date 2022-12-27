@@ -39,9 +39,6 @@ import io.prometheus.client.CollectorRegistry;
 @EnableAutoConfiguration
 @ComponentScan(excludeFilters = { @Filter(type = FilterType.CUSTOM, classes = { TypeExcludeFilter.class }),
 		@Filter(type = FilterType.CUSTOM, classes = { AutoConfigurationExcludeFilter.class }),
-		@Filter(type = FilterType.ASSIGNABLE_TYPE, value=MetricsEndpoint.class),
-		// NB: Handling is taken over by TestableMetricsEndpoint! That one is
-		// NOT excluded
 		@Filter(type = FilterType.ASSIGNABLE_TYPE, value=SingleTargetMetricsEndpoint.class),
 		// NB: Handling is taken over by TestableSingleTargetMetricsEndpoint! That one is
 		// NOT excluded

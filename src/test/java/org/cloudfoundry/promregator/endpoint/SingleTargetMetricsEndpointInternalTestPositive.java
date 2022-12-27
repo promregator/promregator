@@ -1,8 +1,5 @@
 package org.cloudfoundry.promregator.endpoint;
 
-import java.util.function.Predicate;
-
-import org.cloudfoundry.promregator.scanner.Instance;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
@@ -10,11 +7,9 @@ import org.springframework.http.ResponseEntity;
 class SingleTargetMetricsEndpointInternalTestPositive extends SingleTargetMetricsEndpoint {
 
 	@Override
-	public String handleRequest(Predicate<? super String> applicationIdFilter, Predicate<? super Instance> instanceFilter) {
-		Assertions.assertTrue(applicationIdFilter.test("129856d2-c53b-4971-b100-4ce371b78070"));
-		
-		Instance i = new Instance(null, "129856d2-c53b-4971-b100-4ce371b78070:42", "https://someurl", false);
-		Assertions.assertTrue(instanceFilter.test(i));
+	public String handleRequest(String applicationId, String instanceId) {
+		Assertions.assertEquals("129856d2-c53b-4971-b100-4ce371b78070", applicationId);
+		Assertions.assertEquals("129856d2-c53b-4971-b100-4ce371b78070:42", instanceId);
 		
 		return null;
 	}
