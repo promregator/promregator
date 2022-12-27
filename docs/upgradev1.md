@@ -111,3 +111,22 @@ If you have used Single Endpoint Scraping (via `/metrics` endpoint) before, you 
 Additionally, if were using label enrichment before, you must adjust Prometheus' configuration to perform that for you. A description how that works can be found in the [document about Label Enrichment](./enrichment.md).
 
 
+## Changes to metric names of type COUNTER
+
+With [version 0.10.0](https://github.com/prometheus/client_java/blob/eb4e694b00024043f948e407510f516dea58cbc7/simpleclient_common/src/main/java/io/prometheus/client/exporter/common/TextFormat.java#L70) Prometheus' simpleclient has decided to change the way how counter-typed metrics are serialized. The metric's name automatically follows its sample's naming convention, which has a `_total` suffix attached. This leads to the fact that on the wire, instead of reading
+
+```
+# HELP metric this is my help text
+# TYPE metric info
+metric_total 12.47 123456789012345600
+```
+
+you will read
+
+```
+# HELP metric_total this is my help text
+# TYPE metric_total info
+metric_total 12.47 123456789012345600
+```
+Depending on how the metadata is evaluated by the consumer of Prometheus, this may or may not lead to a renaming of the metric from `metric` to `metric_total`. Check on the impact at your Prometheus' consumer.
+

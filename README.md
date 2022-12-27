@@ -84,6 +84,7 @@ Promregator is currently preparing to provide a new major version. Here are the 
 | OAuth2XSUAA Authenticator with Basic Authentication | Only `OAuth2XSUAABasic` supported | `OAuth2XSUAA` (old one) and `OAuth2XSUAABasic` supported (available since v0.10.0) |
 | Scraping Method                                     | Single Target Scraping supported       | Single Endpoint Scraping and Single Target Scraping supported                               |
 | Label Enrichment                                    | not supported                          | supported (for Single Target Scraping)                                                      |
+| Support for INFO-typed metrics                      | supported                              | not supported                                                                               |
 
 It is recommended that you upgrade to the new major version on next occasion. 
 An upgrade guide is provided [here](docs/upgrade.md).

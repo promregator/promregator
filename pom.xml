@@ -60,15 +60,7 @@
 		<!--  For release information see also https://spring.io/projects/spring-cloud
 		and https://github.com/spring-cloud/spring-cloud-release/wiki/Spring-Cloud-2020.0-Release-Notes
 		New versions at https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-dependencies -->
-		<prometheus.version>0.14.0</prometheus.version>
-		<!-- 
-		Warning on bumping to 0.10.0: 
-		* The bump is incompatible, changing Type.UNTYPED apparently to Type.UNKNOWN
-		* The bump is incompatible, as reading "dummy" for a counter ends up in a
-		  response where the name of the metric is changed to "dummy_total" implicitly.
-		  
-		  Further impact assessment especially on the second topic is needed
-		 -->
+		<prometheus.version>0.16.0</prometheus.version>
 
 		<!-- https://mvnrepository.com/artifact/org.cloudfoundry/cloudfoundry-client-reactor -->
 		<cloudfoundry.client.version>5.9.0.RELEASE</cloudfoundry.client.version>
