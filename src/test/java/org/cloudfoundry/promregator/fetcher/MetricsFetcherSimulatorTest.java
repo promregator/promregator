@@ -1,12 +1,9 @@
 package org.cloudfoundry.promregator.fetcher;
 
 import java.util.HashMap;
-import java.util.LinkedList;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.auth.NullEnricher;
-import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
-import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -24,13 +21,11 @@ class MetricsFetcherSimulatorTest {
 
 	@Test
 	void testCall() throws Exception {
-		AbstractMetricFamilySamplesEnricher mfse = new CFAllLabelsMetricFamilySamplesEnricher("testOrgName", "testSpaceName", "testapp", "testinstance1:0");
-		
-		Gauge up = Gauge.build("up_test", "help test").labelNames(CFAllLabelsMetricFamilySamplesEnricher.getEnrichingLabelNames()).create();
-		Child upChild = up.labels(mfse.getEnrichedLabelValues(new LinkedList<>()).toArray(new String[0]));
+		Gauge up = Gauge.build("up_test", "help test").labelNames(new String[0]).create();
+		Child upChild = up.labels(new String[0]);
 		
 		MetricsFetcherSimulator subject = new MetricsFetcherSimulator("accessUrl", 
-				new NullEnricher(), mfse , 
+				new NullEnricher(), 
 				Mockito.mock(MetricsFetcherMetrics.class), upChild);
 		
 		HashMap<String, MetricFamilySamples> result = subject.call();

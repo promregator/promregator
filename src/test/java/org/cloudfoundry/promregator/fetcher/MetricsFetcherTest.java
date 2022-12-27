@@ -76,7 +76,6 @@ class MetricsFetcherTest {
 		UUID currentUUID = UUID.randomUUID();
 		
 		CFMetricsFetcherConfig config = new CFMetricsFetcherConfig();
-		config.setMetricFamilySamplesEnricher(dummymfse);
 		config.setMetricsFetcherMetrics(mfm);
 		config.setPromregatorInstanceIdentifier(currentUUID);
 		config.setConnectionTimeoutInMillis(5000);
@@ -104,7 +103,6 @@ class MetricsFetcherTest {
 		UUID currentUUID = UUID.randomUUID();
 		
 		CFMetricsFetcherConfig config = new CFMetricsFetcherConfig();
-		config.setMetricFamilySamplesEnricher(dummymfse);
 		config.setMetricsFetcherMetrics(mfm);
 		config.setPromregatorInstanceIdentifier(currentUUID);
 		config.setConnectionTimeoutInMillis(5000);
@@ -150,7 +148,6 @@ class MetricsFetcherTest {
 		
 		CFMetricsFetcherConfig config = new CFMetricsFetcherConfig();
 		config.setAuthenticationEnricher(ae);
-		config.setMetricFamilySamplesEnricher(dummymfse);
 		config.setMetricsFetcherMetrics(mfm);
 		config.setPromregatorInstanceIdentifier(UUID.randomUUID());
 		config.setConnectionTimeoutInMillis(5000);
@@ -181,7 +178,6 @@ class MetricsFetcherTest {
 		UUID currentUUID = UUID.randomUUID();
 		
 		CFMetricsFetcherConfig config = new CFMetricsFetcherConfig();
-		config.setMetricFamilySamplesEnricher(dummymfse);
 		config.setMetricsFetcherMetrics(mfm);
 		config.setPromregatorInstanceIdentifier(currentUUID);
 		config.setConnectionTimeoutInMillis(5000);
@@ -208,7 +204,6 @@ class MetricsFetcherTest {
 		UUID currentUUID = UUID.randomUUID();
 		
 		CFMetricsFetcherConfig config = new CFMetricsFetcherConfig();
-		config.setMetricFamilySamplesEnricher(dummymfse);
 		config.setMetricsFetcherMetrics(mfm);
 		config.setPromregatorInstanceIdentifier(currentUUID);
 		config.setConnectionTimeoutInMillis(5000);

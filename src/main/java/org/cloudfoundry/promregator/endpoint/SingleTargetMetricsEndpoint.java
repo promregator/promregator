@@ -2,7 +2,6 @@ package org.cloudfoundry.promregator.endpoint;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -28,7 +27,6 @@ import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.GenericMetricFamilySamplesPrefixRewriter;
 import org.cloudfoundry.promregator.rewrite.MergableMetricFamilySamples;
-import org.cloudfoundry.promregator.rewrite.NullMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
 import org.slf4j.Logger;
@@ -57,8 +55,6 @@ public class SingleTargetMetricsEndpoint {
 	
 	private static final Logger log = LoggerFactory.getLogger(SingleTargetMetricsEndpoint.class);
 
-	private Instance instance;
-	
 	@Value("${promregator.simulation.enabled:false}")
 	private boolean simulationMode;
 	
@@ -86,9 +82,6 @@ public class SingleTargetMetricsEndpoint {
 	@Value("${promregator.metrics.requestLatency:false}")
 	private boolean recordRequestLatency;
 	
-	@Value("${promregator.scraping.labelEnrichment:true}")
-	private boolean labelEnrichment;
-
 	@Value("${promregator.scraping.connectionTimeout:5000}")
 	private int fetcherConnectionTimeout;
 
@@ -114,12 +107,6 @@ public class SingleTargetMetricsEndpoint {
 		this.requestRegistry = new CollectorRegistry();
 		
 		Builder builder = Gauge.build("promregator_up", "Indicator, whether the target of promregator is available");
-		
-		if (this.labelEnrichment) {
-			builder = builder.labelNames(CFAllLabelsMetricFamilySamplesEnricher.getEnrichingLabelNames());
-		} else {
-			builder = builder.labelNames(NullMetricFamilySamplesEnricher.getEnrichingLabelNames());
-		}
 		
 		this.up = builder.register(this.requestRegistry);
 	}
@@ -149,7 +136,6 @@ public class SingleTargetMetricsEndpoint {
 		
 		List<Instance> instanceList = this.cfDiscoverer.discover(discoveredApplicationId -> applicationId.equals(discoveredApplicationId), requestInstance -> {
 			if (requestInstance.getInstanceId().equals(instanceId)) {
-				this.instance = requestInstance;
 				return true;
 			}
 			
@@ -232,31 +218,23 @@ public class SingleTargetMetricsEndpoint {
 		String[] ownTelemetryLabelValues = this.determineOwnTelemetryLabelValues(orgName, spaceName, appName, instance.getInstanceId());
 		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, this.recordRequestLatency);
 		
-		final boolean labelEnrichmentEnabled = this.labelEnrichment;
-		
 		/*
 		 * Warning! the gauge "up" is a very special beast!
 		 * As it is always transferred along the other metrics (it's not a promregator-own metric!), it must always
 		 * follow the same labels as the other metrics which are scraped
 		 */
 		Gauge.Child upChild = null;
-		AbstractMetricFamilySamplesEnricher mfse = null;
-		if (labelEnrichmentEnabled) {
-			mfse = new CFAllLabelsMetricFamilySamplesEnricher(orgName, spaceName, appName, instance.getInstanceId());
-		} else {
-			mfse = new NullMetricFamilySamplesEnricher();
-		}
-		upChild = this.up.labels(mfse.getEnrichedLabelValues(new LinkedList<>()).toArray(new String[0]));
+		
+		upChild = this.up.labels(new String[0]);
 		
 		AuthenticationEnricher ae = this.authenticatorController.getAuthenticationEnricherByTarget(instance.getTarget().getOriginalTarget());
 		
 		MetricsFetcher mf = null;
 		if (this.simulationMode) {
-			mf = new MetricsFetcherSimulator(accessURL, ae, mfse, mfm, upChild);
+			mf = new MetricsFetcherSimulator(accessURL, ae, mfm, upChild);
 		} else {
 			CFMetricsFetcherConfig cfmfConfig = new CFMetricsFetcherConfig();
 			cfmfConfig.setAuthenticationEnricher(ae);
-			cfmfConfig.setMetricFamilySamplesEnricher(mfse);
 			cfmfConfig.setMetricsFetcherMetrics(mfm);
 			cfmfConfig.setUpChild(upChild);
 			cfmfConfig.setPromregatorInstanceIdentifier(this.promregatorInstanceIdentifier);
@@ -351,32 +329,11 @@ public class SingleTargetMetricsEndpoint {
 		/*
 		 * Note: The scrape_duration_seconds metric is being passed on to Prometheus with
 		 * the normal scraping request.
-		 * If the configuration option promregator.scraping.labelEnrichment is disabled, then 
-		 * the metric must also comply to this approach. Otherwise there might arise issues
-		 * with rewriting in Prometheus.
 		 */
 		
-		AbstractMetricFamilySamplesEnricher enricher = null;
-		String[] ownTelemetryLabels = null;
-		if (this.labelEnrichment) {
-			if (this.instance == null) {
-				log.warn("Internal inconsistency: Single Target Metrics Endpoint triggered, even though instance could not be detected; skipping scrape_duration");
-				return;
-			}
-			
-			ResolvedTarget t = this.instance.getTarget();
-			ownTelemetryLabels = CFAllLabelsMetricFamilySamplesEnricher.getEnrichingLabelNames();
-			enricher = new CFAllLabelsMetricFamilySamplesEnricher(t.getOrgName(), t.getSpaceName(), t.getApplicationName(), this.instance.getInstanceId());
-		} else {
-			ownTelemetryLabels = NullMetricFamilySamplesEnricher.getEnrichingLabelNames();
-			enricher = new NullMetricFamilySamplesEnricher();
-		}
-		
 		Gauge scrapeDuration = Gauge.build("promregator_scrape_duration_seconds", "Duration in seconds indicating how long scraping of all metrics took")
-				.labelNames(ownTelemetryLabels)
 				.register(requestRegistry);
 		
-		List<String> labelValues = enricher.getEnrichedLabelValues(new ArrayList<>(0));
-		scrapeDuration.labels(labelValues.toArray(new String[0])).set(duration.toMillis() / 1000.0);
+		scrapeDuration.set(duration.toMillis() / 1000.0);
 	}
 }

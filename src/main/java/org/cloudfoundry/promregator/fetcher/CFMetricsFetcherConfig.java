@@ -3,13 +3,11 @@ package org.cloudfoundry.promregator.fetcher;
 import java.util.UUID;
 
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
-import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 
 import io.prometheus.client.Gauge;
 
 public class CFMetricsFetcherConfig {
 	private AuthenticationEnricher authenticationEnricher;
-	private AbstractMetricFamilySamplesEnricher metricFamilySamplesEnricher;
 	private MetricsFetcherMetrics metricsFetcherMetrics;
 	
 	private String proxyHost;
@@ -38,20 +36,6 @@ public class CFMetricsFetcherConfig {
 	 */
 	public void setAuthenticationEnricher(AuthenticationEnricher authenticationEnricher) {
 		this.authenticationEnricher = authenticationEnricher;
-	}
-
-	/**
-	 * @return the metricFamilySamplesEnricher
-	 */
-	public AbstractMetricFamilySamplesEnricher getMetricFamilySamplesEnricher() {
-		return metricFamilySamplesEnricher;
-	}
-
-	/**
-	 * @param metricFamilySamplesEnricher the metricFamilySamplesEnricher to set
-	 */
-	public void setMetricFamilySamplesEnricher(AbstractMetricFamilySamplesEnricher metricFamilySamplesEnricher) {
-		this.metricFamilySamplesEnricher = metricFamilySamplesEnricher;
 	}
 
 	/**

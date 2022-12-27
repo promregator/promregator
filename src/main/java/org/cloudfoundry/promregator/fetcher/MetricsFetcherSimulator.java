@@ -9,21 +9,19 @@ import java.util.Random;
 
 import org.apache.http.client.methods.HttpGet;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
-import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.textformat004.Parser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.Histogram.Timer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class MetricsFetcherSimulator implements MetricsFetcher {
 	private static final Logger log = LoggerFactory.getLogger(MetricsFetcherSimulator.class);
 	
 	private String accessURL;
 	private AuthenticationEnricher ae;
-	private AbstractMetricFamilySamplesEnricher mfse;
 	private MetricsFetcherMetrics mfm;
 	private Gauge.Child up;
 	
@@ -63,10 +61,9 @@ public class MetricsFetcherSimulator implements MetricsFetcher {
 	}
 	
 	public MetricsFetcherSimulator(String accessURL, AuthenticationEnricher ae,
-			AbstractMetricFamilySamplesEnricher mfse, MetricsFetcherMetrics mfm, Gauge.Child up) {
+			MetricsFetcherMetrics mfm, Gauge.Child up) {
 				this.accessURL = accessURL;
 				this.ae = ae;
-				this.mfse = mfse;
 				this.mfm = mfm;
 				this.up = up;
 		
@@ -89,8 +86,6 @@ public class MetricsFetcherSimulator implements MetricsFetcher {
 		
 		Parser parser = new Parser(result);
 		HashMap<String, MetricFamilySamples> emfs = parser.parse();
-		
-		emfs = this.mfse.determineEnumerationOfMetricFamilySamples(emfs);
 		
 		int latency = this.randomLatency.nextInt(300);
 		

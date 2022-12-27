@@ -18,14 +18,13 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.endpoint.EndpointConstants;
-import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.textformat004.Parser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.Histogram.Timer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A MetricsFetcher is a class which retrieves Prometheus metrics at an endpoint URL, which is run
@@ -50,8 +49,6 @@ public class CFMetricsFetcher implements MetricsFetcher {
 	
 	private Gauge.Child up;
 	
-	private AbstractMetricFamilySamplesEnricher mfse;
-
 	static final CloseableHttpClient httpclient = HttpClients.createSystem();
 
 	private MetricsFetcherMetrics mfm;
@@ -70,7 +67,6 @@ public class CFMetricsFetcher implements MetricsFetcher {
 		this.endpointUrl = endpointUrl;
 		this.instanceId = instanceId;
 		this.ae = config.getAuthenticationEnricher();
-		this.mfse = config.getMetricFamilySamplesEnricher();
 		this.mfm = config.getMetricsFetcherMetrics();
 		this.withInternalRouting = withInternalRouting;
 
@@ -110,8 +106,6 @@ public class CFMetricsFetcher implements MetricsFetcher {
 		
 		Parser parser = new Parser(result);
 		HashMap<String, MetricFamilySamples> emfs = parser.parse();
-		
-		emfs = this.mfse.determineEnumerationOfMetricFamilySamples(emfs);
 		
 		return emfs;
 	}

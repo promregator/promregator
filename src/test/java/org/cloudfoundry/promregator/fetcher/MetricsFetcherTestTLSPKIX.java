@@ -66,7 +66,6 @@ class MetricsFetcherTestTLSPKIX {
 		UUID currentUUID = UUID.randomUUID();
 		
 		CFMetricsFetcherConfig config = new CFMetricsFetcherConfig();
-		config.setMetricFamilySamplesEnricher(dummymfse);
 		config.setMetricsFetcherMetrics(mfm);
 		config.setPromregatorInstanceIdentifier(currentUUID);
 		config.setConnectionTimeoutInMillis(5000);

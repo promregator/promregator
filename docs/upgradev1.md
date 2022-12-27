@@ -101,3 +101,13 @@ They are deprecated since long (version 0.5.0).
 
 They need to be replaced with the new configuration option `cf.request.timeout.appSummary`. Note that there is only one configuration option available for all of them. Consider this, when "merging" their values. If in doubt which value you should use, use the highest value.
 
+
+## Label Enrichment and Single Endpoint Scraping
+
+Both support for Label Enrichment and Single Endpoint Scraping was dropped. Check if you either have set configuration option `promregator.scraping.labelEnrichment` to `true`, or if your Prometheus was calling the `/metrics` endpoint of Promregator. If none of that is the case, you may skip the rest of this section.
+
+If you have used Single Endpoint Scraping (via `/metrics` endpoint) before, you must migrate to Single Target Scraping first. Refer to [this document](./singleTargetScraping.md) how this works in general.
+
+Additionally, if were using label enrichment before, you must adjust Prometheus' configuration to perform that for you. A description how that works can be found in the [document about Label Enrichment](./enrichment.md).
+
+
