@@ -107,7 +107,7 @@ public class Parser {
 			log.info(String.format("Definition of metric %s without type information (assuming unknown)", sampleName));
 		}
 		
-		if (type.equals(Collector.Type.COUNTER) || type.equals(Collector.Type.GAUGE) || type.equals(Collector.Type.UNKNOWN) || type.equals(Collector.Type.INFO)) {
+		if (type.equals(Collector.Type.COUNTER) || type.equals(Collector.Type.GAUGE) || type.equals(Collector.Type.UNKNOWN) || type.equals(Collector.Type.INFO) || type.equals(Collector.Type.STATE_SET)) {
 			this.storeSimpleType(sample, sampleName, type);
 		} else if (type.equals(Collector.Type.HISTOGRAM) || type.equals(Collector.Type.SUMMARY)) {
 			this.storeComplexType(sample, sampleName, type);
@@ -213,8 +213,10 @@ public class Parser {
 			type = Collector.Type.GAUGE;
 		} else if (typeString.equalsIgnoreCase("counter")) {
 			type = Collector.Type.COUNTER;
-		} else if (typeString.equalsIgnoreCase("information") || typeString.equalsIgnoreCase("info")) {
+		} else if (typeString.equalsIgnoreCase("info")) {
 			type = Collector.Type.INFO;
+		} else if (typeString.equalsIgnoreCase("stateset")) { // see also https://github.com/OpenObservability/OpenMetrics/blob/111feb202360b8650092f7de15a600e34a4ce0ba/specification/OpenMetrics.md#type
+			type = Collector.Type.STATE_SET;
 		} else if (typeString.equalsIgnoreCase("summary")) {
 			type = Collector.Type.SUMMARY;
 		} else if (typeString.equalsIgnoreCase("histogram")) {

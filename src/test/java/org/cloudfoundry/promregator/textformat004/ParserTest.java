@@ -931,5 +931,36 @@ class ParserTest {
 		
 		Assertions.assertEquals("metric_without_labels_info", sampleResult.name);
 	}
+	
+	@Test
+	void testStateset() {
+		/* see also https://github.com/OpenObservability/OpenMetrics/blob/111feb202360b8650092f7de15a600e34a4ce0ba/specification/OpenMetrics.md#stateset
+		 * 
+		 * metric{label="1234"} 1.0
+		 */
+		
+		String textToParse = 
+				"# HELP metric_with_a_label this is my help text\n" + 
+				"# TYPE metric_with_a_label stateset\n" + 
+				"metric_with_a_label{dimension=\"abc\"} 1 123456789012345600\n";
+		
+		Parser subject = new Parser(textToParse);
+		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
+		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
+
+		ArrayList<MetricFamilySamples> resultList = Collections.list(result);
+		
+		Assertions.assertEquals(1, resultList.size());
+		MetricFamilySamples mfs = resultList.get(0);
+		
+		Assertions.assertEquals("metric_with_a_label", mfs.name);
+		Assertions.assertEquals(Type.STATE_SET, mfs.type);
+		Assertions.assertEquals("this is my help text", mfs.help);
+		
+		Assertions.assertEquals(1, mfs.samples.size());
+		Sample sampleResult = mfs.samples.get(0);
+		
+		Assertions.assertEquals("metric_with_a_label", sampleResult.name);
+	}
 
 }
