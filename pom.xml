@@ -60,7 +60,7 @@
 		<!--  For release information see also https://spring.io/projects/spring-cloud
 		and https://github.com/spring-cloud/spring-cloud-release/wiki/Spring-Cloud-2020.0-Release-Notes
 		New versions at https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-dependencies -->
-		<prometheus.version>0.10.0</prometheus.version>
+		<prometheus.version>0.14.0</prometheus.version>
 		<!-- 
 		Warning on bumping to 0.10.0: 
 		* The bump is incompatible, changing Type.UNTYPED apparently to Type.UNKNOWN

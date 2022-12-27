@@ -53,6 +53,7 @@ public class Parser {
 	private static final Pattern PATTERN_PARSE_TYPE = Pattern.compile("^#[ \t]+TYPE[ \t]+([a-zA-Z0-9:_\\\"]+)[ \\t]+([a-zA-Z]*)$");
 	
 	private static final Pattern PATTERN_TOTAL_SUFFIX = Pattern.compile(".*_total$");
+	private static final Pattern PATTERN_INFO_SUFFIX = Pattern.compile(".*_info$");
 	
 	public Parser(String textFormat004data) {
 		this.textFormat004data = textFormat004data;
@@ -99,17 +100,17 @@ public class Parser {
 			return;
 		}
 		
-		final String metricName = sample.name;
+		final String sampleName = sample.name;
 		
-		Collector.Type type = determineType(metricName);
+		Collector.Type type = determineType(sampleName);
 		if (type == Type.UNKNOWN) {
-			log.info(String.format("Definition of metric %s without type information (assuming unknown)", metricName));
+			log.info(String.format("Definition of metric %s without type information (assuming unknown)", sampleName));
 		}
 		
-		if (type.equals(Collector.Type.COUNTER) || type.equals(Collector.Type.GAUGE) || type.equals(Collector.Type.UNKNOWN)) {
-			this.storeSimpleType(sample, metricName, type);
+		if (type.equals(Collector.Type.COUNTER) || type.equals(Collector.Type.GAUGE) || type.equals(Collector.Type.UNKNOWN) || type.equals(Collector.Type.INFO)) {
+			this.storeSimpleType(sample, sampleName, type);
 		} else if (type.equals(Collector.Type.HISTOGRAM) || type.equals(Collector.Type.SUMMARY)) {
-			this.storeComplexType(sample, metricName, type);
+			this.storeComplexType(sample, sampleName, type);
 		} else {
 			log.warn(String.format("Unknown type %s; unclear how to handle this; skipping", type.toString()));
 			// return; can be skipped here
@@ -212,6 +213,8 @@ public class Parser {
 			type = Collector.Type.GAUGE;
 		} else if (typeString.equalsIgnoreCase("counter")) {
 			type = Collector.Type.COUNTER;
+		} else if (typeString.equalsIgnoreCase("information") || typeString.equalsIgnoreCase("info")) {
+			type = Collector.Type.INFO;
 		} else if (typeString.equalsIgnoreCase("summary")) {
 			type = Collector.Type.SUMMARY;
 		} else if (typeString.equalsIgnoreCase("histogram")) {
@@ -271,13 +274,13 @@ public class Parser {
 		
 		
 		// handling of COUNTER-typed metrics
-		final List<String> keysToChange = this.mapTypes.entrySet().stream()
+		final List<String> keysToChangeCounter = this.mapTypes.entrySet().stream()
 			.filter(e -> e.getValue() == Type.COUNTER)
 			.map(e -> e.getKey())
 			.filter(k -> PATTERN_TOTAL_SUFFIX.matcher(k).matches())
 			.collect(Collectors.toList());
 
-		keysToChange.forEach(key -> {
+		keysToChangeCounter.forEach(key -> {
 			final String keyStripped = key.substring(0, key.length() - "_total".length());
 			
 			final String help = this.mapHelps.get(key);
@@ -288,8 +291,32 @@ public class Parser {
 			this.mapTypes.put(keyStripped, type);
 			this.mapTypes.remove(key);
 			
-			MetricFamilySamples mfs = this.mapMFS.get(key);
-			this.mapMFS.put(keyStripped, mfs);
+			MetricFamilySamples mfsOld = this.mapMFS.get(key);
+			this.mapMFS.put(keyStripped, new MetricFamilySamples(keyStripped, mfsOld.unit, mfsOld.type, mfsOld.help, mfsOld.samples));
+			this.mapMFS.remove(key);
+			// no need to dig into the sample's name in variable mfs
+		});
+		
+		// handling of INFO-typed metrics
+		final List<String> keysToChangeInfo = this.mapTypes.entrySet().stream()
+			.filter(e -> e.getValue() == Type.INFO)
+			.map(e -> e.getKey())
+			.filter(k -> PATTERN_INFO_SUFFIX.matcher(k).matches())
+			.collect(Collectors.toList());
+
+		keysToChangeInfo.forEach(key -> {
+			final String keyStripped = key.substring(0, key.length() - "_info".length());
+			
+			final String help = this.mapHelps.get(key);
+			this.mapHelps.put(keyStripped, help);
+			this.mapHelps.remove(key);
+			
+			Type type = this.mapTypes.get(key);
+			this.mapTypes.put(keyStripped, type);
+			this.mapTypes.remove(key);
+			
+			MetricFamilySamples mfsOld = this.mapMFS.get(key);
+			this.mapMFS.put(keyStripped, new MetricFamilySamples(keyStripped, mfsOld.unit, mfsOld.type, mfsOld.help, mfsOld.samples));
 			this.mapMFS.remove(key);
 			// no need to dig into the sample's name in variable mfs
 		});

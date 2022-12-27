@@ -807,7 +807,7 @@ class ParserTest {
 		
 		Assertions.assertEquals(1, resultMap.keySet().size());
 		
-		MetricFamilySamples mfs = resultMap.get("logback_events_total");
+		MetricFamilySamples mfs = resultMap.get("logback_events");
 		Assertions.assertNotNull(mfs);
 		
 		// this file contains multiple samples for the same metric
@@ -899,6 +899,37 @@ class ParserTest {
 		Sample sampleResult = mfs.samples.get(0);
 		
 		Assertions.assertEquals("metric_without_labels_total", sampleResult.name);
+	}
+	
+	@Test
+	void testCounterWithInfoSuffix() {
+		/* Live example of an info metric:
+		 * 
+		 * build_info{commit_id="42806c2f7f1e17a63d94db9d561d220f53d38ee0",commit_time="2019-11-16 13:53:46Z",build_time="2019-11-16 13:57:20Z",branch="v19.57.x",version="19.57.3",} 1.0
+		 */
+		
+		String textToParse = "# Simple metric without labels:\n" + 
+				"# HELP metric_without_labels_info this is my help text\n" + 
+				"# TYPE metric_without_labels_info info\n" + 
+				"metric_without_labels_info 12.47 123456789012345600\n";
+		
+		Parser subject = new Parser(textToParse);
+		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
+		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
+
+		ArrayList<MetricFamilySamples> resultList = Collections.list(result);
+		
+		Assertions.assertEquals(1, resultList.size());
+		MetricFamilySamples mfs = resultList.get(0);
+		
+		Assertions.assertEquals("metric_without_labels", mfs.name);
+		Assertions.assertEquals(Type.INFO, mfs.type);
+		Assertions.assertEquals("this is my help text", mfs.help);
+		
+		Assertions.assertEquals(1, mfs.samples.size());
+		Sample sampleResult = mfs.samples.get(0);
+		
+		Assertions.assertEquals("metric_without_labels_info", sampleResult.name);
 	}
 
 }
