@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import io.prometheus.client.Collector;
 import io.prometheus.client.Collector.MetricFamilySamples;
@@ -51,6 +52,8 @@ public class Parser {
 	
 	private static final Pattern PATTERN_PARSE_TYPE = Pattern.compile("^#[ \t]+TYPE[ \t]+([a-zA-Z0-9:_\\\"]+)[ \\t]+([a-zA-Z]*)$");
 	
+	private static final Pattern PATTERN_TOTAL_SUFFIX = Pattern.compile(".*_total$");
+	
 	public Parser(String textFormat004data) {
 		this.textFormat004data = textFormat004data;
 	}
@@ -80,9 +83,11 @@ public class Parser {
 			this.parseMetric(line);
 		}
 		
+		this.postProcessSpecialTypes();
+		
 		return this.mapMFS;
 	}
-	
+
 	private void parseMetric(String line) {
 		final MetricLine ml = new MetricLine(line);
 		
@@ -249,6 +254,47 @@ public class Parser {
 	private boolean isEmptyLine(String line) {
 		return PATTERN_EMPTYLINE.matcher(line).find();
 	}
+	
+	private void postProcessSpecialTypes() {
+		/*
+		 * Newer versions of the format automatically generate
+		 * "_total" suffixes to COUNTER-typed metrics. Note that we will
+		 * have to deal with both types of input data properly.
+		 * The metric still internally is called with its base name only.
+		 * 
+		 * The same also applies to INFO-typed metrics, which may have
+		 * a "_info" suffix at the end.
+		 * 
+		 * Note that this only applies to the metric's name - the sample's
+		 * name are still kept *with* the suffix!
+		 */
+		
+		
+		// handling of COUNTER-typed metrics
+		final List<String> keysToChange = this.mapTypes.entrySet().stream()
+			.filter(e -> e.getValue() == Type.COUNTER)
+			.map(e -> e.getKey())
+			.filter(k -> PATTERN_TOTAL_SUFFIX.matcher(k).matches())
+			.collect(Collectors.toList());
+
+		keysToChange.forEach(key -> {
+			final String keyStripped = key.substring(0, key.length() - "_total".length());
+			
+			final String help = this.mapHelps.get(key);
+			this.mapHelps.put(keyStripped, help);
+			this.mapHelps.remove(key);
+			
+			Type type = this.mapTypes.get(key);
+			this.mapTypes.put(keyStripped, type);
+			this.mapTypes.remove(key);
+			
+			MetricFamilySamples mfs = this.mapMFS.get(key);
+			this.mapMFS.put(keyStripped, mfs);
+			this.mapMFS.remove(key);
+			// no need to dig into the sample's name in variable mfs
+		});
+	}
+
 	
 	private String unescapeDocString(String s) {
 		if (s == null)

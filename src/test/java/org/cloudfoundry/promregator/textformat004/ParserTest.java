@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -873,4 +874,31 @@ class ParserTest {
 		// compare
 		ParserCompareUtils.compareEMFS(expected, result);
 	}
+	
+	@Test
+	void testCounterWithTotalSuffix() {
+		String textToParse = "# Simple metric without labels:\n" + 
+				"# TYPE metric_without_labels_total counter\n" + 
+				"# HELP metric_without_labels_total this is my help text\n" + 
+				"metric_without_labels_total 12.47 123456789012345600\n";
+		
+		Parser subject = new Parser(textToParse);
+		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
+		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
+
+		ArrayList<MetricFamilySamples> resultList = Collections.list(result);
+		
+		Assertions.assertEquals(1, resultList.size());
+		MetricFamilySamples mfs = resultList.get(0);
+		
+		Assertions.assertEquals("metric_without_labels", mfs.name);
+		Assertions.assertEquals(Type.COUNTER, mfs.type);
+		Assertions.assertEquals("this is my help text", mfs.help);
+		
+		Assertions.assertEquals(1, mfs.samples.size());
+		Sample sampleResult = mfs.samples.get(0);
+		
+		Assertions.assertEquals("metric_without_labels_total", sampleResult.name);
+	}
+
 }
