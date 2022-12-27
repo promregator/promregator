@@ -56,10 +56,9 @@ Here is the list of major features provided by Promregator:
 * **Configuration using standard Spring properties** as defined by the Spring Framework (e.g. using `application.yml` file).
 * *(>= 0.6.0)* Support for [**encrypted passwords in configuration files**](./docs/passwords-in-config.md) including providing the encryption key via **Docker Secrets**
 * Simple **HTTP proxy support** is available for contacting CF app endpoints.
-* All metrics provided from the Cloud Foundry applications are **automatically [enriched with additional labels](docs/enrichment.md)**, indicating their origin (similar to the `job` and `instance` labels [created by Prometheus](https://prometheus.io/docs/concepts/jobs_instances/)).
 * [Additional metrics are provided](docs/enrichment.md) supporting you to **monitor Promregator** and the **communication to the Cloud Foundry applications**.
 * *(>= 0.4.0)* **[Cache Invalidation](docs/invalidate-cache.md)** is possible via an (optionally auth-protected) HTTP REST endpoint.
-* Promregator's endpoints (e.g. `/metrics`, `/promregatorMetrics`, `/discovery`) support **GZIP compression**, if the clients indicates to accept it.
+* Promregator's endpoints (e.g. `/promregatorMetrics`, `/discovery`) support **GZIP compression**, if the clients indicates to accept it.
 * *(>= 0.9.0)* [Filtering by annotations](docs/annotation-driven.md) and using annotations to specify the metrics path.
 
 
