@@ -43,7 +43,7 @@ public class InstanceLifecycleHandler implements MessageSubscriber {
 		String appName = instance.getTarget().getApplicationName();
 		
 		AbstractMetricFamilySamplesEnricher mfse = new CFAllLabelsMetricFamilySamplesEnricher(orgName, spaceName, appName, instance.getInstanceId());
-		List<String> labelValues = mfse.getEnrichedLabelValues(new LinkedList<>());
+		List<String> labelValues = mfse.getEnrichedLabelValues( new LinkedList<>(), new LinkedList<>());
 		String[] ownTelemetryLabelValues = labelValues.toArray(new String[0]);
 		
 		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, true);

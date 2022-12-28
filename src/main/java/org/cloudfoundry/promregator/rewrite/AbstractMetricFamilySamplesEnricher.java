@@ -30,7 +30,7 @@ public abstract class AbstractMetricFamilySamplesEnricher {
 				Collector.MetricFamilySamples.Sample newSample = new Collector.MetricFamilySamples.Sample(
 						sample.name,
 						this.getEnrichedLabelNames(sample.labelNames),
-						this.getEnrichedLabelValues(sample.labelValues),
+						this.getEnrichedLabelValues(sample.labelNames, sample.labelValues),
 						sample.value);
 				newSamples.add(newSample);
 			}
@@ -47,10 +47,8 @@ public abstract class AbstractMetricFamilySamplesEnricher {
 		return newMap;
 	}
 	
-	protected abstract List<String> getEnrichedLabelNames(List<String> original);
-	
-	public abstract List<String> getEnrichedLabelValues(List<String> original);
+	protected abstract List<String> getEnrichedLabelNames(List<String> originalLabelNames);
 
-
+	public abstract List<String> getEnrichedLabelValues(List<String> originalLabelNames, List<String> originalLabelValues);
 
 }
