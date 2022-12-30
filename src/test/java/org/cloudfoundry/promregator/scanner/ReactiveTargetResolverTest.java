@@ -413,7 +413,7 @@ class ReactiveTargetResolverTest {
 		Assertions.assertEquals(t.getPath(), rt.getPath());
 		Assertions.assertEquals(t.getProtocol(), rt.getProtocol());
 		
-		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllOrgIds();
+		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllOrgIdsV3();
 		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID);
 	}
 
@@ -441,7 +441,7 @@ class ReactiveTargetResolverTest {
 		Assertions.assertEquals(t.getPath(), rt.getPath());
 		Assertions.assertEquals(t.getProtocol(), rt.getProtocol());
 		
-		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllOrgIds();
+		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllOrgIdsV3();
 		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID);
 	}
 	

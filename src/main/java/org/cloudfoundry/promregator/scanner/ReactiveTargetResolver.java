@@ -10,8 +10,6 @@ import java.util.regex.Pattern;
 
 import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
-import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
-import org.cloudfoundry.client.v2.organizations.OrganizationResource;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceResource;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
@@ -257,8 +255,8 @@ public class ReactiveTargetResolver implements TargetResolver {
 		
 		if (it.getConfigTarget().getOrgRegex() == null && it.getConfigTarget().getOrgName() != null) {
 			// Case 3: we have the orgName, but we also need its id
-			Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveOrgId(it.getConfigTarget().getOrgName())
-					.map(ListOrganizationsResponse::getResources)
+			Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveOrgIdV3(it.getConfigTarget().getOrgName())
+					.map(org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse::getResources)
 					.flatMap(resList -> {
 						if (resList == null || resList.isEmpty()) {
 							return Mono.empty();
@@ -267,8 +265,8 @@ public class ReactiveTargetResolver implements TargetResolver {
 						return Mono.just(resList.get(0));
 					})
 					.map(res -> {
-						it.setResolvedOrgName(res.getEntity().getName());
-						it.setResolvedOrgId(res.getMetadata().getId());
+						it.setResolvedOrgName(res.getName());
+						it.setResolvedOrgId(res.getId());
 						return it;
 					})
 					.doOnError(e -> log.warn(String.format("Error on retrieving org id for org '%s'", it.getConfigTarget().getOrgName()), e))
@@ -278,9 +276,9 @@ public class ReactiveTargetResolver implements TargetResolver {
 		}
 		
 		// Case 1 & 2: Get all orgs from the platform
-		Mono<ListOrganizationsResponse> responseMono = this.cfAccessor.retrieveAllOrgIds();
+		Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> responseMono = this.cfAccessor.retrieveAllOrgIdsV3();
 
-		Flux<OrganizationResource> orgResFlux = responseMono.map(ListOrganizationsResponse::getResources)
+		Flux<org.cloudfoundry.client.v3.organizations.OrganizationResource> orgResFlux = responseMono.map(org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse::getResources)
 			.flatMapMany(Flux::fromIterable);
 		
 		if (it.getConfigTarget().getOrgRegex() != null) {
@@ -288,15 +286,15 @@ public class ReactiveTargetResolver implements TargetResolver {
 			final Pattern filterPattern = Pattern.compile(it.getConfigTarget().getOrgRegex(), Pattern.CASE_INSENSITIVE);
 			
 			orgResFlux = orgResFlux.filter(orgRes -> {
-				Matcher m = filterPattern.matcher(orgRes.getEntity().getName());
+				Matcher m = filterPattern.matcher(orgRes.getName());
 				return m.matches();
 			});
 		}
 		
 		return orgResFlux.map(orgRes -> {
 			IntermediateTarget itnew = new IntermediateTarget(it);
-			itnew.setResolvedOrgId(orgRes.getMetadata().getId());
-			itnew.setResolvedOrgName(orgRes.getEntity().getName());
+			itnew.setResolvedOrgId(orgRes.getId());
+			itnew.setResolvedOrgName(orgRes.getName());
 			
 			return itnew;
 		});

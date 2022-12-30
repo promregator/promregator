@@ -27,16 +27,6 @@ public class CFAccessorCacheCaffeineSpringApplication {
 	public static class ParentMock implements CFAccessor {
 
 		@Override
-		public Mono<ListOrganizationsResponse> retrieveOrgId(String orgName) {
-			return Mono.just( ListOrganizationsResponse.builder().build() );
-		}
-
-		@Override
-		public Mono<ListOrganizationsResponse> retrieveAllOrgIds() {
-			return Mono.just(ListOrganizationsResponse.builder().build() );
-		}
-
-		@Override
 		public Mono<ListSpacesResponse> retrieveSpaceId(String orgId, String spaceName) {
 			return Mono.just(ListSpacesResponse.builder().build());
 		}

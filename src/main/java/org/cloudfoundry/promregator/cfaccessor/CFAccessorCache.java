@@ -7,5 +7,5 @@ public interface CFAccessorCache extends CFAccessor {
 
 	void invalidateCacheOrg();
 
-	void invalidateCacheDomain();	
+	void invalidateCacheDomain();
 }

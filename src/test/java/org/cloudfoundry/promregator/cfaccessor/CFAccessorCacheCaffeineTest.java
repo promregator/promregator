@@ -1,7 +1,8 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
-import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v3.spaces.GetSpaceResponse;
@@ -19,8 +20,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import reactor.core.publisher.Mono;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = CFAccessorCacheCaffeineSpringApplication.class)
@@ -42,6 +41,11 @@ class CFAccessorCacheCaffeineTest {
 		this.subject.invalidateCacheDomain();
 	}
 	
+	@BeforeEach
+	public void clearMockCounters() {
+		Mockito.reset(this.parentMock);
+	}
+	
 	@AfterAll
 	public static void runCleanup() {
 		JUnitTestUtils.cleanUpAll();
@@ -49,14 +53,14 @@ class CFAccessorCacheCaffeineTest {
 	
 	@Test
 	void testRetrieveOrgId() throws InterruptedException {
-		Mono<ListOrganizationsResponse> response1 = subject.retrieveOrgId("dummy");
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveOrgId("dummy");
+		Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> response1 = subject.retrieveOrgIdV3("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveOrgIdV3("dummy");
 		
 		Thread.sleep(10);
 		
-		Mono<ListOrganizationsResponse> response2 = subject.retrieveOrgId("dummy");
+		Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> response2 = subject.retrieveOrgIdV3("dummy");
 		assertThat(response1.block()).isEqualTo(response2.block());
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveOrgId("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveOrgIdV3("dummy");
 	}
 
 	@Test
@@ -67,7 +71,7 @@ class CFAccessorCacheCaffeineTest {
 		
 		Mono<ListSpacesResponse> response2 = subject.retrieveSpaceId("dummy1", "dummy2");
 		assertThat(response1.block()).isEqualTo(response2.block());
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveOrgId("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(0)).retrieveOrgIdV3("dummy");
 	}
 
 	@Test
@@ -81,8 +85,8 @@ class CFAccessorCacheCaffeineTest {
 
 	@Test
 	void testRetrieveAllOrgIds() {
-		subject.retrieveAllOrgIds();
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllOrgIds();
+		subject.retrieveAllOrgIdsV3();
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllOrgIdsV3();
 	}
 	
 	@Test
@@ -114,7 +118,7 @@ class CFAccessorCacheCaffeineTest {
 
 		Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> response2 = subject.retrieveOrgIdV3("dummy");
 		assertThat(response1.block()).isEqualTo(response2.block());
-		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveOrgIdV3("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveOrgIdV3("dummy");
 	}
 
 	@Test

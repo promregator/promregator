@@ -69,13 +69,13 @@ class CFAccessorCacheCaffeineInvalidationTest {
 
 	@Test
 	void testInvalidateCacheOrg() {
-		subject.retrieveOrgId("dummy");
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveOrgId("dummy");
+		subject.retrieveOrgIdV3("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveOrgIdV3("dummy");
 		
 		subject.invalidateCacheOrg();
 		
-		subject.retrieveOrgId("dummy");
-		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveOrgId("dummy");
+		subject.retrieveOrgIdV3("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveOrgIdV3("dummy");
 	}
 
 	@Test

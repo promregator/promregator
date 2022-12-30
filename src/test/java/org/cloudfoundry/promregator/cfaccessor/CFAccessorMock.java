@@ -15,9 +15,6 @@ import org.cloudfoundry.client.v2.domains.DomainEntity;
 import org.cloudfoundry.client.v2.domains.DomainResource;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
-import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
-import org.cloudfoundry.client.v2.organizations.OrganizationEntity;
-import org.cloudfoundry.client.v2.organizations.OrganizationResource;
 import org.cloudfoundry.client.v2.routes.Route;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
@@ -61,39 +58,6 @@ public class CFAccessorMock implements CFAccessor {
 
 	public static final String CREATED_AT_TIMESTAMP = "2014-11-24T19:32:49+00:00";
 	public static final String UPDATED_AT_TIMESTAMP = "2014-11-24T19:32:49+00:00";
-
-	@Override
-	public Mono<ListOrganizationsResponse> retrieveOrgId(String orgName) {
-
-		if ("unittestorg".equalsIgnoreCase(orgName)) {
-
-			OrganizationResource or = OrganizationResource.builder()
-														  .entity(OrganizationEntity.builder().name("unittestorg").build())
-														  .metadata(Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_ORG_UUID).build()
-																	// Note that UpdatedAt is not set here, as this can also happen in real life!
-														  ).build();
-
-			List<org.cloudfoundry.client.v2.organizations.OrganizationResource> list = new LinkedList<>();
-			list.add(or);
-
-			ListOrganizationsResponse resp = org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse
-				.builder().addAllResources(list).build();
-
-			return Mono.just(resp);
-		}
-		else if ("doesnotexist".equals(orgName)) {
-			return Mono.just(org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse.builder()
-																							   .resources(new ArrayList<>()).build());
-		}
-		else if ("exception".equals(orgName)) {
-			return Mono.just(org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse.builder().build())
-					   .map(x -> {
-						   throw new Error("exception org name provided");
-					   });
-		}
-		Assertions.fail("Invalid OrgId request");
-		return null;
-	}
 
 	@Override
 	public Mono<ListSpacesResponse> retrieveSpaceId(String orgId, String spaceName) {
@@ -252,10 +216,6 @@ public class CFAccessorMock implements CFAccessor {
 		return null;
 	}
 
-	public Mono<ListOrganizationsResponse> retrieveAllOrgIds() {
-		return this.retrieveOrgId("unittestorg");
-	}
-
 	@Override
 	public Mono<ListSpacesResponse> retrieveSpaceIdsInOrg(String orgId) {
 		return this.retrieveSpaceId(UNITTEST_ORG_UUID, "unittestspace");
@@ -321,30 +281,27 @@ public class CFAccessorMock implements CFAccessor {
 	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> retrieveOrgIdV3(String orgName) {
 		if ("unittestorg".equalsIgnoreCase(orgName)) {
 
-			org.cloudfoundry.client.v3.organizations.OrganizationResource or = org.cloudfoundry.client.v3.organizations.OrganizationResource.builder()
-																																			.name("unittestorg")
-																																			.createdAt(CREATED_AT_TIMESTAMP)
-																																			.id(UNITTEST_ORG_UUID)
-																																			// Note that UpdatedAt is not set here, as this can also happen in real life!
-																																			.build();
+			org.cloudfoundry.client.v3.organizations.OrganizationResource or = org.cloudfoundry.client.v3.organizations.OrganizationResource
+					.builder().name("unittestorg").createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_ORG_UUID)
+					.metadata(org.cloudfoundry.client.v3.Metadata.builder().build())
+					// Note that UpdatedAt is not set here, as this can also happen in real life!
+					.build();
 
 			List<org.cloudfoundry.client.v3.organizations.OrganizationResource> list = new LinkedList<>();
 			list.add(or);
 
 			org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse resp = org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse
-				.builder().addAllResources(list).build();
+					.builder().addAllResources(list).build();
 
 			return Mono.just(resp);
-		}
-		else if ("doesnotexist".equals(orgName)) {
+		} else if ("doesnotexist".equals(orgName)) {
 			return Mono.just(org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse.builder()
-																							   .resources(new ArrayList<>()).build());
-		}
-		else if ("exception".equals(orgName)) {
+					.resources(new ArrayList<>()).build());
+		} else if ("exception".equals(orgName)) {
 			return Mono.just(org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse.builder().build())
-					   .map(x -> {
-						   throw new Error("exception org name provided");
-					   });
+					.map(x -> {
+						throw new Error("exception org name provided");
+					});
 		}
 		Assertions.fail("Invalid OrgId request");
 		return null;

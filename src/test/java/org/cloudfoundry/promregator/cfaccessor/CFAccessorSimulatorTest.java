@@ -4,24 +4,16 @@ import java.util.List;
 
 import org.cloudfoundry.client.v2.domains.DomainResource;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
-import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
+import org.cloudfoundry.client.v3.organizations.OrganizationResource;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import reactor.core.publisher.Mono;
 
 class CFAccessorSimulatorTest {
-
-	@Test
-	void testRetrieveOrgId() {
-		CFAccessorSimulator subject = new CFAccessorSimulator(2);
-		Mono<ListOrganizationsResponse> mono = subject.retrieveOrgId("simorg");
-		ListOrganizationsResponse result = mono.block();
-		Assertions.assertEquals(CFAccessorSimulator.ORG_UUID, result.getResources().get(0).getMetadata().getId());
-	}
 
 	@Test
 	void testRetrieveSpaceId() {
@@ -75,11 +67,11 @@ class CFAccessorSimulatorTest {
 		Assertions.assertNotNull(result.getResources());
 		Assertions.assertEquals(101, result.getResources().size());
 		
-		for(int i = 0;i<=99;i++) {		
-			int domainSequenceId = i + 1;	
+		for(int i = 0;i<=99;i++) {
+			int domainSequenceId = i + 1;
 			DomainResource item = result.getResources().get(i);
 			
-			Assertions.assertEquals(CFAccessorSimulator.SHARED_DOMAIN, item.getEntity().getName());			
+			Assertions.assertEquals(CFAccessorSimulator.SHARED_DOMAIN, item.getEntity().getName());
 			Assertions.assertFalse(item.getEntity().getInternal());
 			Assertions.assertTrue(item.getMetadata().getId().contains(CFAccessorSimulator.SHARED_DOMAIN_UUID+domainSequenceId));
 		}
@@ -93,7 +85,29 @@ class CFAccessorSimulatorTest {
 	@Test
 	void testRetrieveOrgIdV3() {
 		CFAccessorSimulator subject = new CFAccessorSimulator(2);
-		Assertions.assertThrows(UnsupportedOperationException.class, () -> subject.retrieveOrgIdV3("simorg"));
+		Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> mono = subject.retrieveOrgIdV3("simorg");
+		org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse result = mono.block();
+		
+		Assertions.assertNotNull(result);
+		Assertions.assertNotNull(result.getResources());
+		Assertions.assertEquals(1, result.getResources().size());
+		
+		OrganizationResource or = result.getResources().get(0);
+		Assertions.assertEquals(CFAccessorSimulator.ORG_UUID, or.getId());
+	}
+	
+	@Test
+	void testRetrieveAllOrgIdsV3() {
+		CFAccessorSimulator subject = new CFAccessorSimulator(2);
+		Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> mono = subject.retrieveAllOrgIdsV3();
+		org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse result = mono.block();
+		
+		Assertions.assertNotNull(result);
+		Assertions.assertNotNull(result.getResources());
+		Assertions.assertEquals(1, result.getResources().size());
+		
+		OrganizationResource or = result.getResources().get(0);
+		Assertions.assertEquals(CFAccessorSimulator.ORG_UUID, or.getId());
 	}
 
 	@Test

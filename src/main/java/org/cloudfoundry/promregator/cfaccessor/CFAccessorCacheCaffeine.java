@@ -11,7 +11,6 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
-import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
@@ -33,12 +32,12 @@ import reactor.core.scheduler.Schedulers;
 public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	private static final Logger log = LoggerFactory.getLogger(CFAccessorCacheCaffeine.class);
 
-	private AsyncLoadingCache<String, ListOrganizationsResponse> orgCache;
-	private AsyncLoadingCache<String, ListOrganizationsResponse> allOrgIdCache;
+	private AsyncLoadingCache<String,org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> orgCache;
+	private @NonNull AsyncLoadingCache<String, org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> allOrgIdCache;
 	private AsyncLoadingCache<CacheKeySpace, ListSpacesResponse> spaceCache;
 	private AsyncLoadingCache<String, ListSpacesResponse> spaceIdInOrgCache;
 	private AsyncLoadingCache<CacheKeyAppsInSpace, ListApplicationsResponse> appsInSpaceCache;
-	private AsyncLoadingCache<String, GetSpaceSummaryResponse> spaceSummaryCache;		
+	private AsyncLoadingCache<String, GetSpaceSummaryResponse> spaceSummaryCache;
 	private AsyncLoadingCache<String, ListOrganizationDomainsResponse> domainsInOrgCache;
 	private AsyncLoadingCache<CacheKeyAppsInSpace, org.cloudfoundry.client.v3.applications.ListApplicationsResponse> appsInSpaceV3Cache;
 	
@@ -52,7 +51,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	private int refreshCacheApplicationLevelInSeconds;
 
 	@Value("${cf.cache.timeout.domain:3600}")
-	private int refreshCacheDomainLevelInSeconds;	
+	private int refreshCacheDomainLevelInSeconds;
 		
 	@Value("${cf.cache.expiry.org:120}")
 	private int expiryCacheOrgLevelInSeconds;
@@ -64,7 +63,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	private int expiryCacheApplicationLevelInSeconds;
 	
 	@Value("${cf.cache.expiry.domain:300}")
-	private int expiryCacheDomainLevelInSeconds;	
+	private int expiryCacheDomainLevelInSeconds;
 	
 	@Autowired
 	private InternalMetrics internalMetrics;
@@ -78,24 +77,24 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 		this.parent = parent;
 	}
 	
-	private class OrgCacheLoader implements AsyncCacheLoader<String, ListOrganizationsResponse> {
+	private class OrgCacheLoader implements AsyncCacheLoader<String, org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> {
 		@Override
-		public @NonNull CompletableFuture<ListOrganizationsResponse> asyncLoad(@NonNull String key,
+		public @NonNull CompletableFuture<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> asyncLoad(@NonNull String key,
 				@NonNull Executor executor) {
 			
-			Mono<ListOrganizationsResponse> mono = parent.retrieveOrgId(key)
+			Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> mono = parent.retrieveOrgIdV3(key)
 					.subscribeOn(Schedulers.fromExecutor(executor))
 					.cache();
 			return mono.toFuture();
 		}
 	}
 	
-	private class AllOrgIdCacheLoader implements  AsyncCacheLoader<String, ListOrganizationsResponse> {
+	private class AllOrgIdCacheLoader implements AsyncCacheLoader<String, org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> {
 		@Override
-		public @NonNull CompletableFuture<ListOrganizationsResponse> asyncLoad(@NonNull String key,
+		public @NonNull CompletableFuture<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> asyncLoad(@NonNull String key,
 				@NonNull Executor executor) {
 			
-			Mono<ListOrganizationsResponse> mono = parent.retrieveAllOrgIds()
+			Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> mono = parent.retrieveAllOrgIdsV3()
 					.subscribeOn(Schedulers.fromExecutor(executor))
 					.cache();
 			return mono.toFuture();
@@ -246,11 +245,6 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	public Mono<GetInfoResponse> getInfo() {
 		return this.parent.getInfo();
 	}
-	
-	@Override
-	public Mono<ListOrganizationsResponse> retrieveOrgId(String orgName) {
-		return Mono.fromFuture(this.orgCache.get(orgName));
-	}
 
 	@Override
 	public Mono<ListSpacesResponse> retrieveSpaceId(String orgId, String spaceName) {
@@ -273,11 +267,6 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	}
 
 	@Override
-	public Mono<ListOrganizationsResponse> retrieveAllOrgIds() {
-		return Mono.fromFuture(this.allOrgIdCache.get("all"));
-	}
-	
-	@Override
 	public Mono<ListSpacesResponse> retrieveSpaceIdsInOrg(String orgId) {
 		return Mono.fromFuture(this.spaceIdInOrgCache.get(orgId));
 	}
@@ -289,14 +278,12 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 
 	@Override
 	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> retrieveOrgIdV3(String orgName) {
-		// TODO: Implement cache
-		return this.parent.retrieveOrgIdV3(orgName);
+		return Mono.fromFuture(this.orgCache.get(orgName));
 	}
 
 	@Override
 	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> retrieveAllOrgIdsV3() {
-		// TODO: Implement cache
-		return this.parent.retrieveAllOrgIdsV3();
+		return Mono.fromFuture(this.allOrgIdCache.get("all"));
 	}
 
 	@Override

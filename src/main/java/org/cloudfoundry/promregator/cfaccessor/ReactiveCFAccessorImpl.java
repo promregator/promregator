@@ -15,9 +15,6 @@ import org.cloudfoundry.client.v2.info.GetInfoRequest;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsRequest;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
-import org.cloudfoundry.client.v2.organizations.ListOrganizationsRequest;
-import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
-import org.cloudfoundry.client.v2.organizations.OrganizationResource;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryRequest;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.ListSpacesRequest;
@@ -268,43 +265,6 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	@Override
 	public Mono<GetInfoResponse> getInfo() {
 		return this.cloudFoundryClient.info().get(DUMMY_GET_INFO_REQUEST);
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.cloudfoundry.promregator.cfaccessor.CFAccessor#retrieveOrgId(java.lang.String)
-	 */
-	@Override
-	public Mono<ListOrganizationsResponse> retrieveOrgId(String orgName) {
-		// Note: even though we use the List request here, the number of values returned is either zero or one
-		// ==> No need for a paged request. 
-		ListOrganizationsRequest orgsRequest = ListOrganizationsRequest.builder().name(orgName).build();
-		
-		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.ORG, orgName, orgsRequest,
-				or -> this.cloudFoundryClient.organizations()
-				          .list(or), this.requestTimeoutOrg);
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.cloudfoundry.promregator.cfaccessor.CFAccessor#retrieveAllOrgIds()
-	 */
-	@Override
-	public Mono<ListOrganizationsResponse> retrieveAllOrgIds() {
-		PaginatedRequestGeneratorFunction<ListOrganizationsRequest> requestGenerator = (orderDirection, resultsPerPage, pageNumber) ->
-			ListOrganizationsRequest.builder()
-				.orderDirection(orderDirection)
-				.resultsPerPage(resultsPerPage)
-				.page(pageNumber)
-				.build();
-		
-		PaginatedResponseGeneratorFunction<OrganizationResource, ListOrganizationsResponse> responseGenerator = (list, numberOfPages) ->
-				ListOrganizationsResponse.builder()
-				.addAllResources(list)
-				.totalPages(numberOfPages)
-				.totalResults(list.size())
-				.build();
-		
-		return this.paginatedRequestFetcher.performGenericPagedRetrieval(RequestType.ALL_ORGS, "(empty)", requestGenerator, 
-				r -> this.cloudFoundryClient.organizations().list(r),  this.requestTimeoutOrg, responseGenerator);
 	}
 
 	/* (non-Javadoc)

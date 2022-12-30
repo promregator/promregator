@@ -8,10 +8,11 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import javax.annotation.Nullable;
+
 import org.apache.logging.log4j.util.Strings;
 import org.cloudfoundry.client.v2.domains.DomainResource;
-import org.cloudfoundry.client.v2.organizations.OrganizationResource;
 import org.cloudfoundry.client.v2.routes.Route;
 import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
@@ -22,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.CollectionUtils;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -348,8 +350,8 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	}
 
 	private Mono<String> getOrgId(String orgNameString) {
-		return this.cfAccessor.retrieveOrgId(orgNameString).flatMap(response -> {
-			List<OrganizationResource> resources = response.getResources();
+		return this.cfAccessor.retrieveOrgIdV3(orgNameString).flatMap(response -> {
+			List<org.cloudfoundry.client.v3.organizations.OrganizationResource> resources = response.getResources();
 			if (resources == null) {
 				return Mono.just(INVALID_ORG_ID);
 			}
@@ -359,8 +361,8 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				return Mono.just(INVALID_ORG_ID);
 			}
 
-			OrganizationResource organizationResource = resources.get(0);
-			return Mono.just(organizationResource.getMetadata().getId());
+			org.cloudfoundry.client.v3.organizations.OrganizationResource organizationResource = resources.get(0);
+			return Mono.just(organizationResource.getId());
 		}).onErrorResume(e -> {
 			log.error(String.format("retrieving Org Id for org Name '%s' resulted in an exception", orgNameString), e);
 			return Mono.just(INVALID_ORG_ID);
