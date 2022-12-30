@@ -73,8 +73,7 @@ class ReactiveCFPaginatedRequestFetcher {
 			}
 
 			return new Object();
-		}).subscribeOn(Schedulers.boundedElastic())
-				   .flatMap(x -> Mono.empty());
+		}).subscribeOn(Schedulers.boundedElastic()).flatMap(x -> Mono.empty());
 	}
 
 
@@ -120,8 +119,7 @@ class ReactiveCFPaginatedRequestFetcher {
 
 			ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, retrievalTypeName);
 
-			final Mono<P> enrichedRequestFunction = requestFunction.apply(requestData)
-																   .timeout(Duration.ofMillis(timeoutInMS));
+			final Mono<P> enrichedRequestFunction = requestFunction.apply(requestData).timeout(Duration.ofMillis(timeoutInMS));
 			/*
 			 * Note 1: Applying (i.e. calling) the function "requestFunction" here
 			 * does not trigger the request to be sent to the CFCC.
@@ -155,39 +153,36 @@ class ReactiveCFPaginatedRequestFetcher {
 			 */
 
 			result = this.rateLimitingMono(requestType).then(Mono.just(reactiveTimer))
-						 // start the timer
-						 .flatMap(timer -> {
-							 timer.start();
-							 return Mono.just(0 /* any value will just do; will be ignored */); // Cannot use Mono.empty() here!
-						 }).flatMap(nothing -> enrichedRequestFunction)
-						 .retryWhen(Retry.backoff(2, this.initialBackoffDelay))
-						 /*
-						  * Note: Don't push the retry attempts above into enrichedRequestFunction!
-						  * It would change the semantics of the metric behind the timer.
-						  * see also https://github.com/promregator/promregator/pull/174/files#r392031592
-						  */
-						 .doOnError(throwable -> {
-							 Throwable unwrappedThrowable = Exceptions.unwrap(throwable);
-							 if (unwrappedThrowable instanceof TimeoutException) {
-								 log.error(String.format(
-									 "Async retrieval of %s with key %s caused a timeout after %dms even though we tried three times",
-									 logName, key, timeoutInMS));
-							 } else if (unwrappedThrowable instanceof OutOfMemoryError){
-								 // This may be an direct memory or a heap error!
-								 // Using String.format and/or log.error here is a bad idea - it takes memory!
+						// start the timer
+						.flatMap(timer -> {
+							timer.start();
+							return Mono.just(0 /* any value will just do; will be ignored */); // Cannot use Mono.empty() here!
+						}).flatMap(nothing -> enrichedRequestFunction)
+						.retryWhen(Retry.backoff(2, this.initialBackoffDelay))
+						/*
+						 * Note: Don't push the retry attempts above into enrichedRequestFunction!
+						 * It would change the semantics of the metric behind the timer.
+						 * see also https://github.com/promregator/promregator/pull/174/files#r392031592
+						 */
+						.doOnError(throwable -> {
+							Throwable unwrappedThrowable = Exceptions.unwrap(throwable);
+							if (unwrappedThrowable instanceof TimeoutException) {
+								 log.error(String.format("Async retrieval of %s with key %s caused a timeout after %dms even though we tried three times", logName, key, timeoutInMS));
+							} else if (unwrappedThrowable instanceof OutOfMemoryError){
+								// This may be an direct memory or a heap error!
+								// Using String.format and/or log.error here is a bad idea - it takes memory!
 
-								 if (System.getenv("VCAP_APPLICATION") != null) {
-									 // we assume that we are running on a Cloud Foundry container
-									 this.triggerOutOfMemoryRestart();
-								 }
+								if (System.getenv("VCAP_APPLICATION") != null) {
+									// we assume that we are running on a Cloud Foundry container
+									this.triggerOutOfMemoryRestart();
+								}
 
-							 } else {
-								 log.error(String.format("Async retrieval of %s with key %s raised a reactor error", logName,
-														 key), unwrappedThrowable);
-							 }
-						 })
-						 // stop the timer
-						 .zipWith(Mono.just(reactiveTimer)).map(tuple -> {
+							} else {
+								log.error(String.format("Async retrieval of %s with key %s raised a reactor error", logName, key), unwrappedThrowable);
+							}
+						})
+						// stop the timer
+						.zipWith(Mono.just(reactiveTimer)).map(tuple -> {
 					tuple.getT2().stop();
 					return tuple.getT1();
 				}).log(log.getName() + "." + logName, Level.FINE).cache();
@@ -236,16 +231,14 @@ class ReactiveCFPaginatedRequestFetcher {
 		ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, pageRetrievalType);
 
 		Mono<P> firstPage = Mono.just(reactiveTimer).doOnNext(ReactiveTimer::start).flatMap(dummy ->
-																								this.performGenericRetrieval(requestType, key, requestGenerator.
-																																								   apply(OrderDirection.ASCENDING, RESULTS_PER_PAGE, 1), requestFunction,	timeoutInMS))
+				this.performGenericRetrieval(requestType, key, requestGenerator.apply(OrderDirection.ASCENDING, RESULTS_PER_PAGE, 1), requestFunction, timeoutInMS))
 				.cache(); // required: used twice below (once for fetching additional pages, plus second time in Mono.zip() below);
 
 		Flux<R> requestFlux = firstPage.map(page -> page.getTotalPages() - 1)
-									   .flatMapMany(pagesCount -> Flux.range(2, pagesCount))
-									   .map(pageNumber -> requestGenerator.apply(OrderDirection.ASCENDING, RESULTS_PER_PAGE, pageNumber));
+				.flatMapMany(pagesCount -> Flux.range(2, pagesCount))
+				.map(pageNumber -> requestGenerator.apply(OrderDirection.ASCENDING, RESULTS_PER_PAGE, pageNumber));
 
-		Mono<List<P>> subsequentPagesList = requestFlux.flatMap(req ->
-																	this.performGenericRetrieval(requestType, key, req, requestFunction, timeoutInMS)).collectList();
+		Mono<List<P>> subsequentPagesList = requestFlux.flatMap(req -> this.performGenericRetrieval(requestType, key, req, requestFunction, timeoutInMS)).collectList();
 
 		/*
 		 * Word on error handling: We can't judge here what will be the consequence, if
@@ -305,18 +298,16 @@ class ReactiveCFPaginatedRequestFetcher {
 		ReactiveTimer reactiveTimer = new ReactiveTimer(this.internalMetrics, pageRetrievalType);
 
 		Mono<P> firstPage = Mono.just(reactiveTimer).doOnNext(ReactiveTimer::start).flatMap(dummy ->
-																								this.performGenericRetrieval(requestType, key, requestGenerator
-																									.
-																										apply(RESULTS_PER_PAGE, 1), requestFunction, timeoutInMS))
+				this.performGenericRetrieval(requestType, key, requestGenerator.apply(RESULTS_PER_PAGE, 1), requestFunction, timeoutInMS))
 				.cache(); // required: used twice below (once for fetching additional pages, plus second time in Mono.zip() below)
 
 		Flux<R> requestFlux = firstPage.map(page -> page.getPagination().getTotalPages() - 1)
-									   .flatMapMany(pagesCount -> Flux.range(2, pagesCount))
-									   .map(pageNumber -> requestGenerator.apply(RESULTS_PER_PAGE, pageNumber));
+				.flatMapMany(pagesCount -> Flux.range(2, pagesCount))
+				.map(pageNumber -> requestGenerator.apply(RESULTS_PER_PAGE, pageNumber));
 
 		Mono<List<P>> subsequentPagesList = requestFlux.flatMap(req ->
-														this.performGenericRetrieval(requestType, key, req, requestFunction, timeoutInMS))
-													   .collectList();
+				this.performGenericRetrieval(requestType, key, req, requestFunction, timeoutInMS))
+				.collectList();
 
 		/*
 		 * Word on error handling: We can't judge here what will be the consequence, if
