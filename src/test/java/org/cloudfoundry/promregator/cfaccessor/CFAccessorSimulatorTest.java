@@ -2,8 +2,6 @@ package org.cloudfoundry.promregator.cfaccessor;
 
 import java.util.List;
 
-import org.cloudfoundry.client.v2.domains.DomainResource;
-import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v3.organizations.OrganizationResource;
@@ -49,31 +47,6 @@ class CFAccessorSimulatorTest {
 	}
 
 	@Test
-	void testRetrieveAllDomains() {
-		CFAccessorSimulator subject = new CFAccessorSimulator(2);
-		Mono<ListOrganizationDomainsResponse> mono = subject.retrieveAllDomains(CFAccessorSimulator.ORG_UUID);
-		ListOrganizationDomainsResponse result = mono.block();
-		
-		Assertions.assertNotNull(result);
-		Assertions.assertNotNull(result.getResources());
-		Assertions.assertEquals(101, result.getResources().size());
-		
-		for(int i = 0;i<=99;i++) {
-			int domainSequenceId = i + 1;
-			DomainResource item = result.getResources().get(i);
-			
-			Assertions.assertEquals(CFAccessorSimulator.SHARED_DOMAIN, item.getEntity().getName());
-			Assertions.assertFalse(item.getEntity().getInternal());
-			Assertions.assertTrue(item.getMetadata().getId().contains(CFAccessorSimulator.SHARED_DOMAIN_UUID+domainSequenceId));
-		}
-
-		// get the shared domain
-		DomainResource sharedDomain = result.getResources().get(100);
-		Assertions.assertTrue(sharedDomain.getEntity().getInternal());
-		Assertions.assertEquals(CFAccessorSimulator.INTERNAL_DOMAIN, sharedDomain.getEntity().getName());
-	}
-
-	@Test
 	void testRetrieveOrgIdV3() {
 		CFAccessorSimulator subject = new CFAccessorSimulator(2);
 		Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> mono = subject.retrieveOrgIdV3("simorg");
@@ -116,9 +89,28 @@ class CFAccessorSimulatorTest {
 	@Test
 	void testRetrieveAllDomainsV3() {
 		CFAccessorSimulator subject = new CFAccessorSimulator(2);
-		Assertions.assertThrows(UnsupportedOperationException.class, () -> subject.retrieveAllDomainsV3(CFAccessorSimulator.ORG_UUID));
-	}
+		Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse> mono = subject.retrieveAllDomainsV3(CFAccessorSimulator.ORG_UUID);
+		org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse result = mono.block();
+		
+		Assertions.assertNotNull(result);
+		Assertions.assertNotNull(result.getResources());
+		Assertions.assertEquals(101, result.getResources().size());
+		
+		for(int i = 0;i<=99;i++) {
+			int domainSequenceId = i + 1;
+			org.cloudfoundry.client.v3.domains.DomainResource item = result.getResources().get(i);
+			
+			Assertions.assertEquals(CFAccessorSimulator.SHARED_DOMAIN, item.getName());
+			Assertions.assertFalse(item.isInternal());
+			Assertions.assertTrue(item.getId().contains(CFAccessorSimulator.SHARED_DOMAIN_UUID+domainSequenceId));
+		}
 
+		// get the shared domain
+		org.cloudfoundry.client.v3.domains.DomainResource sharedDomain = result.getResources().get(100);
+		Assertions.assertTrue(sharedDomain.isInternal());
+		Assertions.assertEquals(CFAccessorSimulator.INTERNAL_DOMAIN, sharedDomain.getName());
+	}
+	
 	@Test
 	void testRetrieveRoutes3() {
 		CFAccessorSimulator subject = new CFAccessorSimulator(2);

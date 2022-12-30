@@ -12,7 +12,6 @@ import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
 import org.apache.logging.log4j.util.Strings;
-import org.cloudfoundry.client.v2.domains.DomainResource;
 import org.cloudfoundry.client.v2.routes.Route;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
@@ -264,12 +263,12 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			return Mono.just(v);
 		});
 
-		Flux<List<DomainResource>> domainFlux = osaVectorApplicationFlux.flatMapSequential(v -> {
-			return this.cfAccessor.retrieveAllDomains(v.getOrgId()).map(mapper -> mapper.getResources());
+		Flux<List<org.cloudfoundry.client.v3.domains.DomainResource>> domainFlux = osaVectorApplicationFlux.flatMapSequential(v -> {
+			return this.cfAccessor.retrieveAllDomainsV3(v.getOrgId()).map(mapper -> mapper.getResources());
 		});
 		Flux<OSAVector> osaVectorDomainApplicationFlux = Flux.zip(osaVectorApplicationFlux, domainFlux).flatMap(tuple -> {
 			OSAVector v = tuple.getT1();
-			List<DomainResource> domains = tuple.getT2();
+			List<org.cloudfoundry.client.v3.domains.DomainResource> domains = tuple.getT2();
 
 			if (domains.size() == 0 || v.getDomainId() == null) {
 				// NB: This drops the current target!
@@ -277,15 +276,18 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			}
 
 			if (useOverrideRouteAndPath(v)) {
-			  v.setInternal(true);
+				v.setInternal(true);
 			}
 			// we should only run this if we found a domain in the above step
 			// this is to make sure we have compatibility with existing behaviour
 			else if( !v.getDomainId().isEmpty()) {
 				try {
-					DomainResource domain = domains.stream().filter(r -> r.getMetadata().getId().equals(v.getDomainId()))
-						.findFirst().get();
-					v.setInternal(domain.getEntity().getInternal());
+					org.cloudfoundry.client.v3.domains.DomainResource domain = domains.stream()
+							.filter(r -> r.getId().equals(v.getDomainId()))
+							.findFirst()
+							.get();
+					
+					v.setInternal(domain.isInternal());
 				} catch (Exception e) {
 					log.warn(String.format("unable to find matching domain for the domain with id %s", v.getDomainId()));
 				}

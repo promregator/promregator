@@ -7,19 +7,17 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
-import org.cloudfoundry.client.v2.Metadata;
 import org.cloudfoundry.client.v2.domains.Domain;
-import org.cloudfoundry.client.v2.domains.DomainEntity;
-import org.cloudfoundry.client.v2.domains.DomainResource;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
-import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.routes.Route;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v3.BuildpackData;
 import org.cloudfoundry.client.v3.Lifecycle;
 import org.cloudfoundry.client.v3.LifecycleType;
+import org.cloudfoundry.client.v3.ToOneRelationship;
 import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
+import org.cloudfoundry.client.v3.domains.DomainRelationships;
 import org.cloudfoundry.client.v3.spaces.GetSpaceResponse;
 import org.junit.jupiter.api.Assertions;
 
@@ -92,30 +90,6 @@ public class CFAccessorMassMock implements CFAccessor {
 	public void reset() {
 		// nothing to be done
 	}	
-
-	@Override
-	public Mono<ListOrganizationDomainsResponse> retrieveAllDomains(String orgId) {
-		List<DomainResource> domains = new ArrayList<DomainResource>();
-
-
-		for (int i = 0;i<100;i++) {
-			
-			DomainResource domain = DomainResource.builder()
-				.entity(
-					DomainEntity.builder()
-					.name(UNITTEST_SHARED_DOMAIN)
-					.internal(false)
-					.build())
-				.metadata(
-					Metadata.builder().id(UNITTEST_SHARED_DOMAIN_UUID+i).createdAt(CREATED_AT_TIMESTAMP).build())
-				.build();
-
-			domains.add(domain);
-		}
-
-		ListOrganizationDomainsResponse response = ListOrganizationDomainsResponse.builder().addAllResources(domains).build();
-		return Mono.just(response);
-	}
 
 	@Override
 	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> retrieveOrgIdV3(String orgName) {
@@ -201,7 +175,26 @@ public class CFAccessorMassMock implements CFAccessor {
 
 	@Override
 	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse> retrieveAllDomainsV3(String orgId) {
-		throw new UnsupportedOperationException();
+		List<org.cloudfoundry.client.v3.domains.DomainResource> domains = new ArrayList<org.cloudfoundry.client.v3.domains.DomainResource>();
+
+		for (int i = 0;i<100;i++) {
+			
+			org.cloudfoundry.client.v3.domains.DomainResource domain = org.cloudfoundry.client.v3.domains.DomainResource.builder()
+					.name(UNITTEST_SHARED_DOMAIN)
+					.isInternal(false)
+					.id(UNITTEST_SHARED_DOMAIN_UUID+i)
+					.createdAt(CREATED_AT_TIMESTAMP)
+					.metadata(org.cloudfoundry.client.v3.Metadata.builder().build())
+					.relationships(DomainRelationships.builder().organization(
+							ToOneRelationship.builder().build()
+					).build())
+					.build();
+
+			domains.add(domain);
+		}
+
+		org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse response = org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse.builder().addAllResources(domains).build();
+		return Mono.just(response);
 	}
 
 	@Override

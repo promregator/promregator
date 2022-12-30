@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.TimeoutException;
 
-import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.junit.jupiter.api.AfterAll;
@@ -50,7 +49,7 @@ class CFAccessorCacheCaffeineTimeoutTest {
 		Mockito.when(this.parentMock.retrieveSpaceIdV3("dummy1", "dummy2")).then(new TimeoutMonoAnswer());
 		Mockito.when(this.parentMock.retrieveAllApplicationsInSpaceV3("dummy1", "dummy2")).then(new TimeoutMonoAnswer());
 		Mockito.when(this.parentMock.retrieveSpaceSummary("dummy")).then(new TimeoutMonoAnswer());
-		Mockito.when(this.parentMock.retrieveAllDomains("dummy")).then(new TimeoutMonoAnswer());
+		Mockito.when(this.parentMock.retrieveAllDomainsV3("dummy")).then(new TimeoutMonoAnswer());
 	}
 
 	public static class TimeoutMonoAnswer implements Answer<Mono<?>> {
@@ -129,17 +128,17 @@ class CFAccessorCacheCaffeineTimeoutTest {
 
 	@Test
 	void testRetrieveDomains() throws InterruptedException {
-		Mono<ListOrganizationDomainsResponse> response1 = subject.retrieveAllDomains("dummy");
+		Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse> response1 = subject.retrieveAllDomainsV3("dummy");
 		response1.subscribe();
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllDomains("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllDomainsV3("dummy");
 		
 		// required to permit asynchronous updates of caches => test stability
 		Thread.sleep(10);
 		
-		Mono<ListOrganizationDomainsResponse> response2 = subject.retrieveAllDomains("dummy");
+		Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse> response2 = subject.retrieveAllDomainsV3("dummy");
 		response2.subscribe();
 		assertThat(response1).isNotEqualTo(response2);
-		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveAllDomains("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveAllDomainsV3("dummy");
 	}
 
 }

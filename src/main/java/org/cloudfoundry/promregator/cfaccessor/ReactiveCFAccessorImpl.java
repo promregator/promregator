@@ -10,8 +10,6 @@ import javax.annotation.PostConstruct;
 import org.apache.http.conn.util.InetAddressUtils;
 import org.cloudfoundry.client.v2.info.GetInfoRequest;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
-import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsRequest;
-import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryRequest;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v3.Pagination;
@@ -269,16 +267,6 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		
 		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.SPACE_SUMMARY, spaceId, 
 				request, r -> this.cloudFoundryClient.spaces().getSummary(r), this.requestTimeoutAppSummary);
-
-  }
-
-	@Override
-	public Mono<ListOrganizationDomainsResponse> retrieveAllDomains(String orgId) {
-
-		ListOrganizationDomainsRequest request = ListOrganizationDomainsRequest.builder().organizationId(orgId).build();
-
-		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.DOMAINS, orgId, 
-		request, r -> this.cloudFoundryClient.organizations().listDomains(request), this.requestTimeoutDomains);
 	}
 
 	@Override

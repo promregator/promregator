@@ -80,13 +80,13 @@ class CFAccessorCacheCaffeineInvalidationTest {
 
 	@Test
 	void testInvalidateCacheDomain() {
-		subject.retrieveAllDomains("dummy");
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllDomains("dummy");
+		subject.retrieveAllDomainsV3("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllDomainsV3("dummy");
 		
 		subject.invalidateCacheDomain();
 		
-		subject.retrieveAllDomains("dummy");
-		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveAllDomains("dummy");
+		subject.retrieveAllDomainsV3("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveAllDomainsV3("dummy");
 	}
 
 }

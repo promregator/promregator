@@ -1,7 +1,6 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
-import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
 import org.cloudfoundry.client.v3.spaces.GetSpaceResponse;
@@ -31,11 +30,6 @@ public class CFAccessorCacheCaffeineSpringApplication {
 		@Override
 		public Mono<GetInfoResponse> getInfo() {
 			return Mono.just(GetInfoResponse.builder().build());
-		}
-
-		@Override
-		public Mono<ListOrganizationDomainsResponse> retrieveAllDomains(String orgId) {
-			return Mono.just(ListOrganizationDomainsResponse.builder().build());
 		}
 
 		@Override

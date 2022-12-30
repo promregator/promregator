@@ -2,7 +2,6 @@ package org.cloudfoundry.promregator.cfaccessor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v3.spaces.GetSpaceResponse;
 import org.cloudfoundry.promregator.JUnitTestUtils;
@@ -100,12 +99,12 @@ class CFAccessorCacheCaffeineTest {
 
 	@Test
 	void testRetrieveDomain() {
-		Mono<ListOrganizationDomainsResponse> response1 = subject.retrieveAllDomains("dummy");
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllDomains("dummy");
+		Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse> response1 = subject.retrieveAllDomainsV3("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllDomainsV3("dummy");
 		
-		Mono<ListOrganizationDomainsResponse> response2 = subject.retrieveAllDomains("dummy");
+		Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse> response2 = subject.retrieveAllDomainsV3("dummy");
 		assertThat(response1.block()).isEqualTo(response2.block());
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllDomains("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllDomainsV3("dummy");
 	}
 
 	@Test
@@ -163,6 +162,6 @@ class CFAccessorCacheCaffeineTest {
 
 		Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse> response2 = subject.retrieveAllDomainsV3("dummy");
 		assertThat(response1.block()).isEqualTo(response2.block());
-		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveAllDomainsV3("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllDomainsV3("dummy");
 	}
 }

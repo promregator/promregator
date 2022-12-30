@@ -6,21 +6,18 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.assertj.core.util.Lists;
-import org.cloudfoundry.client.v2.Metadata;
 import org.cloudfoundry.client.v2.domains.Domain;
-import org.cloudfoundry.client.v2.domains.DomainEntity;
-import org.cloudfoundry.client.v2.domains.DomainResource;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
-import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.routes.Route;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v3.BuildpackData;
 import org.cloudfoundry.client.v3.Lifecycle;
-import org.cloudfoundry.client.v3.LifecycleData;
 import org.cloudfoundry.client.v3.LifecycleType;
+import org.cloudfoundry.client.v3.ToOneRelationship;
 import org.cloudfoundry.client.v3.applications.ApplicationState;
 import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
+import org.cloudfoundry.client.v3.domains.DomainRelationships;
 import org.cloudfoundry.client.v3.spaces.GetSpaceResponse;
 import org.junit.jupiter.api.Assertions;
 
@@ -131,36 +128,6 @@ public class CFAccessorMock implements CFAccessor {
 	@Override
 	public void reset() {
 		// nothing to be done
-	}
-
-	@Override
-	public Mono<ListOrganizationDomainsResponse> retrieveAllDomains(String orgId) {
-		List<DomainResource> domains = new ArrayList<DomainResource>();
-		DomainResource domain = DomainResource.builder()
-				.entity(DomainEntity.builder().name(UNITTEST_INTERNAL_DOMAIN).internal(true).build())
-				.metadata(Metadata.builder().id(UNITTEST_INTERNAL_DOMAIN_UUID).createdAt(CREATED_AT_TIMESTAMP).build())
-				.build();
-
-		domains.add(domain);
-
-		domain = DomainResource.builder()
-				.entity(DomainEntity.builder().name(UNITTEST_SHARED_DOMAIN).internal(false).build())
-				.metadata(Metadata.builder().id(UNITTEST_SHARED_DOMAIN_UUID).createdAt(CREATED_AT_TIMESTAMP).build())
-				.build();
-
-		domains.add(domain);
-
-		domain = DomainResource.builder()
-				.entity(DomainEntity.builder().name(UNITTEST_ADDITIONAL_SHARED_DOMAIN).internal(false).build())
-				.metadata(Metadata.builder().id(UNITTEST_ADDITIONAL_SHARED_DOMAIN_UUID).createdAt(CREATED_AT_TIMESTAMP)
-						.build())
-				.build();
-
-		domains.add(domain);
-
-		ListOrganizationDomainsResponse response = ListOrganizationDomainsResponse.builder().addAllResources(domains)
-				.build();
-		return Mono.just(response);
 	}
 
 	@Override
@@ -320,19 +287,39 @@ public class CFAccessorMock implements CFAccessor {
 	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse> retrieveAllDomainsV3(
 			String orgId) {
 		List<org.cloudfoundry.client.v3.domains.DomainResource> domains = new ArrayList<>();
-		org.cloudfoundry.client.v3.domains.DomainResource domain = org.cloudfoundry.client.v3.domains.DomainResource
-				.builder().name(UNITTEST_INTERNAL_DOMAIN).isInternal(true).id(UNITTEST_INTERNAL_DOMAIN_UUID)
-				.createdAt(CREATED_AT_TIMESTAMP).build();
+		org.cloudfoundry.client.v3.domains.DomainResource domain = org.cloudfoundry.client.v3.domains.DomainResource.builder()
+				.name(UNITTEST_INTERNAL_DOMAIN)
+				.isInternal(true)
+				.id(UNITTEST_INTERNAL_DOMAIN_UUID)
+				.createdAt(CREATED_AT_TIMESTAMP)
+				.relationships(DomainRelationships.builder().organization(
+						ToOneRelationship.builder().build()
+				).build())
+				.build();
 
 		domains.add(domain);
 
-		domain = org.cloudfoundry.client.v3.domains.DomainResource.builder().name(UNITTEST_SHARED_DOMAIN)
-				.isInternal(false).id(UNITTEST_SHARED_DOMAIN_UUID).createdAt(CREATED_AT_TIMESTAMP).build();
+		domain = org.cloudfoundry.client.v3.domains.DomainResource.builder()
+				.name(UNITTEST_SHARED_DOMAIN)
+				.isInternal(false)
+				.id(UNITTEST_SHARED_DOMAIN_UUID)
+				.createdAt(CREATED_AT_TIMESTAMP)
+				.relationships(DomainRelationships.builder().organization(
+						ToOneRelationship.builder().build()
+				).build())
+				.build();
 
 		domains.add(domain);
 
-		domain = org.cloudfoundry.client.v3.domains.DomainResource.builder().name(UNITTEST_ADDITIONAL_SHARED_DOMAIN)
-				.isInternal(false).id(UNITTEST_ADDITIONAL_SHARED_DOMAIN_UUID).createdAt(CREATED_AT_TIMESTAMP).build();
+		domain = org.cloudfoundry.client.v3.domains.DomainResource.builder()
+				.name(UNITTEST_ADDITIONAL_SHARED_DOMAIN)
+				.isInternal(false)
+				.id(UNITTEST_ADDITIONAL_SHARED_DOMAIN_UUID)
+				.createdAt(CREATED_AT_TIMESTAMP)
+				.relationships(DomainRelationships.builder().organization(
+						ToOneRelationship.builder().build()
+				).build())
+				.build();
 
 		domains.add(domain);
 
