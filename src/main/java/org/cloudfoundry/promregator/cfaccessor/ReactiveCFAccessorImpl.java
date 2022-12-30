@@ -14,6 +14,8 @@ import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryRequest;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v3.Pagination;
 import org.cloudfoundry.client.v3.applications.ApplicationResource;
+import org.cloudfoundry.client.v3.applications.ListApplicationProcessesRequest;
+import org.cloudfoundry.client.v3.applications.ListApplicationProcessesResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
@@ -43,6 +45,8 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 
 	private static final Logger log = LoggerFactory.getLogger(ReactiveCFAccessorImpl.class);
 	public static final ListApplicationsResponse INVALID_APPLICATIONS_RESPONSE = ListApplicationsResponse.builder().build();
+	
+	private static final String CF_API_V3_PROCESS_TYPE = "web";
 
 	@Value("${cf.api_host}")
 	private String apiHost;
@@ -380,5 +384,26 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	@Override
 	public Mono<ListApplicationRoutesResponse> retrieveRoutesForAppId(String appId) {
 		throw new UnsupportedOperationException();
+	}
+	
+	
+	@Override
+	public Mono<ListApplicationProcessesResponse> retrieveWebProcessesForApp(String applicationId) {
+		PaginatedRequestGeneratorFunctionV3<ListApplicationProcessesRequest> requestGenerator = (resultsPerPage, pageNumber) ->
+			ListApplicationProcessesRequest.builder()
+				.applicationId(applicationId)
+				.type(CF_API_V3_PROCESS_TYPE)
+				.build();
+		
+		PaginatedResponseGeneratorFunctionV3<org.cloudfoundry.client.v3.processes.ProcessResource, ListApplicationProcessesResponse> responseGenerator = (list, numberOfPages) -> 
+			ListApplicationProcessesResponse.builder()
+			.addAllResources(list)
+			.pagination(Pagination.builder().totalPages(numberOfPages).totalResults(list.size()).build())
+			.build();
+		
+		return this.paginatedRequestFetcher.performGenericPagedRetrievalV3(RequestType.PROCESSES, applicationId, requestGenerator, 
+				r -> this.cloudFoundryClient.applicationsV3().listProcesses(r), 1000 /* TODO V3: Create new request timeout config */, 
+				responseGenerator);
+		
 	}
 }

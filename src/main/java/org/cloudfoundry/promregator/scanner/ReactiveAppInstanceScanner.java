@@ -14,7 +14,9 @@ import javax.annotation.Nullable;
 import org.apache.logging.log4j.util.Strings;
 import org.cloudfoundry.client.v2.routes.Route;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
+import org.cloudfoundry.client.v3.applications.ListApplicationProcessesResponse;
 import org.cloudfoundry.client.v3.domains.DomainResource;
+import org.cloudfoundry.client.v3.processes.ProcessResource;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -217,6 +219,51 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			return Mono.just(v);
 		});
 
+		/*
+		 * For V3 it is no longer possible to get the SpaceSummary.
+		 * This implies that we need to retrieve data on application level :-(
+		 * Instead, the instance count can be found at the Processes endpoint.
+		 * The ApplicationURL is buried in the Routes.
+		 * Fortunately, we can retrieve this information in parallel.
+		 */
+		
+		// TODO V3: Refactor to make use of ListRoutes endpoint (mass-enabled).
+		Flux<ListApplicationProcessesResponse> webProcessForAppFlux = initialOSAVectorFlux.flatMap(rt -> this.cfAccessor.retrieveWebProcessesForApp(rt.getTarget().getApplicationId()));
+		
+		Flux<OSAVector> numberInstancesOSAVectorFlux = Flux.zip(initialOSAVectorFlux, webProcessForAppFlux).flatMap(tuple -> {
+			final OSAVector osaVector = tuple.getT1();
+			final ResolvedTarget rt = osaVector.getTarget();
+			final ListApplicationProcessesResponse lapr = tuple.getT2();
+			
+			List<ProcessResource> list = lapr.getResources();
+			if (list.size() > 1) {
+				log.error(String.format("Application Id %s with application name %s in org %s and space %s returned multiple web processes via CF API V3 Processes; Promregator does not know how to handle this. Provide your use case to the developers to understand how this shall be handled properly.", rt.getApplicationId(), rt.getApplicationName(), rt.getOrgName(), rt.getSpaceName()));
+				return Mono.empty();
+			}
+			
+			if (list.size() == 0) {
+				log.error(String.format("Application Id %s with application name %s in org %s and space %s returned no web processes via CF API V3 Processes; Promregator does not know how to handle this. Provide your use case to the developers to understand how this shall be handled properly.", rt.getApplicationId(), rt.getApplicationName(), rt.getOrgName(), rt.getSpaceName()));
+				return Mono.empty();
+			}
+			
+			ProcessResource pr = list.get(0);
+			final int numberInstances = pr.getInstances();
+			osaVector.setNumberOfInstances(numberInstances);
+			return Mono.just(osaVector);
+		});
+		
+		
+		
+		/*
+		 * We need to retrieve the app's routes.
+		 * Sending a request for each app to the CFCC would be devastating in terms
+		 * of performance.
+		 * We already know the applicationId; we don't need to retrieve the
+		 * base information of the app. Yet, there is only a single-retrieve
+		 * endpoint available in the CFCC for getting routes for an app.
+		 * TODO V3 Unfinished here!
+		 */
+		
 		Flux<Map<String, SpaceApplicationSummary>> spaceSummaryFlux = osaVectorSpaceFlux
 				.flatMapSequential(v -> this.getSpaceSummary(v.getSpaceId()));
 		Flux<OSAVector> osaVectorApplicationFlux = Flux.zip(osaVectorSpaceFlux, spaceSummaryFlux).flatMap(tuple -> {
