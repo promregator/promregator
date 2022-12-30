@@ -16,6 +16,8 @@ public interface CFAccessor {
 	
 	Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId);	
 
+	Mono<GetSpaceResponse> retrieveSpaceV3(String spaceId);
+
 	Mono<ListOrganizationsResponse> retrieveOrgIdV3(String orgName);
 
 	Mono<ListOrganizationsResponse> retrieveAllOrgIdsV3();
@@ -25,8 +27,6 @@ public interface CFAccessor {
 	Mono<ListSpacesResponse> retrieveSpaceIdsInOrgV3(String orgId);
 
 	Mono<ListApplicationsResponse> retrieveAllApplicationsInSpaceV3(String orgId, String spaceId);
-
-	Mono<GetSpaceResponse> retrieveSpaceV3(String spaceId);
 
 	Mono<ListOrganizationDomainsResponse> retrieveAllDomainsV3(String orgId);
 
