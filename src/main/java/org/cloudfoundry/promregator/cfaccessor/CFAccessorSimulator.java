@@ -20,10 +20,7 @@ import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.routes.Route;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
-import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
-import org.cloudfoundry.client.v2.spaces.SpaceEntity;
-import org.cloudfoundry.client.v2.spaces.SpaceResource;
 import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
 import org.cloudfoundry.client.v3.spaces.GetSpaceResponse;
 import org.slf4j.Logger;
@@ -62,26 +59,6 @@ public class CFAccessorSimulator implements CFAccessor {
 	}
 
 	@Override
-	public Mono<ListSpacesResponse> retrieveSpaceId(String orgId, String spaceName) {
-		if ("simspace".equals(spaceName) && orgId.equals(ORG_UUID)) {
-			
-			SpaceResource sr = SpaceResource.builder().entity(
-					SpaceEntity.builder().name(spaceName).build()
-				).metadata(
-					Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(SPACE_UUID).build()
-				).build();
-			List<SpaceResource> list = new LinkedList<>();
-			list.add(sr);
-			ListSpacesResponse resp = ListSpacesResponse.builder().addAllResources(list).build();
-			
-			return Mono.just(resp).delayElement(this.getSleepRandomDuration());
-		}
-		
-		log.error("Invalid SpaceId request");
-		return null;
-	}
-
-	@Override
 	public Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String orgId, String spaceId) {
 		if (orgId.equals(ORG_UUID) && spaceId.equals(SPACE_UUID)) {
 			List<ApplicationResource> list = new LinkedList<>();
@@ -103,14 +80,6 @@ public class CFAccessorSimulator implements CFAccessor {
 		}
 		log.error("Invalid retrieveAllApplicationIdsInSpace request");
 		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.cloudfoundry.promregator.cfaccessor.CFAccessor#retrieveSpaceIdsInOrg(java.lang.String)
-	 */
-	@Override
-	public Mono<ListSpacesResponse> retrieveSpaceIdsInOrg(String orgId) {
-		return this.retrieveSpaceId(ORG_UUID, "simspace");
 	}
 	
 	@Override
@@ -221,12 +190,28 @@ public class CFAccessorSimulator implements CFAccessor {
 
 	@Override
 	public Mono<org.cloudfoundry.client.v3.spaces.ListSpacesResponse> retrieveSpaceIdV3(String orgId, String spaceName) {
-		throw new UnsupportedOperationException();
+		if ("simspace".equals(spaceName) && orgId.equals(ORG_UUID)) {
+			
+			org.cloudfoundry.client.v3.spaces.SpaceResource sr = org.cloudfoundry.client.v3.spaces.SpaceResource.builder()
+					.name(spaceName)
+					.createdAt(CREATED_AT_TIMESTAMP)
+					.id(SPACE_UUID)
+					.metadata(org.cloudfoundry.client.v3.Metadata.builder().build())
+					.build();
+			List<org.cloudfoundry.client.v3.spaces.SpaceResource> list = new LinkedList<>();
+			list.add(sr);
+			org.cloudfoundry.client.v3.spaces.ListSpacesResponse resp = org.cloudfoundry.client.v3.spaces.ListSpacesResponse.builder().addAllResources(list).build();
+			
+			return Mono.just(resp).delayElement(this.getSleepRandomDuration());
+		}
+		
+		log.error("Invalid SpaceId request");
+		return null;
 	}
 
 	@Override
 	public Mono<org.cloudfoundry.client.v3.spaces.ListSpacesResponse> retrieveSpaceIdsInOrgV3(String orgId) {
-		throw new UnsupportedOperationException();
+		return this.retrieveSpaceIdV3(ORG_UUID, "simspace");
 	}
 
 	@Override

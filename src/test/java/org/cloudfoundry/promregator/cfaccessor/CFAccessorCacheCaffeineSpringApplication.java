@@ -3,9 +3,7 @@ package org.cloudfoundry.promregator.cfaccessor;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
-import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
-import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
 import org.cloudfoundry.client.v3.spaces.GetSpaceResponse;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
@@ -25,16 +23,6 @@ public class CFAccessorCacheCaffeineSpringApplication {
 	}
 	
 	public static class ParentMock implements CFAccessor {
-
-		@Override
-		public Mono<ListSpacesResponse> retrieveSpaceId(String orgId, String spaceName) {
-			return Mono.just(ListSpacesResponse.builder().build());
-		}
-
-		@Override
-		public Mono<ListSpacesResponse> retrieveSpaceIdsInOrg(String orgId) {
-			return Mono.just(ListSpacesResponse.builder().build());
-		}
 
 		@Override
 		public Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String orgId, String spaceId) {

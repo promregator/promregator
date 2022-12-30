@@ -1,5 +1,7 @@
 package org.cloudfoundry.promregator.scanner;
 
+import static org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl.INVALID_APPLICATIONS_RESPONSE;
+
 import java.util.LinkedList;
 import java.util.List;
 
@@ -17,9 +19,8 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import reactor.core.publisher.Mono;
 
-import static org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl.INVALID_APPLICATIONS_RESPONSE;
+import reactor.core.publisher.Mono;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = MockedReactiveTargetResolverSpringApplication.class)
@@ -495,7 +496,7 @@ class ReactiveTargetResolverTest {
 		Assertions.assertEquals(t.getPath(), rt.getPath());
 		Assertions.assertEquals(t.getProtocol(), rt.getProtocol());
 		
-		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveSpaceIdsInOrg(CFAccessorMock.UNITTEST_ORG_UUID);
+		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveSpaceIdsInOrgV3(CFAccessorMock.UNITTEST_ORG_UUID);
 		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID);
 	}
 
@@ -523,7 +524,7 @@ class ReactiveTargetResolverTest {
 		Assertions.assertEquals(t.getPath(), rt.getPath());
 		Assertions.assertEquals(t.getProtocol(), rt.getProtocol());
 		
-		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveSpaceIdsInOrg(CFAccessorMock.UNITTEST_ORG_UUID);
+		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveSpaceIdsInOrgV3(CFAccessorMock.UNITTEST_ORG_UUID);
 		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID);
 	}
 	
@@ -551,7 +552,7 @@ class ReactiveTargetResolverTest {
 		Assertions.assertEquals(t.getPath(), rt.getPath());
 		Assertions.assertEquals(t.getProtocol(), rt.getProtocol());
 		
-		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveSpaceIdsInOrg(CFAccessorMock.UNITTEST_ORG_UUID);
+		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveSpaceIdsInOrgV3(CFAccessorMock.UNITTEST_ORG_UUID);
 		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationIdsInSpace(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID);
 	}
 	

@@ -7,7 +7,6 @@ import java.util.concurrent.TimeoutException;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
-import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,7 +48,7 @@ class CFAccessorCacheCaffeineTimeoutTest {
 	void setupMocks() {
 		Mockito.reset(this.parentMock);
 		Mockito.when(this.parentMock.retrieveOrgIdV3("dummy")).then(new TimeoutMonoAnswer());
-		Mockito.when(this.parentMock.retrieveSpaceId("dummy1", "dummy2")).then(new TimeoutMonoAnswer());
+		Mockito.when(this.parentMock.retrieveSpaceIdV3("dummy1", "dummy2")).then(new TimeoutMonoAnswer());
 		Mockito.when(this.parentMock.retrieveAllApplicationIdsInSpace("dummy1", "dummy2")).then(new TimeoutMonoAnswer());
 		Mockito.when(this.parentMock.retrieveSpaceSummary("dummy")).then(new TimeoutMonoAnswer());
 		Mockito.when(this.parentMock.retrieveAllDomains("dummy")).then(new TimeoutMonoAnswer());
@@ -86,17 +85,17 @@ class CFAccessorCacheCaffeineTimeoutTest {
 	@Test
 	void testRetrieveSpaceId() throws InterruptedException {
 		
-		Mono<ListSpacesResponse> response1 = subject.retrieveSpaceId("dummy1", "dummy2");
+		Mono<org.cloudfoundry.client.v3.spaces.ListSpacesResponse> response1 = subject.retrieveSpaceIdV3("dummy1", "dummy2");
 		response1.subscribe();
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveSpaceId("dummy1", "dummy2");
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveSpaceIdV3("dummy1", "dummy2");
 		
 		// required to permit asynchronous updates of caches => test stability
 		Thread.sleep(10);
 		
-		Mono<ListSpacesResponse> response2 = subject.retrieveSpaceId("dummy1", "dummy2");
+		Mono<org.cloudfoundry.client.v3.spaces.ListSpacesResponse> response2 = subject.retrieveSpaceIdV3("dummy1", "dummy2");
 		response2.subscribe();
 		assertThat(response1).isNotEqualTo(response2);
-		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveSpaceId("dummy1", "dummy2");
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveSpaceIdV3("dummy1", "dummy2");
 	}
 
 	@Test

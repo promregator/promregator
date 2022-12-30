@@ -5,7 +5,6 @@ import java.util.List;
 import org.cloudfoundry.client.v2.domains.DomainResource;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
-import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v3.organizations.OrganizationResource;
 import org.junit.jupiter.api.Assertions;
@@ -14,14 +13,6 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 
 class CFAccessorSimulatorTest {
-
-	@Test
-	void testRetrieveSpaceId() {
-		CFAccessorSimulator subject = new CFAccessorSimulator(2);
-		Mono<ListSpacesResponse> mono = subject.retrieveSpaceId(CFAccessorSimulator.ORG_UUID, "simspace");
-		ListSpacesResponse result = mono.block();
-		Assertions.assertEquals(CFAccessorSimulator.SPACE_UUID, result.getResources().get(0).getMetadata().getId());
-	}
 
 	@Test
 	void testRetrieveSpaceSummary() {
@@ -113,8 +104,14 @@ class CFAccessorSimulatorTest {
 	@Test
 	void testRetrieveSpaceIdV3() {
 		CFAccessorSimulator subject = new CFAccessorSimulator(2);
-		Assertions.assertThrows(UnsupportedOperationException.class, () -> subject.retrieveSpaceIdV3(CFAccessorSimulator.ORG_UUID, "simspace"));
+		Mono<org.cloudfoundry.client.v3.spaces.ListSpacesResponse> mono = subject.retrieveSpaceIdV3(CFAccessorSimulator.ORG_UUID, "simspace");
+		org.cloudfoundry.client.v3.spaces.ListSpacesResponse result = mono.block();
+		Assertions.assertNotNull(result);
+		Assertions.assertNotNull(result.getResources());
+		Assertions.assertEquals(1, result.getResources().size());
+		Assertions.assertEquals(CFAccessorSimulator.SPACE_UUID, result.getResources().get(0).getId());
 	}
+	
 
 	@Test
 	void testRetrieveAllDomainsV3() {
@@ -131,8 +128,12 @@ class CFAccessorSimulatorTest {
 	@Test
 	void testRetrieveAllSpacesV3() {
 		CFAccessorSimulator subject = new CFAccessorSimulator(2);
-		Assertions.assertThrows(UnsupportedOperationException.class, () -> subject.retrieveSpaceIdsInOrgV3(CFAccessorSimulator.ORG_UUID));
-	}
+		Mono<org.cloudfoundry.client.v3.spaces.ListSpacesResponse> mono = subject.retrieveSpaceIdsInOrgV3(CFAccessorSimulator.ORG_UUID);
+		org.cloudfoundry.client.v3.spaces.ListSpacesResponse result = mono.block();
+		Assertions.assertNotNull(result);
+		Assertions.assertNotNull(result.getResources());
+		Assertions.assertEquals(1, result.getResources().size());
+		Assertions.assertEquals(CFAccessorSimulator.SPACE_UUID, result.getResources().get(0).getId());	}
 
 	@Test
 	void testRetrieveSpaceV3() {

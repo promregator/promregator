@@ -58,13 +58,13 @@ class CFAccessorCacheCaffeineInvalidationTest {
 
 	@Test
 	void testInvalidateCacheSpace() {
-		subject.retrieveSpaceId("dummy1", "dummy2");
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveSpaceId("dummy1", "dummy2");
+		subject.retrieveSpaceIdV3("dummy1", "dummy2");
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveSpaceIdV3("dummy1", "dummy2");
 		
 		subject.invalidateCacheSpace();
 		
-		subject.retrieveSpaceId("dummy1", "dummy2");
-		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveSpaceId("dummy1", "dummy2");
+		subject.retrieveSpaceIdV3("dummy1", "dummy2");
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveSpaceIdV3("dummy1", "dummy2");
 	}
 
 	@Test

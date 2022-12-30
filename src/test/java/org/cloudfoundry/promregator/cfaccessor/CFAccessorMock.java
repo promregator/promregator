@@ -17,10 +17,7 @@ import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.routes.Route;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
-import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
-import org.cloudfoundry.client.v2.spaces.SpaceEntity;
-import org.cloudfoundry.client.v2.spaces.SpaceResource;
 import org.cloudfoundry.client.v3.BuildpackData;
 import org.cloudfoundry.client.v3.Lifecycle;
 import org.cloudfoundry.client.v3.LifecycleType;
@@ -58,52 +55,6 @@ public class CFAccessorMock implements CFAccessor {
 
 	public static final String CREATED_AT_TIMESTAMP = "2014-11-24T19:32:49+00:00";
 	public static final String UPDATED_AT_TIMESTAMP = "2014-11-24T19:32:49+00:00";
-
-	@Override
-	public Mono<ListSpacesResponse> retrieveSpaceId(String orgId, String spaceName) {
-		if (orgId.equals(UNITTEST_ORG_UUID)) {
-			if ("unittestspace".equalsIgnoreCase(spaceName)) {
-				SpaceResource sr = SpaceResource.builder().entity(SpaceEntity.builder().name("unittestspace").build())
-												.metadata(Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_SPACE_UUID).build())
-												.build();
-				List<SpaceResource> list = new LinkedList<>();
-				list.add(sr);
-				ListSpacesResponse resp = ListSpacesResponse.builder().addAllResources(list).build();
-				return Mono.just(resp);
-			}
-			else if ("unittestspace-summarydoesnotexist".equals(spaceName)) {
-				SpaceResource sr = SpaceResource.builder().entity(SpaceEntity.builder().name(spaceName).build())
-												.metadata(Metadata.builder().createdAt(CREATED_AT_TIMESTAMP)
-																  .id(UNITTEST_SPACE_UUID_DOESNOTEXIST).build())
-												.build();
-				List<SpaceResource> list = new LinkedList<>();
-				list.add(sr);
-				ListSpacesResponse resp = ListSpacesResponse.builder().addAllResources(list).build();
-				return Mono.just(resp);
-			}
-			else if ("unittestspace-summaryexception".equals(spaceName)) {
-				SpaceResource sr = SpaceResource.builder().entity(SpaceEntity.builder().name(spaceName).build())
-												.metadata(Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_SPACE_UUID_EXCEPTION)
-																  .build())
-												.build();
-				List<SpaceResource> list = new LinkedList<>();
-				list.add(sr);
-				ListSpacesResponse resp = ListSpacesResponse.builder().addAllResources(list).build();
-				return Mono.just(resp);
-			}
-			else if ("doesnotexist".equals(spaceName)) {
-				return Mono.just(ListSpacesResponse.builder().resources(new ArrayList<>()).build());
-			}
-			else if ("exception".equals(spaceName)) {
-				return Mono.just(ListSpacesResponse.builder().build()).map(x -> {
-					throw new Error("exception space name provided");
-				});
-			}
-		}
-
-		Assertions.fail("Invalid SpaceId request");
-		return null;
-	}
 
 	@Override
 	public Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String orgId, String spaceId) {
@@ -217,14 +168,9 @@ public class CFAccessorMock implements CFAccessor {
 	}
 
 	@Override
-	public Mono<ListSpacesResponse> retrieveSpaceIdsInOrg(String orgId) {
-		return this.retrieveSpaceId(UNITTEST_ORG_UUID, "unittestspace");
-	}
-
-	@Override
 	public Mono<GetInfoResponse> getInfo() {
 		GetInfoResponse data = GetInfoResponse.builder().description("CFAccessorMock").name("CFAccessorMock").version(1)
-											  .build();
+				.build();
 
 		return Mono.just(data);
 	}
@@ -238,42 +184,29 @@ public class CFAccessorMock implements CFAccessor {
 	public Mono<ListOrganizationDomainsResponse> retrieveAllDomains(String orgId) {
 		List<DomainResource> domains = new ArrayList<DomainResource>();
 		DomainResource domain = DomainResource.builder()
-											  .entity(
-												  DomainEntity.builder()
-															  .name(UNITTEST_INTERNAL_DOMAIN)
-															  .internal(true)
-															  .build())
-											  .metadata(
-												  Metadata.builder().id(UNITTEST_INTERNAL_DOMAIN_UUID).createdAt(CREATED_AT_TIMESTAMP).build())
-											  .build();
+				.entity(DomainEntity.builder().name(UNITTEST_INTERNAL_DOMAIN).internal(true).build())
+				.metadata(Metadata.builder().id(UNITTEST_INTERNAL_DOMAIN_UUID).createdAt(CREATED_AT_TIMESTAMP).build())
+				.build();
 
 		domains.add(domain);
 
 		domain = DomainResource.builder()
-							   .entity(
-								   DomainEntity.builder()
-											   .name(UNITTEST_SHARED_DOMAIN)
-											   .internal(false)
-											   .build())
-							   .metadata(
-								   Metadata.builder().id(UNITTEST_SHARED_DOMAIN_UUID).createdAt(CREATED_AT_TIMESTAMP).build())
-							   .build();
+				.entity(DomainEntity.builder().name(UNITTEST_SHARED_DOMAIN).internal(false).build())
+				.metadata(Metadata.builder().id(UNITTEST_SHARED_DOMAIN_UUID).createdAt(CREATED_AT_TIMESTAMP).build())
+				.build();
 
 		domains.add(domain);
 
 		domain = DomainResource.builder()
-							   .entity(
-								   DomainEntity.builder()
-											   .name(UNITTEST_ADDITIONAL_SHARED_DOMAIN)
-											   .internal(false)
-											   .build())
-							   .metadata(
-								   Metadata.builder().id(UNITTEST_ADDITIONAL_SHARED_DOMAIN_UUID).createdAt(CREATED_AT_TIMESTAMP).build())
-							   .build();
+				.entity(DomainEntity.builder().name(UNITTEST_ADDITIONAL_SHARED_DOMAIN).internal(false).build())
+				.metadata(Metadata.builder().id(UNITTEST_ADDITIONAL_SHARED_DOMAIN_UUID).createdAt(CREATED_AT_TIMESTAMP)
+						.build())
+				.build();
 
 		domains.add(domain);
 
-		ListOrganizationDomainsResponse response = ListOrganizationDomainsResponse.builder().addAllResources(domains).build();
+		ListOrganizationDomainsResponse response = ListOrganizationDomainsResponse.builder().addAllResources(domains)
+				.build();
 		return Mono.just(response);
 	}
 
@@ -313,48 +246,40 @@ public class CFAccessorMock implements CFAccessor {
 	}
 
 	@Override
-	public Mono<org.cloudfoundry.client.v3.spaces.ListSpacesResponse> retrieveSpaceIdV3(String orgId, String spaceName) {
+	public Mono<org.cloudfoundry.client.v3.spaces.ListSpacesResponse> retrieveSpaceIdV3(String orgId,
+			String spaceName) {
 		if (orgId.equals(UNITTEST_ORG_UUID)) {
 			if ("unittestspace".equalsIgnoreCase(spaceName)) {
-				org.cloudfoundry.client.v3.spaces.SpaceResource sr = org.cloudfoundry.client.v3.spaces.SpaceResource.builder().name("unittestspace")
-																													.createdAt(CREATED_AT_TIMESTAMP)
-																													.id(UNITTEST_SPACE_UUID)
-																													.build();
+				org.cloudfoundry.client.v3.spaces.SpaceResource sr = org.cloudfoundry.client.v3.spaces.SpaceResource
+						.builder().name("unittestspace").createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_SPACE_UUID)
+						.build();
 				List<org.cloudfoundry.client.v3.spaces.SpaceResource> list = new LinkedList<>();
 				list.add(sr);
-				org.cloudfoundry.client.v3.spaces.ListSpacesResponse resp = org.cloudfoundry.client.v3.spaces.ListSpacesResponse.builder()
-																																.addAllResources(list)
-																																.build();
+				org.cloudfoundry.client.v3.spaces.ListSpacesResponse resp = org.cloudfoundry.client.v3.spaces.ListSpacesResponse
+						.builder().addAllResources(list).build();
 				return Mono.just(resp);
-			}
-			else if ("unittestspace-summarydoesnotexist".equals(spaceName)) {
-				org.cloudfoundry.client.v3.spaces.SpaceResource sr = org.cloudfoundry.client.v3.spaces.SpaceResource.builder().name(spaceName)
-																													.createdAt(CREATED_AT_TIMESTAMP)
-																													.id(UNITTEST_SPACE_UUID_DOESNOTEXIST)
-																													.build();
+			} else if ("unittestspace-summarydoesnotexist".equals(spaceName)) {
+				org.cloudfoundry.client.v3.spaces.SpaceResource sr = org.cloudfoundry.client.v3.spaces.SpaceResource
+						.builder().name(spaceName).createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_SPACE_UUID_DOESNOTEXIST)
+						.build();
 				List<org.cloudfoundry.client.v3.spaces.SpaceResource> list = new LinkedList<>();
 				list.add(sr);
-				org.cloudfoundry.client.v3.spaces.ListSpacesResponse resp = org.cloudfoundry.client.v3.spaces.ListSpacesResponse.builder()
-																																.addAllResources(list)
-																																.build();
+				org.cloudfoundry.client.v3.spaces.ListSpacesResponse resp = org.cloudfoundry.client.v3.spaces.ListSpacesResponse
+						.builder().addAllResources(list).build();
 				return Mono.just(resp);
-			}
-			else if ("unittestspace-summaryexception".equals(spaceName)) {
-				org.cloudfoundry.client.v3.spaces.SpaceResource sr = org.cloudfoundry.client.v3.spaces.SpaceResource.builder().name(spaceName)
-																													.createdAt(CREATED_AT_TIMESTAMP)
-																													.id(UNITTEST_SPACE_UUID_EXCEPTION)
-																													.build();
+			} else if ("unittestspace-summaryexception".equals(spaceName)) {
+				org.cloudfoundry.client.v3.spaces.SpaceResource sr = org.cloudfoundry.client.v3.spaces.SpaceResource
+						.builder().name(spaceName).createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_SPACE_UUID_EXCEPTION)
+						.build();
 				List<org.cloudfoundry.client.v3.spaces.SpaceResource> list = new LinkedList<>();
 				list.add(sr);
-				org.cloudfoundry.client.v3.spaces.ListSpacesResponse resp = org.cloudfoundry.client.v3.spaces.ListSpacesResponse.builder()
-																																.addAllResources(list)
-																																.build();
+				org.cloudfoundry.client.v3.spaces.ListSpacesResponse resp = org.cloudfoundry.client.v3.spaces.ListSpacesResponse
+						.builder().addAllResources(list).build();
 				return Mono.just(resp);
-			}
-			else if ("doesnotexist".equals(spaceName)) {
-				return Mono.just(org.cloudfoundry.client.v3.spaces.ListSpacesResponse.builder().resources(new ArrayList<>()).build());
-			}
-			else if ("exception".equals(spaceName)) {
+			} else if ("doesnotexist".equals(spaceName)) {
+				return Mono.just(org.cloudfoundry.client.v3.spaces.ListSpacesResponse.builder()
+						.resources(new ArrayList<>()).build());
+			} else if ("exception".equals(spaceName)) {
 				return Mono.just(org.cloudfoundry.client.v3.spaces.ListSpacesResponse.builder().build()).map(x -> {
 					throw new Error("exception space name provided");
 				});
@@ -371,55 +296,58 @@ public class CFAccessorMock implements CFAccessor {
 	}
 
 	@Override
-	public Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> retrieveAllApplicationsInSpaceV3(String orgId, String spaceId) {
+	public Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> retrieveAllApplicationsInSpaceV3(
+			String orgId, String spaceId) {
 		if (orgId.equals(UNITTEST_ORG_UUID) && spaceId.equals(UNITTEST_SPACE_UUID)) {
 			List<org.cloudfoundry.client.v3.applications.ApplicationResource> list = new LinkedList<>();
 
-			org.cloudfoundry.client.v3.applications.ApplicationResource ar = org.cloudfoundry.client.v3.applications.ApplicationResource.builder()
-																																		.name("testapp")
-																																		.state(ApplicationState.STARTED)
-																																		.createdAt(CREATED_AT_TIMESTAMP)
-																																		.id(UNITTEST_APP1_UUID)
-																																		.lifecycle(Lifecycle.builder().data(BuildpackData.builder().build()).type(LifecycleType.BUILDPACK).build())
-																																		.metadata(org.cloudfoundry.client.v3.Metadata.builder().annotation("prometheus.io/scrape", "true").build())
-																																		.build();
-			list.add(ar);
-
-			ar = org.cloudfoundry.client.v3.applications.ApplicationResource.builder()
-																			.name("testapp2").state(ApplicationState.STARTED)
-																			.createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP2_UUID)
-																			.lifecycle(Lifecycle.builder().data(BuildpackData.builder().build()).type(LifecycleType.BUILDPACK).build())
-																			.metadata(org.cloudfoundry.client.v3.Metadata.builder().annotation("prometheus.io/scrape", "badValue").build())
-																			.build();
-			list.add(ar);
-
-			ar = org.cloudfoundry.client.v3.applications.ApplicationResource.builder()
-					.name("testapp3").state(ApplicationState.STARTED)
-					.createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP3_UUID)
-					.lifecycle(Lifecycle.builder().data(BuildpackData.builder().build()).type(LifecycleType.BUILDPACK).build())
-					.metadata(org.cloudfoundry.client.v3.Metadata.builder().annotation("prometheus.io/scrape", "badValue").build())
+			org.cloudfoundry.client.v3.applications.ApplicationResource ar = org.cloudfoundry.client.v3.applications.ApplicationResource
+					.builder().name("testapp").state(ApplicationState.STARTED).createdAt(CREATED_AT_TIMESTAMP)
+					.id(UNITTEST_APP1_UUID)
+					.lifecycle(Lifecycle.builder().data(BuildpackData.builder().build()).type(LifecycleType.BUILDPACK)
+							.build())
+					.metadata(org.cloudfoundry.client.v3.Metadata.builder().annotation("prometheus.io/scrape", "true")
+							.build())
 					.build();
 			list.add(ar);
-			
-			ar = org.cloudfoundry.client.v3.applications.ApplicationResource.builder()
-																			.name("internalapp").state(ApplicationState.STARTED)
-																			.createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP_INTERNAL_UUID)
-																			.lifecycle(Lifecycle.builder().data(BuildpackData.builder().build()).type(LifecycleType.BUILDPACK).build())
-																			.metadata(org.cloudfoundry.client.v3.Metadata.builder().annotation("prometheus.io/scrape", "true").annotation("prometheus.io/path", "/actuator/prometheus").build())
-																			.build();
+
+			ar = org.cloudfoundry.client.v3.applications.ApplicationResource.builder().name("testapp2")
+					.state(ApplicationState.STARTED).createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP2_UUID)
+					.lifecycle(Lifecycle.builder().data(BuildpackData.builder().build()).type(LifecycleType.BUILDPACK)
+							.build())
+					.metadata(org.cloudfoundry.client.v3.Metadata.builder()
+							.annotation("prometheus.io/scrape", "badValue").build())
+					.build();
+			list.add(ar);
+
+			ar = org.cloudfoundry.client.v3.applications.ApplicationResource.builder().name("testapp3")
+					.state(ApplicationState.STARTED).createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP3_UUID)
+					.lifecycle(Lifecycle.builder().data(BuildpackData.builder().build()).type(LifecycleType.BUILDPACK)
+							.build())
+					.metadata(org.cloudfoundry.client.v3.Metadata.builder()
+							.annotation("prometheus.io/scrape", "badValue").build())
+					.build();
+			list.add(ar);
+
+			ar = org.cloudfoundry.client.v3.applications.ApplicationResource.builder().name("internalapp")
+					.state(ApplicationState.STARTED).createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP_INTERNAL_UUID)
+					.lifecycle(Lifecycle.builder().data(BuildpackData.builder().build()).type(LifecycleType.BUILDPACK)
+							.build())
+					.metadata(org.cloudfoundry.client.v3.Metadata.builder().annotation("prometheus.io/scrape", "true")
+							.annotation("prometheus.io/path", "/actuator/prometheus").build())
+					.build();
 			list.add(ar);
 
 			org.cloudfoundry.client.v3.applications.ListApplicationsResponse resp = org.cloudfoundry.client.v3.applications.ListApplicationsResponse
-				.builder().addAllResources(list).build();
+					.builder().addAllResources(list).build();
 			return Mono.just(resp);
-		}
-		else if (UNITTEST_SPACE_UUID_DOESNOTEXIST.equals(spaceId)) {
+		} else if (UNITTEST_SPACE_UUID_DOESNOTEXIST.equals(spaceId)) {
 			return Mono.just(org.cloudfoundry.client.v3.applications.ListApplicationsResponse.builder().build());
-		}
-		else if (UNITTEST_SPACE_UUID_EXCEPTION.equals(spaceId)) {
-			return Mono.just(org.cloudfoundry.client.v3.applications.ListApplicationsResponse.builder().build()).map(x -> {
-				throw new Error("exception on AllAppIdsInSpace");
-			});
+		} else if (UNITTEST_SPACE_UUID_EXCEPTION.equals(spaceId)) {
+			return Mono.just(org.cloudfoundry.client.v3.applications.ListApplicationsResponse.builder().build())
+					.map(x -> {
+						throw new Error("exception on AllAppIdsInSpace");
+					});
 		}
 
 		Assertions.fail("Invalid process request");
@@ -435,35 +363,27 @@ public class CFAccessorMock implements CFAccessor {
 	}
 
 	@Override
-	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse> retrieveAllDomainsV3(String orgId) {
+	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse> retrieveAllDomainsV3(
+			String orgId) {
 		List<org.cloudfoundry.client.v3.domains.DomainResource> domains = new ArrayList<>();
-		org.cloudfoundry.client.v3.domains.DomainResource domain = org.cloudfoundry.client.v3.domains.DomainResource.builder()
-																													.name(UNITTEST_INTERNAL_DOMAIN)
-																													.isInternal(true)
-																													.id(UNITTEST_INTERNAL_DOMAIN_UUID)
-																													.createdAt(CREATED_AT_TIMESTAMP)
-																													.build();
+		org.cloudfoundry.client.v3.domains.DomainResource domain = org.cloudfoundry.client.v3.domains.DomainResource
+				.builder().name(UNITTEST_INTERNAL_DOMAIN).isInternal(true).id(UNITTEST_INTERNAL_DOMAIN_UUID)
+				.createdAt(CREATED_AT_TIMESTAMP).build();
 
 		domains.add(domain);
 
-		domain = org.cloudfoundry.client.v3.domains.DomainResource.builder()
-																  .name(UNITTEST_SHARED_DOMAIN)
-																  .isInternal(false)
-																  .id(UNITTEST_SHARED_DOMAIN_UUID).createdAt(CREATED_AT_TIMESTAMP)
-																  .build();
+		domain = org.cloudfoundry.client.v3.domains.DomainResource.builder().name(UNITTEST_SHARED_DOMAIN)
+				.isInternal(false).id(UNITTEST_SHARED_DOMAIN_UUID).createdAt(CREATED_AT_TIMESTAMP).build();
 
 		domains.add(domain);
 
-		domain = org.cloudfoundry.client.v3.domains.DomainResource.builder()
-																  .name(UNITTEST_ADDITIONAL_SHARED_DOMAIN)
-																  .isInternal(false)
-																  .id(UNITTEST_ADDITIONAL_SHARED_DOMAIN_UUID).createdAt(CREATED_AT_TIMESTAMP)
-																  .build();
+		domain = org.cloudfoundry.client.v3.domains.DomainResource.builder().name(UNITTEST_ADDITIONAL_SHARED_DOMAIN)
+				.isInternal(false).id(UNITTEST_ADDITIONAL_SHARED_DOMAIN_UUID).createdAt(CREATED_AT_TIMESTAMP).build();
 
 		domains.add(domain);
 
 		org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse response = org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse
-			.builder().addAllResources(domains).build();
+				.builder().addAllResources(domains).build();
 		return Mono.just(response);
 	}
 

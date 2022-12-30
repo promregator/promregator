@@ -14,9 +14,7 @@ import javax.annotation.Nullable;
 import org.apache.logging.log4j.util.Strings;
 import org.cloudfoundry.client.v2.domains.DomainResource;
 import org.cloudfoundry.client.v2.routes.Route;
-import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
-import org.cloudfoundry.client.v2.spaces.SpaceResource;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -371,10 +369,10 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 
 	private Mono<String> getSpaceId(String orgIdString, String spaceNameString) {
 
-		Mono<ListSpacesResponse> listSpacesResponse = this.cfAccessor.retrieveSpaceId(orgIdString, spaceNameString);
+		Mono<org.cloudfoundry.client.v3.spaces.ListSpacesResponse> listSpacesResponse = this.cfAccessor.retrieveSpaceIdV3(orgIdString, spaceNameString);
 
 		return listSpacesResponse.flatMap(response -> {
-			List<SpaceResource> resources = response.getResources();
+			List<org.cloudfoundry.client.v3.spaces.SpaceResource> resources = response.getResources();
 			if (resources == null) {
 				return Mono.just(INVALID_SPACE_ID);
 			}
@@ -384,8 +382,8 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				return Mono.just(INVALID_SPACE_ID);
 			}
 
-			SpaceResource spaceResource = resources.get(0);
-			return Mono.just(spaceResource.getMetadata().getId());
+			org.cloudfoundry.client.v3.spaces.SpaceResource spaceResource = resources.get(0);
+			return Mono.just(spaceResource.getId());
 		}).onErrorResume(e -> {
 			log.error(String.format("retrieving space id for org id '%s' and space name '%s' resulted in an exception",
 					orgIdString, spaceNameString), e);

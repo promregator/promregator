@@ -17,9 +17,6 @@ import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsRequest;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryRequest;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
-import org.cloudfoundry.client.v2.spaces.ListSpacesRequest;
-import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
-import org.cloudfoundry.client.v2.spaces.SpaceResource;
 import org.cloudfoundry.client.v3.Pagination;
 import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
 import org.cloudfoundry.client.v3.spaces.GetSpaceRequest;
@@ -265,48 +262,6 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	@Override
 	public Mono<GetInfoResponse> getInfo() {
 		return this.cloudFoundryClient.info().get(DUMMY_GET_INFO_REQUEST);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.cloudfoundry.promregator.cfaccessor.CFAccessor#retrieveSpaceId(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public Mono<ListSpacesResponse> retrieveSpaceId(String orgId, String spaceName) {
-		// Note: even though we use the List request here, the number of values returned is either zero or one
-		// ==> No need for a paged request. 
-		
-		String key = String.format("%s|%s", orgId, spaceName);
-		
-		ListSpacesRequest spacesRequest = ListSpacesRequest.builder().organizationId(orgId).name(spaceName).build();
-		
-		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.SPACE, key, spacesRequest, sr ->
-				this.cloudFoundryClient.spaces().list(sr),
-				this.requestTimeoutSpace);
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.cloudfoundry.promregator.cfaccessor.CFAccessor#retrieveSpaceIdsInOrg(java.lang.String)
-	 */
-	@Override
-	public Mono<ListSpacesResponse> retrieveSpaceIdsInOrg(String orgId) {
-		PaginatedRequestGeneratorFunction<ListSpacesRequest> requestGenerator = (orderDirection, resultsPerPage, pageNumber) ->
-			ListSpacesRequest.builder()
-				.organizationId(orgId)
-				.orderDirection(orderDirection)
-				.resultsPerPage(resultsPerPage)
-				.page(pageNumber)
-				.build();
-		
-		PaginatedResponseGeneratorFunction<SpaceResource, ListSpacesResponse> responseGenerator = (list, numberOfPages) ->
-				ListSpacesResponse.builder()
-				.addAllResources(list)
-				.totalPages(numberOfPages)
-				.totalResults(list.size())
-				.build();
-
-		
-		return this.paginatedRequestFetcher.performGenericPagedRetrieval(RequestType.SPACE_IN_ORG, orgId, requestGenerator, 
-				r -> this.cloudFoundryClient.spaces().list(r),  this.requestTimeoutSpace, responseGenerator);
 	}
 
 	/* (non-Javadoc)

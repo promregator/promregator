@@ -10,8 +10,6 @@ import java.util.regex.Pattern;
 
 import org.cloudfoundry.client.v2.applications.ApplicationResource;
 import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
-import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
-import org.cloudfoundry.client.v2.spaces.SpaceResource;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.config.Target;
 import org.slf4j.Logger;
@@ -310,8 +308,8 @@ public class ReactiveTargetResolver implements TargetResolver {
 		
 		if (it.getConfigTarget().getSpaceRegex() == null && it.getConfigTarget().getSpaceName() != null) {
 			// Case 3: we have the spaceName, but we also need its id
-			Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveSpaceId(it.getResolvedOrgId(), it.getConfigTarget().getSpaceName())
-					.map(ListSpacesResponse::getResources)
+			Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveSpaceIdV3(it.getResolvedOrgId(), it.getConfigTarget().getSpaceName())
+					.map(org.cloudfoundry.client.v3.spaces.ListSpacesResponse::getResources)
 					.flatMap(resList -> {
 						if (resList == null || resList.isEmpty()) {
 							return Mono.empty();
@@ -320,8 +318,8 @@ public class ReactiveTargetResolver implements TargetResolver {
 						return Mono.just(resList.get(0));
 					})
 					.map(res -> {
-						it.setResolvedSpaceName(res.getEntity().getName());
-						it.setResolvedSpaceId(res.getMetadata().getId());
+						it.setResolvedSpaceName(res.getName());
+						it.setResolvedSpaceId(res.getId());
 						return it;
 					}).doOnError(e -> log.warn(String.format("Error on retrieving space id for org '%s' and space '%s'", it.getResolvedOrgName(), it.getConfigTarget().getSpaceName()), e))
 					.onErrorResume(__ -> Mono.empty());
@@ -330,9 +328,9 @@ public class ReactiveTargetResolver implements TargetResolver {
 		}
 		
 		// Case 1 & 2: Get all spaces in the current org
-		Mono<ListSpacesResponse> responseMono = this.cfAccessor.retrieveSpaceIdsInOrg(it.getResolvedOrgId());
+		Mono<org.cloudfoundry.client.v3.spaces.ListSpacesResponse> responseMono = this.cfAccessor.retrieveSpaceIdsInOrgV3(it.getResolvedOrgId());
 
-		Flux<SpaceResource> spaceResFlux = responseMono.map(ListSpacesResponse::getResources)
+		Flux<org.cloudfoundry.client.v3.spaces.SpaceResource> spaceResFlux = responseMono.map(org.cloudfoundry.client.v3.spaces.ListSpacesResponse::getResources)
 			.flatMapMany(Flux::fromIterable);
 		
 		if (it.getConfigTarget().getSpaceRegex() != null) {
@@ -340,15 +338,15 @@ public class ReactiveTargetResolver implements TargetResolver {
 			final Pattern filterPattern = Pattern.compile(it.getConfigTarget().getSpaceRegex(), Pattern.CASE_INSENSITIVE);
 			
 			spaceResFlux = spaceResFlux.filter(spaceRes -> {
-				Matcher m = filterPattern.matcher(spaceRes.getEntity().getName());
+				Matcher m = filterPattern.matcher(spaceRes.getName());
 				return m.matches();
 			});
 		}
 		
 		return spaceResFlux.map(spaceRes -> {
 			IntermediateTarget itnew = new IntermediateTarget(it);
-			itnew.setResolvedSpaceId(spaceRes.getMetadata().getId());
-			itnew.setResolvedSpaceName(spaceRes.getEntity().getName());
+			itnew.setResolvedSpaceId(spaceRes.getId());
+			itnew.setResolvedSpaceName(spaceRes.getName());
 			
 			return itnew;
 		});
