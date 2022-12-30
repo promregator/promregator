@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.concurrent.TimeoutException;
 
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
+import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
+import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -98,14 +100,14 @@ class CFAccessorCacheCaffeineTimeoutTest {
 
 	@Test
 	void testRetrieveAllApplicationIdsInSpace() throws InterruptedException {
-		Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> response1 = subject.retrieveAllApplicationsInSpaceV3("dummy1", "dummy2");
+		Mono<ListApplicationsResponse> response1 = subject.retrieveAllApplicationsInSpaceV3("dummy1", "dummy2");
 		response1.subscribe();
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllApplicationsInSpaceV3("dummy1", "dummy2");
 		
 		// required to permit asynchronous updates of caches => test stability
 		Thread.sleep(10);
 		
-		Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> response2 = subject.retrieveAllApplicationsInSpaceV3("dummy1", "dummy2");
+		Mono<ListApplicationsResponse> response2 = subject.retrieveAllApplicationsInSpaceV3("dummy1", "dummy2");
 		response2.subscribe();
 		assertThat(response1).isNotEqualTo(response2);
 		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveAllApplicationsInSpaceV3("dummy1", "dummy2");
@@ -128,14 +130,14 @@ class CFAccessorCacheCaffeineTimeoutTest {
 
 	@Test
 	void testRetrieveDomains() throws InterruptedException {
-		Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse> response1 = subject.retrieveAllDomainsV3("dummy");
+		Mono<ListOrganizationDomainsResponse> response1 = subject.retrieveAllDomainsV3("dummy");
 		response1.subscribe();
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllDomainsV3("dummy");
 		
 		// required to permit asynchronous updates of caches => test stability
 		Thread.sleep(10);
 		
-		Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse> response2 = subject.retrieveAllDomainsV3("dummy");
+		Mono<ListOrganizationDomainsResponse> response2 = subject.retrieveAllDomainsV3("dummy");
 		response2.subscribe();
 		assertThat(response1).isNotEqualTo(response2);
 		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveAllDomainsV3("dummy");

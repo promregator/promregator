@@ -15,11 +15,20 @@ import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v3.BuildpackData;
 import org.cloudfoundry.client.v3.Lifecycle;
 import org.cloudfoundry.client.v3.LifecycleType;
+import org.cloudfoundry.client.v3.Metadata;
 import org.cloudfoundry.client.v3.ToOneRelationship;
+import org.cloudfoundry.client.v3.applications.ApplicationResource;
 import org.cloudfoundry.client.v3.applications.ApplicationState;
 import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
+import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v3.domains.DomainRelationships;
+import org.cloudfoundry.client.v3.domains.DomainResource;
+import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
+import org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse;
+import org.cloudfoundry.client.v3.organizations.OrganizationResource;
 import org.cloudfoundry.client.v3.spaces.GetSpaceResponse;
+import org.cloudfoundry.client.v3.spaces.ListSpacesResponse;
+import org.cloudfoundry.client.v3.spaces.SpaceResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -102,19 +111,19 @@ public class CFAccessorSimulator implements CFAccessor {
 	}
 
 	@Override
-	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> retrieveOrgIdV3(String orgName) {
+	public Mono<ListOrganizationsResponse> retrieveOrgIdV3(String orgName) {
 		if ("simorg".equals(orgName)) {
-			org.cloudfoundry.client.v3.organizations.OrganizationResource or = org.cloudfoundry.client.v3.organizations.OrganizationResource.builder()
+			OrganizationResource or = OrganizationResource.builder()
 					.name(orgName)
 					.id(ORG_UUID)
 					.createdAt(CREATED_AT_TIMESTAMP)
-					.metadata(org.cloudfoundry.client.v3.Metadata.builder().build())
+					.metadata(Metadata.builder().build())
 					.build();
 			
-			List<org.cloudfoundry.client.v3.organizations.OrganizationResource> list = new LinkedList<>();
+			List<OrganizationResource> list = new LinkedList<>();
 			list.add(or);
 			
-			org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse resp = org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse.builder().addAllResources(list).build();
+			ListOrganizationsResponse resp = ListOrganizationsResponse.builder().addAllResources(list).build();
 			
 			return Mono.just(resp).delayElement(this.getSleepRandomDuration());
 		}
@@ -123,23 +132,23 @@ public class CFAccessorSimulator implements CFAccessor {
 	}
 
 	@Override
-	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> retrieveAllOrgIdsV3() {
+	public Mono<ListOrganizationsResponse> retrieveAllOrgIdsV3() {
 		return this.retrieveOrgIdV3("simorg");
 	}
 
 	@Override
-	public Mono<org.cloudfoundry.client.v3.spaces.ListSpacesResponse> retrieveSpaceIdV3(String orgId, String spaceName) {
+	public Mono<ListSpacesResponse> retrieveSpaceIdV3(String orgId, String spaceName) {
 		if ("simspace".equals(spaceName) && orgId.equals(ORG_UUID)) {
 			
-			org.cloudfoundry.client.v3.spaces.SpaceResource sr = org.cloudfoundry.client.v3.spaces.SpaceResource.builder()
+			SpaceResource sr = SpaceResource.builder()
 					.name(spaceName)
 					.createdAt(CREATED_AT_TIMESTAMP)
 					.id(SPACE_UUID)
-					.metadata(org.cloudfoundry.client.v3.Metadata.builder().build())
+					.metadata(Metadata.builder().build())
 					.build();
-			List<org.cloudfoundry.client.v3.spaces.SpaceResource> list = new LinkedList<>();
+			List<SpaceResource> list = new LinkedList<>();
 			list.add(sr);
-			org.cloudfoundry.client.v3.spaces.ListSpacesResponse resp = org.cloudfoundry.client.v3.spaces.ListSpacesResponse.builder().addAllResources(list).build();
+			ListSpacesResponse resp = ListSpacesResponse.builder().addAllResources(list).build();
 			
 			return Mono.just(resp).delayElement(this.getSleepRandomDuration());
 		}
@@ -149,30 +158,30 @@ public class CFAccessorSimulator implements CFAccessor {
 	}
 
 	@Override
-	public Mono<org.cloudfoundry.client.v3.spaces.ListSpacesResponse> retrieveSpaceIdsInOrgV3(String orgId) {
+	public Mono<ListSpacesResponse> retrieveSpaceIdsInOrgV3(String orgId) {
 		return this.retrieveSpaceIdV3(ORG_UUID, "simspace");
 	}
 
 	@Override
-	public Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> retrieveAllApplicationsInSpaceV3(String orgId, String spaceId) {
+	public Mono<ListApplicationsResponse> retrieveAllApplicationsInSpaceV3(String orgId, String spaceId) {
 		if (orgId.equals(ORG_UUID) && spaceId.equals(SPACE_UUID)) {
-			List<org.cloudfoundry.client.v3.applications.ApplicationResource> list = new LinkedList<>();
+			List<ApplicationResource> list = new LinkedList<>();
 			
 			for (int i = 1;i<=100;i++) {
-				org.cloudfoundry.client.v3.applications.ApplicationResource ar = null;
-				ar = org.cloudfoundry.client.v3.applications.ApplicationResource.builder()
+				ApplicationResource ar = null;
+				ar = ApplicationResource.builder()
 							.name("testapp"+i)
 							.state(ApplicationState.STARTED)
 							.createdAt(CREATED_AT_TIMESTAMP)
 							.id(APP_UUID_PREFIX+i)
-							.metadata(org.cloudfoundry.client.v3.Metadata.builder().build())
+							.metadata(Metadata.builder().build())
 							.lifecycle(Lifecycle.builder().data(BuildpackData.builder().build()).type(LifecycleType.BUILDPACK).build())
 							.build();
 			
 				list.add(ar);
 				
 			}
-			org.cloudfoundry.client.v3.applications.ListApplicationsResponse resp = org.cloudfoundry.client.v3.applications.ListApplicationsResponse.builder().addAllResources(list).build();
+			ListApplicationsResponse resp = ListApplicationsResponse.builder().addAllResources(list).build();
 			return Mono.just(resp).delayElement(this.getSleepRandomDuration());
 		}
 		log.error("Invalid retrieveAllApplicationIdsInSpaceV3 request");
@@ -185,17 +194,17 @@ public class CFAccessorSimulator implements CFAccessor {
 	}
 
 	@Override
-	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse> retrieveAllDomainsV3(String orgId) {
-		List<org.cloudfoundry.client.v3.domains.DomainResource> domains = new ArrayList<org.cloudfoundry.client.v3.domains.DomainResource>();
+	public Mono<ListOrganizationDomainsResponse> retrieveAllDomainsV3(String orgId) {
+		List<DomainResource> domains = new ArrayList<DomainResource>();
 
 		for (int i = 1;i<=100;i++) {
 			
-			org.cloudfoundry.client.v3.domains.DomainResource domain = org.cloudfoundry.client.v3.domains.DomainResource.builder()
+			DomainResource domain = DomainResource.builder()
 					.name(SHARED_DOMAIN)
 					.isInternal(false)
 					.id(SHARED_DOMAIN_UUID+i)
 					.createdAt(CREATED_AT_TIMESTAMP)
-					.metadata(org.cloudfoundry.client.v3.Metadata.builder().build())
+					.metadata(Metadata.builder().build())
 					.relationships(DomainRelationships.builder().organization(
 							ToOneRelationship.builder().build()
 					).build())
@@ -204,12 +213,12 @@ public class CFAccessorSimulator implements CFAccessor {
 			domains.add(domain);
 		}
 
-		org.cloudfoundry.client.v3.domains.DomainResource domain = org.cloudfoundry.client.v3.domains.DomainResource.builder()
+		DomainResource domain = DomainResource.builder()
 				.name(INTERNAL_DOMAIN)
 				.isInternal(true)
 				.id(INTERNAL_DOMAIN_UUID)
 				.createdAt(CREATED_AT_TIMESTAMP)
-				.metadata(org.cloudfoundry.client.v3.Metadata.builder().build())
+				.metadata(Metadata.builder().build())
 				.relationships(DomainRelationships.builder().organization(
 						ToOneRelationship.builder().build()
 				).build())
@@ -217,7 +226,7 @@ public class CFAccessorSimulator implements CFAccessor {
 
 		domains.add(domain);
 		
-		org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse response = org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse.builder().addAllResources(domains).build();
+		ListOrganizationDomainsResponse response = ListOrganizationDomainsResponse.builder().addAllResources(domains).build();
 		return Mono.just(response);
 	}
 

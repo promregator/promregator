@@ -8,7 +8,9 @@ import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.cloudfoundry.client.v3.applications.ApplicationResource;
 import org.cloudfoundry.client.v3.applications.ApplicationState;
+import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.config.Target;
 import org.slf4j.Logger;
@@ -365,7 +367,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 			String appNameToSearchFor = it.getConfigTarget().getApplicationName().toLowerCase(Locale.ENGLISH);
 			
 			Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveAllApplicationsInSpaceV3(it.getResolvedOrgId(), it.getResolvedSpaceId())
-					.map(org.cloudfoundry.client.v3.applications.ListApplicationsResponse::getResources)
+					.map(ListApplicationsResponse::getResources)
 					.flatMapMany(Flux::fromIterable)
 					.filter(appResource -> appNameToSearchFor.equals(appResource.getName().toLowerCase(Locale.ENGLISH)))
 					.single()
@@ -389,9 +391,9 @@ public class ReactiveTargetResolver implements TargetResolver {
 		}
 		
 		// Case 1 & 2: Get all applications in the current space
-		Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> responseMono = this.cfAccessor.retrieveAllApplicationsInSpaceV3(it.getResolvedOrgId(), it.getResolvedSpaceId());
+		Mono<ListApplicationsResponse> responseMono = this.cfAccessor.retrieveAllApplicationsInSpaceV3(it.getResolvedOrgId(), it.getResolvedSpaceId());
 
-		Flux<org.cloudfoundry.client.v3.applications.ApplicationResource> appResFlux = responseMono.map(org.cloudfoundry.client.v3.applications.ListApplicationsResponse::getResources)
+		Flux<ApplicationResource> appResFlux = responseMono.map(ListApplicationsResponse::getResources)
 			.flatMapMany(Flux::fromIterable)
 			.doOnError(e ->
 				log.warn(String.format("Error on retrieving list of applications in org '%s' and space '%s'", it.getResolvedOrgName(), it.getResolvedSpaceName()), e))
@@ -407,7 +409,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 			});
 		}
 		
-		Flux<org.cloudfoundry.client.v3.applications.ApplicationResource> scrapableFlux = appResFlux.filter(appRes ->
+		Flux<ApplicationResource> scrapableFlux = appResFlux.filter(appRes ->
 				this.isApplicationInScrapableState(appRes.getState()));
 		
 		return scrapableFlux.map(appRes -> {
@@ -421,7 +423,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 
 	private Flux<IntermediateTarget> resolveAnnotations(IntermediateTarget it) {
 		if (Boolean.TRUE.equals(it.getConfigTarget().getKubernetesAnnotations())) {
-			Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> response = this.cfAccessor
+			Mono<ListApplicationsResponse> response = this.cfAccessor
 				.retrieveAllApplicationsInSpaceV3(it.getResolvedOrgId(), it.getResolvedSpaceId());
 
 			return response.flatMap(res -> {

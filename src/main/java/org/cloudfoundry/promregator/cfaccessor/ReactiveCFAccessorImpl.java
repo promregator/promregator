@@ -13,7 +13,10 @@ import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryRequest;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v3.Pagination;
+import org.cloudfoundry.client.v3.applications.ApplicationResource;
 import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
+import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
+import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v3.spaces.GetSpaceRequest;
 import org.cloudfoundry.client.v3.spaces.GetSpaceResponse;
 import org.cloudfoundry.promregator.cfaccessor.client.ReactorInfoV3;
@@ -39,7 +42,7 @@ import reactor.core.publisher.Mono;
 public class ReactiveCFAccessorImpl implements CFAccessor {
 
 	private static final Logger log = LoggerFactory.getLogger(ReactiveCFAccessorImpl.class);
-	public static final org.cloudfoundry.client.v3.applications.ListApplicationsResponse INVALID_APPLICATIONS_RESPONSE = org.cloudfoundry.client.v3.applications.ListApplicationsResponse.builder().build();
+	public static final ListApplicationsResponse INVALID_APPLICATIONS_RESPONSE = ListApplicationsResponse.builder().build();
 
 	@Value("${cf.api_host}")
 	private String apiHost;
@@ -333,7 +336,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	}
 
 	@Override
-	public Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> retrieveAllApplicationsInSpaceV3(String orgId, String spaceId) {
+	public Mono<ListApplicationsResponse> retrieveAllApplicationsInSpaceV3(String orgId, String spaceId) {
 		String key = String.format("%s|%s", orgId, spaceId);
 
 		PaginatedRequestGeneratorFunctionV3<org.cloudfoundry.client.v3.applications.ListApplicationsRequest> requestGenerator = (resultsPerPage, pageNumber) ->
@@ -344,8 +347,8 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 								   .page(pageNumber)
 								   .build();
 
-		PaginatedResponseGeneratorFunctionV3<org.cloudfoundry.client.v3.applications.ApplicationResource, org.cloudfoundry.client.v3.applications.ListApplicationsResponse> responseGenerator = (list, numberOfPages) ->
-			org.cloudfoundry.client.v3.applications.ListApplicationsResponse.builder()
+		PaginatedResponseGeneratorFunctionV3<ApplicationResource, ListApplicationsResponse> responseGenerator = (list, numberOfPages) ->
+			ListApplicationsResponse.builder()
 									.addAllResources(list)
 									.pagination(Pagination.builder().totalPages(numberOfPages).totalResults(list.size()).build())
 									.build();
@@ -367,7 +370,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	}
 
 	@Override
-	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse> retrieveAllDomainsV3(String orgId) {
+	public Mono<ListOrganizationDomainsResponse> retrieveAllDomainsV3(String orgId) {
 		org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsRequest request = org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsRequest.builder().organizationId(orgId).build();
 
 		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.DOMAINS, orgId,

@@ -3,6 +3,8 @@ package org.cloudfoundry.promregator.cfaccessor;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
+import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
+import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v3.spaces.GetSpaceResponse;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.mockito.Mockito;
@@ -53,8 +55,8 @@ public class CFAccessorCacheCaffeineSpringApplication {
 		}
 
 		@Override
-		public Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> retrieveAllApplicationsInSpaceV3(String orgId, String spaceId) {
-			return Mono.just(org.cloudfoundry.client.v3.applications.ListApplicationsResponse.builder().build());
+		public Mono<ListApplicationsResponse> retrieveAllApplicationsInSpaceV3(String orgId, String spaceId) {
+			return Mono.just(ListApplicationsResponse.builder().build());
 		}
 
 		@Override
@@ -63,8 +65,8 @@ public class CFAccessorCacheCaffeineSpringApplication {
 		}
 
 		@Override
-		public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse> retrieveAllDomainsV3(String orgId) {
-			return Mono.just(org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse.builder().build());
+		public Mono<ListOrganizationDomainsResponse> retrieveAllDomainsV3(String orgId) {
+			return Mono.just(ListOrganizationDomainsResponse.builder().build());
 		}
 
 		@Override
