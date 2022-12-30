@@ -8,8 +8,7 @@ import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.cloudfoundry.client.v2.applications.ApplicationResource;
-import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
+import org.cloudfoundry.client.v3.applications.ApplicationState;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.config.Target;
 import org.slf4j.Logger;
@@ -365,10 +364,10 @@ public class ReactiveTargetResolver implements TargetResolver {
 			
 			String appNameToSearchFor = it.getConfigTarget().getApplicationName().toLowerCase(Locale.ENGLISH);
 			
-			Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveAllApplicationIdsInSpace(it.getResolvedOrgId(), it.getResolvedSpaceId())
-					.map(ListApplicationsResponse::getResources)
+			Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveAllApplicationsInSpaceV3(it.getResolvedOrgId(), it.getResolvedSpaceId())
+					.map(org.cloudfoundry.client.v3.applications.ListApplicationsResponse::getResources)
 					.flatMapMany(Flux::fromIterable)
-					.filter(appResource -> appNameToSearchFor.equals(appResource.getEntity().getName().toLowerCase(Locale.ENGLISH)))
+					.filter(appResource -> appNameToSearchFor.equals(appResource.getName().toLowerCase(Locale.ENGLISH)))
 					.single()
 					.doOnError(e -> {
 						if (e instanceof NoSuchElementException) {
@@ -376,10 +375,10 @@ public class ReactiveTargetResolver implements TargetResolver {
 						}
 					})
 					.onErrorResume(e -> Mono.empty())
-					.filter( res -> this.isApplicationInScrapableState(res.getEntity().getState()))
+					.filter( res -> this.isApplicationInScrapableState(res.getState()))
 					.map(res -> {
-						it.setResolvedApplicationName(res.getEntity().getName());
-						it.setResolvedApplicationId(res.getMetadata().getId());
+						it.setResolvedApplicationName(res.getName());
+						it.setResolvedApplicationId(res.getId());
 						return it;
 					}).doOnError(e ->
 						log.warn(String.format("Error on retrieving application id for org '%s', space '%s' and application '%s'", it.getResolvedOrgName(), it.getResolvedSpaceName(), it.getConfigTarget().getApplicationName()), e)
@@ -390,9 +389,9 @@ public class ReactiveTargetResolver implements TargetResolver {
 		}
 		
 		// Case 1 & 2: Get all applications in the current space
-		Mono<ListApplicationsResponse> responseMono = this.cfAccessor.retrieveAllApplicationIdsInSpace(it.getResolvedOrgId(), it.getResolvedSpaceId());
+		Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> responseMono = this.cfAccessor.retrieveAllApplicationsInSpaceV3(it.getResolvedOrgId(), it.getResolvedSpaceId());
 
-		Flux<ApplicationResource> appResFlux = responseMono.map(ListApplicationsResponse::getResources)
+		Flux<org.cloudfoundry.client.v3.applications.ApplicationResource> appResFlux = responseMono.map(org.cloudfoundry.client.v3.applications.ListApplicationsResponse::getResources)
 			.flatMapMany(Flux::fromIterable)
 			.doOnError(e ->
 				log.warn(String.format("Error on retrieving list of applications in org '%s' and space '%s'", it.getResolvedOrgName(), it.getResolvedSpaceName()), e))
@@ -403,18 +402,18 @@ public class ReactiveTargetResolver implements TargetResolver {
 			final Pattern filterPattern = Pattern.compile(it.getConfigTarget().getApplicationRegex(), Pattern.CASE_INSENSITIVE);
 			
 			appResFlux = appResFlux.filter(appRes -> {
-				Matcher m = filterPattern.matcher(appRes.getEntity().getName());
+				Matcher m = filterPattern.matcher(appRes.getName());
 				return m.matches();
 			});
 		}
 		
-		Flux<ApplicationResource> scrapableFlux = appResFlux.filter(appRes ->
-				this.isApplicationInScrapableState(appRes.getEntity().getState()));
+		Flux<org.cloudfoundry.client.v3.applications.ApplicationResource> scrapableFlux = appResFlux.filter(appRes ->
+				this.isApplicationInScrapableState(appRes.getState()));
 		
 		return scrapableFlux.map(appRes -> {
 			IntermediateTarget itnew = new IntermediateTarget(it);
-			itnew.setResolvedApplicationId(appRes.getMetadata().getId());
-			itnew.setResolvedApplicationName(appRes.getEntity().getName());
+			itnew.setResolvedApplicationId(appRes.getId());
+			itnew.setResolvedApplicationName(appRes.getName());
 			
 			return itnew;
 		});
@@ -427,15 +426,14 @@ public class ReactiveTargetResolver implements TargetResolver {
 
 			return response.flatMap(res -> {
 				if (res == null || INVALID_APPLICATIONS_RESPONSE == res) {
-					logEmptyTarget
-						.debug("Your foundation does not support V3 APIs, yet you have enabled Kubernetes Annotation filtering. Ignoring annotation filtering.");
+					logEmptyTarget.debug("Your foundation does not support V3 APIs, yet you have enabled Kubernetes Annotation filtering. Ignoring annotation filtering.");
 					return Mono.just(it);
 				}
 
 				return res.getResources().stream()
 						  .filter(app -> it.getResolvedApplicationName()
 										   .equals(app.getName().toLowerCase(Locale.ENGLISH)))
-						  .filter(app -> this.isApplicationInScrapableState(app.getState().toString()))
+						  .filter(app -> this.isApplicationInScrapableState(app.getState()))
 						  .filter(app -> app.getMetadata() != null)
 						  .filter(app -> app.getMetadata().getAnnotations() != null)
 						  .filter(app -> app.getMetadata().getAnnotations()
@@ -454,8 +452,8 @@ public class ReactiveTargetResolver implements TargetResolver {
 		return Mono.just(it).flux();
 	}
 
-	private boolean isApplicationInScrapableState(String state) {
-		if ("STARTED".equals(state)) {
+	private boolean isApplicationInScrapableState(ApplicationState applicationState) {
+		if (applicationState == ApplicationState.STARTED) {
 			return true;
 		}
 		

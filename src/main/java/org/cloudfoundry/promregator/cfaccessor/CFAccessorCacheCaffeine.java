@@ -8,7 +8,6 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
@@ -35,10 +34,9 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	private @NonNull AsyncLoadingCache<String, org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> allOrgIdCache;
 	private @NonNull AsyncLoadingCache<CacheKeySpace, org.cloudfoundry.client.v3.spaces.ListSpacesResponse> spaceCache;
 	private @NonNull AsyncLoadingCache<String, org.cloudfoundry.client.v3.spaces.ListSpacesResponse> spaceIdInOrgCache;
-	private AsyncLoadingCache<CacheKeyAppsInSpace, ListApplicationsResponse> appsInSpaceCache;
 	private AsyncLoadingCache<String, GetSpaceSummaryResponse> spaceSummaryCache;
 	private AsyncLoadingCache<String, ListOrganizationDomainsResponse> domainsInOrgCache;
-	private AsyncLoadingCache<CacheKeyAppsInSpace, org.cloudfoundry.client.v3.applications.ListApplicationsResponse> appsInSpaceV3Cache;
+	private @NonNull AsyncLoadingCache<CacheKeyAppsInSpace, org.cloudfoundry.client.v3.applications.ListApplicationsResponse> appsInSpaceCache;
 	
 	@Value("${cf.cache.timeout.org:3600}")
 	private int refreshCacheOrgLevelInSeconds;
@@ -122,17 +120,6 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 		}
 	}
 	
-	private class AppsInSpaceCacheLoader implements AsyncCacheLoader<CacheKeyAppsInSpace, ListApplicationsResponse> {
-		@Override
-		public @NonNull CompletableFuture<ListApplicationsResponse> asyncLoad(
-				@NonNull CacheKeyAppsInSpace key, @NonNull Executor executor) {
-			Mono<ListApplicationsResponse> mono = parent.retrieveAllApplicationIdsInSpace(key.getOrgId(), key.getSpaceId())
-					.subscribeOn(Schedulers.fromExecutor(executor))
-					.cache();
-			return mono.toFuture();
-		}
-	}
-	
 	private class SpaceSummaryCacheLoader implements AsyncCacheLoader<String, GetSpaceSummaryResponse> {
 		@Override
 		public @NonNull CompletableFuture<GetSpaceSummaryResponse> asyncLoad(@NonNull String key,
@@ -207,14 +194,6 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 				.buildAsync(new SpaceIdInOrgCacheLoader());
 		this.internalMetrics.addCaffeineCache("spaceInOrgCache", this.spaceIdInOrgCache);
 		
-		this.appsInSpaceCache = Caffeine.newBuilder()
-				.expireAfterAccess(this.expiryCacheApplicationLevelInSeconds, TimeUnit.SECONDS)
-				.refreshAfterWrite(this.refreshCacheApplicationLevelInSeconds, TimeUnit.SECONDS)
-				.recordStats()
-				.scheduler(caffeineScheduler)
-				.buildAsync(new AppsInSpaceCacheLoader());
-		this.internalMetrics.addCaffeineCache("appsInSpace", this.appsInSpaceCache);
-		
 		this.spaceSummaryCache = Caffeine.newBuilder()
 				.expireAfterAccess(this.expiryCacheApplicationLevelInSeconds, TimeUnit.SECONDS)
 				.refreshAfterWrite(this.refreshCacheApplicationLevelInSeconds, TimeUnit.SECONDS)
@@ -231,25 +210,18 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 				.buildAsync(new DomainCacheLoader());
 		this.internalMetrics.addCaffeineCache("domain", this.domainsInOrgCache);
 
-		this.appsInSpaceV3Cache = Caffeine.newBuilder()
+		this.appsInSpaceCache = Caffeine.newBuilder()
 										.expireAfterAccess(this.expiryCacheApplicationLevelInSeconds, TimeUnit.SECONDS)
 										.refreshAfterWrite(this.refreshCacheApplicationLevelInSeconds, TimeUnit.SECONDS)
 										.recordStats()
 										.scheduler(caffeineScheduler)
 										.buildAsync(new AppsInSpaceV3CacheLoader());
-		this.internalMetrics.addCaffeineCache("appsInSpaceV3", this.appsInSpaceV3Cache);
+		this.internalMetrics.addCaffeineCache("appsInSpace", this.appsInSpaceCache);
 	}
 
 	@Override
 	public Mono<GetInfoResponse> getInfo() {
 		return this.parent.getInfo();
-	}
-
-	@Override
-	public Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String orgId, String spaceId) {
-		final CacheKeyAppsInSpace key = new CacheKeyAppsInSpace(orgId, spaceId);
-		
-		return Mono.fromFuture(this.appsInSpaceCache.get(key));
 	}
 
 	@Override
@@ -288,7 +260,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	public Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> retrieveAllApplicationsInSpaceV3(String orgId, String spaceId) {
 		final CacheKeyAppsInSpace key = new CacheKeyAppsInSpace(orgId, spaceId);
 
-		return Mono.fromFuture(this.appsInSpaceV3Cache.get(key));
+		return Mono.fromFuture(this.appsInSpaceCache.get(key));
 	}
 
 	@Override
@@ -312,9 +284,8 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	public void invalidateCacheApplications() {
 		log.info("Invalidating application cache");
 		
-		this.appsInSpaceCache.synchronous().invalidateAll();
 		this.spaceSummaryCache.synchronous().invalidateAll();
-		this.appsInSpaceV3Cache.synchronous().invalidateAll();
+		this.appsInSpaceCache.synchronous().invalidateAll();
 	}
 
 	@Override

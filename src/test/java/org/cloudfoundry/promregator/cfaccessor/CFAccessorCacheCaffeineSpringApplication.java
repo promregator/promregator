@@ -1,6 +1,5 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
-import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
@@ -23,11 +22,6 @@ public class CFAccessorCacheCaffeineSpringApplication {
 	}
 	
 	public static class ParentMock implements CFAccessor {
-
-		@Override
-		public Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String orgId, String spaceId) {
-			return Mono.just(ListApplicationsResponse.builder().build());
-		}
 
 		@Override
 		public Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId) {

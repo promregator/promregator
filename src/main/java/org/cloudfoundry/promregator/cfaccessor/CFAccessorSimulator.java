@@ -1,7 +1,5 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
-import static org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl.INVALID_APPLICATIONS_RESPONSE;
-
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,9 +8,6 @@ import java.util.List;
 import java.util.Random;
 
 import org.cloudfoundry.client.v2.Metadata;
-import org.cloudfoundry.client.v2.applications.ApplicationEntity;
-import org.cloudfoundry.client.v2.applications.ApplicationResource;
-import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.domains.Domain;
 import org.cloudfoundry.client.v2.domains.DomainEntity;
 import org.cloudfoundry.client.v2.domains.DomainResource;
@@ -21,6 +16,10 @@ import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.routes.Route;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
+import org.cloudfoundry.client.v3.BuildpackData;
+import org.cloudfoundry.client.v3.Lifecycle;
+import org.cloudfoundry.client.v3.LifecycleType;
+import org.cloudfoundry.client.v3.applications.ApplicationState;
 import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
 import org.cloudfoundry.client.v3.spaces.GetSpaceResponse;
 import org.slf4j.Logger;
@@ -58,30 +57,7 @@ public class CFAccessorSimulator implements CFAccessor {
 		return Duration.ofMillis(this.randomGen.nextInt(250));
 	}
 
-	@Override
-	public Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String orgId, String spaceId) {
-		if (orgId.equals(ORG_UUID) && spaceId.equals(SPACE_UUID)) {
-			List<ApplicationResource> list = new LinkedList<>();
 
-			
-			for (int i = 1;i<=100;i++) {
-				ApplicationResource ar = null;
-				ar = ApplicationResource.builder().entity(
-						ApplicationEntity.builder().name("testapp"+i).state("STARTED").build()
-					).metadata(
-							Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(APP_UUID_PREFIX+i).build()
-					).build();
-			
-				list.add(ar);
-				
-			}
-			ListApplicationsResponse resp = ListApplicationsResponse.builder().addAllResources(list).build();
-			return Mono.just(resp).delayElement(this.getSleepRandomDuration());
-		}
-		log.error("Invalid retrieveAllApplicationIdsInSpace request");
-		return null;
-	}
-	
 	@Override
 	public Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId) {
 		if (spaceId.equals(SPACE_UUID)) {
@@ -216,7 +192,28 @@ public class CFAccessorSimulator implements CFAccessor {
 
 	@Override
 	public Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> retrieveAllApplicationsInSpaceV3(String orgId, String spaceId) {
-		return Mono.just(INVALID_APPLICATIONS_RESPONSE);
+		if (orgId.equals(ORG_UUID) && spaceId.equals(SPACE_UUID)) {
+			List<org.cloudfoundry.client.v3.applications.ApplicationResource> list = new LinkedList<>();
+			
+			for (int i = 1;i<=100;i++) {
+				org.cloudfoundry.client.v3.applications.ApplicationResource ar = null;
+				ar = org.cloudfoundry.client.v3.applications.ApplicationResource.builder()
+							.name("testapp"+i)
+							.state(ApplicationState.STARTED)
+							.createdAt(CREATED_AT_TIMESTAMP)
+							.id(APP_UUID_PREFIX+i)
+							.metadata(org.cloudfoundry.client.v3.Metadata.builder().build())
+							.lifecycle(Lifecycle.builder().data(BuildpackData.builder().build()).type(LifecycleType.BUILDPACK).build())
+							.build();
+			
+				list.add(ar);
+				
+			}
+			org.cloudfoundry.client.v3.applications.ListApplicationsResponse resp = org.cloudfoundry.client.v3.applications.ListApplicationsResponse.builder().addAllResources(list).build();
+			return Mono.just(resp).delayElement(this.getSleepRandomDuration());
+		}
+		log.error("Invalid retrieveAllApplicationIdsInSpaceV3 request");
+		return null;
 	}
 
 	@Override

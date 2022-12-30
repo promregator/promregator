@@ -8,9 +8,6 @@ import java.util.regex.Pattern;
 import javax.annotation.PostConstruct;
 
 import org.apache.http.conn.util.InetAddressUtils;
-import org.cloudfoundry.client.v2.applications.ApplicationResource;
-import org.cloudfoundry.client.v2.applications.ListApplicationsRequest;
-import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.info.GetInfoRequest;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsRequest;
@@ -262,33 +259,6 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	@Override
 	public Mono<GetInfoResponse> getInfo() {
 		return this.cloudFoundryClient.info().get(DUMMY_GET_INFO_REQUEST);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.cloudfoundry.promregator.cfaccessor.CFAccessor#retrieveAllApplicationIdsInSpace(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String orgId, String spaceId) {
-		String key = String.format("%s|%s", orgId, spaceId);
-		
-		PaginatedRequestGeneratorFunction<ListApplicationsRequest> requestGenerator = (orderDirection, resultsPerPage, pageNumber) ->
-			ListApplicationsRequest.builder()
-				.organizationId(orgId)
-				.spaceId(spaceId)
-				.orderDirection(orderDirection)
-				.resultsPerPage(resultsPerPage)
-				.page(pageNumber)
-				.build();
-		
-		PaginatedResponseGeneratorFunction<ApplicationResource, ListApplicationsResponse> responseGenerator = (list, numberOfPages) ->
-				ListApplicationsResponse.builder()
-				.addAllResources(list)
-				.totalPages(numberOfPages)
-				.totalResults(list.size())
-				.build();
-		
-		return this.paginatedRequestFetcher.performGenericPagedRetrieval(RequestType.ALL_APPS_IN_SPACE, key, requestGenerator, 
-				r -> this.cloudFoundryClient.applicationsV2().list(r), this.requestTimeoutAppInSpace, responseGenerator);
 	}
 	
 	@Override

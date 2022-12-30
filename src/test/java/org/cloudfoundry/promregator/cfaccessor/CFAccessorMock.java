@@ -7,9 +7,6 @@ import java.util.List;
 
 import org.assertj.core.util.Lists;
 import org.cloudfoundry.client.v2.Metadata;
-import org.cloudfoundry.client.v2.applications.ApplicationEntity;
-import org.cloudfoundry.client.v2.applications.ApplicationResource;
-import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.domains.Domain;
 import org.cloudfoundry.client.v2.domains.DomainEntity;
 import org.cloudfoundry.client.v2.domains.DomainResource;
@@ -20,6 +17,7 @@ import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v3.BuildpackData;
 import org.cloudfoundry.client.v3.Lifecycle;
+import org.cloudfoundry.client.v3.LifecycleData;
 import org.cloudfoundry.client.v3.LifecycleType;
 import org.cloudfoundry.client.v3.applications.ApplicationState;
 import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
@@ -55,51 +53,6 @@ public class CFAccessorMock implements CFAccessor {
 
 	public static final String CREATED_AT_TIMESTAMP = "2014-11-24T19:32:49+00:00";
 	public static final String UPDATED_AT_TIMESTAMP = "2014-11-24T19:32:49+00:00";
-
-	@Override
-	public Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String orgId, String spaceId) {
-		if (orgId.equals(UNITTEST_ORG_UUID) && spaceId.equals(UNITTEST_SPACE_UUID)) {
-			List<ApplicationResource> list = new LinkedList<>();
-
-			ApplicationResource ar = ApplicationResource.builder()
-														.entity(ApplicationEntity.builder().name("testapp").state("STARTED").build())
-														.metadata(Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP1_UUID).build())
-														.build();
-			list.add(ar);
-
-			ar = ApplicationResource.builder()
-									.entity(ApplicationEntity.builder().name("testapp2").state("STARTED").build())
-									.metadata(Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP2_UUID).build())
-									.build();
-			list.add(ar);
-
-			ar = ApplicationResource.builder()
-					.entity(ApplicationEntity.builder().name("testapp3").state("STARTED").build())
-					.metadata(Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP3_UUID).build())
-					.build();
-			list.add(ar);
-			
-			ar = ApplicationResource.builder()
-									.entity(ApplicationEntity.builder().name("internalapp").state("STARTED").build())
-									.metadata(Metadata.builder().createdAt(CREATED_AT_TIMESTAMP).id(UNITTEST_APP_INTERNAL_UUID).build())
-									.build();
-			list.add(ar);
-
-			ListApplicationsResponse resp = ListApplicationsResponse.builder().addAllResources(list).build();
-			return Mono.just(resp);
-		}
-		else if (UNITTEST_SPACE_UUID_DOESNOTEXIST.equals(spaceId)) {
-			return Mono.just(ListApplicationsResponse.builder().build());
-		}
-		else if (UNITTEST_SPACE_UUID_EXCEPTION.equals(spaceId)) {
-			return Mono.just(ListApplicationsResponse.builder().build()).map(x -> {
-				throw new Error("exception on AllAppIdsInSpace");
-			});
-		}
-
-		Assertions.fail("Invalid process request");
-		return null;
-	}
 
 	@Override
 	public Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId) {
@@ -304,10 +257,8 @@ public class CFAccessorMock implements CFAccessor {
 			org.cloudfoundry.client.v3.applications.ApplicationResource ar = org.cloudfoundry.client.v3.applications.ApplicationResource
 					.builder().name("testapp").state(ApplicationState.STARTED).createdAt(CREATED_AT_TIMESTAMP)
 					.id(UNITTEST_APP1_UUID)
-					.lifecycle(Lifecycle.builder().data(BuildpackData.builder().build()).type(LifecycleType.BUILDPACK)
-							.build())
-					.metadata(org.cloudfoundry.client.v3.Metadata.builder().annotation("prometheus.io/scrape", "true")
-							.build())
+					.lifecycle(Lifecycle.builder().data(BuildpackData.builder().build()).type(LifecycleType.BUILDPACK).build())
+					.metadata(org.cloudfoundry.client.v3.Metadata.builder().annotation("prometheus.io/scrape", "true").build())
 					.build();
 			list.add(ar);
 
@@ -317,6 +268,7 @@ public class CFAccessorMock implements CFAccessor {
 							.build())
 					.metadata(org.cloudfoundry.client.v3.Metadata.builder()
 							.annotation("prometheus.io/scrape", "badValue").build())
+					.lifecycle(Lifecycle.builder().data(BuildpackData.builder().build()).type(LifecycleType.BUILDPACK).build())
 					.build();
 			list.add(ar);
 
@@ -326,6 +278,7 @@ public class CFAccessorMock implements CFAccessor {
 							.build())
 					.metadata(org.cloudfoundry.client.v3.Metadata.builder()
 							.annotation("prometheus.io/scrape", "badValue").build())
+					.lifecycle(Lifecycle.builder().data(BuildpackData.builder().build()).type(LifecycleType.BUILDPACK).build())
 					.build();
 			list.add(ar);
 
@@ -335,6 +288,7 @@ public class CFAccessorMock implements CFAccessor {
 							.build())
 					.metadata(org.cloudfoundry.client.v3.Metadata.builder().annotation("prometheus.io/scrape", "true")
 							.annotation("prometheus.io/path", "/actuator/prometheus").build())
+					.lifecycle(Lifecycle.builder().data(BuildpackData.builder().build()).type(LifecycleType.BUILDPACK).build())
 					.build();
 			list.add(ar);
 

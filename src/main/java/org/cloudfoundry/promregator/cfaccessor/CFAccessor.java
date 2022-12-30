@@ -1,6 +1,5 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
-import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
@@ -10,8 +9,6 @@ import reactor.core.publisher.Mono;
 
 public interface CFAccessor {
 	Mono<GetInfoResponse> getInfo();
-	
-	Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String orgId, String spaceId);
 	
 	Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId);	
 
