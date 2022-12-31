@@ -194,8 +194,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			return Mono.just(v);
 		});
 
-		Flux<String> spaceIdFlux = osaVectorOrgFlux
-				.flatMapSequential(v -> this.getSpaceId(v.getOrgId(), v.getTarget().getSpaceName()));
+		Flux<String> spaceIdFlux = osaVectorOrgFlux.flatMapSequential(v -> this.getSpaceId(v.getOrgId(), v.getTarget().getSpaceName()));
 		Flux<OSAVector> osaVectorSpaceFlux = Flux.zip(osaVectorOrgFlux, spaceIdFlux).flatMap(tuple -> {
 			OSAVector v = tuple.getT1();
 			if (INVALID_SPACE_ID.equals(tuple.getT2())) {
@@ -305,15 +304,13 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 
 		// perform pre-filtering, if available
 		if (applicationIdFilter != null) {
-			osaVectorDomainApplicationFlux = osaVectorDomainApplicationFlux
-					.filter(v -> applicationIdFilter.test(v.getApplicationId()));
+			osaVectorDomainApplicationFlux = osaVectorDomainApplicationFlux.filter(v -> applicationIdFilter.test(v.getApplicationId()));
 		}
 
 		Flux<Instance> instancesFlux = osaVectorDomainApplicationFlux.flatMapSequential(v -> {
 			List<Instance> instances = new ArrayList<>(v.getNumberOfInstances());
 			for (int i = 0; i < v.numberOfInstances; i++) {
-				Instance inst = new Instance(v.getTarget(), String.format("%s:%d", v.getApplicationId(), i),
-						v.getAccessURL(), v.isInternal());
+				Instance inst = new Instance(v.getTarget(), String.format("%s:%d", v.getApplicationId(), i), v.getAccessURL(), v.isInternal());
 
 				if (useOverrideRouteAndPath(v)) {
 					inst.setAccessUrl(this.formatAccessURL(v.getTarget().getProtocol(), v.getTarget().getOriginalTarget().getOverrideRouteAndPath(), v.getTarget().getPath()));
@@ -414,8 +411,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		return applUrl + internalPath;
 	}
 
-	private String formatInternalAccessURL(final String hostnameDomain, final String path, final int internalRoutePort,
-			final int instanceId) {
+	private String formatInternalAccessURL(final String hostnameDomain, final String path, final int internalRoutePort, final int instanceId) {
 		int port = internalRoutePort;
 		if(port == 0) {
 			port = defaultInternalRoutePort;
@@ -440,8 +436,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 
 		for (Pattern pattern : patterns) {
 			for (String url : urls) {
-				log.debug(String.format("Attempting to match Application Route '%s' against pattern '%s'", url,
-						pattern.toString()));
+				log.debug(String.format("Attempting to match Application Route '%s' against pattern '%s'", url, pattern.toString()));
 				Matcher m = pattern.matcher(url);
 				if (m.matches()) {
 					log.debug(String.format("Match found, using Application Route '%s'", url));
@@ -450,12 +445,12 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			}
 		}
 
-		// if we reach this here, then we did not find any match in the regex.
-		// The fallback then is the old behavior by returned just the first-guess
-		// element
-		log.debug(String.format(
-				"Though Preferred Router URLs were provided, no route matched; taking the first route as fallback (compatibility!), which is '%s'",
-				urls.get(0)));
+		/* 
+		 * If we reach this here, then we did not find any match in the regex.
+		 * The fallback then is the old behavior by returned just the first-guess
+		 * element.
+		 */
+		log.debug(String.format("Though Preferred Router URLs were provided, no route matched; taking the first route as fallback (compatibility!), which is '%s'", urls.get(0)));
 		return urls.get(0);
 	}
 }
