@@ -5,7 +5,6 @@ import java.util.Set;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationProcessesResponse;
-import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse;
@@ -34,7 +33,7 @@ public interface CFAccessor {
 
 	Mono<ListOrganizationDomainsResponse> retrieveAllDomainsV3(String orgId);
 
-	Mono<ListApplicationRoutesResponse> retrieveRoutesForAppId(String appId);
+	Mono<ListRoutesResponse> retrieveRoutesForAppId(String appId);
 	
 	Mono<ListRoutesResponse> retrieveRoutesForAppIds(Set<String> appIds);
 	

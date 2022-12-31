@@ -17,7 +17,6 @@ import org.cloudfoundry.client.v3.Pagination;
 import org.cloudfoundry.client.v3.applications.ApplicationResource;
 import org.cloudfoundry.client.v3.applications.ListApplicationProcessesRequest;
 import org.cloudfoundry.client.v3.applications.ListApplicationProcessesResponse;
-import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v3.routes.ListRoutesRequest;
@@ -288,26 +287,25 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		org.cloudfoundry.client.v3.organizations.ListOrganizationsRequest orgsRequest = org.cloudfoundry.client.v3.organizations.ListOrganizationsRequest.builder().name(orgName).build();
 
 		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.ORG, orgName, orgsRequest,
-																	or -> this.cloudFoundryClient.organizationsV3()
-																								 .list(or), this.requestTimeoutOrg);
+				or -> this.cloudFoundryClient.organizationsV3().list(or), this.requestTimeoutOrg);
 	}
 
 	@Override
 	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> retrieveAllOrgIdsV3() {
 		PaginatedRequestGeneratorFunctionV3<org.cloudfoundry.client.v3.organizations.ListOrganizationsRequest> requestGenerator = (resultsPerPage, pageNumber) ->
 			org.cloudfoundry.client.v3.organizations.ListOrganizationsRequest.builder()
-									.perPage(resultsPerPage)
-									.page(pageNumber)
-									.build();
+					.perPage(resultsPerPage)
+					.page(pageNumber)
+					.build();
 
 		PaginatedResponseGeneratorFunctionV3<org.cloudfoundry.client.v3.organizations.OrganizationResource, org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> responseGenerator = (list, numberOfPages) ->
 			org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse.builder()
-									 .addAllResources(list)
-									 .pagination(Pagination.builder().totalPages(numberOfPages).totalResults(list.size()).build())
-									 .build();
+					.addAllResources(list)
+					.pagination(Pagination.builder().totalPages(numberOfPages).totalResults(list.size()).build())
+					.build();
 
 		return this.paginatedRequestFetcher.performGenericPagedRetrievalV3(RequestType.ALL_ORGS, "(empty)", requestGenerator,
-																		 r -> this.cloudFoundryClient.organizationsV3().list(r),  this.requestTimeoutOrg, responseGenerator);
+					r -> this.cloudFoundryClient.organizationsV3().list(r),  this.requestTimeoutOrg, responseGenerator);
 	}
 
 	@Override
@@ -319,29 +317,28 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 
 		org.cloudfoundry.client.v3.spaces.ListSpacesRequest spacesRequest = org.cloudfoundry.client.v3.spaces.ListSpacesRequest.builder().organizationId(orgId).name(spaceName).build();
 
-		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.SPACE, key, spacesRequest, sr ->
-																		this.cloudFoundryClient.spacesV3().list(sr),
-																	this.requestTimeoutSpace);
+		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.SPACE, key, spacesRequest, sr -> this.cloudFoundryClient.spacesV3().list(sr),
+					this.requestTimeoutSpace);
 	}
 
 	@Override
 	public Mono<org.cloudfoundry.client.v3.spaces.ListSpacesResponse> retrieveSpaceIdsInOrgV3(String orgId) {
 		PaginatedRequestGeneratorFunctionV3<org.cloudfoundry.client.v3.spaces.ListSpacesRequest> requestGenerator = (resultsPerPage, pageNumber) ->
 			org.cloudfoundry.client.v3.spaces.ListSpacesRequest.builder()
-							 .organizationId(orgId)
-							 .perPage(resultsPerPage)
-							 .page(pageNumber)
-							 .build();
+					.organizationId(orgId)
+					.perPage(resultsPerPage)
+					.page(pageNumber)
+					.build();
 
 		PaginatedResponseGeneratorFunctionV3<org.cloudfoundry.client.v3.spaces.SpaceResource, org.cloudfoundry.client.v3.spaces.ListSpacesResponse> responseGenerator = (list, numberOfPages) ->
 			org.cloudfoundry.client.v3.spaces.ListSpacesResponse.builder()
-							  .addAllResources(list)
-							  .pagination(Pagination.builder().totalPages(numberOfPages).totalResults(list.size()).build())
-							  .build();
+					.addAllResources(list)
+					.pagination(Pagination.builder().totalPages(numberOfPages).totalResults(list.size()).build())
+					.build();
 
 
 		return this.paginatedRequestFetcher.performGenericPagedRetrievalV3(RequestType.SPACE_IN_ORG, orgId, requestGenerator,
-																		 r -> this.cloudFoundryClient.spacesV3().list(r),  this.requestTimeoutSpace, responseGenerator);
+					r -> this.cloudFoundryClient.spacesV3().list(r),  this.requestTimeoutSpace, responseGenerator);
 	}
 
 	@Override
@@ -350,20 +347,20 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 
 		PaginatedRequestGeneratorFunctionV3<org.cloudfoundry.client.v3.applications.ListApplicationsRequest> requestGenerator = (resultsPerPage, pageNumber) ->
 			org.cloudfoundry.client.v3.applications.ListApplicationsRequest.builder()
-								   .organizationId(orgId)
-								   .spaceId(spaceId)
-								   .perPage(resultsPerPage)
-								   .page(pageNumber)
-								   .build();
+					.organizationId(orgId)
+					.spaceId(spaceId)
+					.perPage(resultsPerPage)
+					.page(pageNumber)
+					.build();
 
 		PaginatedResponseGeneratorFunctionV3<ApplicationResource, ListApplicationsResponse> responseGenerator = (list, numberOfPages) ->
 			ListApplicationsResponse.builder()
-									.addAllResources(list)
-									.pagination(Pagination.builder().totalPages(numberOfPages).totalResults(list.size()).build())
-									.build();
+				.addAllResources(list)
+				.pagination(Pagination.builder().totalPages(numberOfPages).totalResults(list.size()).build())
+				.build();
 
 		return this.paginatedRequestFetcher.performGenericPagedRetrievalV3(RequestType.ALL_APPS_IN_SPACE, key, requestGenerator,
-																		 r -> this.cloudFoundryClient.applicationsV3().list(r), this.requestTimeoutAppInSpace, responseGenerator);
+				r -> this.cloudFoundryClient.applicationsV3().list(r), this.requestTimeoutAppInSpace, responseGenerator);
 	}
 
 	@Override
@@ -375,7 +372,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		GetSpaceRequest request = GetSpaceRequest.builder().spaceId(spaceId).build();
 
 		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.SPACE_SUMMARY, spaceId,
-																	request, r -> this.cloudFoundryClient.spacesV3().get(r), this.requestTimeoutAppSummary);
+				request, r -> this.cloudFoundryClient.spacesV3().get(r), this.requestTimeoutAppSummary);
 	}
 
 	@Override
@@ -383,11 +380,11 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsRequest request = org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsRequest.builder().organizationId(orgId).build();
 
 		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.DOMAINS, orgId,
-																	request, r -> this.cloudFoundryClient.organizationsV3().listDomains(request), this.requestTimeoutDomains);
+				request, r -> this.cloudFoundryClient.organizationsV3().listDomains(request), this.requestTimeoutDomains);
 	}
 
 	@Override
-	public Mono<ListApplicationRoutesResponse> retrieveRoutesForAppId(String appId) {
+	public Mono<ListRoutesResponse> retrieveRoutesForAppId(String appId) {
 		// not necessary to be implemented, because Caffeine cache converts it into retrieveRoutesForAppIds() requests
 		throw new UnsupportedOperationException();
 	}
