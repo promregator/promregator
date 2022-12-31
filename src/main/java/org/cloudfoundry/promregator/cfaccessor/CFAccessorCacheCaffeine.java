@@ -151,6 +151,12 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 		@Override
 		public @NonNull CompletableFuture<ListRoutesResponse> asyncLoad(@NonNull String key,
 				@NonNull Executor executor) {
+			/* TODO V3 Performance: 
+			 * Not just pass on the request here, but use mass-enabled request at CAPI V3 endpoint
+			 * by adding the request to a deque that is being polled from an independent thread.
+			 * This thread may "aggregate" multiple single requests into a mass request.
+			 */
+			
 			Mono<ListRoutesResponse> mono = parent.retrieveRoutesForAppIds(Collections.singleton(key))
 				.subscribeOn(Schedulers.fromExecutor(executor))
 				.cache();
@@ -163,6 +169,13 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 		@Override
 		public @NonNull CompletableFuture<ListApplicationProcessesResponse> asyncLoad(@NonNull String key,
 				@NonNull Executor executor) {
+			
+			/* TODO V3 Performance: 
+			 * Not just pass on the request here, but use mass-enabled request at CAPI V3 endpoint
+			 * by adding the request to a deque that is being polled from an independent thread.
+			 * This thread may "aggregate" multiple single requests into a mass request.
+			 */
+			
 			Mono<ListApplicationProcessesResponse> mono = parent.retrieveWebProcessesForApp(key)
 				.subscribeOn(Schedulers.fromExecutor(executor))
 				.cache();
