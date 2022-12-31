@@ -6,12 +6,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v3.BuildpackData;
 import org.cloudfoundry.client.v3.Lifecycle;
 import org.cloudfoundry.client.v3.LifecycleType;
 import org.cloudfoundry.client.v3.Metadata;
+import org.cloudfoundry.client.v3.Relationship;
 import org.cloudfoundry.client.v3.ToOneRelationship;
 import org.cloudfoundry.client.v3.applications.ApplicationResource;
 import org.cloudfoundry.client.v3.applications.ApplicationState;
@@ -22,7 +24,13 @@ import org.cloudfoundry.client.v3.domains.DomainResource;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v3.organizations.OrganizationResource;
+import org.cloudfoundry.client.v3.processes.HealthCheck;
+import org.cloudfoundry.client.v3.processes.HealthCheckType;
+import org.cloudfoundry.client.v3.processes.ProcessRelationships;
+import org.cloudfoundry.client.v3.processes.ProcessResource;
 import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
+import org.cloudfoundry.client.v3.routes.RouteRelationships;
+import org.cloudfoundry.client.v3.routes.RouteResource;
 import org.cloudfoundry.client.v3.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v3.spaces.SpaceResource;
 import org.slf4j.Logger;
@@ -36,11 +44,12 @@ public class CFAccessorSimulator implements CFAccessor {
 	public static final String APP_UUID_PREFIX = "55820b2c-2fa5-11e8-b467-";
 	public static final String APP_HOST_PREFIX = "hostapp";
 	public static final String SHARED_DOMAIN = "shared.domain.example.org";
-	public static final String SHARED_DOMAIN_UUID = "be9b8696-2fa6-11e8-b467-0ed5f89f718b";  
+	public static final String SHARED_DOMAIN_UUID = "be9b8696-2fa6-11e8-b467-0ed5f89f718b";
 	public static final String INTERNAL_DOMAIN = "apps.internal";
-	public static final String INTERNAL_DOMAIN_UUID = "61c11947-087b-4894-a64f-4d9d5f619b58";  
-	public static final String APP_ROUTE_UUID = "676fe9a7-2f41-4b71-8a10-22294af1e81e";  
-	public static final String APP_ROUTE_PATH = "path";  
+	public static final String INTERNAL_DOMAIN_UUID = "61c11947-087b-4894-a64f-4d9d5f619b58";
+	public static final String PROCESS_UUID_PREFIX = "8f7815cc-c224-43ae-8956-08d11d278d4c";
+	public static final String ROUTE_UUID_PREFIX = "676fe9a7-2f41-4b71-8a10-22294af1e81e";
+	public static final String APP_ROUTE_PATH = "path";
 	
 	private static final Logger log = LoggerFactory.getLogger(CFAccessorSimulator.class);
 	
@@ -142,6 +151,7 @@ public class CFAccessorSimulator implements CFAccessor {
 							.id(APP_UUID_PREFIX+i)
 							.metadata(Metadata.builder().build())
 							.lifecycle(Lifecycle.builder().data(BuildpackData.builder().build()).type(LifecycleType.BUILDPACK).build())
+							.state(ApplicationState.STARTED)
 							.build();
 			
 				list.add(ar);
@@ -191,48 +201,72 @@ public class CFAccessorSimulator implements CFAccessor {
 		return Mono.just(response);
 	}
 
+	private RouteResource determineRoutesDataForApp(String appId) {
+		final String appNumber = appId.substring(APP_UUID_PREFIX.length());
+		
+		ToOneRelationship domain = ToOneRelationship.builder().data(Relationship.builder().id(SHARED_DOMAIN_UUID+appNumber).build()).build();
+		ToOneRelationship space = ToOneRelationship.builder().data(Relationship.builder().id(SPACE_UUID).build()).build();
+		RouteRelationships rels = RouteRelationships.builder().domain(domain).space(space).build();
+		RouteResource rr = RouteResource.builder()
+				.url(APP_HOST_PREFIX+appNumber+"."+SHARED_DOMAIN)
+				.relationships(rels)
+				.createdAt(CREATED_AT_TIMESTAMP)
+				.id(ROUTE_UUID_PREFIX+appNumber)
+				.host(APP_HOST_PREFIX+appNumber)
+				.path(APP_ROUTE_PATH)
+				.build();
+		return rr;
+	}
+	
 	@Override
 	public Mono<ListRoutesResponse> retrieveRoutesForAppId(String appId) {
-		/* TODO V3: Requires implementation? */
-		throw new UnsupportedOperationException();
+		if (appId.startsWith(APP_UUID_PREFIX)) {
+			RouteResource rr = determineRoutesDataForApp(appId);
+			ListRoutesResponse resp = ListRoutesResponse.builder().resource(rr).build();
+			return Mono.just(resp).delayElement(this.getSleepRandomDuration());
+		}
+		
+		log.error("Invalid retrieveRoutesForAppId request");
+		return null;
 	}
 
 	@Override
 	public Mono<ListRoutesResponse> retrieveRoutesForAppIds(Set<String> appIds) {
-		/*
-		 * 		if (spaceId.equals(SPACE_UUID)) {
-			List<SpaceApplicationSummary> list = new LinkedList<>();
-			
-			for (int i = 1;i<=100;i++) {
-				Domain sharedDomain = Domain.builder().id(SHARED_DOMAIN_UUID+i).name(SHARED_DOMAIN).build();
-				final String[] urls = { APP_HOST_PREFIX+i+"."+SHARED_DOMAIN }; 
-				final Route[] routes = { Route.builder().domain(sharedDomain).host(APP_HOST_PREFIX+i).build() };
-				SpaceApplicationSummary sas = SpaceApplicationSummary.builder()
-						.id(APP_UUID_PREFIX+i)
-						.name("testapp"+i)
-						.addAllUrls(Arrays.asList(urls))
-						.addAllRoutes(Arrays.asList(routes))
-						.instances(this.amountInstances)
-						.state("STARTED")
-						.build();
-				list.add(sas);
-			}
-			
-			GetSpaceSummaryResponse resp = GetSpaceSummaryResponse.builder().addAllApplications(list).build();
-			
-			return Mono.just(resp).delayElement(this.getSleepRandomDuration());
+		if (appIds == null) {
+			return null;
 		}
 		
-		log.error("Invalid retrieveSpaceSummary request");
-		return null;
-		 */
-		/* TODO V3: Requires implementation? */
-		throw new UnsupportedOperationException();
+		List<RouteResource> list = appIds.stream()
+				.map(appId -> this.determineRoutesDataForApp(appId))
+				.filter(e -> e != null)
+				.collect(Collectors.toList());
+		
+		ListRoutesResponse resp = ListRoutesResponse.builder().resources(list).build();
+		return Mono.just(resp).delayElement(this.getSleepRandomDuration());
 	}
 
 	@Override
 	public Mono<ListApplicationProcessesResponse> retrieveWebProcessesForApp(String applicationId) {
-		/* TODO V3: Requires implementation? */
-		throw new UnsupportedOperationException();
+		if (applicationId.startsWith(APP_UUID_PREFIX)) {
+			final String appNumber = applicationId.substring(APP_UUID_PREFIX.length());
+			final ProcessResource prWeb = ProcessResource.builder()
+					.instances(this.amountInstances)
+					.type("web")
+					.createdAt(CREATED_AT_TIMESTAMP)
+					.command("dummycommand")
+					.diskInMb(1024)
+					.healthCheck(HealthCheck.builder().type(HealthCheckType.HTTP).build())
+					.memoryInMb(1024)
+					.metadata(Metadata.builder().build())
+					.relationships(ProcessRelationships.builder().build())
+					.id(PROCESS_UUID_PREFIX + appNumber)
+					.build();
+			
+			ListApplicationProcessesResponse resp = ListApplicationProcessesResponse.builder().resource(prWeb).build();
+			return Mono.just(resp).delayElement(this.getSleepRandomDuration());
+		}
+		
+		log.error("Invalid retrieveWebProcessesForApp request");
+		return null;
 	}
 }

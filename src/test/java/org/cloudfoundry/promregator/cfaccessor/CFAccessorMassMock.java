@@ -18,6 +18,7 @@ import org.cloudfoundry.client.v3.LifecycleType;
 import org.cloudfoundry.client.v3.Metadata;
 import org.cloudfoundry.client.v3.ToOneRelationship;
 import org.cloudfoundry.client.v3.applications.ApplicationResource;
+import org.cloudfoundry.client.v3.applications.ApplicationState;
 import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v3.domains.DomainRelationships;
@@ -161,6 +162,7 @@ public class CFAccessorMassMock implements CFAccessor {
 							.id(UNITTEST_APP_UUID_PREFIX+i)
 							.metadata(Metadata.builder().build())
 							.lifecycle(Lifecycle.builder().data(BuildpackData.builder().build()).type(LifecycleType.BUILDPACK).build())
+							.state(ApplicationState.STARTED)
 							.build();
 			
 				list.add(ar);
