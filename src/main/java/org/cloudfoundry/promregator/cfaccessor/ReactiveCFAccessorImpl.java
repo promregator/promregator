@@ -3,6 +3,7 @@ package org.cloudfoundry.promregator.cfaccessor;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Duration;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
@@ -19,6 +20,8 @@ import org.cloudfoundry.client.v3.applications.ListApplicationProcessesResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
+import org.cloudfoundry.client.v3.routes.ListRoutesRequest;
+import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
 import org.cloudfoundry.client.v3.spaces.GetSpaceRequest;
 import org.cloudfoundry.client.v3.spaces.GetSpaceResponse;
 import org.cloudfoundry.promregator.cfaccessor.client.ReactorInfoV3;
@@ -43,6 +46,8 @@ import reactor.core.publisher.Mono;
 
 public class ReactiveCFAccessorImpl implements CFAccessor {
 
+	private static final int MAXIMAL_NUMBER_OF_ROUTES_PER_CAPI_REQUEST = 5000;
+	
 	private static final Logger log = LoggerFactory.getLogger(ReactiveCFAccessorImpl.class);
 	public static final ListApplicationsResponse INVALID_APPLICATIONS_RESPONSE = ListApplicationsResponse.builder().build();
 	
@@ -383,9 +388,28 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 
 	@Override
 	public Mono<ListApplicationRoutesResponse> retrieveRoutesForAppId(String appId) {
+		// not necessary to be implemented, because Caffeine cache converts it into retrieveRoutesForAppIds() requests
 		throw new UnsupportedOperationException();
 	}
 	
+	@Override
+	public Mono<ListRoutesResponse> retrieveRoutesForAppIds(Set<String> appIds) {
+		PaginatedRequestGeneratorFunctionV3<ListRoutesRequest> requestGenerator = (resultsPerPage, pageNumber) ->
+			ListRoutesRequest.builder()
+				.addAllApplicationIds(appIds)
+				.perPage(MAXIMAL_NUMBER_OF_ROUTES_PER_CAPI_REQUEST)
+				.build();
+		
+		PaginatedResponseGeneratorFunctionV3<org.cloudfoundry.client.v3.routes.RouteResource, ListRoutesResponse> responseGenerator = (list, numberOfPages) -> 
+			ListRoutesResponse.builder()
+				.addAllResources(list)
+				.pagination(Pagination.builder().totalPages(numberOfPages).totalResults(list.size()).build())
+				.build();
+		
+		return this.paginatedRequestFetcher.performGenericPagedRetrievalV3(RequestType.ROUTES, appIds, requestGenerator, 
+				r -> this.cloudFoundryClient.routesV3().list(r), 1000 /* TODO V3: Create new request timeout config */, 
+				responseGenerator);
+	}
 	
 	@Override
 	public Mono<ListApplicationProcessesResponse> retrieveWebProcessesForApp(String applicationId) {
@@ -406,4 +430,5 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 				responseGenerator);
 		
 	}
+
 }

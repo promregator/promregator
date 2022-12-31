@@ -107,7 +107,7 @@ class ReactiveCFPaginatedRequestFetcher {
 	 * The effort of implementing a key to lock-object mapping (as alternative) is expected to be rather high
 	 * and would imply the risk of memory leaks.
 	 */
-	public <P, R> Mono<P> performGenericRetrieval(RequestType requestType, String key, R requestData,
+	public <P, R, K> Mono<P> performGenericRetrieval(RequestType requestType, K key, R requestData,
 												  Function<R, Mono<P>> requestFunction, int timeoutInMS) {
 		final String retrievalTypeName = requestType.getMetricName();
 		final String logName = requestType.getLoggerSuffix();
@@ -167,7 +167,7 @@ class ReactiveCFPaginatedRequestFetcher {
 						.doOnError(throwable -> {
 							Throwable unwrappedThrowable = Exceptions.unwrap(throwable);
 							if (unwrappedThrowable instanceof TimeoutException) {
-								 log.error(String.format("Async retrieval of %s with key %s caused a timeout after %dms even though we tried three times", logName, key, timeoutInMS));
+								log.error(String.format("Async retrieval of %s with key %s caused a timeout after %dms even though we tried three times", logName, key.toString(), timeoutInMS));
 							} else if (unwrappedThrowable instanceof OutOfMemoryError){
 								// This may be an direct memory or a heap error!
 								// Using String.format and/or log.error here is a bad idea - it takes memory!
@@ -178,7 +178,7 @@ class ReactiveCFPaginatedRequestFetcher {
 								}
 
 							} else {
-								log.error(String.format("Async retrieval of %s with key %s raised a reactor error", logName, key), unwrappedThrowable);
+								log.error(String.format("Async retrieval of %s with key %s raised a reactor error", logName, key.toString()), unwrappedThrowable);
 							}
 						})
 						// stop the timer
@@ -275,7 +275,8 @@ class ReactiveCFPaginatedRequestFetcher {
 	 * @param requestType
 	 * 	the type information of the request which is being made
 	 * @param key
-	 * 	the key for which the request is being made (e.g. orgId, orgId|spaceName, ...)
+	 * 	the key for which the request is being made (e.g. orgId, orgId|spaceName, set of Ids ...)
+	 * 	Warning! The object must be string-serializable (for logging purpose)!
 	 * @param requestGenerator
 	 * 	a request generator function, which permits creating request objects instance for a given set of page parameters (e.g. for which page, using
 	 * 	which page size, ...)
@@ -288,8 +289,8 @@ class ReactiveCFPaginatedRequestFetcher {
 	 *
 	 * @return a Mono on the response provided by the CF Cloud Controller
 	 */
-	public <S, P extends org.cloudfoundry.client.v3.PaginatedResponse<?>, R extends org.cloudfoundry.client.v3.PaginatedRequest> Mono<P> performGenericPagedRetrievalV3(
-		RequestType requestType, String key, PaginatedRequestGeneratorFunctionV3<R> requestGenerator,
+	public <S, P extends org.cloudfoundry.client.v3.PaginatedResponse<?>, R extends org.cloudfoundry.client.v3.PaginatedRequest, K> Mono<P> performGenericPagedRetrievalV3(
+		RequestType requestType, K key, PaginatedRequestGeneratorFunctionV3<R> requestGenerator,
 		Function<R, Mono<P>> requestFunction, int timeoutInMS,
 		PaginatedResponseGeneratorFunctionV3<S, P> responseGenerator) {
 
