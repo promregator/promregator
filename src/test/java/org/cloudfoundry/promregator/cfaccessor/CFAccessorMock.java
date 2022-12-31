@@ -23,7 +23,6 @@ import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v3.domains.DomainRelationships;
 import org.cloudfoundry.client.v3.domains.DomainResource;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
-import org.cloudfoundry.client.v3.spaces.GetSpaceResponse;
 import org.junit.jupiter.api.Assertions;
 
 import reactor.core.publisher.Mono;
@@ -278,14 +277,6 @@ public class CFAccessorMock implements CFAccessor {
 
 		Assertions.fail("Invalid process request");
 		return null;
-	}
-
-	@Override
-	public Mono<GetSpaceResponse> retrieveSpaceV3(String spaceId) {
-		// This API has drastically changed in v3 and does not support the same resources. This call for a space summary will probably
-		// take another call to list applications for a space, list routes for the apps, and list domains in the org
-		// Previously they were all grouped into this API
-		throw new UnsupportedOperationException();
 	}
 
 	@Override

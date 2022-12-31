@@ -23,7 +23,6 @@ import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v3.organizations.OrganizationResource;
 import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
-import org.cloudfoundry.client.v3.spaces.GetSpaceResponse;
 import org.cloudfoundry.client.v3.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v3.spaces.SpaceResource;
 import org.slf4j.Logger;
@@ -156,39 +155,6 @@ public class CFAccessorSimulator implements CFAccessor {
 	}
 
 	@Override
-	public Mono<GetSpaceResponse> retrieveSpaceV3(String spaceId) {
-		/*
-		 * 		if (spaceId.equals(SPACE_UUID)) {
-			List<SpaceApplicationSummary> list = new LinkedList<>();
-			
-			for (int i = 1;i<=100;i++) {
-				Domain sharedDomain = Domain.builder().id(SHARED_DOMAIN_UUID+i).name(SHARED_DOMAIN).build();
-				final String[] urls = { APP_HOST_PREFIX+i+"."+SHARED_DOMAIN }; 
-				final Route[] routes = { Route.builder().domain(sharedDomain).host(APP_HOST_PREFIX+i).build() };
-				SpaceApplicationSummary sas = SpaceApplicationSummary.builder()
-						.id(APP_UUID_PREFIX+i)
-						.name("testapp"+i)
-						.addAllUrls(Arrays.asList(urls))
-						.addAllRoutes(Arrays.asList(routes))
-						.instances(this.amountInstances)
-						.state("STARTED")
-						.build();
-				list.add(sas);
-			}
-			
-			GetSpaceSummaryResponse resp = GetSpaceSummaryResponse.builder().addAllApplications(list).build();
-			
-			return Mono.just(resp).delayElement(this.getSleepRandomDuration());
-		}
-		
-		log.error("Invalid retrieveSpaceSummary request");
-		return null;
-		 */
-		/* TODO V3: Requires implementation? */
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public Mono<ListOrganizationDomainsResponse> retrieveAllDomainsV3(String orgId) {
 		List<DomainResource> domains = new ArrayList<DomainResource>();
 
@@ -233,6 +199,33 @@ public class CFAccessorSimulator implements CFAccessor {
 
 	@Override
 	public Mono<ListRoutesResponse> retrieveRoutesForAppIds(Set<String> appIds) {
+		/*
+		 * 		if (spaceId.equals(SPACE_UUID)) {
+			List<SpaceApplicationSummary> list = new LinkedList<>();
+			
+			for (int i = 1;i<=100;i++) {
+				Domain sharedDomain = Domain.builder().id(SHARED_DOMAIN_UUID+i).name(SHARED_DOMAIN).build();
+				final String[] urls = { APP_HOST_PREFIX+i+"."+SHARED_DOMAIN }; 
+				final Route[] routes = { Route.builder().domain(sharedDomain).host(APP_HOST_PREFIX+i).build() };
+				SpaceApplicationSummary sas = SpaceApplicationSummary.builder()
+						.id(APP_UUID_PREFIX+i)
+						.name("testapp"+i)
+						.addAllUrls(Arrays.asList(urls))
+						.addAllRoutes(Arrays.asList(routes))
+						.instances(this.amountInstances)
+						.state("STARTED")
+						.build();
+				list.add(sas);
+			}
+			
+			GetSpaceSummaryResponse resp = GetSpaceSummaryResponse.builder().addAllApplications(list).build();
+			
+			return Mono.just(resp).delayElement(this.getSleepRandomDuration());
+		}
+		
+		log.error("Invalid retrieveSpaceSummary request");
+		return null;
+		 */
 		/* TODO V3: Requires implementation? */
 		throw new UnsupportedOperationException();
 	}

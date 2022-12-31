@@ -16,7 +16,6 @@ import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
-import org.cloudfoundry.client.v3.spaces.GetSpaceResponse;
 import org.cloudfoundry.client.v3.spaces.ListSpacesResponse;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.slf4j.Logger;
@@ -39,7 +38,6 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	private @NonNull AsyncLoadingCache<String, ListOrganizationsResponse> allOrgIdCache;
 	private @NonNull AsyncLoadingCache<CacheKeySpace, ListSpacesResponse> spaceCache;
 	private @NonNull AsyncLoadingCache<String, ListSpacesResponse> spaceIdInOrgCache;
-	private @NonNull AsyncLoadingCache<String, GetSpaceResponse> spaceIdCache;
 	private @NonNull AsyncLoadingCache<String, ListOrganizationDomainsResponse> domainsInOrgCache;
 	private @NonNull AsyncLoadingCache<CacheKeyAppsInSpace, ListApplicationsResponse> appsInSpaceCache;
 	private @NonNull AsyncLoadingCache<String, ListRoutesResponse> routesCache;
@@ -121,17 +119,6 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 		public @NonNull CompletableFuture<ListSpacesResponse> asyncLoad(@NonNull String key,
 				@NonNull Executor executor) {
 			Mono<ListSpacesResponse> mono = parent.retrieveSpaceIdsInOrgV3(key)
-					.subscribeOn(Schedulers.fromExecutor(executor))
-					.cache();
-			return mono.toFuture();
-		}
-	}
-	
-	private class SpaceIdCacheLoader implements AsyncCacheLoader<String, GetSpaceResponse> {
-		@Override
-		public @NonNull CompletableFuture<GetSpaceResponse> asyncLoad(@NonNull String key,
-				@NonNull Executor executor) {
-			Mono<GetSpaceResponse> mono = parent.retrieveSpaceV3(key)
 					.subscribeOn(Schedulers.fromExecutor(executor))
 					.cache();
 			return mono.toFuture();
@@ -224,14 +211,6 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 				.scheduler(caffeineScheduler)
 				.buildAsync(new SpaceIdInOrgCacheLoader());
 		this.internalMetrics.addCaffeineCache("spaceInOrgCache", this.spaceIdInOrgCache);
-		
-		this.spaceIdCache = Caffeine.newBuilder()
-				.expireAfterAccess(this.expiryCacheApplicationLevelInSeconds /* TODO V3: Check if this is still correct - documentation update! */, TimeUnit.SECONDS)
-				.refreshAfterWrite(this.refreshCacheApplicationLevelInSeconds /* TODO V3: Check if this is still correct - documentation update! */, TimeUnit.SECONDS)
-				.recordStats()
-				.scheduler(caffeineScheduler)
-				.buildAsync(new SpaceIdCacheLoader());
-		this.internalMetrics.addCaffeineCache("spaceSummary", this.spaceIdCache);
 
 		this.domainsInOrgCache = Caffeine.newBuilder()
 				.expireAfterAccess(this.expiryCacheDomainLevelInSeconds, TimeUnit.SECONDS)
@@ -303,11 +282,6 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	}
 
 	@Override
-	public Mono<GetSpaceResponse> retrieveSpaceV3(String spaceId) {
-		return Mono.fromFuture(this.spaceIdCache.get(spaceId));
-	}
-
-	@Override
 	public Mono<ListOrganizationDomainsResponse> retrieveAllDomainsV3(String orgId) {
 		return Mono.fromFuture(this.domainsInOrgCache.get(orgId));
 	}
@@ -338,7 +312,6 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	public void invalidateCacheApplications() {
 		log.info("Invalidating application cache");
 		
-		this.spaceIdCache.synchronous().invalidateAll();
 		this.spaceCache.synchronous().invalidateAll();
 		this.appsInSpaceCache.synchronous().invalidateAll();
 		/* TODO V3: Check what needs to be invalidated here on top! */

@@ -174,11 +174,6 @@ public class CFAccessorMassMock implements CFAccessor {
 	}
 
 	@Override
-	public Mono<GetSpaceResponse> retrieveSpaceV3(String spaceId) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public Mono<ListOrganizationDomainsResponse> retrieveAllDomainsV3(String orgId) {
 		List<DomainResource> domains = new ArrayList<DomainResource>();
 

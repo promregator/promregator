@@ -19,8 +19,6 @@ import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v3.routes.ListRoutesRequest;
 import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
-import org.cloudfoundry.client.v3.spaces.GetSpaceRequest;
-import org.cloudfoundry.client.v3.spaces.GetSpaceResponse;
 import org.cloudfoundry.promregator.cfaccessor.client.ReactorInfoV3;
 import org.cloudfoundry.promregator.config.ConfigurationException;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
@@ -349,14 +347,6 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 
 		return this.paginatedRequestFetcher.performGenericPagedRetrievalV3(RequestType.ALL_APPS_IN_SPACE, key, requestGenerator,
 				r -> this.cloudFoundryClient.applicationsV3().list(r), this.requestTimeoutAppInSpace, responseGenerator);
-	}
-
-	@Override
-	public Mono<GetSpaceResponse> retrieveSpaceV3(String spaceId) {
-		GetSpaceRequest request = GetSpaceRequest.builder().spaceId(spaceId).build();
-
-		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.SPACE_SUMMARY /* TODO V3: This needs to be streamlined / canonified - adjustment of documentation required */, spaceId,
-				request, r -> this.cloudFoundryClient.spacesV3().get(r), this.requestTimeoutAppSummary);
 	}
 
 	@Override

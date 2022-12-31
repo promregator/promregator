@@ -147,16 +147,6 @@ class CFAccessorCacheCaffeineTest {
 	}
 
 	@Test
-	void testRetrieveSpaceSummaryV3() {
-		Mono<GetSpaceResponse> response1 = subject.retrieveSpaceV3("dummy");
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveSpaceV3("dummy");
-
-		Mono<GetSpaceResponse> response2 = subject.retrieveSpaceV3("dummy");
-		assertThat(response1.block()).isEqualTo(response2.block());
-		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveSpaceV3("dummy");
-	}
-
-	@Test
 	void testRetrieveDomainV3() {
 		Mono<ListOrganizationDomainsResponse> response1 = subject.retrieveAllDomainsV3("dummy");
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllDomainsV3("dummy");

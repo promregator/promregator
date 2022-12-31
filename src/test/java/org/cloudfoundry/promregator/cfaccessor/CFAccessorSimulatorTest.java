@@ -127,11 +127,7 @@ class CFAccessorSimulatorTest {
 		Assertions.assertNotNull(result);
 		Assertions.assertNotNull(result.getResources());
 		Assertions.assertEquals(1, result.getResources().size());
-		Assertions.assertEquals(CFAccessorSimulator.SPACE_UUID, result.getResources().get(0).getId());	}
-
-	@Test
-	void testRetrieveSpaceV3() {
-		CFAccessorSimulator subject = new CFAccessorSimulator(2);
-		Assertions.assertThrows(UnsupportedOperationException.class, () -> subject.retrieveSpaceV3("simspace"));
+		Assertions.assertEquals(CFAccessorSimulator.SPACE_UUID, result.getResources().get(0).getId());
 	}
+
 }
