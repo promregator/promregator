@@ -40,10 +40,11 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	private @NonNull AsyncLoadingCache<String, ListOrganizationsResponse> allOrgIdCache;
 	private @NonNull AsyncLoadingCache<CacheKeySpace, ListSpacesResponse> spaceCache;
 	private @NonNull AsyncLoadingCache<String, ListSpacesResponse> spaceIdInOrgCache;
-	private AsyncLoadingCache<String, GetSpaceSummaryResponse> spaceSummaryCache;
+	private @NonNull AsyncLoadingCache<String, GetSpaceResponse> spaceIdCache;
 	private @NonNull AsyncLoadingCache<String, ListOrganizationDomainsResponse> domainsInOrgCache;
 	private @NonNull AsyncLoadingCache<CacheKeyAppsInSpace, ListApplicationsResponse> appsInSpaceCache;
 	private @NonNull AsyncLoadingCache<String, ListRoutesResponse> routesCache;
+	private @NonNull AsyncLoadingCache<String, ListApplicationProcessesResponse> webProcessCache;
 	
 	@Value("${cf.cache.timeout.org:3600}")
 	private int refreshCacheOrgLevelInSeconds;
@@ -127,11 +128,11 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 		}
 	}
 	
-	private class SpaceSummaryCacheLoader implements AsyncCacheLoader<String, GetSpaceSummaryResponse> {
+	private class SpaceIdCacheLoader implements AsyncCacheLoader<String, GetSpaceResponse> {
 		@Override
-		public @NonNull CompletableFuture<GetSpaceSummaryResponse> asyncLoad(@NonNull String key,
+		public @NonNull CompletableFuture<GetSpaceResponse> asyncLoad(@NonNull String key,
 				@NonNull Executor executor) {
-			Mono<GetSpaceSummaryResponse> mono = parent.retrieveSpaceSummary(key)
+			Mono<GetSpaceResponse> mono = parent.retrieveSpaceV3(key)
 					.subscribeOn(Schedulers.fromExecutor(executor))
 					.cache();
 			return mono.toFuture();
@@ -165,6 +166,18 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 		public @NonNull CompletableFuture<ListRoutesResponse> asyncLoad(@NonNull String key,
 				@NonNull Executor executor) {
 			Mono<ListRoutesResponse> mono = parent.retrieveRoutesForAppIds(Collections.singleton(key))
+				.subscribeOn(Schedulers.fromExecutor(executor))
+				.cache();
+			
+			return mono.toFuture();
+		}
+	}
+	
+	private class WebProcessCacheLoader implements AsyncCacheLoader<String, ListApplicationProcessesResponse> {
+		@Override
+		public @NonNull CompletableFuture<ListApplicationProcessesResponse> asyncLoad(@NonNull String key,
+				@NonNull Executor executor) {
+			Mono<ListApplicationProcessesResponse> mono = parent.retrieveWebProcessesForApp(key)
 				.subscribeOn(Schedulers.fromExecutor(executor))
 				.cache();
 			
@@ -213,13 +226,13 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 				.buildAsync(new SpaceIdInOrgCacheLoader());
 		this.internalMetrics.addCaffeineCache("spaceInOrgCache", this.spaceIdInOrgCache);
 		
-		this.spaceSummaryCache = Caffeine.newBuilder()
-				.expireAfterAccess(this.expiryCacheApplicationLevelInSeconds, TimeUnit.SECONDS)
-				.refreshAfterWrite(this.refreshCacheApplicationLevelInSeconds, TimeUnit.SECONDS)
+		this.spaceIdCache = Caffeine.newBuilder()
+				.expireAfterAccess(this.expiryCacheApplicationLevelInSeconds /* TODO V3: Check if this is still correct - documentation update! */, TimeUnit.SECONDS)
+				.refreshAfterWrite(this.refreshCacheApplicationLevelInSeconds /* TODO V3: Check if this is still correct - documentation update! */, TimeUnit.SECONDS)
 				.recordStats()
 				.scheduler(caffeineScheduler)
-				.buildAsync(new SpaceSummaryCacheLoader());
-		this.internalMetrics.addCaffeineCache("spaceSummary", this.spaceSummaryCache);
+				.buildAsync(new SpaceIdCacheLoader());
+		this.internalMetrics.addCaffeineCache("spaceSummary", this.spaceIdCache);
 
 		this.domainsInOrgCache = Caffeine.newBuilder()
 				.expireAfterAccess(this.expiryCacheDomainLevelInSeconds, TimeUnit.SECONDS)
@@ -245,16 +258,20 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 				.buildAsync(new RoutesCacheLoader());
 		this.internalMetrics.addCaffeineCache("routes", this.routesCache);
 
+		this.webProcessCache = Caffeine.newBuilder()
+//				TODO V3: Proper configuration options .expireAfterAccess(this.expiryCacheDomainLevelInSeconds, TimeUnit.SECONDS)
+//				TODO V3: Proper configuration options .refreshAfterWrite(this.refreshCacheDomainLevelInSeconds, TimeUnit.SECONDS)
+				.recordStats()
+				.scheduler(caffeineScheduler)
+				.buildAsync(new WebProcessCacheLoader());
+		this.internalMetrics.addCaffeineCache("webprocess", this.webProcessCache);
+
+		
 	}
 
 	@Override
 	public Mono<GetInfoResponse> getInfo() {
 		return this.parent.getInfo();
-	}
-
-	@Override
-	public Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId) {
-		return Mono.fromFuture(this.spaceSummaryCache.get(spaceId));
 	}
 
 	@Override
@@ -288,8 +305,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 
 	@Override
 	public Mono<GetSpaceResponse> retrieveSpaceV3(String spaceId) {
-		// TODO V3: Implement cache
-		return this.parent.retrieveSpaceV3(spaceId);
+		return Mono.fromFuture(this.spaceIdCache.get(spaceId));
 	}
 
 	@Override
@@ -299,8 +315,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 
 	@Override
 	public Mono<ListApplicationProcessesResponse> retrieveWebProcessesForApp(String applicationId) {
-		// TODO V3: Implement cache
-		throw new UnsupportedOperationException();
+		return Mono.fromFuture(this.webProcessCache.get(applicationId));
 	}
 	
 	@Override
@@ -324,8 +339,10 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	public void invalidateCacheApplications() {
 		log.info("Invalidating application cache");
 		
-		this.spaceSummaryCache.synchronous().invalidateAll();
+		this.spaceIdCache.synchronous().invalidateAll();
+		this.spaceCache.synchronous().invalidateAll();
 		this.appsInSpaceCache.synchronous().invalidateAll();
+		/* TODO V3: Check what needs to be invalidated here on top! */
 	}
 
 	@Override
@@ -333,6 +350,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 		log.info("Invalidating space cache");
 		this.spaceCache.synchronous().invalidateAll();
 		this.spaceIdInOrgCache.synchronous().invalidateAll();
+		/* TODO V3: Check what needs to be invalidated here on top! */
 	}
 
 	@Override
@@ -340,12 +358,14 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 		log.info("Invalidating org cache");
 		this.orgCache.synchronous().invalidateAll();
 		this.allOrgIdCache.synchronous().invalidateAll();
+		/* TODO V3: Check what needs to be invalidated here on top! */
 	}
 
 	@Override
 	public void invalidateCacheDomain() {
 		log.info("Invalidating domain cache");
 		this.domainsInOrgCache.synchronous().invalidateAll();
+		/* TODO V3: Check what needs to be invalidated here on top! */
 	}
 
 	@Override

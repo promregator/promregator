@@ -3,7 +3,6 @@ package org.cloudfoundry.promregator.cfaccessor;
 import java.util.Set;
 
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
-import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationProcessesResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
@@ -17,8 +16,6 @@ import reactor.core.publisher.Mono;
 public interface CFAccessor {
 	Mono<GetInfoResponse> getInfo();
 	
-	Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId);	
-
 	Mono<GetSpaceResponse> retrieveSpaceV3(String spaceId);
 
 	Mono<ListOrganizationsResponse> retrieveOrgIdV3(String orgName);

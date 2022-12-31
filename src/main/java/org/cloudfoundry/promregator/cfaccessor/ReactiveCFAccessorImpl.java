@@ -11,8 +11,6 @@ import javax.annotation.PostConstruct;
 import org.apache.http.conn.util.InetAddressUtils;
 import org.cloudfoundry.client.v2.info.GetInfoRequest;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
-import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryRequest;
-import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
 import org.cloudfoundry.client.v3.Pagination;
 import org.cloudfoundry.client.v3.applications.ApplicationResource;
 import org.cloudfoundry.client.v3.applications.ListApplicationProcessesRequest;
@@ -269,16 +267,6 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	public Mono<GetInfoResponse> getInfo() {
 		return this.cloudFoundryClient.info().get(DUMMY_GET_INFO_REQUEST);
 	}
-	
-	@Override
-	public Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId) {
-		// Note that GetSpaceSummaryRequest is not paginated
-		
-		GetSpaceSummaryRequest request = GetSpaceSummaryRequest.builder().spaceId(spaceId).build();
-		
-		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.SPACE_SUMMARY, spaceId, 
-				request, r -> this.cloudFoundryClient.spaces().getSummary(r), this.requestTimeoutAppSummary);
-	}
 
 	@Override
 	public Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> retrieveOrgIdV3(String orgName) {
@@ -365,13 +353,9 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 
 	@Override
 	public Mono<GetSpaceResponse> retrieveSpaceV3(String spaceId) {
-		// This API has drastically changed in v3 and does not support the same resources. This call for a space summary will probably
-		// take another call to list applications for a space, list routes for the apps, and list domains in the org
-		// Previously they were all grouped into this API
-
 		GetSpaceRequest request = GetSpaceRequest.builder().spaceId(spaceId).build();
 
-		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.SPACE_SUMMARY, spaceId,
+		return this.paginatedRequestFetcher.performGenericRetrieval(RequestType.SPACE_SUMMARY /* TODO V3: This needs to be streamlined / canonified - adjustment of documentation required */, spaceId,
 				request, r -> this.cloudFoundryClient.spacesV3().get(r), this.requestTimeoutAppSummary);
 	}
 
