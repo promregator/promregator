@@ -1,22 +1,21 @@
 package org.cloudfoundry.promregator.scanner;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
 import org.apache.logging.log4j.util.Strings;
-import org.cloudfoundry.client.v2.routes.Route;
-import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.cloudfoundry.client.v3.applications.ListApplicationProcessesResponse;
 import org.cloudfoundry.client.v3.domains.DomainResource;
 import org.cloudfoundry.client.v3.processes.ProcessResource;
+import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
+import org.cloudfoundry.client.v3.routes.RouteResource;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,21 +31,9 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	private static final Logger log = LoggerFactory.getLogger(ReactiveAppInstanceScanner.class);
 	private static final String INVALID_ORG_ID = "***invalid***";
 	private static final String INVALID_SPACE_ID = "***invalid***";
-	private static final Map<String, SpaceApplicationSummary> INVALID_SUMMARY = new HashMap<>();
 
 	@Value("${promregator.defaultInternalRoutePort:8080}")
 	private int defaultInternalRoutePort;
-
-	/*
-	 * see also https://github.com/promregator/promregator/issues/76 This is the
-	 * locale, which we use to convert both "what we get from CF" and "the stuff,
-	 * which we get from the configuration" into lower case before we try to match
-	 * them.
-	 * 
-	 * Note that this might be wrong, if someone might have an app(/org/space) name
-	 * in Turkish and expects a Turkish case conversion.
-	 */
-	private static final Locale LOCALE_OF_LOWER_CASE_CONVERSION_FOR_IDENTIFIER_COMPARISON = Locale.ENGLISH;
 
 	/**
 	 * OSA stands for Org-Space-Application
@@ -224,13 +211,11 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		 * This implies that we need to retrieve data on application level :-(
 		 * Instead, the instance count can be found at the Processes endpoint.
 		 * The ApplicationURL is buried in the Routes.
-		 * Fortunately, we can retrieve this information in parallel.
 		 */
 		
-		// TODO V3: Refactor to make use of ListRoutes endpoint (mass-enabled).
-		Flux<ListApplicationProcessesResponse> webProcessForAppFlux = initialOSAVectorFlux.flatMap(rt -> this.cfAccessor.retrieveWebProcessesForApp(rt.getTarget().getApplicationId()));
+		Flux<ListApplicationProcessesResponse> webProcessForAppFlux = osaVectorSpaceFlux.flatMap(rt -> this.cfAccessor.retrieveWebProcessesForApp(rt.getTarget().getApplicationId()));
 		
-		Flux<OSAVector> numberInstancesOSAVectorFlux = Flux.zip(initialOSAVectorFlux, webProcessForAppFlux).flatMap(tuple -> {
+		Flux<OSAVector> numberInstancesOSAVectorFlux = Flux.zip(osaVectorSpaceFlux, webProcessForAppFlux).flatMap(tuple -> {
 			final OSAVector osaVector = tuple.getT1();
 			final ResolvedTarget rt = osaVector.getTarget();
 			final ListApplicationProcessesResponse lapr = tuple.getT2();
@@ -252,69 +237,42 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			return Mono.just(osaVector);
 		});
 		
-		
-		
-		/*
-		 * We need to retrieve the app's routes.
-		 * Sending a request for each app to the CFCC would be devastating in terms
-		 * of performance.
-		 * We already know the applicationId; we don't need to retrieve the
-		 * base information of the app. Yet, there is only a single-retrieve
-		 * endpoint available in the CFCC for getting routes for an app.
-		 * TODO V3 Unfinished here!
-		 */
-		
-		Flux<Map<String, SpaceApplicationSummary>> spaceSummaryFlux = osaVectorSpaceFlux
-				.flatMapSequential(v -> this.getSpaceSummary(v.getSpaceId()));
-		Flux<OSAVector> osaVectorApplicationFlux = Flux.zip(osaVectorSpaceFlux, spaceSummaryFlux).flatMap(tuple -> {
-			OSAVector v = tuple.getT1();
-
-			if (INVALID_SUMMARY == tuple.getT2()) {
-				// NB: This drops the current target!
+		Flux<ListRoutesResponse> routesForAppFlux = numberInstancesOSAVectorFlux.flatMap(rt -> this.cfAccessor.retrieveRoutesForAppId(rt.getTarget().getApplicationId()));
+		Flux<OSAVector> urlDomainOSAVectorFlux = Flux.zip(numberInstancesOSAVectorFlux, routesForAppFlux).flatMap(tuple -> {
+			final OSAVector osaVector = tuple.getT1();
+			final ListRoutesResponse lrp = tuple.getT2();
+			
+			final List<RouteResource> list = lrp.getResources();
+			if (list == null || list.isEmpty()) {
+				// no route defined; the target cannot be reached anyway
 				return Mono.empty();
-			}
-
-			Map<String, SpaceApplicationSummary> spaceSummaryMap = tuple.getT2();
-			SpaceApplicationSummary sas = spaceSummaryMap.get(v.getTarget().getApplicationName()
-					.toLowerCase(LOCALE_OF_LOWER_CASE_CONVERSION_FOR_IDENTIFIER_COMPARISON));
-			/*
-			 * Due to https://github.com/cloudfoundry/cloud_controller_ng/issues/1523, we
-			 * cannot rely on sas.getId() (i.e. it may contain wrong information)
-			 */
-
-			if (sas == null) {
-				// NB: This drops the current target!
-				return Mono.empty();
-			}
-
-			List<String> urls = sas.getUrls();
-			if (urls != null && !urls.isEmpty()) {
-				// Set the access url to the selected route (without any protocol or path yet)
-				v.setAccessURL(this.determineApplicationRoute(urls,
-						v.getTarget().getOriginalTarget().getPreferredRouteRegexPatterns()));
-			} else {
-				// if there is no url, skip this one
-				return Mono.empty();
-			}
-
-			// In the interest of backwards compatibility lest do this inside a try.
-			// There is little reason why this should not find the correct domain
-			try {
-				Route route = sas.getRoutes().stream().filter(rt -> v.getAccessURL().startsWith(rt.getHost()+"."+rt.getDomain().getName())).findFirst().get();
-				v.setDomainId(route.getDomain().getId());
-			} catch (Exception e) {
-				log.warn(String.format("unable to find matching domain for the url %s", v.getAccessURL()));
 			}
 			
-			v.setNumberOfInstances(sas.getInstances());
-
-			return Mono.just(v);
+			final List<String> urls = list.stream().map(e -> e.getUrl()).collect(Collectors.toList());
+			@NonNull
+			final List<Pattern> preferredRouteRegexPatterns = osaVector.getTarget().getOriginalTarget().getPreferredRouteRegexPatterns();
+			final String url = this.determineApplicationRoute(urls, preferredRouteRegexPatterns);
+			
+			if (url == null) {
+				// no suitable route found
+				return Mono.empty();
+			}
+			
+			osaVector.setAccessURL(url);
+			
+			// determine domain
+			final RouteResource selectedRouteResource = list.stream().filter(e -> e.getUrl().equals(url)).findFirst().get();
+			final String domainId = selectedRouteResource.getRelationships().getDomain().getData().getId();
+			osaVector.setDomainId(domainId);
+			
+			return Mono.just(osaVector);
 		});
+		
 
-		Flux<List<DomainResource>> domainFlux = osaVectorApplicationFlux.flatMapSequential(v -> {
+		Flux<List<DomainResource>> domainFlux = urlDomainOSAVectorFlux.flatMapSequential(v -> {
 			return this.cfAccessor.retrieveAllDomainsV3(v.getOrgId()).map(mapper -> mapper.getResources());
 		});
-		Flux<OSAVector> osaVectorDomainApplicationFlux = Flux.zip(osaVectorApplicationFlux, domainFlux).flatMap(tuple -> {
+		Flux<OSAVector> osaVectorDomainApplicationFlux = Flux.zip(urlDomainOSAVectorFlux, domainFlux).flatMap(tuple -> {
 			OSAVector v = tuple.getT1();
 			List<DomainResource> domains = tuple.getT2();
 
@@ -328,7 +286,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			}
 			// we should only run this if we found a domain in the above step
 			// this is to make sure we have compatibility with existing behaviour
-			else if( !v.getDomainId().isEmpty()) {
+			else if (!v.getDomainId().isEmpty()) {
 				try {
 					DomainResource domain = domains.stream()
 							.filter(r -> r.getId().equals(v.getDomainId()))
@@ -357,16 +315,13 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				Instance inst = new Instance(v.getTarget(), String.format("%s:%d", v.getApplicationId(), i),
 						v.getAccessURL(), v.isInternal());
 
-				if(useOverrideRouteAndPath(v)) {
-					inst.setAccessUrl(this.formatAccessURL(v.getTarget().getProtocol(), v.getTarget().getOriginalTarget().getOverrideRouteAndPath(),
-							v.getTarget().getPath()));
+				if (useOverrideRouteAndPath(v)) {
+					inst.setAccessUrl(this.formatAccessURL(v.getTarget().getProtocol(), v.getTarget().getOriginalTarget().getOverrideRouteAndPath(), v.getTarget().getPath()));
 				}
 				else if (v.isInternal()) {
-					inst.setAccessUrl(this.formatInternalAccessURL(v.getAccessURL(), v.getTarget().getPath(),
-							v.getInternalRoutePort(), i));
+					inst.setAccessUrl(this.formatInternalAccessURL(v.getAccessURL(), v.getTarget().getPath(), v.getInternalRoutePort(), i));
 				} else {
-					inst.setAccessUrl(this.formatAccessURL(v.getTarget().getProtocol(), v.getAccessURL(),
-							v.getTarget().getPath()));
+					inst.setAccessUrl(this.formatAccessURL(v.getTarget().getProtocol(), v.getAccessURL(), v.getTarget().getPath()));
 				}
 
 				instances.add(inst);
@@ -440,25 +395,6 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			return Mono.just(INVALID_SPACE_ID);
 		}).cache();
 
-	}
-
-	private Mono<Map<String, SpaceApplicationSummary>> getSpaceSummary(String spaceIdString) {
-		return this.cfAccessor.retrieveSpaceSummary(spaceIdString).flatMap(response -> {
-			List<SpaceApplicationSummary> applications = response.getApplications();
-			if (applications == null) {
-				return Mono.just(INVALID_SUMMARY);
-			}
-
-			Map<String, SpaceApplicationSummary> map = new HashMap<>(applications.size());
-			for (SpaceApplicationSummary sas : applications) {
-				map.put(sas.getName().toLowerCase(LOCALE_OF_LOWER_CASE_CONVERSION_FOR_IDENTIFIER_COMPARISON), sas);
-			}
-
-			return Mono.just(map);
-		}).onErrorResume(e -> {
-			log.error(String.format("retrieving summary for space id '%s' resulted in an exception", spaceIdString), e);
-			return Mono.just(INVALID_SUMMARY);
-		});
 	}
 
 	private String formatAccessURL(final String protocol, final String hostnameDomain, final String path) {

@@ -2,16 +2,12 @@ package org.cloudfoundry.promregator.cfaccessor;
 
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
-import org.cloudfoundry.client.v2.domains.Domain;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
-import org.cloudfoundry.client.v2.routes.Route;
-import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
-import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v3.BuildpackData;
 import org.cloudfoundry.client.v3.Lifecycle;
 import org.cloudfoundry.client.v3.LifecycleType;
@@ -19,13 +15,14 @@ import org.cloudfoundry.client.v3.Metadata;
 import org.cloudfoundry.client.v3.ToOneRelationship;
 import org.cloudfoundry.client.v3.applications.ApplicationResource;
 import org.cloudfoundry.client.v3.applications.ApplicationState;
-import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
+import org.cloudfoundry.client.v3.applications.ListApplicationProcessesResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v3.domains.DomainRelationships;
 import org.cloudfoundry.client.v3.domains.DomainResource;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v3.organizations.OrganizationResource;
+import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
 import org.cloudfoundry.client.v3.spaces.GetSpaceResponse;
 import org.cloudfoundry.client.v3.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v3.spaces.SpaceResource;
@@ -63,36 +60,6 @@ public class CFAccessorSimulator implements CFAccessor {
 	private Duration getSleepRandomDuration() {
 		return Duration.ofMillis(this.randomGen.nextInt(250));
 	}
-
-
-	@Override
-	public Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId) {
-		if (spaceId.equals(SPACE_UUID)) {
-			List<SpaceApplicationSummary> list = new LinkedList<>();
-			
-			for (int i = 1;i<=100;i++) {
-				Domain sharedDomain = Domain.builder().id(SHARED_DOMAIN_UUID+i).name(SHARED_DOMAIN).build();
-				final String[] urls = { APP_HOST_PREFIX+i+"."+SHARED_DOMAIN }; 
-				final Route[] routes = { Route.builder().domain(sharedDomain).host(APP_HOST_PREFIX+i).build() };
-				SpaceApplicationSummary sas = SpaceApplicationSummary.builder()
-						.id(APP_UUID_PREFIX+i)
-						.name("testapp"+i)
-						.addAllUrls(Arrays.asList(urls))
-						.addAllRoutes(Arrays.asList(routes))
-						.instances(this.amountInstances)
-						.state("STARTED")
-						.build();
-				list.add(sas);
-			}
-			
-			GetSpaceSummaryResponse resp = GetSpaceSummaryResponse.builder().addAllApplications(list).build();
-			
-			return Mono.just(resp).delayElement(this.getSleepRandomDuration());
-		}
-		
-		log.error("Invalid retrieveSpaceSummary request");
-		return null;
-  }
 
 	@Override
 	public Mono<GetInfoResponse> getInfo() {
@@ -190,6 +157,34 @@ public class CFAccessorSimulator implements CFAccessor {
 
 	@Override
 	public Mono<GetSpaceResponse> retrieveSpaceV3(String spaceId) {
+		/*
+		 * 		if (spaceId.equals(SPACE_UUID)) {
+			List<SpaceApplicationSummary> list = new LinkedList<>();
+			
+			for (int i = 1;i<=100;i++) {
+				Domain sharedDomain = Domain.builder().id(SHARED_DOMAIN_UUID+i).name(SHARED_DOMAIN).build();
+				final String[] urls = { APP_HOST_PREFIX+i+"."+SHARED_DOMAIN }; 
+				final Route[] routes = { Route.builder().domain(sharedDomain).host(APP_HOST_PREFIX+i).build() };
+				SpaceApplicationSummary sas = SpaceApplicationSummary.builder()
+						.id(APP_UUID_PREFIX+i)
+						.name("testapp"+i)
+						.addAllUrls(Arrays.asList(urls))
+						.addAllRoutes(Arrays.asList(routes))
+						.instances(this.amountInstances)
+						.state("STARTED")
+						.build();
+				list.add(sas);
+			}
+			
+			GetSpaceSummaryResponse resp = GetSpaceSummaryResponse.builder().addAllApplications(list).build();
+			
+			return Mono.just(resp).delayElement(this.getSleepRandomDuration());
+		}
+		
+		log.error("Invalid retrieveSpaceSummary request");
+		return null;
+		 */
+		/* TODO V3: Requires implementation? */
 		throw new UnsupportedOperationException();
 	}
 
@@ -231,7 +226,20 @@ public class CFAccessorSimulator implements CFAccessor {
 	}
 
 	@Override
-	public Mono<ListApplicationRoutesResponse> retrieveRoutesForAppId(String appId) {
+	public Mono<ListRoutesResponse> retrieveRoutesForAppId(String appId) {
+		/* TODO V3: Requires implementation? */
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Mono<ListRoutesResponse> retrieveRoutesForAppIds(Set<String> appIds) {
+		/* TODO V3: Requires implementation? */
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Mono<ListApplicationProcessesResponse> retrieveWebProcessesForApp(String applicationId) {
+		/* TODO V3: Requires implementation? */
 		throw new UnsupportedOperationException();
 	}
 }
