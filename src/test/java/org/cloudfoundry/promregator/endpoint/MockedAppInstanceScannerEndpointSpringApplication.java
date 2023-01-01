@@ -42,7 +42,7 @@ import io.prometheus.client.CollectorRegistry;
 @TestPropertySource(locations="../default.properties")
 public class MockedAppInstanceScannerEndpointSpringApplication {
 	
-	public class MockedCFAccessorCache extends CFAccessorCacheCaffeine {
+	public static class MockedCFAccessorCache extends CFAccessorCacheCaffeine {
 		public MockedCFAccessorCache() {
 			super(null);
 		}
