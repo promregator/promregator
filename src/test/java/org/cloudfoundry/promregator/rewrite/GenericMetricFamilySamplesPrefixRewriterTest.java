@@ -21,7 +21,7 @@ class GenericMetricFamilySamplesPrefixRewriterTest {
 	}
 
 	@Test
-	void testPrefixesProperly() {
+	public void testPrefixesProperly() {
 		GenericMetricFamilySamplesPrefixRewriter subject = new GenericMetricFamilySamplesPrefixRewriter("prefix");
 		
 		List<Sample> samples = new LinkedList<>();
@@ -45,7 +45,7 @@ class GenericMetricFamilySamplesPrefixRewriterTest {
 	}
 	
 	@Test
-	void testDoesNotPrefixIfNotNeeded() {
+	public void testDoesNotPrefixIfNotNeeded() {
 		GenericMetricFamilySamplesPrefixRewriter subject = new GenericMetricFamilySamplesPrefixRewriter("prefix");
 		
 		List<Sample> samples = new LinkedList<>();

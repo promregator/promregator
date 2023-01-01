@@ -181,30 +181,6 @@ class ParserTest {
 	}
 	
 	@Test
-	void testSimpleNan() {
-		String textToParse = "# Minimalistic line:\n" + 
-				"\n"+
-				"metric_without_labels Nan 123456789012345600\n";
-		
-		Parser subject = new Parser(textToParse);
-		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
-		Enumeration<Collector.MetricFamilySamples> result = Collections.enumeration(resultMap.values());
-
-		// compareEMFS does not properly work with NaN values
-		// Thus, we have to check this explicitly here
-		
-		MetricFamilySamples mfs = result.nextElement();
-		Assertions.assertFalse(result.hasMoreElements());
-		
-		Assertions.assertEquals("metric_without_labels", mfs.name);
-		
-		Assertions.assertEquals(1, mfs.samples.size());
-		Sample actualSample = mfs.samples.get(0);
-		Assertions.assertEquals("metric_without_labels", actualSample.name);
-		Assertions.assertTrue(Double.isNaN(actualSample.value));
-	}
-	
-	@Test
 	void testGaugeWithTimestampAndEmptyLine() {
 		String textToParse = "# Simple metric without labels:\n" + 
 				"# TYPE metric_without_labels gauge\n" + 

@@ -6,6 +6,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import io.prometheus.client.Collector.MetricFamilySamples.Sample;
+
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -186,7 +188,7 @@ public class MetricLine {
 		return value;
 	}
 	
-	private double parseGoDouble(String goDouble) {
+	private double parseGoDouble(String goDouble) throws NumberFormatException {
 		double value;
 		if (goDouble.startsWith("Nan")) {
 			value = Double.NaN;
@@ -205,7 +207,7 @@ public class MetricLine {
 
 	private double parseTimestamp() throws ParseException {
 		double timestamp = 0.0;
-		if (!"".equals(rest)) {
+		if (Strings.isNotEmpty(rest)) {
 			try {
 				timestamp = this.parseGoDouble(rest);
 			} catch (NumberFormatException nfe) {

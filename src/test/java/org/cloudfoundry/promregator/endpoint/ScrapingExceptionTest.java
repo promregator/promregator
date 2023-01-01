@@ -5,12 +5,12 @@ import org.junit.jupiter.api.Test;
 class ScrapingExceptionTest {
 
 	@Test
-	void testScrapingExceptionStringThrowable() {
+	public void testScrapingExceptionStringThrowable() {
 		new ScrapingException("Test", new Exception());
 	}
 
 	@Test
-	void testScrapingExceptionString() {
+	public void testScrapingExceptionString() {
 		new ScrapingException("Test");
 	}
 

@@ -55,7 +55,7 @@ public class MetricsEndpointMockServerTLS {
 			Assertions.fail("Unable to set up JKS Keystore");
 		}
 		try {
-			ks.load(this.getClass().getResourceAsStream("selfsigned.jks"), passphrase);
+			ks.load(MetricsEndpointMockServerTLS.class.getResourceAsStream("selfsigned.jks"), passphrase);
 		} catch (NoSuchAlgorithmException | CertificateException | IOException e) {
 			Assertions.fail("Unable to load selfsigned keystore");
 		}

@@ -15,12 +15,12 @@ import io.prometheus.client.Gauge.Child;
 
 class MetricsFetcherSimulatorTest {
 	@AfterAll
-	static void cleanUp() {
+	static public void cleanUp() {
 		JUnitTestUtils.cleanUpAll();
 	}
 
 	@Test
-	void testCall() throws Exception {
+	public void testCall() throws Exception {
 		Gauge up = Gauge.build("up_test", "help test").labelNames(new String[0]).create();
 		Child upChild = up.labels(new String[0]);
 		

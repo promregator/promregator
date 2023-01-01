@@ -22,7 +22,7 @@ import reactor.core.scheduler.Schedulers;
 class CaffeineAsyncLoadingTest {
 	private static final Logger log = LoggerFactory.getLogger(CaffeineAsyncLoadingTest.class);
 
-	private final class AsyncCacheLoaderTimingImplementation implements AsyncCacheLoader<String, Integer> {
+	private static final class AsyncCacheLoaderTimingImplementation implements AsyncCacheLoader<String, Integer> {
 		private int executionNumber = 0;
 		
 		@Override
@@ -56,7 +56,7 @@ class CaffeineAsyncLoadingTest {
 	}
 
 	@Test
-	void testRefreshIsAsynchronous() throws InterruptedException {
+	public void testRefreshIsAsynchronous() throws InterruptedException {
 		FakeTicker ticker = new FakeTicker();
 		
 		AsyncLoadingCache<String, Integer> subject = Caffeine.newBuilder()
@@ -67,19 +67,19 @@ class CaffeineAsyncLoadingTest {
 				.buildAsync(new AsyncCacheLoaderTimingImplementation());
 		
 		log.info("Starting first request");
-		Assertions.assertEquals(new Integer(0), Mono.fromFuture(subject.get("a")).block());
+		Assertions.assertEquals(Integer.valueOf(0), Mono.fromFuture(subject.get("a")).block());
 		log.info("Stats on cache: "+subject.synchronous().stats().toString());
 		
 		ticker.advance(Duration.ofSeconds(10));
 		
 		log.info("Sending second request");
-		Assertions.assertEquals(new Integer(0), Mono.fromFuture(subject.get("a")).block());
+		Assertions.assertEquals(Integer.valueOf(0), Mono.fromFuture(subject.get("a")).block());
 		log.info("Stats on cache: "+subject.synchronous().stats().toString());
 		
 		ticker.advance(Duration.ofSeconds(120));
 		
 		log.info("Sending third request");
-		Assertions.assertEquals(new Integer(0), Mono.fromFuture(subject.get("a")).block());
+		Assertions.assertEquals(Integer.valueOf(0), Mono.fromFuture(subject.get("a")).block());
 		// That's the interesting case here! Note the zero above: This means that we get old cache data (which is what we want!)
 		log.info("Stats on cache: "+subject.synchronous().stats().toString());
 
@@ -87,13 +87,13 @@ class CaffeineAsyncLoadingTest {
 		Thread.sleep(250); // wait until async loading took place
 		
 		log.info("Sending fourth request");
-		Assertions.assertEquals(new Integer(1), Mono.fromFuture(subject.get("a")).block());
+		Assertions.assertEquals(Integer.valueOf(1), Mono.fromFuture(subject.get("a")).block());
 		log.info("Stats on cache: "+subject.synchronous().stats().toString());
 		
 	}
 	
 	
-	private final class AsyncCacheLoaderFailureImplementation implements AsyncCacheLoader<String, Integer> {
+	private static final class AsyncCacheLoaderFailureImplementation implements AsyncCacheLoader<String, Integer> {
 		private int executionNumber = 0;
 		
 		@Override
@@ -117,7 +117,7 @@ class CaffeineAsyncLoadingTest {
 		}
 	}
 	@Test
-	void testFailureOnAsynchronous() {
+	public void testFailureOnAsynchronous() {
 		FakeTicker ticker = new FakeTicker();
 		
 		AsyncLoadingCache<String, Integer> subject = Caffeine.newBuilder()
@@ -127,11 +127,11 @@ class CaffeineAsyncLoadingTest {
 				.recordStats()
 				.buildAsync(new AsyncCacheLoaderFailureImplementation());
 		
-		Assertions.assertEquals(new Integer(0), Mono.fromFuture(subject.get("a")).block());
+		Assertions.assertEquals(Integer.valueOf(0), Mono.fromFuture(subject.get("a")).block());
 		
 		ticker.advance(Duration.ofSeconds(10));
 		
-		Assertions.assertEquals(new Integer(0), Mono.fromFuture(subject.get("a")).block());
+		Assertions.assertEquals(Integer.valueOf(0), Mono.fromFuture(subject.get("a")).block());
 		
 		ticker.advance(Duration.ofSeconds(250));
 		

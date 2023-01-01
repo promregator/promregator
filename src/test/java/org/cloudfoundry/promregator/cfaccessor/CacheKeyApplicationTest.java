@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 class CacheKeyApplicationTest {
 
 	@Test
-	void testGetterSetter() {
+	public void testGetterSetter() {
 		CacheKeyApplication subject = new CacheKeyApplication("orgid", "spaceid", "appname");
 		Assertions.assertEquals("orgid", subject.getOrgId());
 		Assertions.assertEquals("spaceid", subject.getSpaceId());
@@ -14,7 +14,7 @@ class CacheKeyApplicationTest {
 	}
 	
 	@Test
-	void testHashCodeEquals() {
+	public void testHashCodeEquals() {
 		CacheKeyApplication subject1 = new CacheKeyApplication("orgid", "spaceid", "appname");
 		CacheKeyApplication subject2 = new CacheKeyApplication("orgid", "spaceid", "appname");
 		
@@ -22,7 +22,7 @@ class CacheKeyApplicationTest {
 	}
 	
 	@Test
-	void testEquals() {
+	public void testEquals() {
 		CacheKeyApplication subject1 = new CacheKeyApplication("orgid", "spaceid", "appname");
 		CacheKeyApplication subject2 = new CacheKeyApplication("orgid", "spaceid", "appname");
 		
@@ -30,7 +30,7 @@ class CacheKeyApplicationTest {
 	}
 	
 	@Test
-	void testToStringSimple() {
+	public void testToStringSimple() {
 		CacheKeyApplication subject = new CacheKeyApplication("orgid", "spaceid", "appname");
 		
 		String toString = subject.toString();

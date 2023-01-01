@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 class PreferredRouteRegexMustBeCompilableTest {
 
 	@Test
-	void testNullPreferredRouteRegexDoesNotCrash() {
+	public void testNullPreferredRouteRegexDoesNotCrash() {
 		PreferredRouteRegexMustBeCompilable subject = new PreferredRouteRegexMustBeCompilable();
 		PromregatorConfiguration promregatorConfiguration = new PromregatorConfiguration();
 		List<Target> targets = new LinkedList<>();
@@ -24,7 +24,7 @@ class PreferredRouteRegexMustBeCompilableTest {
 	}
 	
 	@Test
-	void testValidDoesNotBreak() {
+	public void testValidDoesNotBreak() {
 		PreferredRouteRegexMustBeCompilable subject = new PreferredRouteRegexMustBeCompilable();
 		PromregatorConfiguration promregatorConfiguration = new PromregatorConfiguration();
 		List<Target> targets = new LinkedList<>();
@@ -39,7 +39,7 @@ class PreferredRouteRegexMustBeCompilableTest {
 	}
 	
 	@Test
-	void testInvalidRaisesError() {
+	public void testInvalidRaisesError() {
 		PreferredRouteRegexMustBeCompilable subject = new PreferredRouteRegexMustBeCompilable();
 		PromregatorConfiguration promregatorConfiguration = new PromregatorConfiguration();
 		List<Target> targets = new LinkedList<>();

@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 class InstanceTest {
 
 	@Test
-	void testToString() {
+	public void testToString() {
 		ResolvedTarget rt = new ResolvedTarget();
 		
 		rt.setOrgName("testOrgName");
@@ -30,7 +30,7 @@ class InstanceTest {
 	}
 	
 	@Test
-	void testHashCodeEquals() {
+	public void testHashCodeEquals() {
 		ResolvedTarget rt = new ResolvedTarget();
 		
 		rt.setOrgName("testOrgName");
@@ -46,7 +46,7 @@ class InstanceTest {
 	}
 	
 	@Test
-	void testEquals() {
+	public void testEquals() {
 		ResolvedTarget rt = new ResolvedTarget();
 		
 		rt.setOrgName("testOrgName");

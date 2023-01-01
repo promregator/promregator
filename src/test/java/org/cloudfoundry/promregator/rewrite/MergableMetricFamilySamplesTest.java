@@ -22,7 +22,7 @@ class MergableMetricFamilySamplesTest {
 	}
 
 	@Test
-	void testStraightFowardEnumeration() {
+	public void testStraightFowardEnumeration() {
 		MergableMetricFamilySamples subject = new MergableMetricFamilySamples();
 		
 		List<Sample> samples = new LinkedList<>();
@@ -50,14 +50,11 @@ class MergableMetricFamilySamplesTest {
 	}
 	
 	@Test
-	void testStraightFowardHashMap() {
+	public void testStraightFowardHashMap() {
 		MergableMetricFamilySamples subject = new MergableMetricFamilySamples();
 		
 		List<Sample> samples = new LinkedList<>();
 		MetricFamilySamples mfs = new MetricFamilySamples("dummy", Type.COUNTER, "somehelp", samples);
-		
-		List<MetricFamilySamples> list = new LinkedList<>();
-		list.add(mfs);
 		
 		HashMap<String, MetricFamilySamples> hmmfs = new HashMap<>();
 		hmmfs.put("dummy", mfs);
@@ -79,14 +76,11 @@ class MergableMetricFamilySamplesTest {
 	}
 	
 	@Test
-	void testUntypedMetricEnumeration() {
+	public void testUntypedMetricEnumeration() {
 		MergableMetricFamilySamples subject = new MergableMetricFamilySamples();
 		
 		List<Sample> samples = new LinkedList<>();
 		MetricFamilySamples mfs = new MetricFamilySamples("dummy", Type.UNKNOWN, "somehelp", samples);
-		
-		List<MetricFamilySamples> list = new LinkedList<>();
-		list.add(mfs);
 		
 		HashMap<String, MetricFamilySamples> hmmfs = new HashMap<>();
 		hmmfs.put("dummy", mfs);

@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 class UnknownAccessorCacheTypeErrorTest {
 
 	@Test
-	void testCanBeCreated() {
+	public void testCanBeCreated() {
 		new UnknownAccessorCacheTypeError("unittest");
 	}
 

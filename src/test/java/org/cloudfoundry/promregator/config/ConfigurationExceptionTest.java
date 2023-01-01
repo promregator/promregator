@@ -5,12 +5,12 @@ import org.junit.jupiter.api.Test;
 class ConfigurationExceptionTest {
 
 	@Test
-	void testConfigurationExceptionStringThrowable() {
+	public void testConfigurationExceptionStringThrowable() {
 		new ConfigurationException("Test", new Exception());
 	}
 
 	@Test
-	void testConfigurationExceptionString() {
+	public void testConfigurationExceptionString() {
 		new ConfigurationException("Test");
 	}
 

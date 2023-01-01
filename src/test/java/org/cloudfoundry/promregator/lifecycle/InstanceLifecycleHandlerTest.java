@@ -21,12 +21,12 @@ import io.prometheus.client.CollectorRegistry;
 class InstanceLifecycleHandlerTest {
 
 	@AfterAll
-	static void cleanUp() {
+	static public void cleanUp() {
 		JUnitTestUtils.cleanUpAll();
 	}
 	
 	@Test
-	void testReceiverCleansUpProperly() {
+	public void testReceiverCleansUpProperly() {
 		
 		ResolvedTarget rt = new ResolvedTarget();
 		

@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 class OAuth2XSUAACertificateAuthenticationConfigurationTest {
 
 	@Test
-	void testStraightForward() {
+	public void testStraightForward() {
 		OAuth2XSUAACertificateAuthenticationConfiguration subject = new OAuth2XSUAACertificateAuthenticationConfiguration();
 		
 		subject.setClient_certificates("xyz");
