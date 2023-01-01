@@ -3,6 +3,7 @@ package org.cloudfoundry.promregator.endpoint;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
@@ -30,7 +31,8 @@ import io.prometheus.client.exporter.common.TextFormat;
 public class SingleTargetMetricsEndpoint extends AbstractMetricsEndpoint {
 	
 	private static final Logger log = LoggerFactory.getLogger(SingleTargetMetricsEndpoint.class);
-
+	private static final Pattern PATTERN_APPLICATION_ID_FORMAT = Pattern.compile("[-0-9a-f]++");
+	
 	private Instance instance;
 	
 	@GetMapping(produces=TextFormat.CONTENT_TYPE_004)
@@ -41,6 +43,17 @@ public class SingleTargetMetricsEndpoint extends AbstractMetricsEndpoint {
 		
 		if (this.isLoopbackRequest()) {
 			throw new LoopbackScrapingDetectedException("Erroneous Loopback Scraping request detected");
+		}
+		
+		/* perform input validation */
+		try {
+			Integer.getInteger(instanceNumber);
+		} catch (NumberFormatException e) {
+			return new ResponseEntity<>("Invalid Instance Number provided", HttpStatus.BAD_REQUEST);
+		}
+		
+		if (!PATTERN_APPLICATION_ID_FORMAT.matcher(applicationId).matches()) {
+			return new ResponseEntity<>("Invalid Application Id provided", HttpStatus.BAD_REQUEST);
 		}
 		
 		String instanceId = String.format("%s:%s", applicationId, instanceNumber);
