@@ -46,7 +46,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	private static final Logger log = LoggerFactory.getLogger(ReactiveCFAccessorImpl.class);
 	public static final ListApplicationsResponse INVALID_APPLICATIONS_RESPONSE = ListApplicationsResponse.builder().build();
 	
-	private static final String CF_API_V3_PROCESS_TYPE = "web";
+	private static final String CF_API_V3_PROCESS_TYPE_WEB = "web";
 
 	@Value("${cf.api_host}")
 	private String apiHost;
@@ -387,7 +387,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		PaginatedRequestGeneratorFunctionV3<ListApplicationProcessesRequest> requestGenerator = (resultsPerPage, pageNumber) ->
 			ListApplicationProcessesRequest.builder()
 				.applicationId(applicationId)
-				.type(CF_API_V3_PROCESS_TYPE)
+				.type(CF_API_V3_PROCESS_TYPE_WEB)
 				.build();
 		
 		PaginatedResponseGeneratorFunctionV3<org.cloudfoundry.client.v3.processes.ProcessResource, ListApplicationProcessesResponse> responseGenerator = (list, numberOfPages) -> 
