@@ -82,7 +82,7 @@ In case you have both attribute variants set, you may safely delete `promregator
 
 ## Switch to new Request Timeout Nomenclature (for Apps)
 
-Check, if you still use the old `cf.request.timeout.app` configuration option. It is  deprecated since long.
+Check, if you still use the old `cf.request.timeout.app` configuration option. It is deprecated since long.
 In case you do, rename those configuration attributes to `cf.request.timeout.appInSpace`.
 
 In case you have both attribute variants set, you should check about Promregator's behavior: Due to a bug, it may have happened before that `cf.request.timeout.app` was ignored and the default of 2.5 seconds was applied - even though you *thought* to have advised otherwise. 
@@ -93,7 +93,9 @@ In case you have both attribute variants set, you should check about Promregator
 Check, if you still use one of the old configuration options:
 
 * `cf.request.timeout.routeMapping`
+* `cf.request.timeout.route`
 * `cf.request.timeout.sharedDomain`
+* `cf.request.timeout.process`
 
 They are deprecated since long (version 0.5.0).
 
@@ -110,12 +112,24 @@ Also Promregator uses the already-available Domain Cache much differently as bef
 
 Consequently, there are new configuration options available:
 
-* `cf.request.timeout.route`
-* `cf.request.timeout.process`
-* `cf.request.timeout.domain` (already available in V0.* but used rarely)
-* `cf.request.expiry.route`
-* `cf.request.expiry.process`
-* `cf.request.expiry.domain` (already available in V0.* but used rarely)
+* `cf.cache.timeout.route` (not to be confused with `cf.request.timeout.route`!)
+* `cf.cache.timeout.process` (not to be confused with `cf.request.timeout.process`!)
+* `cf.cache.timeout.domain` (already available in V0.* but used rarely, not to be confused with `cf.request.timeout.domain`!)
+* `cf.cache.expiry.route`
+* `cf.cache.expiry.process`
+* `cf.cache.expiry.domain` (already available in V0.* but used rarely)
+
+Check the [configuration page](./config.md) for these options and consider, if you need to set deviating values for them in your configuration.
+
+## New Request Timeouts for new Cache Types
+
+With the new Cache Types mentioned before, also new request timeout configuration parameters have been introduced:
+
+* `cf.request.timeout.route` (configuration option might already have been set before in version 0.x)
+* `cf.request.timeout.process` (configuration option might already have been set before in version 0.x)
+* `cf.request.timeout.domain`
+
+Note that this may be confusing: As just mentioned two sections above, `cf.request.timeout.route` and `cf.request.timeout.process` had been deprecated in version 0.5.0. However, with version 1.0.0 we introduce them again - with a slight difference in their meaning. Still their value denotes the maximal runtime of a request to the Cloud Foundry platform. The old configuration options were describing requests timeouts for endpoints using the CAPI V2 specification. The newly introduced one's are describing request timeouts for endpoints using the CAPI V3 specification (as Promregator version 1.x has been switched from CAPI V2 to V3 - and support for V2 is dropped).
 
 Check the [configuration page](./config.md) for these options and consider, if you need to set deviating values for them in your configuration.
 
