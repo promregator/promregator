@@ -52,7 +52,7 @@ public class MockedAppInstanceScannerEndpointSpringApplication {
 		private boolean orgCache = false;
 		
 		@Override
-		public void invalidateCacheApplications() {
+		public void invalidateCacheApplication() {
 			this.applicationCache = true;
 		}
 

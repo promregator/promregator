@@ -30,7 +30,7 @@ public class InvalidateCacheEndpoint {
 			) {
 
 		if (application) {
-			cfAccessorCache.invalidateCacheApplications();
+			cfAccessorCache.invalidateCacheApplication();
 		}
 		
 		if (space) {

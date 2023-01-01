@@ -43,7 +43,7 @@ class CFAccessorCacheCaffeineTimeoutTest {
 
 	@BeforeEach
 	void clearCaches() {
-		this.subject.invalidateCacheApplications();
+		this.subject.invalidateCacheApplication();
 		this.subject.invalidateCacheSpace();
 		this.subject.invalidateCacheOrg();
 		this.subject.invalidateCacheDomain();

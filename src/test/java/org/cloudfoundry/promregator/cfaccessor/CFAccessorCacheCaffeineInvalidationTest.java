@@ -34,7 +34,7 @@ class CFAccessorCacheCaffeineInvalidationTest {
 	
 	@BeforeEach
 	public void invalidateCaches() {
-		this.subject.invalidateCacheApplications();
+		this.subject.invalidateCacheApplication();
 		this.subject.invalidateCacheSpace();
 		this.subject.invalidateCacheOrg();
 		this.subject.invalidateCacheDomain();
@@ -47,13 +47,13 @@ class CFAccessorCacheCaffeineInvalidationTest {
 	
 	@Test
 	void testInvalidateCacheApplications() {
-		subject.retrieveSpaceSummary("dummy");
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveSpaceSummary("dummy");
+		subject.retrieveAllApplicationsInSpaceV3("dummy1", "dummy2");
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllApplicationsInSpaceV3("dummy1", "dummy2");
 		
-		subject.invalidateCacheApplications();
+		subject.invalidateCacheApplication();
 
-		subject.retrieveSpaceSummary("dummy");
-		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveSpaceSummary("dummy");
+		subject.retrieveAllApplicationsInSpaceV3("dummy1", "dummy2");
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveAllApplicationsInSpaceV3("dummy1", "dummy2");
 	}
 
 	@Test
@@ -68,6 +68,17 @@ class CFAccessorCacheCaffeineInvalidationTest {
 	}
 
 	@Test
+	void testInvalidateCacheSpaceInOrgCache() {
+		subject.retrieveSpaceIdsInOrgV3("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveSpaceIdsInOrgV3("dummy");
+		
+		subject.invalidateCacheSpace();
+		
+		subject.retrieveSpaceIdsInOrgV3("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveSpaceIdsInOrgV3("dummy");
+	}
+	
+	@Test
 	void testInvalidateCacheOrg() {
 		subject.retrieveOrgIdV3("dummy");
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveOrgIdV3("dummy");
@@ -79,6 +90,18 @@ class CFAccessorCacheCaffeineInvalidationTest {
 	}
 
 	@Test
+	void testInvalidateCacheOrgAllOrgCache() {
+		subject.retrieveAllOrgIdsV3();
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllOrgIdsV3();
+		
+		subject.invalidateCacheOrg();
+		
+		subject.retrieveAllOrgIdsV3();
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveAllOrgIdsV3();
+	}
+
+	
+	@Test
 	void testInvalidateCacheDomain() {
 		subject.retrieveAllDomainsV3("dummy");
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllDomainsV3("dummy");
@@ -88,5 +111,28 @@ class CFAccessorCacheCaffeineInvalidationTest {
 		subject.retrieveAllDomainsV3("dummy");
 		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveAllDomainsV3("dummy");
 	}
+	
+	@Test
+	void testInvalidateCacheRoute() {
+		subject.retrieveRoutesForAppId("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveRoutesForAppIds(Mockito.anySet());
+		
+		subject.invalidateCacheRoute();
+		
+		subject.retrieveRoutesForAppId("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveRoutesForAppIds(Mockito.anySet());
+	}
 
+	@Test
+	void testInvalidateCacheWebProcess() {
+		subject.retrieveWebProcessesForApp("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveWebProcessesForApp("dummy");
+		
+		subject.invalidateCacheWebProcess();
+		
+		subject.retrieveWebProcessesForApp("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveWebProcessesForApp("dummy");
+	}
+
+	
 }

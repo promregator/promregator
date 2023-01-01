@@ -38,7 +38,7 @@ class CFAccessorCacheCaffeineTest {
 	
 	@BeforeEach
 	public void invalidateCaches() {
-		this.subject.invalidateCacheApplications();
+		this.subject.invalidateCacheApplication();
 		this.subject.invalidateCacheSpace();
 		this.subject.invalidateCacheOrg();
 		this.subject.invalidateCacheDomain();
