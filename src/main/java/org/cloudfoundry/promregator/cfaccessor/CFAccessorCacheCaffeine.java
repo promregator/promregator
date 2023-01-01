@@ -34,12 +34,12 @@ import reactor.core.scheduler.Schedulers;
 public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	private static final Logger log = LoggerFactory.getLogger(CFAccessorCacheCaffeine.class);
 
-	private @NonNull AsyncLoadingCache<String, ListOrganizationsResponse> orgCache; // invalidated through org invalidation
-	private @NonNull AsyncLoadingCache<String, ListOrganizationsResponse> allOrgIdCache; // invalidated through org invalidation
-	private @NonNull AsyncLoadingCache<CacheKeySpace, ListSpacesResponse> spaceCache; // invalidated through space invalidation
-	private @NonNull AsyncLoadingCache<String, ListSpacesResponse> spaceIdInOrgCache; // invalidated through space invalidation
-	private @NonNull AsyncLoadingCache<String, ListOrganizationDomainsResponse> domainsInOrgCache; // invalidated through domain invalidation
-	private @NonNull AsyncLoadingCache<CacheKeyAppsInSpace, ListApplicationsResponse> appsInSpaceCache; // invalidated through application invalidation
+	private @NonNull AsyncLoadingCache<String, ListOrganizationsResponse> orgCache;
+	private @NonNull AsyncLoadingCache<String, ListOrganizationsResponse> allOrgIdCache;
+	private @NonNull AsyncLoadingCache<CacheKeySpace, ListSpacesResponse> spaceCache;
+	private @NonNull AsyncLoadingCache<String, ListSpacesResponse> spaceIdInOrgCache;
+	private @NonNull AsyncLoadingCache<String, ListOrganizationDomainsResponse> domainsInOrgCache;
+	private @NonNull AsyncLoadingCache<CacheKeyAppsInSpace, ListApplicationsResponse> appsInSpaceCache;
 	private @NonNull AsyncLoadingCache<String, ListRoutesResponse> routesCache;
 	private @NonNull AsyncLoadingCache<String, ListApplicationProcessesResponse> webProcessCache;
 	
