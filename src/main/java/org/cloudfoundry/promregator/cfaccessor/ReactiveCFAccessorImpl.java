@@ -81,11 +81,17 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	@Value("${cf.request.timeout.appInSpace:2500}")
 	private int requestTimeoutAppInSpace;
 	
-	@Value("${cf.request.timeout.appSummary:4000}")
-	private int requestTimeoutAppSummary;
+	@Value("${cf.request.timeout.appSummary:4000}") // TODO V3: Needs to be removed/renamed - documentation to be adjusted
+	private int requestTimeoutAppSummary; 
 	
 	@Value("${cf.request.timeout.domain:2500}")
 	private int requestTimeoutDomains;
+
+	@Value("${cf.request.timeout.route:2500}")
+	private int requestTimeoutRoute;
+	
+	@Value("${cf.request.timeout.process:2500}")
+	private int requestTimeoutProcess;
 	
 	@Value("${cf.connectionPool.size:#{null}}")
 	private Integer connectionPoolSize;
@@ -378,7 +384,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 				.build();
 		
 		return this.paginatedRequestFetcher.performGenericPagedRetrievalV3(RequestType.ROUTES, appIds, requestGenerator, 
-				r -> this.cloudFoundryClient.routesV3().list(r), 1000 /* TODO V3: Create new request timeout config */, 
+				r -> this.cloudFoundryClient.routesV3().list(r), this.requestTimeoutRoute, 
 				responseGenerator);
 	}
 	
@@ -397,7 +403,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 			.build();
 		
 		return this.paginatedRequestFetcher.performGenericPagedRetrievalV3(RequestType.PROCESSES, applicationId, requestGenerator, 
-				r -> this.cloudFoundryClient.applicationsV3().listProcesses(r), 1000 /* TODO V3: Create new request timeout config */, 
+				r -> this.cloudFoundryClient.applicationsV3().listProcesses(r), this.requestTimeoutProcess, 
 				responseGenerator);
 		
 	}
