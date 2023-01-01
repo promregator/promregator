@@ -175,13 +175,14 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			@Nullable Predicate<? super Instance> instanceFilter) {
 		Flux<ResolvedTarget> targetsFlux = Flux.fromIterable(targets);
 
-		Flux<OSAVector> initialOSAVectorFlux = targetsFlux.map(target -> {
-			OSAVector v = new OSAVector();
-			v.setTarget(target);
-			v.setApplicationId(target.getApplicationId());
-			v.setInternalRoutePort(target.getOriginalTarget().getInternalRoutePort());
-			return v;
-		});
+		Flux<OSAVector> initialOSAVectorFlux = targetsFlux.filter(rt -> rt.getApplicationId() != null)
+			.map(target -> {
+				OSAVector v = new OSAVector();
+				v.setTarget(target);
+				v.setApplicationId(target.getApplicationId());
+				v.setInternalRoutePort(target.getOriginalTarget().getInternalRoutePort());
+				return v;
+			});
 
 		Flux<String> orgIdFlux = initialOSAVectorFlux.flatMapSequential(v -> this.getOrgId(v.getTarget().getOrgName()));
 		Flux<OSAVector> osaVectorOrgFlux = Flux.zip(initialOSAVectorFlux, orgIdFlux).flatMap(tuple -> {

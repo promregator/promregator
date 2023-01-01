@@ -353,7 +353,7 @@ public class CFAccessorMock implements CFAccessor {
 			ToOneRelationship space = ToOneRelationship.builder().data(Relationship.builder().id(UNITTEST_SPACE_UUID).build()).build();
 			RouteRelationships rels = RouteRelationships.builder().domain(domain).space(space).build();
 			RouteResource rr = RouteResource.builder()
-					.url(UNITTEST_APP2_HOST+"."+UNITTEST_SHARED_DOMAIN)
+					.url(UNITTEST_APP2_HOST+"."+UNITTEST_SHARED_DOMAIN+"/additionalPath")
 					.relationships(rels)
 					.createdAt(CREATED_AT_TIMESTAMP)
 					.id(UNITTEST_APP2_ROUTE_UUID)
@@ -361,6 +361,11 @@ public class CFAccessorMock implements CFAccessor {
 					.path("/additionalPath")
 					.build();
 			return rr;
+		}
+		
+		if (appId.equals(UNITTEST_APP3_UUID)) {
+			// App3 does not have any route (unit test case)
+			return null;
 		}
 		
 		if (appId.equals(UNITTEST_APP_INTERNAL_UUID)) {
@@ -384,6 +389,10 @@ public class CFAccessorMock implements CFAccessor {
 	@Override
 	public Mono<ListRoutesResponse> retrieveRoutesForAppId(String appId) {
 		RouteResource rr = this.determineRoutesDataForApp(appId);
+		
+		if (rr == null) {
+			return Mono.just(ListRoutesResponse.builder().build());
+		}
 		ListRoutesResponse resp = ListRoutesResponse.builder().resource(rr).build();
 		return Mono.just(resp);
 	}
@@ -405,9 +414,9 @@ public class CFAccessorMock implements CFAccessor {
 
 	@Override
 	public Mono<ListApplicationProcessesResponse> retrieveWebProcessesForApp(String applicationId) {
-		if (applicationId.equals(UNITTEST_APP1_UUID) || applicationId.equals(UNITTEST_APP2_UUID) || applicationId.equals(UNITTEST_APP3_UUID)) {
+		if (applicationId.equals(UNITTEST_APP1_UUID) || applicationId.equals(UNITTEST_APP2_UUID) || applicationId.equals(UNITTEST_APP3_UUID) || applicationId.equals(UNITTEST_APP_INTERNAL_UUID)) {
 			final ProcessResource prWeb = ProcessResource.builder()
-					.instances(1)
+					.instances(applicationId.equals(UNITTEST_APP1_UUID) || applicationId.equals(UNITTEST_APP_INTERNAL_UUID) ? 2 : 1)
 					.type("web")
 					.createdAt(CREATED_AT_TIMESTAMP)
 					.command("dummycommand")
