@@ -28,5 +28,37 @@ class InstanceTest {
 		Assertions.assertTrue(result.contains("false"));
 		
 	}
+	
+	@Test
+	void testHashCodeEquals() {
+		ResolvedTarget rt = new ResolvedTarget();
+		
+		rt.setOrgName("testOrgName");
+		rt.setSpaceName("testSpaceName");
+		rt.setApplicationName("testapp");
+		rt.setPath("/test/path");
+		rt.setProtocol("https");
+		
+		Instance subject1 = new Instance(rt, "1", "https://accessUrl.bogus", false);
+		Instance subject2 = new Instance(rt, "1", "https://accessUrl.bogus", false);
+		
+		Assertions.assertEquals(subject1.hashCode(), subject2.hashCode());
+	}
+	
+	@Test
+	void testEquals() {
+		ResolvedTarget rt = new ResolvedTarget();
+		
+		rt.setOrgName("testOrgName");
+		rt.setSpaceName("testSpaceName");
+		rt.setApplicationName("testapp");
+		rt.setPath("/test/path");
+		rt.setProtocol("https");
+		
+		Instance subject1 = new Instance(rt, "1", "https://accessUrl.bogus", false);
+		Instance subject2 = new Instance(rt, "1", "https://accessUrl.bogus", false);
+		
+		Assertions.assertTrue(subject1.equals(subject2));
+	}
 
 }
