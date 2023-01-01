@@ -303,7 +303,7 @@ public class SingleTargetMetricsEndpoint {
 		
 		/* perform input validation */
 		try {
-			Integer.getInteger(instanceNumber);
+			Integer.parseInt(instanceNumber);
 		} catch (NumberFormatException e) {
 			return new ResponseEntity<>("Invalid Instance Number provided", HttpStatus.BAD_REQUEST);
 		}
