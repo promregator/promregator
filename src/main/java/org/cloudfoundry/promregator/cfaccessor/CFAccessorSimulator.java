@@ -4,9 +4,9 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v3.BuildpackData;
@@ -236,9 +236,9 @@ public class CFAccessorSimulator implements CFAccessor {
 		}
 		
 		List<RouteResource> list = appIds.stream()
-				.map(appId -> this.determineRoutesDataForApp(appId))
-				.filter(e -> e != null)
-				.collect(Collectors.toList());
+				.map(this::determineRoutesDataForApp)
+				.filter(Objects::nonNull)
+				.toList();
 		
 		ListRoutesResponse resp = ListRoutesResponse.builder().resources(list).build();
 		return Mono.just(resp).delayElement(this.getSleepRandomDuration());

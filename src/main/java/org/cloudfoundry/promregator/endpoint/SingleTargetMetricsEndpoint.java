@@ -134,13 +134,8 @@ public class SingleTargetMetricsEndpoint {
 		
 		this.up.clear();
 		
-		List<Instance> instanceList = this.cfDiscoverer.discover(discoveredApplicationId -> applicationId.equals(discoveredApplicationId), requestInstance -> {
-			if (requestInstance.getInstanceId().equals(instanceId)) {
-				return true;
-			}
-			
-			return false;
-		});
+		List<Instance> instanceList = this.cfDiscoverer.discover(discoveredApplicationId -> applicationId.equals(discoveredApplicationId), 
+				requestInstance -> requestInstance.getInstanceId().equals(instanceId));
 		
 		if (instanceList == null || instanceList.isEmpty()) {
 			throw new ScrapingException("Unable to determine any instance to scrape");
@@ -225,7 +220,7 @@ public class SingleTargetMetricsEndpoint {
 		 */
 		Gauge.Child upChild = null;
 		
-		upChild = this.up.labels(new String[0]);
+		upChild = this.up.labels();
 		
 		AuthenticationEnricher ae = this.authenticatorController.getAuthenticationEnricherByTarget(instance.getTarget().getOriginalTarget());
 		

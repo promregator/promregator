@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -13,6 +12,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.cloudfoundry.client.v3.applications.ListApplicationProcessesResponse;
 import org.cloudfoundry.client.v3.domains.DomainResource;
+import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v3.processes.ProcessResource;
 import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
 import org.cloudfoundry.client.v3.routes.RouteResource;
@@ -230,7 +230,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				return Mono.empty();
 			}
 			
-			if (list.size() == 0) {
+			if (list.isEmpty()) {
 				log.error(String.format("Application Id %s with application name %s in org %s and space %s returned no web processes via CF API V3 Processes; Promregator does not know how to handle this. Provide your use case to the developers to understand how this shall be handled properly.", rt.getApplicationId(), rt.getApplicationName(), rt.getOrgName(), rt.getSpaceName()));
 				return Mono.empty();
 			}
@@ -252,7 +252,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				return Mono.empty();
 			}
 			
-			final List<String> urls = list.stream().map(e -> e.getUrl()).collect(Collectors.toList());
+			final List<String> urls = list.stream().map(RouteResource::getUrl).toList();
 			@NonNull
 			final List<Pattern> preferredRouteRegexPatterns = osaVector.getTarget().getOriginalTarget().getPreferredRouteRegexPatterns();
 			final String url = this.determineApplicationRoute(urls, preferredRouteRegexPatterns);
@@ -273,9 +273,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		});
 		
 
-		Flux<List<DomainResource>> domainFlux = urlDomainOSAVectorFlux.flatMapSequential(v -> {
-			return this.cfAccessor.retrieveAllDomainsV3(v.getOrgId()).map(mapper -> mapper.getResources());
-		});
+		Flux<List<DomainResource>> domainFlux = urlDomainOSAVectorFlux.flatMapSequential(v -> this.cfAccessor.retrieveAllDomainsV3(v.getOrgId()).map(ListOrganizationDomainsResponse::getResources));
 		Flux<OSAVector> osaVectorDomainApplicationFlux = Flux.zip(urlDomainOSAVectorFlux, domainFlux).flatMap(tuple -> {
 			OSAVector v = tuple.getT1();
 			List<DomainResource> domains = tuple.getT2();

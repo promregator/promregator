@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v3.BuildpackData;
@@ -421,7 +420,7 @@ public class CFAccessorMock implements CFAccessor {
 		List<RouteResource> list = appIds.stream()
 				.flatMap(appId -> this.determineRoutesDataForApp(appId).stream())
 				.filter(e -> e != null)
-				.collect(Collectors.toList());
+				.toList();
 		
 		ListRoutesResponse resp = ListRoutesResponse.builder().resources(list).build();
 		return Mono.just(resp);

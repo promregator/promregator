@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.cloudfoundry.client.v3.applications.ApplicationResource;
 import org.cloudfoundry.client.v3.applications.ApplicationState;
@@ -160,7 +159,7 @@ class CFAccessorSimulatorTest {
 			public int compare(RouteResource o1, RouteResource o2) {
 				return o1.getId().compareTo(o2.getId());
 			}
-		}).collect(Collectors.toList());
+		}).toList();
 		
 		RouteResource routeResource = resources.get(0);
 		Assertions.assertEquals(CFAccessorSimulator.ROUTE_UUID_PREFIX+"50", routeResource.getId());

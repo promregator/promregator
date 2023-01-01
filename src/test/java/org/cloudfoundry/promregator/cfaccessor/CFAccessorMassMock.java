@@ -217,7 +217,7 @@ public class CFAccessorMassMock implements CFAccessor {
 		List<RouteResource> list = appIds.stream()
 				.map(appId -> this.determineRoutesDataForApp(appId))
 				.filter(e -> e != null)
-				.collect(Collectors.toList());
+				.toList();
 		
 		ListRoutesResponse resp = ListRoutesResponse.builder().resources(list).build();
 		return Mono.just(resp).delayElement(this.getSleepRandomDuration());

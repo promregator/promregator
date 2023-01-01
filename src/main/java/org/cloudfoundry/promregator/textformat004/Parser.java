@@ -3,17 +3,18 @@ package org.cloudfoundry.promregator.textformat004;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.prometheus.client.Collector;
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Collector.MetricFamilySamples.Sample;
 import io.prometheus.client.Collector.Type;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /* Unfortunately, there is nothing provided for this by Prometheus.io :-(
  * So, we have to do this ourselves.
@@ -278,9 +279,9 @@ public class Parser {
 		// handling of COUNTER-typed metrics
 		final List<String> keysToChangeCounter = this.mapTypes.entrySet().stream()
 			.filter(e -> e.getValue() == Type.COUNTER)
-			.map(e -> e.getKey())
+			.map(Entry::getKey)
 			.filter(k -> PATTERN_TOTAL_SUFFIX.matcher(k).matches())
-			.collect(Collectors.toList());
+			.toList();
 
 		keysToChangeCounter.forEach(key -> {
 			final String keyStripped = key.substring(0, key.length() - "_total".length());
@@ -302,9 +303,9 @@ public class Parser {
 		// handling of INFO-typed metrics
 		final List<String> keysToChangeInfo = this.mapTypes.entrySet().stream()
 			.filter(e -> e.getValue() == Type.INFO)
-			.map(e -> e.getKey())
+			.map(Entry::getKey)
 			.filter(k -> PATTERN_INFO_SUFFIX.matcher(k).matches())
-			.collect(Collectors.toList());
+			.toList();
 
 		keysToChangeInfo.forEach(key -> {
 			final String keyStripped = key.substring(0, key.length() - "_info".length());
