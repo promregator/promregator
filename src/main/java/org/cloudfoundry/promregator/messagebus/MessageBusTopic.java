@@ -1,7 +1,11 @@
 package org.cloudfoundry.promregator.messagebus;
 
-public interface MessageBusTopic {
-	String PREFIX = "org.cloudfoundry.promregator.";
+public final class MessageBusTopic {
+	private MessageBusTopic() {
+		throw new IllegalStateException("Should never be called");
+	}
 	
-	String DISCOVERER_INSTANCE_REMOVED = PREFIX + "instanceRemoved";
+	public static final String PREFIX = "org.cloudfoundry.promregator.";
+	
+	public static final String DISCOVERER_INSTANCE_REMOVED = PREFIX + "instanceRemoved";
 }
