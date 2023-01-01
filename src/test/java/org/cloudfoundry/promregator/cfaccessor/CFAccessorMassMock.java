@@ -2,29 +2,33 @@ package org.cloudfoundry.promregator.cfaccessor;
 
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-import org.cloudfoundry.client.v2.domains.Domain;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
-import org.cloudfoundry.client.v2.routes.Route;
-import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
-import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
 import org.cloudfoundry.client.v3.BuildpackData;
 import org.cloudfoundry.client.v3.Lifecycle;
 import org.cloudfoundry.client.v3.LifecycleType;
 import org.cloudfoundry.client.v3.Metadata;
+import org.cloudfoundry.client.v3.Relationship;
 import org.cloudfoundry.client.v3.ToOneRelationship;
 import org.cloudfoundry.client.v3.applications.ApplicationResource;
 import org.cloudfoundry.client.v3.applications.ApplicationState;
-import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
+import org.cloudfoundry.client.v3.applications.ListApplicationProcessesResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v3.domains.DomainRelationships;
 import org.cloudfoundry.client.v3.domains.DomainResource;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
-import org.cloudfoundry.client.v3.spaces.GetSpaceResponse;
+import org.cloudfoundry.client.v3.processes.HealthCheck;
+import org.cloudfoundry.client.v3.processes.HealthCheckType;
+import org.cloudfoundry.client.v3.processes.ProcessRelationships;
+import org.cloudfoundry.client.v3.processes.ProcessResource;
+import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
+import org.cloudfoundry.client.v3.routes.RouteRelationships;
+import org.cloudfoundry.client.v3.routes.RouteResource;
 import org.junit.jupiter.api.Assertions;
 
 import reactor.core.publisher.Mono;
@@ -39,6 +43,9 @@ public class CFAccessorMassMock implements CFAccessor {
 	
 	public static final String CREATED_AT_TIMESTAMP = "2014-11-24T19:32:49+00:00";
 	public static final String UPDATED_AT_TIMESTAMP = "2014-11-24T19:32:49+00:00";
+	public static final String APP_HOST_PREFIX = "hostapp";
+	public static final String UNITTEST_ROUTE_UUID_PREFIX = "45fe26fc-2491-495f-966d-aed00c094e54";
+	public static final String UNITTEST_PROCESS_UUID_PREFIX = "b7f7eb34-58f1-4f70-aee3-e79124078796";
 	
 	private Random randomGen = new Random();
 	
@@ -51,34 +58,6 @@ public class CFAccessorMassMock implements CFAccessor {
 
 	private Duration getSleepRandomDuration() {
 		return Duration.ofMillis(this.randomGen.nextInt(250));
-	}
-
-	@Override
-	public Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId) {
-		if (spaceId.equals(UNITTEST_SPACE_UUID)) {
-			List<SpaceApplicationSummary> list = new LinkedList<>();
-					
-			for (int i = 0;i<100;i++) {
-				Domain sharedDomain = Domain.builder().id(UNITTEST_SHARED_DOMAIN_UUID+i).name(UNITTEST_SHARED_DOMAIN).build();
-				final String[] urls = { "hostapp"+i+"."+UNITTEST_SHARED_DOMAIN }; 
-				final Route[] routes = { Route.builder().domain(sharedDomain).host("hostapp"+i).build() };
-				SpaceApplicationSummary sas = SpaceApplicationSummary.builder()
-						.id(UNITTEST_APP_UUID_PREFIX+i)
-						.name("testapp"+i)
-						.addAllUrls(Arrays.asList(urls))
-						.addAllRoutes(Arrays.asList(routes))
-						.instances(this.amountInstances)
-						.build();
-				list.add(sas);
-			}
-			
-			GetSpaceSummaryResponse resp = GetSpaceSummaryResponse.builder().addAllApplications(list).build();
-			
-			return Mono.just(resp).delayElement(this.getSleepRandomDuration());
-		}
-		
-		Assertions.fail("Invalid retrieveSpaceSummary request");
-		return null;
 	}
 
 	@Override
@@ -199,8 +178,73 @@ public class CFAccessorMassMock implements CFAccessor {
 		return Mono.just(response);
 	}
 
+	private RouteResource determineRoutesDataForApp(String appId) {
+		final String appNumber = appId.substring(UNITTEST_APP_UUID_PREFIX.length());
+		
+		ToOneRelationship domain = ToOneRelationship.builder().data(Relationship.builder().id(UNITTEST_SHARED_DOMAIN_UUID+appNumber).build()).build();
+		ToOneRelationship space = ToOneRelationship.builder().data(Relationship.builder().id(UNITTEST_SPACE_UUID).build()).build();
+		RouteRelationships rels = RouteRelationships.builder().domain(domain).space(space).build();
+		RouteResource rr = RouteResource.builder()
+				.url(APP_HOST_PREFIX+appNumber+"."+UNITTEST_SHARED_DOMAIN)
+				.relationships(rels)
+				.createdAt(CREATED_AT_TIMESTAMP)
+				.id(UNITTEST_ROUTE_UUID_PREFIX+appNumber)
+				.host(APP_HOST_PREFIX+appNumber)
+				.path("/")
+				.build();
+		return rr;
+	}
+	
 	@Override
-	public Mono<ListApplicationRoutesResponse> retrieveRoutesForAppId(String appId) {
-		throw new UnsupportedOperationException();
+	public Mono<ListRoutesResponse> retrieveRoutesForAppId(String appId) {
+		if (appId.startsWith(UNITTEST_APP_UUID_PREFIX)) {
+			RouteResource rr = determineRoutesDataForApp(appId);
+			ListRoutesResponse resp = ListRoutesResponse.builder().resource(rr).build();
+			return Mono.just(resp).delayElement(this.getSleepRandomDuration());
+		}
+		
+		Assertions.fail("Invalid retrieveRoutesForAppId request");
+		return null;
+
+	}
+
+	@Override
+	public Mono<ListRoutesResponse> retrieveRoutesForAppIds(Set<String> appIds) {
+		if (appIds == null) {
+			return null;
+		}
+		
+		List<RouteResource> list = appIds.stream()
+				.map(appId -> this.determineRoutesDataForApp(appId))
+				.filter(e -> e != null)
+				.collect(Collectors.toList());
+		
+		ListRoutesResponse resp = ListRoutesResponse.builder().resources(list).build();
+		return Mono.just(resp).delayElement(this.getSleepRandomDuration());
+	}
+
+	@Override
+	public Mono<ListApplicationProcessesResponse> retrieveWebProcessesForApp(String applicationId) {
+		if (applicationId.startsWith(UNITTEST_APP_UUID_PREFIX)) {
+			final String appNumber = applicationId.substring(UNITTEST_APP_UUID_PREFIX.length());
+			final ProcessResource prWeb = ProcessResource.builder()
+					.instances(this.amountInstances)
+					.type("web")
+					.createdAt(CREATED_AT_TIMESTAMP)
+					.command("dummycommand")
+					.diskInMb(1024)
+					.healthCheck(HealthCheck.builder().type(HealthCheckType.HTTP).build())
+					.memoryInMb(1024)
+					.metadata(Metadata.builder().build())
+					.relationships(ProcessRelationships.builder().build())
+					.id(UNITTEST_PROCESS_UUID_PREFIX + appNumber)
+					.build();
+			
+			ListApplicationProcessesResponse resp = ListApplicationProcessesResponse.builder().resource(prWeb).build();
+			return Mono.just(resp).delayElement(this.getSleepRandomDuration());
+		}
+		
+		Assertions.fail("Invalid retrieveWebProcessesForApp request");
+		return null;
 	}
 }
