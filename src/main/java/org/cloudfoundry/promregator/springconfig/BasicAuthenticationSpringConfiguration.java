@@ -13,7 +13,7 @@ public class BasicAuthenticationSpringConfiguration {
 	@Bean
 	public BasicAuthenticationFilter basicAuthFilter(AuthenticationManager authenticationManager,
 			BasicAuthenticationEntryPoint basicAuthEntryPoint) {
-		return new BasicAuthenticationFilter(authenticationManager, basicAuthEntryPoint());
+		return new BasicAuthenticationFilter(authenticationManager, basicAuthEntryPoint);
 	}
 
 	@Bean
