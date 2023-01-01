@@ -2,9 +2,13 @@ package org.cloudfoundry.promregator.cfaccessor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
+import java.util.Arrays;
+import java.util.HashSet;
+
+import org.cloudfoundry.client.v3.applications.ListApplicationProcessesResponse;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
-import org.cloudfoundry.client.v3.spaces.GetSpaceResponse;
+import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
+import org.cloudfoundry.client.v3.spaces.ListSpacesResponse;
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -87,16 +91,6 @@ class CFAccessorCacheCaffeineTest {
 		subject.retrieveAllOrgIdsV3();
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllOrgIdsV3();
 	}
-	
-	@Test
-	void testRetrieveSpaceSummary() {
-		Mono<GetSpaceSummaryResponse> response1 = subject.retrieveSpaceSummary("dummy");
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveSpaceSummary("dummy");
-		
-		Mono<GetSpaceSummaryResponse> response2 = subject.retrieveSpaceSummary("dummy");
-		assertThat(response1.block()).isEqualTo(response2.block());
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveSpaceSummary("dummy");
-	}
 
 	@Test
 	void testRetrieveDomain() {
@@ -154,5 +148,48 @@ class CFAccessorCacheCaffeineTest {
 		Mono<ListOrganizationDomainsResponse> response2 = subject.retrieveAllDomainsV3("dummy");
 		assertThat(response1.block()).isEqualTo(response2.block());
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllDomainsV3("dummy");
+	}
+	
+	@Test
+	void testRetrieveSpaceIdsInOrgV3() {
+		Mono<ListSpacesResponse> response1 = subject.retrieveSpaceIdsInOrgV3("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveSpaceIdsInOrgV3("dummy");
+
+		Mono<ListSpacesResponse> response2 = subject.retrieveSpaceIdsInOrgV3("dummy");
+		assertThat(response1.block()).isEqualTo(response2.block());
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveSpaceIdsInOrgV3("dummy");
+	}
+	
+	@Test
+	void testRetrieveWebProcessesForApp() {
+		Mono<ListApplicationProcessesResponse> response1 = subject.retrieveWebProcessesForApp("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveWebProcessesForApp("dummy");
+
+		Mono<ListApplicationProcessesResponse> response2 = subject.retrieveWebProcessesForApp("dummy");
+		assertThat(response1.block()).isEqualTo(response2.block());
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveWebProcessesForApp("dummy");
+	}
+	
+	@Test
+	void testRetrieveRoutesForAppId() {
+		Mono<ListRoutesResponse> response1 = subject.retrieveRoutesForAppId("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(0)).retrieveRoutesForAppId("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveRoutesForAppIds(Mockito.anySet());
+
+		Mono<ListRoutesResponse> response2 = subject.retrieveRoutesForAppId("dummy");
+		assertThat(response1.block()).isEqualTo(response2.block());
+		Mockito.verify(this.parentMock, Mockito.times(0)).retrieveRoutesForAppId("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveRoutesForAppIds(Mockito.anySet());
+	}
+	
+	@Test
+	void testRetrieveRoutesForAppIds() {
+		HashSet<String> set = new HashSet<>(Arrays.asList("dummy"));
+		Mono<ListRoutesResponse> response1 = subject.retrieveRoutesForAppIds(set);
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveRoutesForAppIds(set);
+
+		Mono<ListRoutesResponse> response2 = subject.retrieveRoutesForAppIds(set);
+		assertThat(response1.block()).isEqualTo(response2.block());
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveRoutesForAppIds(set); /* not cached */
 	}
 }

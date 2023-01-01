@@ -1,11 +1,12 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
+import java.util.Set;
+
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
-import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
-import org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse;
+import org.cloudfoundry.client.v3.applications.ListApplicationProcessesResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
-import org.cloudfoundry.client.v3.spaces.GetSpaceResponse;
+import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -23,11 +24,6 @@ public class CFAccessorCacheCaffeineSpringApplication {
 	}
 	
 	public static class ParentMock implements CFAccessor {
-
-		@Override
-		public Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId) {
-			return Mono.just(GetSpaceSummaryResponse.builder().build());
-		}
 
 		@Override
 		public Mono<GetInfoResponse> getInfo() {
@@ -65,13 +61,23 @@ public class CFAccessorCacheCaffeineSpringApplication {
 		}
 
 		@Override
-		public Mono<ListApplicationRoutesResponse> retrieveRoutesForAppId(String appId) {
-			return Mono.just(ListApplicationRoutesResponse.builder().build());
+		public Mono<ListRoutesResponse> retrieveRoutesForAppId(String appId) {
+			return Mono.just(ListRoutesResponse.builder().build());
 		}
 
 		@Override
 		public void reset() {
 			// nothing to be done
+		}
+
+		@Override
+		public Mono<ListRoutesResponse> retrieveRoutesForAppIds(Set<String> appIds) {
+			return Mono.just(ListRoutesResponse.builder().build());
+		}
+
+		@Override
+		public Mono<ListApplicationProcessesResponse> retrieveWebProcessesForApp(String applicationId) {
+			return Mono.just(ListApplicationProcessesResponse.builder().build());
 		}
 	}
 	
