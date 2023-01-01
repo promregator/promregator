@@ -88,18 +88,36 @@ In case you do, rename those configuration attributes to `cf.request.timeout.app
 In case you have both attribute variants set, you should check about Promregator's behavior: Due to a bug, it may have happened before that `cf.request.timeout.app` was ignored and the default of 2.5 seconds was applied - even though you *thought* to have advised otherwise. 
 
 
-## Switch to new Request Timeout Nomenclature (for Apps Details)
+## Switch to new Request Timeout Nomenclature (for App Details)
 
 Check, if you still use one of the old configuration options:
 
 * `cf.request.timeout.routeMapping`
-* `cf.request.timeout.route`
 * `cf.request.timeout.sharedDomain`
-* `cf.request.timeout.process`
 
 They are deprecated since long (version 0.5.0).
 
 They need to be replaced with the new configuration option `cf.request.timeout.appSummary`. Note that there is only one configuration option available for all of them. Consider this, when "merging" their values. If in doubt which value you should use, use the highest value.
+
+## New Cache Types available (for App Details)
+
+Promregator introduced new cache types:
+
+* Process Cache
+* Route Cache
+
+Also Promregator uses the already-available Domain Cache much differently as before.
+
+Consequently, there are new configuration options available:
+
+* `cf.request.timeout.route`
+* `cf.request.timeout.process`
+* `cf.request.timeout.domain` (already available in V0.* but used rarely)
+* `cf.request.expiry.route`
+* `cf.request.expiry.process`
+* `cf.request.expiry.domain` (already available in V0.* but used rarely)
+
+Check the [configuration page](./config.md) for these options and consider, if you need to set deviating values for them in your configuration.
 
 
 ## Label Enrichment and Single Endpoint Scraping

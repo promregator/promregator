@@ -124,11 +124,11 @@ class CFAccessorCacheCaffeineInvalidationTest {
 	}
 
 	@Test
-	void testInvalidateCacheWebProcess() {
+	void testInvalidateCacheProcess() {
 		subject.retrieveWebProcessesForApp("dummy");
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveWebProcessesForApp("dummy");
 		
-		subject.invalidateCacheWebProcess();
+		subject.invalidateCacheProcess();
 		
 		subject.retrieveWebProcessesForApp("dummy");
 		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveWebProcessesForApp("dummy");

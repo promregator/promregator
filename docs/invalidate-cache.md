@@ -11,7 +11,7 @@ Promregator has several caches built in, which mainly serve the purpose to buffe
 | Application Cache | Caches the metadata of Cloud Foundry Applications within Organizations and Spaces, especially the mapping between human-readable names and internal CF Org/Space Ids. |
 | Domain Cache | Caches the metadata of Cloud Foundry Domains based on their CF Organizations |
 | Route Cache | Caches the metadata of Cloud Foundry Routes (including hostnames and URLs) |
-| Web Process Cache | Caches the metadata of Cloud Foundry Processes (limited to "web"-typed processes only) |
+| Process Cache | Caches the metadata of Cloud Foundry Processes (limited to "web"-typed processes only) |
 | Resolver Cache | Caches the mapping between targets in the configuration and the resolution into Cloud Foundry Organizations (names), Cloud Foundry Space (names) and Cloud Foundry Application (names) |
 
 The application cache also is used in cases that you have not specified the application name in a target and thus *all* applications within a space are requested to be scraped.
@@ -38,7 +38,7 @@ The HTTP REST endpoint allows to specify which caches shall be flushed by using 
 | Application Cache | `application` |
 | Domain Cache | `domain` |
 | Route Cache | `route` |
-| Web Process Cache | `webprocess` |
+| Process Cache | `process` |
 | Resolver Cache | `resolver` |
 
 Not specifying any of these parameters will lead to no cache to be flushed. On completion of any request, the HTTP status code of the request will be 204 ("no content").

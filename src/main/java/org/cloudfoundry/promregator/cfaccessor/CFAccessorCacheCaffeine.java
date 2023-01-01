@@ -41,7 +41,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	private @NonNull AsyncLoadingCache<String, ListOrganizationDomainsResponse> domainsInOrgCache;
 	private @NonNull AsyncLoadingCache<CacheKeyAppsInSpace, ListApplicationsResponse> appsInSpaceCache;
 	private @NonNull AsyncLoadingCache<String, ListRoutesResponse> routesCache;
-	private @NonNull AsyncLoadingCache<String, ListApplicationProcessesResponse> webProcessCache;
+	private @NonNull AsyncLoadingCache<String, ListApplicationProcessesResponse> processCache;
 	
 	@Value("${cf.cache.timeout.org:3600}")
 	private int refreshCacheOrgLevelInSeconds;
@@ -54,7 +54,13 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 
 	@Value("${cf.cache.timeout.domain:3600}")
 	private int refreshCacheDomainLevelInSeconds;
-		
+	
+	@Value("${cf.cache.timeout.route:300}")
+	private int refreshCacheRouteLevelInSeconds;
+	
+	@Value("${cf.cache.timeout.process:300}")
+	private int refreshCacheProcessLevelInSeconds;
+	
 	@Value("${cf.cache.expiry.org:120}")
 	private int expiryCacheOrgLevelInSeconds;
 
@@ -66,6 +72,12 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	
 	@Value("${cf.cache.expiry.domain:300}")
 	private int expiryCacheDomainLevelInSeconds;
+	
+	@Value("${cf.cache.expiry.route:120}")
+	private int expiryCacheRouteLevelInSeconds;
+	
+	@Value("${cf.cache.expiry.process:120}")
+	private int expiryCacheProcessLevelInSeconds;
 	
 	@Autowired
 	private InternalMetrics internalMetrics;
@@ -165,7 +177,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 		}
 	}
 	
-	private class WebProcessCacheLoader implements AsyncCacheLoader<String, ListApplicationProcessesResponse> {
+	private class ProcessCacheLoader implements AsyncCacheLoader<String, ListApplicationProcessesResponse> {
 		@Override
 		public @NonNull CompletableFuture<ListApplicationProcessesResponse> asyncLoad(@NonNull String key,
 				@NonNull Executor executor) {
@@ -242,20 +254,20 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 		this.internalMetrics.addCaffeineCache("appsInSpace", this.appsInSpaceCache);
 		
 		this.routesCache = Caffeine.newBuilder()
-//				TODO V3: Proper configuration options .expireAfterAccess(this.expiryCacheDomainLevelInSeconds, TimeUnit.SECONDS)
-//				TODO V3: Proper configuration options .refreshAfterWrite(this.refreshCacheDomainLevelInSeconds, TimeUnit.SECONDS)
+				.expireAfterAccess(this.expiryCacheRouteLevelInSeconds, TimeUnit.SECONDS)
+				.refreshAfterWrite(this.refreshCacheRouteLevelInSeconds, TimeUnit.SECONDS)
 				.recordStats()
 				.scheduler(caffeineScheduler)
 				.buildAsync(new RoutesCacheLoader());
 		this.internalMetrics.addCaffeineCache("routes", this.routesCache);
 
-		this.webProcessCache = Caffeine.newBuilder()
-//				TODO V3: Proper configuration options .expireAfterAccess(this.expiryCacheDomainLevelInSeconds, TimeUnit.SECONDS)
-//				TODO V3: Proper configuration options .refreshAfterWrite(this.refreshCacheDomainLevelInSeconds, TimeUnit.SECONDS)
+		this.processCache = Caffeine.newBuilder()
+				.expireAfterAccess(this.expiryCacheProcessLevelInSeconds, TimeUnit.SECONDS)
+				.refreshAfterWrite(this.refreshCacheProcessLevelInSeconds, TimeUnit.SECONDS)
 				.recordStats()
 				.scheduler(caffeineScheduler)
-				.buildAsync(new WebProcessCacheLoader());
-		this.internalMetrics.addCaffeineCache("webprocess", this.webProcessCache);
+				.buildAsync(new ProcessCacheLoader());
+		this.internalMetrics.addCaffeineCache("process", this.processCache);
 
 		
 	}
@@ -301,7 +313,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 
 	@Override
 	public Mono<ListApplicationProcessesResponse> retrieveWebProcessesForApp(String applicationId) {
-		return Mono.fromFuture(this.webProcessCache.get(applicationId));
+		return Mono.fromFuture(this.processCache.get(applicationId));
 	}
 	
 	@Override
@@ -354,9 +366,9 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	}
 
 	@Override
-	public void invalidateCacheWebProcess() {
-		log.info("Invalidating web process cache");
-		this.webProcessCache.synchronous().invalidateAll();
+	public void invalidateCacheProcess() {
+		log.info("Invalidating process cache");
+		this.processCache.synchronous().invalidateAll();
 	}
 
 	@Override

@@ -161,7 +161,7 @@ class CFAccessorCacheCaffeineTest {
 	}
 	
 	@Test
-	void testRetrieveWebProcessesForApp() {
+	void testRetrieveProcessesForApp() {
 		Mono<ListApplicationProcessesResponse> response1 = subject.retrieveWebProcessesForApp("dummy");
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveWebProcessesForApp("dummy");
 

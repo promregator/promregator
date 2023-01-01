@@ -6,6 +6,8 @@ Over the time Promregator has used different cache types for caching metadata pr
 
 The following table describes the major different bahaviors of the caches used:
 
+// TODO V3 Fix me: remove Classical Cache here!
+
 | Property | Classical Cache | Caffeine Cache |
 |----------|-----------------|----------------|
 | Timeout  | Enforced Eviction | No eviction  |

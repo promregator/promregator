@@ -3,7 +3,7 @@ package org.cloudfoundry.promregator.cfaccessor;
 public interface CFAccessorCache extends CFAccessor {
 	void invalidateCacheRoute();
 	
-	void invalidateCacheWebProcess();
+	void invalidateCacheProcess();
 	
 	void invalidateCacheApplication();
 

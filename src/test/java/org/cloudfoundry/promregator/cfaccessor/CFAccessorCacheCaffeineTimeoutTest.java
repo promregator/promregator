@@ -167,7 +167,7 @@ class CFAccessorCacheCaffeineTimeoutTest {
 	}
 	
 	@Test
-	void testRetrieveWebProcessesForApp() throws InterruptedException {
+	void testRetrieveProcessesForApp() throws InterruptedException {
 		Mono<ListApplicationProcessesResponse> response1 = subject.retrieveWebProcessesForApp("dummy");
 		response1.subscribe();
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveWebProcessesForApp("dummy");

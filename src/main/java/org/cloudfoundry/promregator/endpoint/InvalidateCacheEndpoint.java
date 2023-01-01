@@ -23,7 +23,7 @@ public class InvalidateCacheEndpoint {
 	
 	@GetMapping(produces = MediaType.TEXT_PLAIN_VALUE)
 	public ResponseEntity<String> invalidateCache(
-			@RequestParam(name = "webprocess", required = false) boolean webprocess,
+			@RequestParam(name = "process", required = false) boolean process,
 			@RequestParam(name = "route", required = false) boolean route,
 			@RequestParam(name = "domain", required = false) boolean domain,
 			@RequestParam(name = "application", required = false) boolean application,
@@ -32,8 +32,8 @@ public class InvalidateCacheEndpoint {
 			@RequestParam(name = "resolver", required = false) boolean resolver
 			) {
 
-		if (webprocess) {
-			cfAccessorCache.invalidateCacheWebProcess();
+		if (process) {
+			cfAccessorCache.invalidateCacheProcess();
 		}
 		if (route) {
 			cfAccessorCache.invalidateCacheRoute();
