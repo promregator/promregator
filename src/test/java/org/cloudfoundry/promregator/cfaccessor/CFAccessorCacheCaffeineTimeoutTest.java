@@ -1,14 +1,19 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
-import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.concurrent.TimeoutException;
 
-import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
+import org.cloudfoundry.client.v3.applications.ListApplicationProcessesResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
+import org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse;
+import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
+import org.cloudfoundry.client.v3.spaces.ListSpacesResponse;
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,8 +55,11 @@ class CFAccessorCacheCaffeineTimeoutTest {
 		Mockito.when(this.parentMock.retrieveOrgIdV3("dummy")).then(new TimeoutMonoAnswer());
 		Mockito.when(this.parentMock.retrieveSpaceIdV3("dummy1", "dummy2")).then(new TimeoutMonoAnswer());
 		Mockito.when(this.parentMock.retrieveAllApplicationsInSpaceV3("dummy1", "dummy2")).then(new TimeoutMonoAnswer());
-		Mockito.when(this.parentMock.retrieveSpaceSummary("dummy")).then(new TimeoutMonoAnswer());
 		Mockito.when(this.parentMock.retrieveAllDomainsV3("dummy")).then(new TimeoutMonoAnswer());
+		Mockito.when(this.parentMock.retrieveWebProcessesForApp("dummy")).then(new TimeoutMonoAnswer());
+		Mockito.when(this.parentMock.retrieveSpaceIdsInOrgV3("dummy")).then(new TimeoutMonoAnswer());
+		Mockito.when(this.parentMock.retrieveAllOrgIdsV3()).then(new TimeoutMonoAnswer());
+		Mockito.when(this.parentMock.retrieveRoutesForAppIds(Mockito.anySet())).then(new TimeoutMonoAnswer());
 	}
 
 	public static class TimeoutMonoAnswer implements Answer<Mono<?>> {
@@ -78,7 +86,7 @@ class CFAccessorCacheCaffeineTimeoutTest {
 		
 		Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> response2 = subject.retrieveOrgIdV3("dummy");
 		response2.subscribe();
-		assertThat(response1).isNotEqualTo(response2);
+		Assertions.assertNotEquals(response1, response2);
 		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveOrgIdV3("dummy");
 	}
 
@@ -94,7 +102,7 @@ class CFAccessorCacheCaffeineTimeoutTest {
 		
 		Mono<org.cloudfoundry.client.v3.spaces.ListSpacesResponse> response2 = subject.retrieveSpaceIdV3("dummy1", "dummy2");
 		response2.subscribe();
-		assertThat(response1).isNotEqualTo(response2);
+		Assertions.assertNotEquals(response1, response2);
 		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveSpaceIdV3("dummy1", "dummy2");
 	}
 
@@ -109,23 +117,8 @@ class CFAccessorCacheCaffeineTimeoutTest {
 		
 		Mono<ListApplicationsResponse> response2 = subject.retrieveAllApplicationsInSpaceV3("dummy1", "dummy2");
 		response2.subscribe();
-		assertThat(response1).isNotEqualTo(response2);
+		Assertions.assertNotEquals(response1, response2);
 		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveAllApplicationsInSpaceV3("dummy1", "dummy2");
-	}
-
-	@Test
-	void testRetrieveSpaceSummary() throws InterruptedException {
-		Mono<GetSpaceSummaryResponse> response1 = subject.retrieveSpaceSummary("dummy");
-		response1.subscribe();
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveSpaceSummary("dummy");
-		
-		// required to permit asynchronous updates of caches => test stability
-		Thread.sleep(10);
-		
-		Mono<GetSpaceSummaryResponse> response2 = subject.retrieveSpaceSummary("dummy");
-		response2.subscribe();
-		assertThat(response1).isNotEqualTo(response2);
-		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveSpaceSummary("dummy");
 	}
 
 	@Test
@@ -139,8 +132,83 @@ class CFAccessorCacheCaffeineTimeoutTest {
 		
 		Mono<ListOrganizationDomainsResponse> response2 = subject.retrieveAllDomainsV3("dummy");
 		response2.subscribe();
-		assertThat(response1).isNotEqualTo(response2);
+		Assertions.assertNotEquals(response1, response2);
 		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveAllDomainsV3("dummy");
 	}
 
+	@Test
+	void testRetrieveAllOrgIdsV3() throws InterruptedException {
+		Mono<ListOrganizationsResponse> response1 = subject.retrieveAllOrgIdsV3();
+		response1.subscribe();
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllOrgIdsV3();
+		
+		// required to permit asynchronous updates of caches => test stability
+		Thread.sleep(10);
+		
+		Mono<ListOrganizationsResponse> response2 = subject.retrieveAllOrgIdsV3();
+		response2.subscribe();
+		Assertions.assertNotEquals(response1, response2);
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveAllOrgIdsV3();
+	}
+	
+	@Test
+	void testRetrieveSpaceIdsInOrgV3() throws InterruptedException {
+		Mono<ListSpacesResponse> response1 = subject.retrieveSpaceIdsInOrgV3("dummy");
+		response1.subscribe();
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveSpaceIdsInOrgV3("dummy");
+		
+		// required to permit asynchronous updates of caches => test stability
+		Thread.sleep(10);
+		
+		Mono<ListSpacesResponse> response2 = subject.retrieveSpaceIdsInOrgV3("dummy");
+		response2.subscribe();
+		Assertions.assertNotEquals(response1, response2);
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveSpaceIdsInOrgV3("dummy");
+	}
+	
+	@Test
+	void testRetrieveWebProcessesForApp() throws InterruptedException {
+		Mono<ListApplicationProcessesResponse> response1 = subject.retrieveWebProcessesForApp("dummy");
+		response1.subscribe();
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveWebProcessesForApp("dummy");
+		
+		// required to permit asynchronous updates of caches => test stability
+		Thread.sleep(10);
+		
+		Mono<ListApplicationProcessesResponse> response2 = subject.retrieveWebProcessesForApp("dummy");
+		response2.subscribe();
+		Assertions.assertNotEquals(response1, response2);
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveWebProcessesForApp("dummy");
+	}
+	
+	@Test
+	void testRetrieveRoutesForAppIds() throws InterruptedException {
+		HashSet<String> set = new HashSet<>(Arrays.asList("dummy"));
+		Mono<ListRoutesResponse> response1 = subject.retrieveRoutesForAppIds(set);
+		response1.subscribe();
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveRoutesForAppIds(set);
+		
+		// required to permit asynchronous updates of caches => test stability
+		Thread.sleep(10);
+		
+		Mono<ListRoutesResponse> response2 = subject.retrieveRoutesForAppIds(set);
+		response2.subscribe();
+		Assertions.assertNotEquals(response1, response2);
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveRoutesForAppIds(set);
+	}
+	
+	@Test
+	void testRetrieveRoutesForAppId() throws InterruptedException {
+		Mono<ListRoutesResponse> response1 = subject.retrieveRoutesForAppId("dummy");
+		response1.subscribe();
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveRoutesForAppIds(Mockito.anySet());
+		
+		// required to permit asynchronous updates of caches => test stability
+		Thread.sleep(10);
+		
+		Mono<ListRoutesResponse> response2 = subject.retrieveRoutesForAppId("dummy");
+		response2.subscribe();
+		Assertions.assertNotEquals(response1, response2);
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveRoutesForAppIds(Mockito.anySet());
+	}
 }
