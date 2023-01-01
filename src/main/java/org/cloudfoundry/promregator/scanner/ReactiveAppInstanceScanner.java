@@ -175,6 +175,10 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			@Nullable Predicate<? super Instance> instanceFilter) {
 		Flux<ResolvedTarget> targetsFlux = Flux.fromIterable(targets);
 
+		/*
+		 * TODO V3: Check, if this serial approach below can be executed more in parallel
+		 */
+		
 		Flux<OSAVector> initialOSAVectorFlux = targetsFlux.filter(rt -> rt.getApplicationId() != null)
 			.map(target -> {
 				OSAVector v = new OSAVector();
