@@ -99,7 +99,10 @@ Check, if you still use one of the old configuration options:
 
 They are deprecated since long (version 0.5.0).
 
-They need to be replaced with the new configuration option `cf.request.timeout.appSummary`. Note that there is only one configuration option available for all of them. Consider this, when "merging" their values. If in doubt which value you should use, use the highest value.
+Their replacement, configuration option `cf.request.timeout.appSummary`, has also lost their meaning in the meantime. 
+
+If you have specified any of these five configuration options, you should remove any of them from your configuration file.
+
 
 ## New Cache Types available (for App Details)
 
@@ -129,7 +132,7 @@ With the new Cache Types mentioned before, also new request timeout configuratio
 * `cf.request.timeout.process` (configuration option might already have been set before in version 0.x)
 * `cf.request.timeout.domain`
 
-Note that this may be confusing: As just mentioned two sections above, `cf.request.timeout.route` and `cf.request.timeout.process` had been deprecated in version 0.5.0. However, with version 1.0.0 we introduce them again - with a slight difference in their meaning. Still their value denotes the maximal runtime of a request to the Cloud Foundry platform. The old configuration options were describing requests timeouts for endpoints using the CAPI V2 specification. The newly introduced one's are describing request timeouts for endpoints using the CAPI V3 specification (as Promregator version 1.x has been switched from CAPI V2 to V3 - and support for V2 is dropped).
+Note that this may be confusing: As just mentioned two sections above, `cf.request.timeout.route` and `cf.request.timeout.process` had been deprecated in version 0.5.0. However, with version 1.0.0 we reintroduce some of them - with a slight difference in their meaning. Still their value denotes the maximal runtime of a request to the Cloud Foundry platform. The old configuration options were describing requests timeouts for endpoints using the CAPI V2 specification. The newly introduced one's are describing request timeouts for endpoints using the CAPI V3 specification (as Promregator version 1.x has been switched from CAPI V2 to V3 - and support for V2 is dropped).
 
 Check the [configuration page](./config.md) for these options and consider, if you need to set deviating values for them in your configuration.
 

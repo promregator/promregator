@@ -81,9 +81,6 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	@Value("${cf.request.timeout.appInSpace:2500}")
 	private int requestTimeoutAppInSpace;
 	
-	@Value("${cf.request.timeout.appSummary:4000}") // TODO V3: Needs to be removed/renamed - documentation to be adjusted
-	private int requestTimeoutAppSummary; 
-	
 	@Value("${cf.request.timeout.domain:2500}")
 	private int requestTimeoutDomains;
 
