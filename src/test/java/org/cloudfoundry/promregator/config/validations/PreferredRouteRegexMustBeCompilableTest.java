@@ -8,7 +8,7 @@ import org.cloudfoundry.promregator.config.Target;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class PreferredRouteRegexMustBeCompilableTest {
+public class PreferredRouteRegexMustBeCompilableTest {
 
 	@Test
 	public void testNullPreferredRouteRegexDoesNotCrash() {

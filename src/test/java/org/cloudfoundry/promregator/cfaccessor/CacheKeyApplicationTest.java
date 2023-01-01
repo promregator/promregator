@@ -3,7 +3,7 @@ package org.cloudfoundry.promregator.cfaccessor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class CacheKeyApplicationTest {
+public class CacheKeyApplicationTest {
 
 	@Test
 	public void testGetterSetter() {

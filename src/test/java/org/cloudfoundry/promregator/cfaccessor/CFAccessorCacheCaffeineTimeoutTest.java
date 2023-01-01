@@ -33,7 +33,7 @@ import reactor.core.publisher.Mono;
 @SpringBootTest(classes = CFAccessorCacheCaffeineTimeoutSpringApplication.class)
 @TestPropertySource(locations= { "../default.properties" })
 @DirtiesContext(classMode=ClassMode.AFTER_CLASS)
-class CFAccessorCacheCaffeineTimeoutTest {
+public class CFAccessorCacheCaffeineTimeoutTest {
 
 	@Autowired
 	private CFAccessor parentMock;

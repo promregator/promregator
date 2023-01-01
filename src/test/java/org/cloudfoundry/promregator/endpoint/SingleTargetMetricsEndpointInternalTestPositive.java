@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
 
-class SingleTargetMetricsEndpointInternalTestPositive extends SingleTargetMetricsEndpoint {
+public class SingleTargetMetricsEndpointInternalTestPositive extends SingleTargetMetricsEndpoint {
 
 	@Override
 	public String handleRequest(String applicationId, String instanceId) {

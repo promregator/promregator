@@ -2,7 +2,7 @@ package org.cloudfoundry.promregator.config;
 
 import org.junit.jupiter.api.Test;
 
-class ConfigurationExceptionTest {
+public class ConfigurationExceptionTest {
 
 	@Test
 	public void testConfigurationExceptionStringThrowable() {

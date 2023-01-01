@@ -28,7 +28,7 @@ import reactor.core.publisher.Mono;
 @SpringBootTest(classes = CFAccessorCacheCaffeineSpringApplication.class)
 @TestPropertySource(locations="../default.properties")
 @DirtiesContext(classMode=ClassMode.AFTER_CLASS)
-class CFAccessorCacheCaffeineTest {
+public class CFAccessorCacheCaffeineTest {
 
 	@Autowired
 	private CFAccessor parentMock;

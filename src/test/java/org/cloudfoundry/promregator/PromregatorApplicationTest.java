@@ -27,7 +27,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 })
 @TestPropertySource(locations="default.properties")
 @DirtiesContext(classMode=ClassMode.AFTER_CLASS)
-class PromregatorApplicationTest {
+public class PromregatorApplicationTest {
 
 	@Autowired
 	private CFAccessor cfAccessor;

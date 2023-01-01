@@ -19,7 +19,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = MockedReactiveTargetResolverSpringApplication.class)
-class ReactiveTargetResolverTest {
+public class ReactiveTargetResolverTest {
 	@AfterAll
 	static void cleanupEnvironment() {
 		JUnitTestUtils.cleanUpAll();

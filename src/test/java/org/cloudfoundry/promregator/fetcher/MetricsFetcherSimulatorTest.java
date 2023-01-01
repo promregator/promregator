@@ -13,7 +13,7 @@ import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.Gauge.Child;
 
-class MetricsFetcherSimulatorTest {
+public class MetricsFetcherSimulatorTest {
 	@AfterAll
 	static public void cleanUp() {
 		JUnitTestUtils.cleanUpAll();

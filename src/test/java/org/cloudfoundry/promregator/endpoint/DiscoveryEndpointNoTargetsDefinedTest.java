@@ -21,7 +21,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = NoTargetsConfiguredSpringApplication.class)
 @TestPropertySource(locations="default.properties")
-class DiscoveryEndpointNoTargetsDefinedTest {
+public class DiscoveryEndpointNoTargetsDefinedTest {
 
 	@AfterAll
 	public static void cleanupEnvironment() {

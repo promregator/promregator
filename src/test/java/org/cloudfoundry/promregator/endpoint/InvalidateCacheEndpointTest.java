@@ -19,7 +19,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = MockedAppInstanceScannerEndpointSpringApplication.class)
 @TestPropertySource(locations="default.properties")
-class InvalidateCacheEndpointTest {
+public class InvalidateCacheEndpointTest {
 
 	@AfterAll
 	static void cleanupEnvironment() {

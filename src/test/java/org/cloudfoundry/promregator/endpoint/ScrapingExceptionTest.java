@@ -2,7 +2,7 @@ package org.cloudfoundry.promregator.endpoint;
 
 import org.junit.jupiter.api.Test;
 
-class ScrapingExceptionTest {
+public class ScrapingExceptionTest {
 
 	@Test
 	public void testScrapingExceptionStringThrowable() {

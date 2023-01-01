@@ -3,7 +3,7 @@ package org.cloudfoundry.promregator.scanner;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class InstanceTest {
+public class InstanceTest {
 
 	@Test
 	public void testToString() {

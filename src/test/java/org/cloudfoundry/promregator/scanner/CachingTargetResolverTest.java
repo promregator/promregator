@@ -17,7 +17,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = MockedCachingTargetResolverSpringApplication.class)
-class CachingTargetResolverTest {
+public class CachingTargetResolverTest {
 	@AfterAll
 	static void cleanupEnvironment() {
 		JUnitTestUtils.cleanUpAll();

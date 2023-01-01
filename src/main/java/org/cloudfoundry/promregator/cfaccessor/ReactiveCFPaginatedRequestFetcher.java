@@ -24,7 +24,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import reactor.util.retry.Retry;
 
-class ReactiveCFPaginatedRequestFetcher {
+public class ReactiveCFPaginatedRequestFetcher {
 	private static final Logger log = LoggerFactory.getLogger(ReactiveCFPaginatedRequestFetcher.class);
 
 	private static final int MAX_SUPPORTED_RESULTS_PER_PAGE = 100;

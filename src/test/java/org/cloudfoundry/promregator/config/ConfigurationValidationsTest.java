@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Collections;
 import java.util.List;
 
-class ConfigurationValidationsTest {
+public class ConfigurationValidationsTest {
 	private static class TestableConfigurationValidations extends ConfigurationValidations {
 		public boolean called = false;
 		/* (non-Javadoc)

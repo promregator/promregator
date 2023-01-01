@@ -10,7 +10,7 @@ import org.mockito.Mockito;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class BasicAuthenticationEnricherTest {
+public class BasicAuthenticationEnricherTest {
 
 	@AfterAll
 	public static void cleanupEnvironment() {

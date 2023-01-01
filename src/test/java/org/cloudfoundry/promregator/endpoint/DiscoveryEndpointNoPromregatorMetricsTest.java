@@ -20,7 +20,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = MockedMetricsEndpointSpringApplication.class)
 @TestPropertySource(locations="no_promregator_metrics.properties")
-class DiscoveryEndpointNoPromregatorMetricsTest {
+public class DiscoveryEndpointNoPromregatorMetricsTest {
 
 	@Autowired
 	private DiscoveryEndpoint subject;

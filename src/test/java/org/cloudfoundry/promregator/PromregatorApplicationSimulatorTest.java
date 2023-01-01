@@ -28,7 +28,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ActiveProfiles(profiles = {"simulation"})
 
 @DirtiesContext(classMode=ClassMode.AFTER_CLASS)
-class PromregatorApplicationSimulatorTest {
+public class PromregatorApplicationSimulatorTest {
 
 	@Test
 	void contextLoads() {

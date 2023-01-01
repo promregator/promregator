@@ -19,7 +19,7 @@ import com.google.common.testing.FakeTicker;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-class CaffeineAsyncLoadingTest {
+public class CaffeineAsyncLoadingTest {
 	private static final Logger log = LoggerFactory.getLogger(CaffeineAsyncLoadingTest.class);
 
 	private static final class AsyncCacheLoaderTimingImplementation implements AsyncCacheLoader<String, Integer> {

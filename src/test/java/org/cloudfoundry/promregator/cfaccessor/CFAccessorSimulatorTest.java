@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
 
 import reactor.core.publisher.Mono;
 
-class CFAccessorSimulatorTest {
+public class CFAccessorSimulatorTest {
 
 
 	@Test

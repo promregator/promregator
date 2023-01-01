@@ -4,7 +4,7 @@ import org.cloudfoundry.promregator.config.InvalidTargetProtocolSpecifiedError;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class ResolvedTargetTest {
+public class ResolvedTargetTest {
 
 	@Test
 	void testToString() {

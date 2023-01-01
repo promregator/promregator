@@ -2,7 +2,7 @@ package org.cloudfoundry.promregator.cfaccessor;
 
 import org.junit.jupiter.api.Test;
 
-class UnknownAccessorCacheTypeErrorTest {
+public class UnknownAccessorCacheTypeErrorTest {
 
 	@Test
 	public void testCanBeCreated() {

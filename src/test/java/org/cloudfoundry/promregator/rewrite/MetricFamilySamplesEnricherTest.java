@@ -14,7 +14,7 @@ import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Collector.MetricFamilySamples.Sample;
 import io.prometheus.client.Collector.Type;
 
-class MetricFamilySamplesEnricherTest {
+public class MetricFamilySamplesEnricherTest {
 	@AfterAll
 	static void cleanupEnvironment() {
 		JUnitTestUtils.cleanUpAll();

@@ -16,7 +16,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = AuthenticatorControllerSpringApplication.class)
 @TestPropertySource(locations="default.properties")
-class AuthenticatorControllerTest {
+public class AuthenticatorControllerTest {
 
 	@Autowired
 	private AuthenticatorController subject;

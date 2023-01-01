@@ -17,7 +17,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @SpringBootTest(classes = CFAccessorCacheCaffeineSpringApplication.class)
 @TestPropertySource(locations="../default.properties")
 @DirtiesContext(classMode=ClassMode.AFTER_CLASS)
-class CFAccessorCacheCaffeineInvalidationTest {
+public class CFAccessorCacheCaffeineInvalidationTest {
 	
 	/*
 	 * Warning! Do not try to merge with CFAccessorCacheCaffeineTest

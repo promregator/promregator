@@ -24,7 +24,7 @@ import io.prometheus.client.Collector.MetricFamilySamples.Sample;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = LabelEnrichmentMockedMetricsEndpointSpringApplication.class)
 @TestPropertySource(locations="disabledLabelEnrichment.properties")
-class DisabledEnrichmentSingleTargetMetricsEndpointTest {
+public class DisabledEnrichmentSingleTargetMetricsEndpointTest {
 
 	private static MetricsEndpointMockServer mockServer;
 

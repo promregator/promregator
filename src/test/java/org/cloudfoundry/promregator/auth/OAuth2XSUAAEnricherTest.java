@@ -24,7 +24,7 @@ import com.sap.cloud.security.xsuaa.client.OAuth2TokenResponse;
 import com.sap.cloud.security.xsuaa.tokenflows.ClientCredentialsTokenFlow;
 import com.sap.cloud.security.xsuaa.tokenflows.TokenFlowException;
 
-class OAuth2XSUAAEnricherTest {
+public class OAuth2XSUAAEnricherTest {
 	/*
 	 * TODO: This implementation of unit tests may benefit from using 
 	 * https://github.com/SAP/cloud-security-xsuaa-integration/tree/1c133ee17b629b07d58a7aec512daf98b067c031/java-security-test 

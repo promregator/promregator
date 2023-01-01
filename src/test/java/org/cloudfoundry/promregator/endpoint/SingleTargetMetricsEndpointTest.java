@@ -24,7 +24,7 @@ import io.prometheus.client.Collector.MetricFamilySamples;
 @SpringBootTest(classes = MockedMetricsEndpointSpringApplication.class)
 @TestPropertySource(locations="default.properties")
 @ActiveProfiles("SingleTargetMetricsEndpointTest")
-class SingleTargetMetricsEndpointTest {
+public class SingleTargetMetricsEndpointTest {
 
 	@AfterEach
 	void resetMockedHTTPServletRequest() {

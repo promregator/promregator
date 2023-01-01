@@ -21,7 +21,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = MockedMassReactiveAppInstanceScannerSpringApplication.class)
 @TestPropertySource(locations="default.properties")
-class MassReactiveAppInstanceScannerTest {
+public class MassReactiveAppInstanceScannerTest {
 
 	@Autowired
 	private AppInstanceScanner appInstanceScanner;

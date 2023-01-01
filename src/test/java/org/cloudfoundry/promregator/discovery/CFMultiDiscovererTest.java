@@ -30,7 +30,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = CFDiscovererTestSpringApplication.class)
 @TestPropertySource(locations="default.properties")
-class CFMultiDiscovererTest implements MessageSubscriber {
+public class CFMultiDiscovererTest implements MessageSubscriber {
 	
 	@AfterAll
 	public static void cleanUp() {

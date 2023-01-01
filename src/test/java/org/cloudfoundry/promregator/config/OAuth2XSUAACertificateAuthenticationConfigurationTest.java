@@ -3,7 +3,7 @@ package org.cloudfoundry.promregator.config;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class OAuth2XSUAACertificateAuthenticationConfigurationTest {
+public class OAuth2XSUAACertificateAuthenticationConfigurationTest {
 
 	@Test
 	public void testStraightForward() {

@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
 
-class MetricsFetcherTest {
+public class MetricsFetcherTest {
 
 	private static final String DUMMY_METRICS_LIST = "# HELP dummy This is a dummy metric\n"+
 			"# TYPE dummy counter\n"+

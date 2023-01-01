@@ -20,7 +20,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = MockedMetricsEndpointSpringApplication.class)
 @TestPropertySource(locations="default.properties")
-class DiscoveryEndpointTest {
+public class DiscoveryEndpointTest {
 
 	@AfterAll
 	static void cleanupEnvironment() {
