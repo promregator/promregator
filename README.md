@@ -4,8 +4,6 @@
 
 # Status
 
-[![Total alerts](https://img.shields.io/lgtm/alerts/g/promregator/promregator.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/promregator/promregator/alerts/) [![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/promregator/promregator.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/promregator/promregator/context:java)
-
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=promregator&metric=alert_status)](https://sonarcloud.io/dashboard?id=promregator) [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=promregator&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=promregator) [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=promregator&metric=bugs)](https://sonarcloud.io/dashboard?id=promregator) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=promregator&metric=coverage)](https://sonarcloud.io/dashboard?id=promregator) [![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=promregator&metric=ncloc)](https://sonarcloud.io/dashboard?id=promregator)
 
 # Promregator Project
