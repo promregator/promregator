@@ -8,8 +8,8 @@ public enum RequestType {
 	ALL_APPS_IN_SPACE("allApps", "retrieveAllApplicationIdsInSpace"),
 	SPACE_SUMMARY("spaceSummary", "retrieveSpaceSummary"),
 	DOMAINS("domains", "retrieveDomains"),	
-	PROCESSES("processes", "retrieveProcesses"), // TODO V3: Documentation of new Request Type
-	ROUTES("routes", "retrieveRoutes"), // TODO V3: Documentation of new Request Type
+	PROCESSES("processes", "retrieveProcesses"),
+	ROUTES("routes", "retrieveRoutes"),
 	OTHER("other", "other"); // used for unit testing only
 	
 	private final String metricName;
