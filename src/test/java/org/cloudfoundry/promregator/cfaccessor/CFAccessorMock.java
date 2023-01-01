@@ -332,7 +332,9 @@ public class CFAccessorMock implements CFAccessor {
 		return Mono.just(response);
 	}
 
-	private RouteResource determineRoutesDataForApp(String appId) {
+	private List<RouteResource> determineRoutesDataForApp(String appId) {
+		List<RouteResource> result = new ArrayList<>(2);
+		
 		if (appId.equals(UNITTEST_APP1_UUID)) {
 			ToOneRelationship domain = ToOneRelationship.builder().data(Relationship.builder().id(UNITTEST_SHARED_DOMAIN_UUID).build()).build();
 			ToOneRelationship space = ToOneRelationship.builder().data(Relationship.builder().id(UNITTEST_SPACE_UUID).build()).build();
@@ -345,7 +347,7 @@ public class CFAccessorMock implements CFAccessor {
 					.host(UNITTEST_APP1_HOST)
 					.path("/")
 					.build();
-			return rr;
+			result.add(rr);
 		}
 		
 		if (appId.equals(UNITTEST_APP2_UUID)) {
@@ -360,7 +362,20 @@ public class CFAccessorMock implements CFAccessor {
 					.host(UNITTEST_APP2_HOST)
 					.path("/additionalPath")
 					.build();
-			return rr;
+			result.add(rr);
+			
+			ToOneRelationship domainInternal = ToOneRelationship.builder().data(Relationship.builder().id(UNITTEST_ADDITIONAL_SHARED_DOMAIN_UUID).build()).build();
+			RouteRelationships relsInternal = RouteRelationships.builder().domain(domainInternal).space(space).build();
+			rr = RouteResource.builder()
+					.url(UNITTEST_APP2_HOST + "." + UNITTEST_ADDITIONAL_SHARED_DOMAIN +"/additionalPath")
+					.relationships(relsInternal)
+					.createdAt(CREATED_AT_TIMESTAMP)
+					.id(UNITTEST_APP2_ROUTE_UUID+"i")
+					.host(UNITTEST_APP2_HOST)
+					.path("/additionalPath")
+					.build();
+			
+			result.add(rr);
 		}
 		
 		if (appId.equals(UNITTEST_APP3_UUID)) {
@@ -369,31 +384,31 @@ public class CFAccessorMock implements CFAccessor {
 		}
 		
 		if (appId.equals(UNITTEST_APP_INTERNAL_UUID)) {
-			ToOneRelationship domain = ToOneRelationship.builder().data(Relationship.builder().id(UNITTEST_SHARED_DOMAIN_UUID).build()).build();
+			ToOneRelationship domain = ToOneRelationship.builder().data(Relationship.builder().id(UNITTEST_INTERNAL_DOMAIN_UUID).build()).build();
 			ToOneRelationship space = ToOneRelationship.builder().data(Relationship.builder().id(UNITTEST_SPACE_UUID).build()).build();
 			RouteRelationships rels = RouteRelationships.builder().domain(domain).space(space).build();
 			RouteResource rr = RouteResource.builder()
 					.url(UNITTEST_APP_INTERNAL_HOST+"."+UNITTEST_INTERNAL_DOMAIN)
 					.relationships(rels)
 					.createdAt(CREATED_AT_TIMESTAMP)
-					.id(UNITTEST_APP2_ADDITIONAL_ROUTE_UUID)
+					.id(UNITTEST_INTERNAL_ROUTE_UUID)
 					.host(UNITTEST_APP_INTERNAL_HOST)
 					.path("/")
 					.build();
-			return rr;
+			result.add(rr);
 		}
-		Assertions.fail("Route for unknown app Id requested");
-		return null;
+		
+		return result;
 	}
 	
 	@Override
 	public Mono<ListRoutesResponse> retrieveRoutesForAppId(String appId) {
-		RouteResource rr = this.determineRoutesDataForApp(appId);
+		List<RouteResource> list = this.determineRoutesDataForApp(appId);
 		
-		if (rr == null) {
+		if (list == null) {
 			return Mono.just(ListRoutesResponse.builder().build());
 		}
-		ListRoutesResponse resp = ListRoutesResponse.builder().resource(rr).build();
+		ListRoutesResponse resp = ListRoutesResponse.builder().resources(list).build();
 		return Mono.just(resp);
 	}
 
@@ -404,7 +419,7 @@ public class CFAccessorMock implements CFAccessor {
 		}
 		
 		List<RouteResource> list = appIds.stream()
-				.map(appId -> this.determineRoutesDataForApp(appId))
+				.flatMap(appId -> this.determineRoutesDataForApp(appId).stream())
 				.filter(e -> e != null)
 				.collect(Collectors.toList());
 		

@@ -644,7 +644,7 @@ class ReactiveAppInstanceScannerTest {
 		final Target emptyTarget = new Target();
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
-					
+		
 		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, null, null);
 		
 		assertThat(result).filteredOn( instance -> instance.getInstanceId().equals(UNITTEST_APP_INTERNAL_UUID+":0") )
