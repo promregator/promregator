@@ -151,7 +151,6 @@ public class CFAccessorSimulator implements CFAccessor {
 							.id(APP_UUID_PREFIX+i)
 							.metadata(Metadata.builder().build())
 							.lifecycle(Lifecycle.builder().data(BuildpackData.builder().build()).type(LifecycleType.BUILDPACK).build())
-							.state(ApplicationState.STARTED)
 							.build();
 			
 				list.add(ar);
