@@ -102,4 +102,10 @@ class ResolvedTargetTest {
 		Assertions.assertTrue(subject1.equals(subject2));
 	}
 	
+	@Test
+	void testEqualsNull() {
+		ResolvedTarget subject1 = new ResolvedTarget();
+		Assertions.assertFalse(subject1.equals(null));
+	}
+	
 }
