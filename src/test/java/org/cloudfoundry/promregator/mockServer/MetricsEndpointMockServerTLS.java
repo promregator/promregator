@@ -34,6 +34,7 @@ public class MetricsEndpointMockServerTLS {
 		InetSocketAddress bindAddress = new InetSocketAddress("127.0.0.1", this.port);
 		this.server = HttpsServer.create(bindAddress, 0);
 		this.server.setHttpsConfigurator(new HttpsConfigurator(this.createSslContext()) {
+			@Override
 			public void configure(HttpsParameters params) {
 				SSLContext c = getSSLContext();
 				params.setSSLParameters(c.getDefaultSSLParameters());

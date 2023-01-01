@@ -57,6 +57,7 @@ public class CFMultiDiscoverer implements CFDiscoverer {
 	 * @return the list of Instances which were discovered (and registered).
 	 */
 	@Nullable
+	@Override
 	public List<Instance> discover(@Nullable Predicate<? super String> applicationIdFilter, @Nullable Predicate<? super Instance> instanceFilter) {
 		log.debug(String.format("We have %d targets configured", this.promregatorConfiguration.getTargets().size()));
 		

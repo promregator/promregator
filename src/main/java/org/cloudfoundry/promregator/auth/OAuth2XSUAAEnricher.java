@@ -93,6 +93,7 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher, Closeable {
 	// In case something goes wrong, the whole application will be
 	// restarted. With that the resources used by the old application
 	// we be released.
+	@Override
 	public void close() throws IOException {
 		if (this.httpClient != null) {
 			this.httpClient.close();
