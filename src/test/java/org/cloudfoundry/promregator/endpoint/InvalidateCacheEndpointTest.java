@@ -40,7 +40,7 @@ class InvalidateCacheEndpointTest {
 	void testInvalidateCacheAll() {
 		Assertions.assertNotNull(subject);
 		
-		ResponseEntity<String> response = subject.invalidateCache(true, true, true, true);
+		ResponseEntity<String> response = subject.invalidateCache(true, true, true, true, true, true, true);
 		
 		Assertions.assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
 		
@@ -48,6 +48,9 @@ class InvalidateCacheEndpointTest {
 		Assertions.assertTrue(cfa.isApplicationCache());
 		Assertions.assertTrue(cfa.isOrgCache());
 		Assertions.assertTrue(cfa.isSpaceCache());
+		Assertions.assertTrue(cfa.isDomainCache());
+		Assertions.assertTrue(cfa.isRouteCache());
+		Assertions.assertTrue(cfa.isProcessCache());
 		
 		MockedCachingTargetResolver tr = (MockedCachingTargetResolver) this.targetResolver;
 		Assertions.assertTrue(tr.isResolverCache());

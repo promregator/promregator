@@ -50,6 +50,9 @@ public class MockedAppInstanceScannerEndpointSpringApplication {
 		private boolean applicationCache = false;
 		private boolean spaceCache = false;
 		private boolean orgCache = false;
+		private boolean routeCache = false;
+		private boolean domainCache = false;
+		private boolean processCache = false;
 		
 		@Override
 		public void invalidateCacheApplication() {
@@ -65,6 +68,21 @@ public class MockedAppInstanceScannerEndpointSpringApplication {
 		public void invalidateCacheOrg() {
 			this.orgCache = true;
 		}
+		
+		@Override
+		public void invalidateCacheDomain() {
+			this.domainCache = true;
+		}
+
+		@Override
+		public void invalidateCacheRoute() {
+			this.routeCache = true;
+		}
+
+		@Override
+		public void invalidateCacheProcess() {
+			this.processCache = true;
+		}
 
 		public boolean isApplicationCache() {
 			return applicationCache;
@@ -77,6 +95,19 @@ public class MockedAppInstanceScannerEndpointSpringApplication {
 		public boolean isOrgCache() {
 			return orgCache;
 		}
+		
+		public boolean isDomainCache() {
+			return domainCache;
+		}
+		
+		public boolean isRouteCache() {
+			return routeCache;
+		}
+		
+		public boolean isProcessCache() {
+			return processCache;
+		}
+		
 	}
 	
 	public static class MockedCachingTargetResolver extends CachingTargetResolver {

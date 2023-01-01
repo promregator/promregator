@@ -42,6 +42,10 @@ public class InvalidateCacheEndpoint {
 			cfAccessorCache.invalidateCacheDomain();
 		}
 		
+		if (application) {
+			cfAccessorCache.invalidateCacheApplication();
+		}
+		
 		if (space) {
 			cfAccessorCache.invalidateCacheSpace();
 		}
