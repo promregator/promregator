@@ -42,7 +42,7 @@ public class PromregatorApplicationSimulatorTest {
 	void testDiscoveryWorks() {
 		@Nullable
 		List<Instance> actual = this.cfDiscoverer.discover(null, null);
-		assertThat(200).isEqualTo(actual.size());
+		assertThat(actual.size()).isEqualTo(200);
 	}
 	
 	@Test
