@@ -165,7 +165,7 @@ public class CFAccessorSimulator implements CFAccessor {
 
 	@Override
 	public Mono<ListOrganizationDomainsResponse> retrieveAllDomainsV3(String orgId) {
-		List<DomainResource> domains = new ArrayList<DomainResource>();
+		List<DomainResource> domains = new ArrayList<>();
 
 		for (int i = 1;i<=100;i++) {
 			
