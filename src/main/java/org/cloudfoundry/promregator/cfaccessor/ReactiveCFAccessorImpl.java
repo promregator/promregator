@@ -190,7 +190,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	
 	@PostConstruct
 	@SuppressWarnings("unused")
-	private void constructCloudFoundryClient() throws ConfigurationException {
+	private void constructCloudFoundryClient() {
 		this.reset();
 		
 		if (this.performPrecheckOfAPIVersion) {
