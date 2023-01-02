@@ -64,7 +64,7 @@ public class OAuth2ServiceConfig implements OAuth2ServiceConfiguration {
 
 	@Override
 	public Map<String, String> getProperties() {
-		return new HashMap<String, String>(properties);
+		return new HashMap<>(properties);
 	}
 
 	@Override
