@@ -202,7 +202,7 @@ public class Parser {
 	private void parseTypeLine(String line) {
 		Matcher m = PATTERN_PARSE_TYPE.matcher(line);
 		if (!m.matches()) {
-			log.warn("TYPE line could not be properly matched: "+line);
+			log.warn("TYPE line could not be properly matched: {}", line);
 			return;
 		}
 		
@@ -225,7 +225,7 @@ public class Parser {
 		} else if (typeString.equalsIgnoreCase("untyped")) {
 			type = Collector.Type.UNKNOWN;
 		} else {
-			log.warn("Unable to parse type from TYPE line: "+line);
+			log.warn("Unable to parse type from TYPE line: {}", line);
 			return;
 		}
 		
@@ -235,7 +235,7 @@ public class Parser {
 	private void parseHelpLine(String line) {
 		Matcher m = PATTERN_PARSE_HELP.matcher(line);
 		if (!m.matches()) {
-			log.warn("HELP line could not be properly matched: "+line);
+			log.warn("HELP line could not be properly matched: {}", line);
 			return;
 		}
 		

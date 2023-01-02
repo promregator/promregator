@@ -112,7 +112,7 @@ public class MetricLine {
 			buffer = buffer.substring(mLabelName.end());
 			int endOfValue = indexEndOfValue(buffer);
 			if (endOfValue == -1) {
-				log.warn("Missing termination of value in label block: "+ block);
+				log.warn("Missing termination of value in label block: {}", block);
 				return l;
 			}
 			
