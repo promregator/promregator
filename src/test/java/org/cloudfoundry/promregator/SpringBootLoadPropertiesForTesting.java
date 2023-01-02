@@ -1,9 +1,8 @@
 package org.cloudfoundry.promregator;
 
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,12 +32,12 @@ public class SpringBootLoadPropertiesForTesting {
 	@Test
 	void testContextLoads() {
 		springBootLoadPropertiesForTestingSpringApplication.check();
-		assertThat(true).as("context loads").isTrue();
+		Assertions.assertTrue(true);
 	}
 
 	@Test
 	void testContextLoadsWithEncryptedValue() {
 		String secretValue = springBootLoadPropertiesForTestingSpringApplication.getSecretValue();
-		assertThat(secretValue).as("passwords do not match but should").isEqualTo("mysecret");
+		Assertions.assertEquals("mysecret", secretValue);
 	}
 }
