@@ -1,6 +1,10 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
-import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -16,6 +20,7 @@ import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
+import org.cloudfoundry.client.v3.routes.RouteResource;
 import org.cloudfoundry.client.v3.spaces.ListSpacesResponse;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.slf4j.Logger;
@@ -42,6 +47,8 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	private AsyncLoadingCache<CacheKeyAppsInSpace, ListApplicationsResponse> appsInSpaceCache;
 	private AsyncLoadingCache<String, ListRoutesResponse> routesCache;
 	private AsyncLoadingCache<String, ListApplicationProcessesResponse> processCache;
+	
+	private RoutesRequestAggregator routesRequestAggregator = new RoutesRequestAggregator();
 	
 	@Value("${cf.cache.timeout.org:3600}")
 	private int refreshCacheOrgLevelInSeconds;
@@ -159,21 +166,53 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 		}
 	}
 	
+	private class RoutesRequestAggregator extends RequestAggregator<String, ListRoutesResponse> {
+
+		public RoutesRequestAggregator() {
+			super(String.class, ListRoutesResponse.class);
+		}
+
+		@Override
+		protected Mono<ListRoutesResponse> sendRequest(List<String> block) {
+			return parent.retrieveRoutesForAppIds(new HashSet<>(block));
+		}
+
+		@Override
+		protected Map<String, ListRoutesResponse> determineMapOfResponses(ListRoutesResponse response) {
+			Map<String, List<RouteResource>> map = new HashMap<>();
+			response.getResources().forEach(rr -> {
+				
+				rr.getDestinations().forEach(dest -> {
+					String appId = dest.getApplication().getApplicationId();
+					map.compute(appId, (key, lrr) -> {
+						if (lrr == null) {
+							lrr = new LinkedList<>();
+						}
+						lrr.add(rr);
+						return lrr;
+					});
+				});
+			});
+			
+			Map<String, ListRoutesResponse> resultMap = new HashMap<>();
+			map.forEach((k, lrr) -> {
+				ListRoutesResponse fullLrr = ListRoutesResponse.builder().resources(lrr).build();
+				resultMap.put(k, fullLrr);
+			});
+			
+			return resultMap;
+		}
+		
+	}
+	
 	private class RoutesCacheLoader implements AsyncCacheLoader<String, ListRoutesResponse> {
 		@Override
 		public @NonNull CompletableFuture<ListRoutesResponse> asyncLoad(@NonNull String key,
 				@NonNull Executor executor) {
-			/* TODO V3 Performance: 
-			 * Not just pass on the request here, but use mass-enabled request at CAPI V3 endpoint
-			 * by adding the request to a deque that is being polled from an independent thread.
-			 * This thread may "aggregate" multiple single requests into a mass request.
-			 */
 			
-			Mono<ListRoutesResponse> mono = parent.retrieveRoutesForAppIds(Collections.singleton(key))
-				.subscribeOn(Schedulers.fromExecutor(executor))
-				.cache();
-			
-			return mono.toFuture();
+			CompletableFuture<ListRoutesResponse> future = new CompletableFuture<>();
+			routesRequestAggregator.addToQueue(key, future);
+			return future;
 		}
 	}
 	
