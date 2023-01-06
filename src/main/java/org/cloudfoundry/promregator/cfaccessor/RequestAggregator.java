@@ -17,7 +17,7 @@ public abstract class RequestAggregator<K, V> {
 
 	private static record QueueItem<K, V> (K requestItem, CompletableFuture<V> future) {}
 	
-	private static final int CHECK_INTERVAL_IN_MILLIS = 250;
+	private static final int CHECK_INTERVAL_IN_MILLIS = 125;
 	private static final int MAX_BLOCK_SIZE = 100;
 	private ConcurrentLinkedDeque<QueueItem<K, V>> queue = new ConcurrentLinkedDeque<>();
 	
