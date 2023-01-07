@@ -1,5 +1,6 @@
 package org.cloudfoundry.promregator.scanner;
 
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -10,9 +11,9 @@ import javax.annotation.Nullable;
 
 import org.apache.logging.log4j.util.Strings;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.cloudfoundry.client.v3.applications.ListApplicationProcessesResponse;
 import org.cloudfoundry.client.v3.domains.DomainResource;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
+import org.cloudfoundry.client.v3.processes.ListProcessesResponse;
 import org.cloudfoundry.client.v3.processes.ProcessResource;
 import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
 import org.cloudfoundry.client.v3.routes.RouteResource;
@@ -217,12 +218,12 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		 * The ApplicationURL is buried in the Routes.
 		 */
 		
-		Flux<ListApplicationProcessesResponse> webProcessForAppFlux = osaVectorSpaceFlux.flatMap(rt -> this.cfAccessor.retrieveWebProcessesForAppId(rt.getTarget().getApplicationId()));
+		Flux<ListProcessesResponse> webProcessForAppFlux = osaVectorSpaceFlux.flatMap(rt -> this.cfAccessor.retrieveWebProcessesForAppId(rt.getTarget().getApplicationId()));
 		
 		Flux<OSAVector> numberInstancesOSAVectorFlux = Flux.zip(osaVectorSpaceFlux, webProcessForAppFlux).flatMap(tuple -> {
 			final OSAVector osaVector = tuple.getT1();
 			final ResolvedTarget rt = osaVector.getTarget();
-			final ListApplicationProcessesResponse lapr = tuple.getT2();
+			final ListProcessesResponse lapr = tuple.getT2();
 			
 			List<ProcessResource> list = lapr.getResources();
 			if (list.size() > 1) {

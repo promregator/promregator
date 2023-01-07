@@ -7,11 +7,11 @@ import java.util.List;
 
 import org.cloudfoundry.client.v3.applications.ApplicationResource;
 import org.cloudfoundry.client.v3.applications.ApplicationState;
-import org.cloudfoundry.client.v3.applications.ListApplicationProcessesResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v3.domains.DomainResource;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v3.organizations.OrganizationResource;
+import org.cloudfoundry.client.v3.processes.ListProcessesResponse;
 import org.cloudfoundry.client.v3.processes.ProcessResource;
 import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
 import org.cloudfoundry.client.v3.routes.RouteResource;
@@ -176,9 +176,9 @@ public class CFAccessorSimulatorTest {
 	@Test
 	void testRetrieveWebProcessesForApp() {
 		CFAccessorSimulator subject = new CFAccessorSimulator(2);
-		Mono<ListApplicationProcessesResponse> applicationProcessesResponse = subject.retrieveWebProcessesForAppId(CFAccessorSimulator.APP_UUID_PREFIX+"50");
+		Mono<ListProcessesResponse> processesResponse = subject.retrieveWebProcessesForAppId(CFAccessorSimulator.APP_UUID_PREFIX+"50");
 		
-		ListApplicationProcessesResponse result = applicationProcessesResponse.block();
+		ListProcessesResponse result = processesResponse.block();
 		Assertions.assertNotNull(result);
 		
 		List<ProcessResource> resources = result.getResources();

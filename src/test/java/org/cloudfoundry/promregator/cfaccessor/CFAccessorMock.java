@@ -14,7 +14,6 @@ import org.cloudfoundry.client.v3.Relationship;
 import org.cloudfoundry.client.v3.ToOneRelationship;
 import org.cloudfoundry.client.v3.applications.ApplicationResource;
 import org.cloudfoundry.client.v3.applications.ApplicationState;
-import org.cloudfoundry.client.v3.applications.ListApplicationProcessesResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v3.domains.DomainRelationships;
 import org.cloudfoundry.client.v3.domains.DomainResource;
@@ -360,9 +359,9 @@ public class CFAccessorMock implements CFAccessor {
 	}
 
 	@Override
-	public Mono<ListApplicationProcessesResponse> retrieveWebProcessesForAppId(String applicationId) {
+	public Mono<ListProcessesResponse> retrieveWebProcessesForAppId(String applicationId) {
 		final ProcessResource prWeb = determineWebProcessesDataForApp(applicationId);
-		ListApplicationProcessesResponse resp = ListApplicationProcessesResponse.builder().resource(prWeb).build();
+		ListProcessesResponse resp = ListProcessesResponse.builder().resource(prWeb).build();
 		if (resp != null) {
 			return Mono.just(resp);
 		}

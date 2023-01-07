@@ -3,7 +3,6 @@ package org.cloudfoundry.promregator.cfaccessor;
 import java.util.Set;
 
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
-import org.cloudfoundry.client.v3.applications.ListApplicationProcessesResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse;
@@ -32,7 +31,7 @@ public interface CFAccessor {
 	
 	Mono<ListRoutesResponse> retrieveRoutesForAppIds(Set<String> appIds);
 	
-	Mono<ListApplicationProcessesResponse> retrieveWebProcessesForAppId(String applicationId);
+	Mono<ListProcessesResponse> retrieveWebProcessesForAppId(String applicationId);
 
 	Mono<ListProcessesResponse> retrieveWebProcessesForAppIds(Set<String> applicationIds);
 	

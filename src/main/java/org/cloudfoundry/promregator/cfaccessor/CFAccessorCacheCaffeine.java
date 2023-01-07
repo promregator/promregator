@@ -15,11 +15,11 @@ import javax.annotation.PostConstruct;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
-import org.cloudfoundry.client.v3.applications.ListApplicationProcessesResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v3.processes.ListProcessesResponse;
+import org.cloudfoundry.client.v3.processes.ProcessResource;
 import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
 import org.cloudfoundry.client.v3.routes.RouteResource;
 import org.cloudfoundry.client.v3.spaces.ListSpacesResponse;
@@ -47,9 +47,10 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	private AsyncLoadingCache<String, ListOrganizationDomainsResponse> domainsInOrgCache;
 	private AsyncLoadingCache<CacheKeyAppsInSpace, ListApplicationsResponse> appsInSpaceCache;
 	private AsyncLoadingCache<String, ListRoutesResponse> routesCache;
-	private AsyncLoadingCache<String, ListApplicationProcessesResponse> processCache;
+	private AsyncLoadingCache<String, ListProcessesResponse> processCache;
 	
-	private RoutesRequestAggregator routesRequestAggregator = new RoutesRequestAggregator();
+	private RoutesRequestAggregator routesRequestAggregator;
+	private ProcessRequestAggregator processRequestAggregator;
 	
 	@Value("${cf.cache.timeout.org:3600}")
 	private int refreshCacheOrgLevelInSeconds;
@@ -90,9 +91,14 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	@Value("${cf.cache.aggregator.blocksize.route:100}")
 	private int aggregatorBlocksizeRoute;
 	
-	@Value("${cf.cache.aggregator.checkinterval.route:125")
+	@Value("${cf.cache.aggregator.checkinterval.route:125}")
 	private int aggregatorCheckintervalRoute;
 
+	@Value("${cf.cache.aggregator.blocksize.process:100}")
+	private int aggregatorBlocksizeProcess;
+	
+	@Value("${cf.cache.aggregator.checkinterval.process:125}")
+	private int aggregatorCheckintervalProcess;
 	
 	@Autowired
 	private InternalMetrics internalMetrics;
@@ -225,22 +231,50 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 		}
 	}
 	
-	private class ProcessCacheLoader implements AsyncCacheLoader<String, ListApplicationProcessesResponse> {
+	private class ProcessRequestAggregator extends RequestAggregator<String, ListProcessesResponse> {
+
+		public ProcessRequestAggregator() {
+			super(String.class, ListProcessesResponse.class, aggregatorCheckintervalProcess, aggregatorBlocksizeProcess);
+		}
+
 		@Override
-		public @NonNull CompletableFuture<ListApplicationProcessesResponse> asyncLoad(@NonNull String key,
+		protected Mono<ListProcessesResponse> sendRequest(List<String> block) {
+			return parent.retrieveWebProcessesForAppIds(new HashSet<>(block));
+		}
+
+		@Override
+		protected Map<String, ListProcessesResponse> determineMapOfResponses(ListProcessesResponse response) {
+			Map<String, List<ProcessResource>> map = new HashMap<>();
+			response.getResources().forEach(pr -> {
+				String appId = pr.getRelationships().getApp().getData().getId();
+				map.compute(appId, (key, lpr) -> {
+					if (lpr == null) {
+						lpr = new LinkedList<>();
+					}
+					lpr.add(pr);
+					return lpr;
+				});
+			});
+			
+			Map<String, ListProcessesResponse> resultMap = new HashMap<>();
+			map.forEach((k, lpr) -> {
+				ListProcessesResponse fullLrr = ListProcessesResponse.builder().resources(lpr).build();
+				resultMap.put(k, fullLrr);
+			});
+			
+			return resultMap;
+		}
+
+	}
+	
+	private class ProcessCacheLoader implements AsyncCacheLoader<String, ListProcessesResponse> {
+		@Override
+		public @NonNull CompletableFuture<ListProcessesResponse> asyncLoad(@NonNull String key,
 				@NonNull Executor executor) {
 			
-			/* TODO V3 Performance: 
-			 * Not just pass on the request here, but use mass-enabled request at CAPI V3 endpoint
-			 * by adding the request to a deque that is being polled from an independent thread.
-			 * This thread may "aggregate" multiple single requests into a mass request.
-			 */
-			
-			Mono<ListApplicationProcessesResponse> mono = parent.retrieveWebProcessesForAppId(key)
-				.subscribeOn(Schedulers.fromExecutor(executor))
-				.cache();
-			
-			return mono.toFuture();
+			CompletableFuture<ListProcessesResponse> future = new CompletableFuture<>();
+			processRequestAggregator.addToQueue(key, future);
+			return future;
 		}
 	}
 	
@@ -252,6 +286,9 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 				this.expiryCacheOrgLevelInSeconds, this.expiryCacheSpaceLevelInSeconds, this.expiryCacheApplicationLevelInSeconds, this.expiryCacheApplicationLevelInSeconds));
 		
 		Scheduler caffeineScheduler = Scheduler.forScheduledExecutorService(new ScheduledThreadPoolExecutor(1));
+		
+		this.routesRequestAggregator = new RoutesRequestAggregator();
+		this.processRequestAggregator = new ProcessRequestAggregator();
 		
 		this.orgCache = Caffeine.newBuilder()
 				.expireAfterAccess(this.expiryCacheOrgLevelInSeconds, TimeUnit.SECONDS)
@@ -360,7 +397,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	}
 
 	@Override
-	public Mono<ListApplicationProcessesResponse> retrieveWebProcessesForAppId(String applicationId) {
+	public Mono<ListProcessesResponse> retrieveWebProcessesForAppId(String applicationId) {
 		return Mono.fromFuture(this.processCache.get(applicationId));
 	}
 	

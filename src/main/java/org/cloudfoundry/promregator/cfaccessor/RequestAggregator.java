@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
 
 import reactor.core.publisher.Mono;
 
@@ -63,6 +64,10 @@ public abstract class RequestAggregator<K, V> {
 					block.add(queueItem.requestItem());
 				}
 				
+				if (block.isEmpty()) {
+					continue;
+				}
+				
 				log.debug("Sending a request with a block of {} items", block.size());
 				Mono<V> responseMono = sendRequest(block);
 				
@@ -94,6 +99,10 @@ public abstract class RequestAggregator<K, V> {
 	public RequestAggregator(Class<K> typeOfK, Class<V> typeOfV, int checkIntervalInMillis, int maxBlockSize) {
 		this.checkIntervalInMillis = checkIntervalInMillis;
 		this.maxBlockSize = maxBlockSize;
+		
+		Assert.isTrue(checkIntervalInMillis > 0, "Check Interval must not be negative or zero");
+		Assert.isTrue(maxBlockSize > 0, "BlockSize must not be negative or zero");
+		
 		this.processor = new Processor(typeOfK, typeOfV);
 		this.processor.start();
 	}

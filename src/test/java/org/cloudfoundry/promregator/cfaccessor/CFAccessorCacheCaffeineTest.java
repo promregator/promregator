@@ -5,8 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Arrays;
 import java.util.HashSet;
 
-import org.cloudfoundry.client.v3.applications.ListApplicationProcessesResponse;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
+import org.cloudfoundry.client.v3.processes.ListProcessesResponse;
 import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
 import org.cloudfoundry.client.v3.spaces.ListSpacesResponse;
 import org.cloudfoundry.promregator.JUnitTestUtils;
@@ -162,10 +162,10 @@ public class CFAccessorCacheCaffeineTest {
 	
 	@Test
 	void testRetrieveProcessesForApp() {
-		Mono<ListApplicationProcessesResponse> response1 = subject.retrieveWebProcessesForAppId("dummy");
+		Mono<ListProcessesResponse> response1 = subject.retrieveWebProcessesForAppId("dummy");
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveWebProcessesForAppId("dummy");
 
-		Mono<ListApplicationProcessesResponse> response2 = subject.retrieveWebProcessesForAppId("dummy");
+		Mono<ListProcessesResponse> response2 = subject.retrieveWebProcessesForAppId("dummy");
 		assertThat(response1.block()).isEqualTo(response2.block());
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveWebProcessesForAppId("dummy");
 	}

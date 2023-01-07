@@ -3,7 +3,6 @@ package org.cloudfoundry.promregator.cfaccessor;
 import java.util.Set;
 
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
-import org.cloudfoundry.client.v3.applications.ListApplicationProcessesResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v3.processes.ListProcessesResponse;
@@ -77,8 +76,8 @@ public class CFAccessorCacheCaffeineSpringApplication {
 		}
 
 		@Override
-		public Mono<ListApplicationProcessesResponse> retrieveWebProcessesForAppId(String applicationId) {
-			return Mono.just(ListApplicationProcessesResponse.builder().build());
+		public Mono<ListProcessesResponse> retrieveWebProcessesForAppId(String applicationId) {
+			return Mono.just(ListProcessesResponse.builder().build());
 		}
 
 		@Override

@@ -13,8 +13,6 @@ import org.cloudfoundry.client.v2.info.GetInfoRequest;
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v3.Pagination;
 import org.cloudfoundry.client.v3.applications.ApplicationResource;
-import org.cloudfoundry.client.v3.applications.ListApplicationProcessesRequest;
-import org.cloudfoundry.client.v3.applications.ListApplicationProcessesResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v3.processes.ListProcessesRequest;
@@ -388,21 +386,21 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	}
 	
 	@Override
-	public Mono<ListApplicationProcessesResponse> retrieveWebProcessesForAppId(String applicationId) {
-		PaginatedRequestGeneratorFunctionV3<ListApplicationProcessesRequest> requestGenerator = (resultsPerPage, pageNumber) ->
-			ListApplicationProcessesRequest.builder()
+	public Mono<ListProcessesResponse> retrieveWebProcessesForAppId(String applicationId) {
+		PaginatedRequestGeneratorFunctionV3<ListProcessesRequest> requestGenerator = (resultsPerPage, pageNumber) ->
+			ListProcessesRequest.builder()
 				.applicationId(applicationId)
 				.type(CF_API_V3_PROCESS_TYPE_WEB)
 				.build();
 		
-		PaginatedResponseGeneratorFunctionV3<org.cloudfoundry.client.v3.processes.ProcessResource, ListApplicationProcessesResponse> responseGenerator = (list, numberOfPages) -> 
-			ListApplicationProcessesResponse.builder()
+		PaginatedResponseGeneratorFunctionV3<org.cloudfoundry.client.v3.processes.ProcessResource, ListProcessesResponse> responseGenerator = (list, numberOfPages) -> 
+			ListProcessesResponse.builder()
 			.addAllResources(list)
 			.pagination(Pagination.builder().totalPages(numberOfPages).totalResults(list.size()).build())
 			.build();
 		
 		return this.paginatedRequestFetcher.performGenericPagedRetrievalV3(RequestType.PROCESSES, applicationId, requestGenerator, 
-				r -> this.cloudFoundryClient.applicationsV3().listProcesses(r), this.requestTimeoutProcess, 
+				r -> this.cloudFoundryClient.processes().list(r), this.requestTimeoutProcess, 
 				responseGenerator);
 		
 	}

@@ -5,10 +5,10 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.concurrent.TimeoutException;
 
-import org.cloudfoundry.client.v3.applications.ListApplicationProcessesResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse;
+import org.cloudfoundry.client.v3.processes.ListProcessesResponse;
 import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
 import org.cloudfoundry.client.v3.spaces.ListSpacesResponse;
 import org.cloudfoundry.promregator.JUnitTestUtils;
@@ -168,14 +168,14 @@ public class CFAccessorCacheCaffeineTimeoutTest {
 	
 	@Test
 	void testRetrieveProcessesForApp() throws InterruptedException {
-		Mono<ListApplicationProcessesResponse> response1 = subject.retrieveWebProcessesForAppId("dummy");
+		Mono<ListProcessesResponse> response1 = subject.retrieveWebProcessesForAppId("dummy");
 		response1.subscribe();
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveWebProcessesForAppId("dummy");
 		
 		// required to permit asynchronous updates of caches => test stability
 		Thread.sleep(10);
 		
-		Mono<ListApplicationProcessesResponse> response2 = subject.retrieveWebProcessesForAppId("dummy");
+		Mono<ListProcessesResponse> response2 = subject.retrieveWebProcessesForAppId("dummy");
 		response2.subscribe();
 		Assertions.assertNotEquals(response1, response2);
 		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveWebProcessesForAppId("dummy");
