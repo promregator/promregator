@@ -162,12 +162,12 @@ public class CFAccessorCacheCaffeineTest {
 	
 	@Test
 	void testRetrieveProcessesForApp() {
-		Mono<ListApplicationProcessesResponse> response1 = subject.retrieveWebProcessesForApp("dummy");
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveWebProcessesForApp("dummy");
+		Mono<ListApplicationProcessesResponse> response1 = subject.retrieveWebProcessesForAppId("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveWebProcessesForAppId("dummy");
 
-		Mono<ListApplicationProcessesResponse> response2 = subject.retrieveWebProcessesForApp("dummy");
+		Mono<ListApplicationProcessesResponse> response2 = subject.retrieveWebProcessesForAppId("dummy");
 		assertThat(response1.block()).isEqualTo(response2.block());
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveWebProcessesForApp("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveWebProcessesForAppId("dummy");
 	}
 	
 	@Test

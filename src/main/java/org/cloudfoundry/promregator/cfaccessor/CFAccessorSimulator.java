@@ -245,7 +245,7 @@ public class CFAccessorSimulator implements CFAccessor {
 	}
 
 	@Override
-	public Mono<ListApplicationProcessesResponse> retrieveWebProcessesForApp(String applicationId) {
+	public Mono<ListApplicationProcessesResponse> retrieveWebProcessesForAppId(String applicationId) {
 		if (applicationId.startsWith(APP_UUID_PREFIX)) {
 			final String appNumber = applicationId.substring(APP_UUID_PREFIX.length());
 			final ProcessResource prWeb = ProcessResource.builder()

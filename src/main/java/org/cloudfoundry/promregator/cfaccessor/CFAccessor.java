@@ -31,7 +31,7 @@ public interface CFAccessor {
 	
 	Mono<ListRoutesResponse> retrieveRoutesForAppIds(Set<String> appIds);
 	
-	Mono<ListApplicationProcessesResponse> retrieveWebProcessesForApp(String applicationId);
+	Mono<ListApplicationProcessesResponse> retrieveWebProcessesForAppId(String applicationId);
 
 	void reset();
 }

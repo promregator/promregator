@@ -224,7 +224,7 @@ public class CFAccessorMassMock implements CFAccessor {
 	}
 
 	@Override
-	public Mono<ListApplicationProcessesResponse> retrieveWebProcessesForApp(String applicationId) {
+	public Mono<ListApplicationProcessesResponse> retrieveWebProcessesForAppId(String applicationId) {
 		if (applicationId.startsWith(UNITTEST_APP_UUID_PREFIX)) {
 			final String appNumber = applicationId.substring(UNITTEST_APP_UUID_PREFIX.length());
 			final ProcessResource prWeb = ProcessResource.builder()

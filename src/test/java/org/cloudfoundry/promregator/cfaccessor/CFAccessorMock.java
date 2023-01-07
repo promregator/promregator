@@ -359,7 +359,7 @@ public class CFAccessorMock implements CFAccessor {
 	}
 
 	@Override
-	public Mono<ListApplicationProcessesResponse> retrieveWebProcessesForApp(String applicationId) {
+	public Mono<ListApplicationProcessesResponse> retrieveWebProcessesForAppId(String applicationId) {
 		if (applicationId.equals(UNITTEST_APP1_UUID) || applicationId.equals(UNITTEST_APP2_UUID) || applicationId.equals(UNITTEST_APP3_UUID) || applicationId.equals(UNITTEST_APP_INTERNAL_UUID)) {
 			final ProcessResource prWeb = ProcessResource.builder()
 					.instances(applicationId.equals(UNITTEST_APP1_UUID) || applicationId.equals(UNITTEST_APP_INTERNAL_UUID) ? 2 : 1)

@@ -176,7 +176,7 @@ public class CFAccessorSimulatorTest {
 	@Test
 	void testRetrieveWebProcessesForApp() {
 		CFAccessorSimulator subject = new CFAccessorSimulator(2);
-		Mono<ListApplicationProcessesResponse> applicationProcessesResponse = subject.retrieveWebProcessesForApp(CFAccessorSimulator.APP_UUID_PREFIX+"50");
+		Mono<ListApplicationProcessesResponse> applicationProcessesResponse = subject.retrieveWebProcessesForAppId(CFAccessorSimulator.APP_UUID_PREFIX+"50");
 		
 		ListApplicationProcessesResponse result = applicationProcessesResponse.block();
 		Assertions.assertNotNull(result);

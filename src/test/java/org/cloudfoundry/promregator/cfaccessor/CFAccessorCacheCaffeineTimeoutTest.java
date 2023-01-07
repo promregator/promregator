@@ -56,7 +56,7 @@ public class CFAccessorCacheCaffeineTimeoutTest {
 		Mockito.when(this.parentMock.retrieveSpaceIdV3("dummy1", "dummy2")).then(new TimeoutMonoAnswer());
 		Mockito.when(this.parentMock.retrieveAllApplicationsInSpaceV3("dummy1", "dummy2")).then(new TimeoutMonoAnswer());
 		Mockito.when(this.parentMock.retrieveAllDomainsV3("dummy")).then(new TimeoutMonoAnswer());
-		Mockito.when(this.parentMock.retrieveWebProcessesForApp("dummy")).then(new TimeoutMonoAnswer());
+		Mockito.when(this.parentMock.retrieveWebProcessesForAppId("dummy")).then(new TimeoutMonoAnswer());
 		Mockito.when(this.parentMock.retrieveSpaceIdsInOrgV3("dummy")).then(new TimeoutMonoAnswer());
 		Mockito.when(this.parentMock.retrieveAllOrgIdsV3()).then(new TimeoutMonoAnswer());
 		Mockito.when(this.parentMock.retrieveRoutesForAppIds(Mockito.anySet())).then(new TimeoutMonoAnswer());
@@ -168,17 +168,17 @@ public class CFAccessorCacheCaffeineTimeoutTest {
 	
 	@Test
 	void testRetrieveProcessesForApp() throws InterruptedException {
-		Mono<ListApplicationProcessesResponse> response1 = subject.retrieveWebProcessesForApp("dummy");
+		Mono<ListApplicationProcessesResponse> response1 = subject.retrieveWebProcessesForAppId("dummy");
 		response1.subscribe();
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveWebProcessesForApp("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveWebProcessesForAppId("dummy");
 		
 		// required to permit asynchronous updates of caches => test stability
 		Thread.sleep(10);
 		
-		Mono<ListApplicationProcessesResponse> response2 = subject.retrieveWebProcessesForApp("dummy");
+		Mono<ListApplicationProcessesResponse> response2 = subject.retrieveWebProcessesForAppId("dummy");
 		response2.subscribe();
 		Assertions.assertNotEquals(response1, response2);
-		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveWebProcessesForApp("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveWebProcessesForAppId("dummy");
 	}
 	
 	@Test

@@ -64,7 +64,7 @@ public class ReactiveTargetResolverTest {
 		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationsInSpaceV3(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID);
 		Mockito.verify(this.cfAccessor, Mockito.times(0)).retrieveRoutesForAppId(Mockito.anyString());
 		Mockito.verify(this.cfAccessor, Mockito.times(0)).retrieveRoutesForAppIds(Mockito.anySet());
-		Mockito.verify(this.cfAccessor, Mockito.times(0)).retrieveWebProcessesForApp(Mockito.anyString());
+		Mockito.verify(this.cfAccessor, Mockito.times(0)).retrieveWebProcessesForAppId(Mockito.anyString());
 		Mockito.verify(this.cfAccessor, Mockito.times(0)).retrieveAllDomainsV3(Mockito.anyString());
 	}
 	
@@ -102,7 +102,7 @@ public class ReactiveTargetResolverTest {
 		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationsInSpaceV3(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID);
 		Mockito.verify(this.cfAccessor, Mockito.times(0)).retrieveRoutesForAppId(Mockito.anyString());
 		Mockito.verify(this.cfAccessor, Mockito.times(0)).retrieveRoutesForAppIds(Mockito.anySet());
-		Mockito.verify(this.cfAccessor, Mockito.times(0)).retrieveWebProcessesForApp(Mockito.anyString());
+		Mockito.verify(this.cfAccessor, Mockito.times(0)).retrieveWebProcessesForAppId(Mockito.anyString());
 		Mockito.verify(this.cfAccessor, Mockito.times(0)).retrieveAllDomainsV3(Mockito.anyString());
 	}
 
@@ -133,7 +133,7 @@ public class ReactiveTargetResolverTest {
 		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationsInSpaceV3(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID);
 		Mockito.verify(this.cfAccessor, Mockito.times(0)).retrieveRoutesForAppId(Mockito.anyString());
 		Mockito.verify(this.cfAccessor, Mockito.times(0)).retrieveRoutesForAppIds(Mockito.anySet());
-		Mockito.verify(this.cfAccessor, Mockito.times(0)).retrieveWebProcessesForApp(Mockito.anyString());
+		Mockito.verify(this.cfAccessor, Mockito.times(0)).retrieveWebProcessesForAppId(Mockito.anyString());
 		Mockito.verify(this.cfAccessor, Mockito.times(0)).retrieveAllDomainsV3(Mockito.anyString());
 	}
 	
@@ -164,7 +164,7 @@ public class ReactiveTargetResolverTest {
 		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationsInSpaceV3(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID);
 		Mockito.verify(this.cfAccessor, Mockito.times(0)).retrieveRoutesForAppId(Mockito.anyString());
 		Mockito.verify(this.cfAccessor, Mockito.times(0)).retrieveRoutesForAppIds(Mockito.anySet());
-		Mockito.verify(this.cfAccessor, Mockito.times(0)).retrieveWebProcessesForApp(Mockito.anyString());
+		Mockito.verify(this.cfAccessor, Mockito.times(0)).retrieveWebProcessesForAppId(Mockito.anyString());
 		Mockito.verify(this.cfAccessor, Mockito.times(0)).retrieveAllDomainsV3(Mockito.anyString());
 	}
 	
@@ -197,7 +197,7 @@ public class ReactiveTargetResolverTest {
 		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationsInSpaceV3(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID_DOESNOTEXIST);
 		Mockito.verify(this.cfAccessor, Mockito.times(0)).retrieveRoutesForAppId(Mockito.anyString());
 		Mockito.verify(this.cfAccessor, Mockito.times(0)).retrieveRoutesForAppIds(Mockito.anySet());
-		Mockito.verify(this.cfAccessor, Mockito.times(0)).retrieveWebProcessesForApp(Mockito.anyString());
+		Mockito.verify(this.cfAccessor, Mockito.times(0)).retrieveWebProcessesForAppId(Mockito.anyString());
 		Mockito.verify(this.cfAccessor, Mockito.times(0)).retrieveAllDomainsV3(Mockito.anyString());
 	}
 	
@@ -219,7 +219,7 @@ public class ReactiveTargetResolverTest {
 		Mockito.verify(this.cfAccessor, Mockito.times(1)).retrieveAllApplicationsInSpaceV3(CFAccessorMock.UNITTEST_ORG_UUID, CFAccessorMock.UNITTEST_SPACE_UUID_EXCEPTION);
 		Mockito.verify(this.cfAccessor, Mockito.times(0)).retrieveRoutesForAppId(Mockito.anyString());
 		Mockito.verify(this.cfAccessor, Mockito.times(0)).retrieveRoutesForAppIds(Mockito.anySet());
-		Mockito.verify(this.cfAccessor, Mockito.times(0)).retrieveWebProcessesForApp(Mockito.anyString());
+		Mockito.verify(this.cfAccessor, Mockito.times(0)).retrieveWebProcessesForAppId(Mockito.anyString());
 		Mockito.verify(this.cfAccessor, Mockito.times(0)).retrieveAllDomainsV3(Mockito.anyString());
 	}
 	

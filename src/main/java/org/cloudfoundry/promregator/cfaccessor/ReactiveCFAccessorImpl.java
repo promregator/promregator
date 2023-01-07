@@ -386,7 +386,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	}
 	
 	@Override
-	public Mono<ListApplicationProcessesResponse> retrieveWebProcessesForApp(String applicationId) {
+	public Mono<ListApplicationProcessesResponse> retrieveWebProcessesForAppId(String applicationId) {
 		PaginatedRequestGeneratorFunctionV3<ListApplicationProcessesRequest> requestGenerator = (resultsPerPage, pageNumber) ->
 			ListApplicationProcessesRequest.builder()
 				.applicationId(applicationId)

@@ -76,7 +76,7 @@ public class CFAccessorCacheCaffeineSpringApplication {
 		}
 
 		@Override
-		public Mono<ListApplicationProcessesResponse> retrieveWebProcessesForApp(String applicationId) {
+		public Mono<ListApplicationProcessesResponse> retrieveWebProcessesForAppId(String applicationId) {
 			return Mono.just(ListApplicationProcessesResponse.builder().build());
 		}
 	}
