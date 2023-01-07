@@ -297,6 +297,28 @@ By default, this value is set to 120 seconds, which means that records, which we
 
 Caches can also be invalidated out of line by sending an HTTP REST request to Promregator. Further details can be found at the [Cache Invalidation page](./invalidate-cache.md).
 
+### Option "cf.cache.aggregator.blocksize.route" (optional)
+If multiple applications are configured to be scraped by Promregator, the number of requests on fetching route metadata of of the Cloud Foundry environment may become high.
+To limit the load Promregator imposes on the CF infrastructure, multiple route requests are being bundled into one big route request to the platform. This process is called "Request Aggregation". 
+
+This parameter configures the maximal number of requests aggregating route data. Its default value is 100.
+
+The logic does not wait until a block is full - this parameter only defines what is the maximal number of requests allowed (upper boundary).
+
+In high load situation (i.e. thousands of applications configured), increasing this value may be counterproductive in that sense that it will incur additional latency: As the platform will require more time to respond to the request, scrape requests will have to wait longer until their individual request for data can be fulfilled.
+
+### Option "cf.cache.aggregator.checkinterval.route" (optional)
+If multiple applications are configured to be scraped by Promregator, the number of requests on fetching route metadata of of the Cloud Foundry environment may become high.
+To limit the load Promregator imposes on the CF infrastructure, multiple route requests are being bundled into one big route request to the platform. This process is called "Request Aggregation". 
+
+This parameter configures the duration (unit: milliseconds) of how long the Request Aggregator waits for requests to come in, which shall be bundled together in one block.
+
+The default value of this parameter is 125 (milliseconds).
+
+Assuming a value of "cf.cache.aggregator.blocksize.route" to be set to 100 and this parameter to be set to the default value, this means that the Request Aggregator may send out 8 blocks of requests per second with 100 (applications) each. Given a scraping interval of 15 seconds, this means that at maximum (i. e. no caching considered) 12,000 requests can be handled. In case you have more applications configured and you need to increase the performance due to your high load situation, you should *lower* this configuration parameter's value: Cutting it by half (i.e. 62), Promregator may serve double as many applications.
+
+Note, be careful to go below a value of 10 for this parameter: With such a low value, the algorithm will become ineffective - the managerial overhead may consume a lot of CPU cycles unnecessarily. If you are reaching such a high load, consider increasing the value of "cf.cache.timeout.route" instead.
+
 
 ### Option "cf.request.timeout.org" (optional)
 During discovery Promregator needs to retrieve metadata from the Cloud Foundry platform. To prevent congestion on requests, which may be caused by ongoing requests of scraping by Prometheus, requests sent to the Cloud Foundry platform have to respond within a certain timeframe (the "request timeout"). 

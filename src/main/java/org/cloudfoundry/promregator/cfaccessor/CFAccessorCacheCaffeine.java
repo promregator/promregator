@@ -85,10 +85,18 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	
 	@Value("${cf.cache.expiry.process:120}")
 	private int expiryCacheProcessLevelInSeconds;
+
+	@Value("${cf.cache.aggregator.blocksize.route:100}")
+	private int aggregatorBlocksizeRoute;
+	
+	@Value("${cf.cache.aggregator.checkinterval.route:125")
+	private int aggregatorCheckintervalRoute;
+
 	
 	@Autowired
 	private InternalMetrics internalMetrics;
 
+	
 	
 	private CFAccessor parent;
 
@@ -169,7 +177,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	private class RoutesRequestAggregator extends RequestAggregator<String, ListRoutesResponse> {
 
 		public RoutesRequestAggregator() {
-			super(String.class, ListRoutesResponse.class);
+			super(String.class, ListRoutesResponse.class, aggregatorCheckintervalRoute, aggregatorBlocksizeRoute);
 		}
 
 		@Override

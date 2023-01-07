@@ -17,11 +17,12 @@ public abstract class RequestAggregator<K, V> {
 
 	private static record QueueItem<K, V> (K requestItem, CompletableFuture<V> future) {}
 	
-	private static final int CHECK_INTERVAL_IN_MILLIS = 125;
-	private static final int MAX_BLOCK_SIZE = 100;
 	private ConcurrentLinkedDeque<QueueItem<K, V>> queue = new ConcurrentLinkedDeque<>();
 	
 	private Processor processor;
+	
+	private int checkIntervalInMillis;
+	private int maxBlockSize;
 	
 	private class Processor extends Thread {
 		
@@ -35,13 +36,13 @@ public abstract class RequestAggregator<K, V> {
 		
 		@Override
 		public void run() {
-			final ArrayList<K> block = new ArrayList<>(MAX_BLOCK_SIZE);
+			final ArrayList<K> block = new ArrayList<>(maxBlockSize);
 			final HashMap<K, CompletableFuture<V>> map = new HashMap<>();
 			
 			while (shouldRun) {
 				
 				try {
-					Thread.sleep(CHECK_INTERVAL_IN_MILLIS);
+					Thread.sleep(checkIntervalInMillis);
 				} catch (InterruptedException e) {
 					log.info("Processor was interrupted", e);
 					continue;
@@ -55,7 +56,7 @@ public abstract class RequestAggregator<K, V> {
 				map.clear();
 				// there is something in the queue which needs to be handled now
 				
-				while (queue.size() < MAX_BLOCK_SIZE && !queue.isEmpty()) {
+				while (queue.size() < maxBlockSize && !queue.isEmpty()) {
 					QueueItem<K,V> queueItem = queue.poll();
 					map.put(queueItem.requestItem(), queueItem.future());
 					
@@ -90,7 +91,9 @@ public abstract class RequestAggregator<K, V> {
 		
 	}
 	
-	public RequestAggregator(Class<K> typeOfK, Class<V> typeOfV) {
+	public RequestAggregator(Class<K> typeOfK, Class<V> typeOfV, int checkIntervalInMillis, int maxBlockSize) {
+		this.checkIntervalInMillis = checkIntervalInMillis;
+		this.maxBlockSize = maxBlockSize;
 		this.processor = new Processor(typeOfK, typeOfV);
 		this.processor.start();
 	}
