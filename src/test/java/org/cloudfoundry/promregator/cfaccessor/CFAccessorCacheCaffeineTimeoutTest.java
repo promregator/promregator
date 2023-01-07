@@ -211,4 +211,21 @@ public class CFAccessorCacheCaffeineTimeoutTest {
 		Assertions.assertNotEquals(response1, response2);
 		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveRoutesForAppIds(Mockito.anySet());
 	}
+	
+	
+	@Test
+	void testRetrieveWebProcessForAppIds() throws InterruptedException {
+		HashSet<String> set = new HashSet<>(Arrays.asList("dummy"));
+		Mono<ListProcessesResponse> response1 = subject.retrieveWebProcessesForAppIds(set);
+		response1.subscribe();
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveWebProcessesForAppIds(set);
+		
+		// required to permit asynchronous updates of caches => test stability
+		Thread.sleep(10);
+		
+		Mono<ListProcessesResponse> response2 = subject.retrieveWebProcessesForAppIds(set);
+		response2.subscribe();
+		Assertions.assertNotEquals(response1, response2);
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveWebProcessesForAppIds(set);
+	}
 }

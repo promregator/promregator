@@ -192,4 +192,15 @@ public class CFAccessorCacheCaffeineTest {
 		assertThat(response1.block()).isEqualTo(response2.block());
 		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveRoutesForAppIds(set); /* not cached */
 	}
+	
+	@Test
+	void testRetrieveProcessForAppIds() {
+		HashSet<String> set = new HashSet<>(Arrays.asList("dummy"));
+		Mono<ListProcessesResponse> response1 = subject.retrieveWebProcessesForAppIds(set);
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveWebProcessesForAppIds(set);
+
+		Mono<ListProcessesResponse> response2 = subject.retrieveWebProcessesForAppIds(set);
+		assertThat(response1.block()).isEqualTo(response2.block());
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveWebProcessesForAppIds(set); /* not cached */
+	}
 }

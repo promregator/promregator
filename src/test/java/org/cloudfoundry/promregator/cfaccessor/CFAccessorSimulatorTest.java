@@ -190,5 +190,37 @@ public class CFAccessorSimulatorTest {
 		Assertions.assertEquals(CFAccessorSimulator.PROCESS_UUID_PREFIX+"50", processResource.getId());
 		Assertions.assertEquals("web", processResource.getType());
 	}
+	
+	@Test
+	void testRetrieveWebProcessesMultiple() {
+		CFAccessorSimulator subject = new CFAccessorSimulator(2);
+		Mono<ListProcessesResponse> processes = subject.retrieveWebProcessesForAppIds(new HashSet<>(Arrays.asList(CFAccessorSimulator.APP_UUID_PREFIX+"50", CFAccessorSimulator.APP_UUID_PREFIX+"51")));
+		
+		ListProcessesResponse listProcessesResponse = processes.block();
+		Assertions.assertNotNull(listProcessesResponse);
+		
+		List<ProcessResource> resources = listProcessesResponse.getResources();
+		Assertions.assertNotNull(resources);
+		
+		Assertions.assertEquals(2, resources.size());
+		
+		// Order within resources is not defined
+		resources = resources.stream().sorted(new Comparator<ProcessResource>() {
+			@Override
+			public int compare(ProcessResource o1, ProcessResource o2) {
+				return o1.getId().compareTo(o2.getId());
+			}
+		}).toList();
+		
+		ProcessResource processResource = resources.get(0);
+		Assertions.assertEquals(CFAccessorSimulator.PROCESS_UUID_PREFIX+"50", processResource.getId());
+		Assertions.assertEquals("web", processResource.getType());
+		Assertions.assertEquals(2, processResource.getInstances());
+		
+		processResource = resources.get(1);
+		Assertions.assertEquals(CFAccessorSimulator.PROCESS_UUID_PREFIX+"51", processResource.getId());
+		Assertions.assertEquals("web", processResource.getType());
+		Assertions.assertEquals(2, processResource.getInstances());
+	}
 
 }
