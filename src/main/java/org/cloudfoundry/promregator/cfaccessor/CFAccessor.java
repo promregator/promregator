@@ -7,6 +7,7 @@ import org.cloudfoundry.client.v3.applications.ListApplicationProcessesResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse;
+import org.cloudfoundry.client.v3.processes.ListProcessesResponse;
 import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
 import org.cloudfoundry.client.v3.spaces.ListSpacesResponse;
 
@@ -33,5 +34,7 @@ public interface CFAccessor {
 	
 	Mono<ListApplicationProcessesResponse> retrieveWebProcessesForAppId(String applicationId);
 
+	Mono<ListProcessesResponse> retrieveWebProcessesForAppIds(Set<String> applicationIds);
+	
 	void reset();
 }

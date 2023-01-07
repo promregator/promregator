@@ -6,6 +6,7 @@ import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationProcessesResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
+import org.cloudfoundry.client.v3.processes.ListProcessesResponse;
 import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.mockito.Mockito;
@@ -78,6 +79,11 @@ public class CFAccessorCacheCaffeineSpringApplication {
 		@Override
 		public Mono<ListApplicationProcessesResponse> retrieveWebProcessesForAppId(String applicationId) {
 			return Mono.just(ListApplicationProcessesResponse.builder().build());
+		}
+
+		@Override
+		public Mono<ListProcessesResponse> retrieveWebProcessesForAppIds(Set<String> applicationIds) {
+			return Mono.just(ListProcessesResponse.builder().build());
 		}
 	}
 	

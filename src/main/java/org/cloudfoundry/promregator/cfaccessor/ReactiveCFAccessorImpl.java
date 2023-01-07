@@ -17,6 +17,8 @@ import org.cloudfoundry.client.v3.applications.ListApplicationProcessesRequest;
 import org.cloudfoundry.client.v3.applications.ListApplicationProcessesResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
+import org.cloudfoundry.client.v3.processes.ListProcessesRequest;
+import org.cloudfoundry.client.v3.processes.ListProcessesResponse;
 import org.cloudfoundry.client.v3.routes.ListRoutesRequest;
 import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
 import org.cloudfoundry.promregator.cfaccessor.client.ReactorInfoV3;
@@ -404,5 +406,25 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 				responseGenerator);
 		
 	}
+
+	@Override
+	public Mono<ListProcessesResponse> retrieveWebProcessesForAppIds(Set<String> applicationIds) {
+		PaginatedRequestGeneratorFunctionV3<ListProcessesRequest> requestGenerator = (resultsPerPage, pageNumber) ->
+		ListProcessesRequest.builder()
+			.addAllApplicationIds(applicationIds)
+			.type(CF_API_V3_PROCESS_TYPE_WEB)
+			.build();
+	
+		PaginatedResponseGeneratorFunctionV3<org.cloudfoundry.client.v3.processes.ProcessResource, ListProcessesResponse> responseGenerator = (list, numberOfPages) -> 
+			ListProcessesResponse.builder()
+			.addAllResources(list)
+			.pagination(Pagination.builder().totalPages(numberOfPages).totalResults(list.size()).build())
+			.build();
+		
+		return this.paginatedRequestFetcher.performGenericPagedRetrievalV3(RequestType.PROCESSES, applicationIds, requestGenerator, 
+				r -> this.cloudFoundryClient.processes().list(r), this.requestTimeoutProcess, 
+				responseGenerator);
+	}
+
 
 }

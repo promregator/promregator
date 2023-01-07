@@ -6,7 +6,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v3.BuildpackData;
@@ -24,6 +23,7 @@ import org.cloudfoundry.client.v3.domains.DomainResource;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v3.processes.HealthCheck;
 import org.cloudfoundry.client.v3.processes.HealthCheckType;
+import org.cloudfoundry.client.v3.processes.ListProcessesResponse;
 import org.cloudfoundry.client.v3.processes.ProcessRelationships;
 import org.cloudfoundry.client.v3.processes.ProcessResource;
 import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
@@ -215,7 +215,7 @@ public class CFAccessorMassMock implements CFAccessor {
 		}
 		
 		List<RouteResource> list = appIds.stream()
-				.map(appId -> this.determineRoutesDataForApp(appId))
+				.map(this::determineRoutesDataForApp)
 				.filter(e -> e != null)
 				.toList();
 		
@@ -223,22 +223,27 @@ public class CFAccessorMassMock implements CFAccessor {
 		return Mono.just(resp).delayElement(this.getSleepRandomDuration());
 	}
 
+	private ProcessResource determineWebProcessesDataForApp(String applicationId) {
+		final String appNumber = applicationId.substring(UNITTEST_APP_UUID_PREFIX.length());
+		final ProcessResource prWeb = ProcessResource.builder()
+				.instances(this.amountInstances)
+				.type("web")
+				.createdAt(CREATED_AT_TIMESTAMP)
+				.command("dummycommand")
+				.diskInMb(1024)
+				.healthCheck(HealthCheck.builder().type(HealthCheckType.HTTP).build())
+				.memoryInMb(1024)
+				.metadata(Metadata.builder().build())
+				.relationships(ProcessRelationships.builder().build())
+				.id(UNITTEST_PROCESS_UUID_PREFIX + appNumber)
+				.build();
+		return prWeb;
+	}
+	
 	@Override
 	public Mono<ListApplicationProcessesResponse> retrieveWebProcessesForAppId(String applicationId) {
 		if (applicationId.startsWith(UNITTEST_APP_UUID_PREFIX)) {
-			final String appNumber = applicationId.substring(UNITTEST_APP_UUID_PREFIX.length());
-			final ProcessResource prWeb = ProcessResource.builder()
-					.instances(this.amountInstances)
-					.type("web")
-					.createdAt(CREATED_AT_TIMESTAMP)
-					.command("dummycommand")
-					.diskInMb(1024)
-					.healthCheck(HealthCheck.builder().type(HealthCheckType.HTTP).build())
-					.memoryInMb(1024)
-					.metadata(Metadata.builder().build())
-					.relationships(ProcessRelationships.builder().build())
-					.id(UNITTEST_PROCESS_UUID_PREFIX + appNumber)
-					.build();
+			final ProcessResource prWeb = determineWebProcessesDataForApp(applicationId);
 			
 			ListApplicationProcessesResponse resp = ListApplicationProcessesResponse.builder().resource(prWeb).build();
 			return Mono.just(resp).delayElement(this.getSleepRandomDuration());
@@ -247,4 +252,21 @@ public class CFAccessorMassMock implements CFAccessor {
 		Assertions.fail("Invalid retrieveWebProcessesForApp request");
 		return null;
 	}
+
+	@Override
+	public Mono<ListProcessesResponse> retrieveWebProcessesForAppIds(Set<String> applicationIds) {
+		if (applicationIds == null) {
+			return null;
+		}
+		
+		List<ProcessResource> list = applicationIds.stream()
+				.map(this::determineWebProcessesDataForApp)
+				.filter(e -> e != null)
+				.toList();
+		
+		ListProcessesResponse resp = ListProcessesResponse.builder().resources(list).build();
+		return Mono.just(resp).delayElement(this.getSleepRandomDuration());
+	}
+	
 }
+

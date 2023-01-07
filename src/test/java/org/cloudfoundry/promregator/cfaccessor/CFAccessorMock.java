@@ -21,6 +21,7 @@ import org.cloudfoundry.client.v3.domains.DomainResource;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v3.processes.HealthCheck;
 import org.cloudfoundry.client.v3.processes.HealthCheckType;
+import org.cloudfoundry.client.v3.processes.ListProcessesResponse;
 import org.cloudfoundry.client.v3.processes.ProcessRelationships;
 import org.cloudfoundry.client.v3.processes.ProcessResource;
 import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
@@ -360,6 +361,18 @@ public class CFAccessorMock implements CFAccessor {
 
 	@Override
 	public Mono<ListApplicationProcessesResponse> retrieveWebProcessesForAppId(String applicationId) {
+		final ProcessResource prWeb = determineWebProcessesDataForApp(applicationId);
+		ListApplicationProcessesResponse resp = ListApplicationProcessesResponse.builder().resource(prWeb).build();
+		if (resp != null) {
+			return Mono.just(resp);
+		}
+		
+		Assertions.fail("Invalid process request");
+		return null;
+	}
+
+	private ProcessResource determineWebProcessesDataForApp(String applicationId) {
+		
 		if (applicationId.equals(UNITTEST_APP1_UUID) || applicationId.equals(UNITTEST_APP2_UUID) || applicationId.equals(UNITTEST_APP3_UUID) || applicationId.equals(UNITTEST_APP_INTERNAL_UUID)) {
 			final ProcessResource prWeb = ProcessResource.builder()
 					.instances(applicationId.equals(UNITTEST_APP1_UUID) || applicationId.equals(UNITTEST_APP_INTERNAL_UUID) ? 2 : 1)
@@ -373,12 +386,25 @@ public class CFAccessorMock implements CFAccessor {
 					.relationships(ProcessRelationships.builder().build())
 					.id(applicationId+"p")
 					.build();
-			
-			ListApplicationProcessesResponse resp = ListApplicationProcessesResponse.builder().resource(prWeb).build();
-			return Mono.just(resp);
+			return prWeb;
 		}
-		Assertions.fail("Invalid process request");
+
 		return null;
+	}
+
+	@Override
+	public Mono<ListProcessesResponse> retrieveWebProcessesForAppIds(Set<String> applicationIds) {
+		if (applicationIds == null) {
+			return null;
+		}
+		
+		List<ProcessResource> list = applicationIds.stream()
+				.map(appId -> this.determineWebProcessesDataForApp(appId))
+				.filter(e -> e != null)
+				.toList();
+		
+		ListProcessesResponse resp = ListProcessesResponse.builder().resources(list).build();
+		return Mono.just(resp);
 	}
 
 }

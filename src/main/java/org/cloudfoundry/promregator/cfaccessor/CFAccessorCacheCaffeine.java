@@ -19,6 +19,7 @@ import org.cloudfoundry.client.v3.applications.ListApplicationProcessesResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse;
+import org.cloudfoundry.client.v3.processes.ListProcessesResponse;
 import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
 import org.cloudfoundry.client.v3.routes.RouteResource;
 import org.cloudfoundry.client.v3.spaces.ListSpacesResponse;
@@ -379,6 +380,16 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	}
 
 	
+	@Override
+	public Mono<ListProcessesResponse> retrieveWebProcessesForAppIds(Set<String> applicationIds) {
+		/* Caching multiple IDs would cause a major problem in blocking properly
+		 * on the Caffeine cache.
+		 * However, we also don't need this implementation here, so we are just
+		 * forwarding the request to the parent CFAccessor.
+		 */
+		return this.parent.retrieveWebProcessesForAppIds(applicationIds);
+	}
+	
 	
 	@Override
 	public void invalidateCacheApplication() {
@@ -422,4 +433,5 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	public void reset() {
 		this.parent.reset();
 	}
+
 }
