@@ -305,7 +305,7 @@ This parameter configures the maximal number of requests aggregating route data.
 
 The logic does not wait until a block is full - this parameter only defines what is the maximal number of requests allowed (upper boundary).
 
-In high load situation (i.e. thousands of applications configured), increasing this value may be counterproductive in that sense that it will incur additional latency: As the platform will require more time to respond to the request, scrape requests will have to wait longer until their individual request for data can be fulfilled.
+In high load situation (i.e. thousands of applications configured), increasing this value may be counterproductive in that sense that it will cause additional latency: As the platform will require more time to respond to the request, scrape requests will have to wait longer until their individual request for data can be fulfilled.
 
 ### Option "cf.cache.aggregator.checkinterval.route" (optional)
 If multiple applications are configured to be scraped by Promregator, the number of requests on fetching route metadata of of the Cloud Foundry environment may become high.
@@ -318,6 +318,28 @@ The default value of this parameter is 125 (milliseconds).
 Assuming a value of "cf.cache.aggregator.blocksize.route" to be set to 100 and this parameter to be set to the default value, this means that the Request Aggregator may send out 8 blocks of requests per second with 100 (applications) each. Given a scraping interval of 15 seconds, this means that at maximum (i. e. no caching considered) 12,000 requests can be handled. In case you have more applications configured and you need to increase the performance due to your high load situation, you should *lower* this configuration parameter's value: Cutting it by half (i.e. 62), Promregator may serve double as many applications.
 
 Note, be careful to go below a value of 10 for this parameter: With such a low value, the algorithm will become ineffective - the managerial overhead may consume a lot of CPU cycles unnecessarily. If you are reaching such a high load, consider increasing the value of "cf.cache.timeout.route" instead.
+
+### Option "cf.cache.aggregator.blocksize.process" (optional)
+If multiple applications are configured to be scraped by Promregator, the number of requests on fetching route metadata of of the Cloud Foundry environment may become high.
+To limit the load Promregator imposes on the CF infrastructure, multiple process requests are being bundled into one big process request to the platform. This process is called "Request Aggregation". 
+
+This parameter configures the maximal number of requests aggregating process data. Its default value is 100.
+
+The logic does not wait until a block is full - this parameter only defines what is the maximal number of requests allowed (upper boundary).
+
+In high load situation (i.e. thousands of applications configured), increasing this value may be counterproductive in that sense that it will cause additional latency: As the platform will require more time to respond to the request, scrape requests will have to wait longer until their individual request for data can be fulfilled.
+
+### Option "cf.cache.aggregator.checkinterval.process" (optional)
+If multiple applications are configured to be scraped by Promregator, the number of requests on fetching process metadata of of the Cloud Foundry environment may become high.
+To limit the load Promregator imposes on the CF infrastructure, multiple process requests are being bundled into one big process request to the platform. This process is called "Request Aggregation". 
+
+This parameter configures the duration (unit: milliseconds) of how long the Request Aggregator waits for requests to come in, which shall be bundled together in one block.
+
+The default value of this parameter is 125 (milliseconds).
+
+Assuming a value of "cf.cache.aggregator.blocksize.process" to be set to 100 and this parameter to be set to the default value, this means that the Request Aggregator may send out 8 blocks of requests per second with 100 (applications) each. Given a scraping interval of 15 seconds, this means that at maximum (i. e. no caching considered) 12,000 requests can be handled. In case you have more applications configured and you need to increase the performance due to your high load situation, you should *lower* this configuration parameter's value: Cutting it by half (i.e. 62), Promregator may serve double as many applications.
+
+Note, be careful to go below a value of 10 for this parameter: With such a low value, the algorithm will become ineffective - the managerial overhead may consume a lot of CPU cycles unnecessarily. If you are reaching such a high load, consider increasing the value of "cf.cache.timeout.process" instead.
 
 
 ### Option "cf.request.timeout.org" (optional)
