@@ -1,6 +1,5 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
-import org.awaitility.Awaitility;
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;

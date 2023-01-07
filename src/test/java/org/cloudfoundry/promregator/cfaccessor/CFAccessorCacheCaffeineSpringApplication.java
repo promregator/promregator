@@ -1,12 +1,24 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
+import java.util.List;
 import java.util.Set;
 
 import org.cloudfoundry.client.v2.info.GetInfoResponse;
+import org.cloudfoundry.client.v3.Metadata;
+import org.cloudfoundry.client.v3.Relationship;
+import org.cloudfoundry.client.v3.ToOneRelationship;
 import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
+import org.cloudfoundry.client.v3.processes.HealthCheck;
+import org.cloudfoundry.client.v3.processes.HealthCheckType;
 import org.cloudfoundry.client.v3.processes.ListProcessesResponse;
+import org.cloudfoundry.client.v3.processes.ProcessRelationships;
+import org.cloudfoundry.client.v3.processes.ProcessResource;
+import org.cloudfoundry.client.v3.routes.Application;
+import org.cloudfoundry.client.v3.routes.Destination;
 import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
+import org.cloudfoundry.client.v3.routes.RouteRelationships;
+import org.cloudfoundry.client.v3.routes.RouteResource;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -62,7 +74,7 @@ public class CFAccessorCacheCaffeineSpringApplication {
 
 		@Override
 		public Mono<ListRoutesResponse> retrieveRoutesForAppId(String appId) {
-			return Mono.just(ListRoutesResponse.builder().build());
+			return this.retrieveRoutesForAppIds(Set.of(appId));
 		}
 
 		@Override
@@ -72,17 +84,45 @@ public class CFAccessorCacheCaffeineSpringApplication {
 
 		@Override
 		public Mono<ListRoutesResponse> retrieveRoutesForAppIds(Set<String> appIds) {
-			return Mono.just(ListRoutesResponse.builder().build());
+			List<RouteResource> list = appIds.stream().map(id -> {
+				Destination dest = Destination.builder().application(Application.builder().applicationId(id).build()).build();
+				RouteRelationships relationships = RouteRelationships.builder()
+						.domain(ToOneRelationship.builder().data(Relationship.builder().id("1").build()).build())
+						.space(ToOneRelationship.builder().data(Relationship.builder().id("2").build()).build())
+						.build();
+				RouteResource rr = RouteResource.builder().id(id).destination(dest).host("dummy.bogus").path("/").createdAt("something").url("http://dummy.bogus/").relationships(relationships).build();
+				return rr;
+			}).toList();
+			
+			return Mono.just(ListRoutesResponse.builder().resources(list).build());
 		}
 
 		@Override
 		public Mono<ListProcessesResponse> retrieveWebProcessesForAppId(String applicationId) {
-			return Mono.just(ListProcessesResponse.builder().build());
+			return this.retrieveWebProcessesForAppIds(Set.of(applicationId));
 		}
 
 		@Override
 		public Mono<ListProcessesResponse> retrieveWebProcessesForAppIds(Set<String> applicationIds) {
-			return Mono.just(ListProcessesResponse.builder().build());
+			
+			
+			List<ProcessResource> list = applicationIds.stream().map(id -> {
+				ProcessRelationships relationships = ProcessRelationships.builder().app(ToOneRelationship.builder().data(Relationship.builder().id(id).build()).build()).build();
+				ProcessResource pr = ProcessResource.builder()
+						.id(id)
+						.diskInMb(1024)
+						.createdAt("something")
+						.memoryInMb(256)
+						.instances(1)
+						.type("web")
+						.relationships(relationships)
+						.command("cmd")
+						.healthCheck(HealthCheck.builder().type(HealthCheckType.HTTP).build())
+						.metadata(Metadata.builder().build())
+						.build();
+				return pr;
+			}).toList();
+			return Mono.just(ListProcessesResponse.builder().resources(list).build());
 		}
 	}
 	

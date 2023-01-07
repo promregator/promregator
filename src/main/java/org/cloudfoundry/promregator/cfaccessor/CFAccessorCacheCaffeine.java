@@ -364,7 +364,6 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 				.scheduler(caffeineScheduler)
 				.buildAsync(new ProcessCacheLoader());
 		this.internalMetrics.addCaffeineCache("process", this.processCache);
-
 		
 	}
 
