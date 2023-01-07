@@ -42,6 +42,8 @@ public class CFAccessorCacheCaffeineTest {
 		this.subject.invalidateCacheSpace();
 		this.subject.invalidateCacheOrg();
 		this.subject.invalidateCacheDomain();
+		this.subject.invalidateCacheRoute();
+		this.subject.invalidateCacheProcess();
 	}
 	
 	@BeforeEach
