@@ -280,10 +280,10 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	
 	@PostConstruct
 	public void setupCaches() {
-		log.info(String.format("Cache refresh timings: org cache: %ds, space cache: %ds, app cache: %ds, app summary cache: %ds", 
-				this.refreshCacheOrgLevelInSeconds, this.refreshCacheSpaceLevelInSeconds, this.refreshCacheApplicationLevelInSeconds, this.refreshCacheApplicationLevelInSeconds));
-		log.info(String.format("Cache expiry timings: org cache: %ds, space cache: %ds, app cache: %ds, app summary cache: %ds", 
-				this.expiryCacheOrgLevelInSeconds, this.expiryCacheSpaceLevelInSeconds, this.expiryCacheApplicationLevelInSeconds, this.expiryCacheApplicationLevelInSeconds));
+		log.info(String.format("Cache refresh timings: org cache: %ds, space cache: %ds, app cache: %ds, app cache: %ds, domain cache: %ds, route cache: %ds, process cache: %ds", 
+				this.refreshCacheOrgLevelInSeconds, this.refreshCacheSpaceLevelInSeconds, this.refreshCacheApplicationLevelInSeconds, this.refreshCacheApplicationLevelInSeconds, this.refreshCacheDomainLevelInSeconds, this.refreshCacheRouteLevelInSeconds, this.refreshCacheProcessLevelInSeconds));
+		log.info(String.format("Cache expiry timings: org cache: %ds, space cache: %ds, app cache: %ds, app cache: %ds, domain cache: %ds, route cache: %ds, process cache: %ds", 
+				this.expiryCacheOrgLevelInSeconds, this.expiryCacheSpaceLevelInSeconds, this.expiryCacheApplicationLevelInSeconds, this.expiryCacheApplicationLevelInSeconds, this.expiryCacheDomainLevelInSeconds, this.expiryCacheRouteLevelInSeconds, this.expiryCacheProcessLevelInSeconds));
 		
 		Scheduler caffeineScheduler = Scheduler.forScheduledExecutorService(new ScheduledThreadPoolExecutor(1));
 		
