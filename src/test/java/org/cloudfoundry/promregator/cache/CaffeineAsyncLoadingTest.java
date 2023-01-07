@@ -2,8 +2,10 @@ package org.cloudfoundry.promregator.cache;
 
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.junit.jupiter.api.Assertions;
@@ -116,6 +118,7 @@ public class CaffeineAsyncLoadingTest {
 			return result.toFuture();
 		}
 	}
+	
 	@Test
 	public void testFailureOnAsynchronous() {
 		FakeTicker ticker = new FakeTicker();
@@ -145,5 +148,69 @@ public class CaffeineAsyncLoadingTest {
 			thrown = true;
 		}
 		Assertions.assertTrue(thrown);
+	}
+
+	private static final class CompleterThread extends Thread {
+
+		private CompletableFuture<Integer> future;
+		
+		CompleterThread(CompletableFuture<Integer> future) {
+			this.future = future;
+		}
+		
+		@Override
+		public void run() {
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			
+			future.complete(1);
+		}
+
+	}
+	
+	private static class AsyncOtherThreadResolver implements AsyncCacheLoader<String, Integer> {
+
+		private int counter = 0;
+		
+		@Override
+		public @NonNull CompletableFuture<Integer> asyncLoad(@NonNull String key, @NonNull Executor executor) {
+			counter++;
+			
+			CompletableFuture<Integer> future = new CompletableFuture<Integer>();
+			
+			new CompleterThread(future).start();
+			
+			return future;
+		}
+
+		public int getCounter() {
+			return counter;
+		}
+		
+	}
+	
+	@Test
+	public void testAsyncCompleteOnOtherThread() throws InterruptedException, ExecutionException, TimeoutException {
+		AsyncOtherThreadResolver loader = new AsyncOtherThreadResolver();
+		
+		AsyncLoadingCache<String, Integer> subject = Caffeine.newBuilder()
+				.expireAfterAccess(240, TimeUnit.SECONDS)
+				.refreshAfterWrite(120, TimeUnit.SECONDS)
+				.buildAsync(loader);
+		
+		@NonNull
+		CompletableFuture<Integer> future1 = subject.get("a");
+		future1.get(1000L, TimeUnit.SECONDS);
+		Assertions.assertEquals(1, loader.getCounter());
+		
+		Thread.sleep(500);
+		
+		CompletableFuture<Integer> future2 = subject.get("a");
+		future2.get(1000L, TimeUnit.SECONDS);
+		
+		Assertions.assertEquals(1, loader.getCounter());
 	}
 }
