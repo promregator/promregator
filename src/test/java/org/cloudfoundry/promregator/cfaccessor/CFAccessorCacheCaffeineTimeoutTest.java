@@ -172,7 +172,7 @@ public class CFAccessorCacheCaffeineTimeoutTest {
 	void testRetrieveProcessesForApp() throws InterruptedException {
 		Mono<ListProcessesResponse> response1 = subject.retrieveWebProcessesForAppId("dummy");
 		response1.subscribe();
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveWebProcessesForAppId("dummy");
+		Mockito.verify(this.parentMock, Mockito.timeout(500).times(1)).retrieveWebProcessesForAppId("dummy");
 		
 		// required to permit asynchronous updates of caches => test stability
 		Thread.sleep(10);
@@ -180,7 +180,7 @@ public class CFAccessorCacheCaffeineTimeoutTest {
 		Mono<ListProcessesResponse> response2 = subject.retrieveWebProcessesForAppId("dummy");
 		response2.subscribe();
 		Assertions.assertNotEquals(response1, response2);
-		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveWebProcessesForAppId("dummy");
+		Mockito.verify(this.parentMock, Mockito.timeout(500).times(2)).retrieveWebProcessesForAppId("dummy");
 	}
 	
 	@Test
@@ -188,7 +188,7 @@ public class CFAccessorCacheCaffeineTimeoutTest {
 		HashSet<String> set = new HashSet<>(Arrays.asList("dummy"));
 		Mono<ListRoutesResponse> response1 = subject.retrieveRoutesForAppIds(set);
 		response1.subscribe();
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveRoutesForAppIds(set);
+		Mockito.verify(this.parentMock, Mockito.timeout(500).times(1)).retrieveRoutesForAppIds(set);
 		
 		// required to permit asynchronous updates of caches => test stability
 		Thread.sleep(10);
@@ -196,14 +196,14 @@ public class CFAccessorCacheCaffeineTimeoutTest {
 		Mono<ListRoutesResponse> response2 = subject.retrieveRoutesForAppIds(set);
 		response2.subscribe();
 		Assertions.assertNotEquals(response1, response2);
-		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveRoutesForAppIds(set);
+		Mockito.verify(this.parentMock, Mockito.timeout(500).times(2)).retrieveRoutesForAppIds(set);
 	}
 	
 	@Test
 	void testRetrieveRoutesForAppId() throws InterruptedException {
 		Mono<ListRoutesResponse> response1 = subject.retrieveRoutesForAppId("dummy");
 		response1.subscribe();
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveRoutesForAppIds(Mockito.anySet());
+		Mockito.verify(this.parentMock, Mockito.timeout(500).times(1)).retrieveRoutesForAppIds(Mockito.anySet());
 		
 		// required to permit asynchronous updates of caches => test stability
 		Thread.sleep(10);
