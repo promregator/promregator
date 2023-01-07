@@ -165,18 +165,20 @@ public class CFAccessorCacheCaffeineTest {
 	@Test
 	void testRetrieveProcessesForApp() {
 		Mono<ListProcessesResponse> response1 = subject.retrieveWebProcessesForAppId("dummy");
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveWebProcessesForAppId("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(0)).retrieveWebProcessesForAppId("dummy");
+		Mockito.verify(this.parentMock, Mockito.timeout(500).times(1)).retrieveWebProcessesForAppIds(Mockito.anySet());
 
 		Mono<ListProcessesResponse> response2 = subject.retrieveWebProcessesForAppId("dummy");
 		assertThat(response1.block()).isEqualTo(response2.block());
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveWebProcessesForAppId("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(0)).retrieveWebProcessesForAppId("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveWebProcessesForAppIds(Mockito.anySet());
 	}
 	
 	@Test
 	void testRetrieveRoutesForAppId() {
 		Mono<ListRoutesResponse> response1 = subject.retrieveRoutesForAppId("dummy");
 		Mockito.verify(this.parentMock, Mockito.times(0)).retrieveRoutesForAppId("dummy");
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveRoutesForAppIds(Mockito.anySet());
+		Mockito.verify(this.parentMock, Mockito.timeout(500).times(1)).retrieveRoutesForAppIds(Mockito.anySet());
 
 		Mono<ListRoutesResponse> response2 = subject.retrieveRoutesForAppId("dummy");
 		assertThat(response1.block()).isEqualTo(response2.block());

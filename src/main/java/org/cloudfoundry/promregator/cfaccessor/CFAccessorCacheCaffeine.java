@@ -1,5 +1,6 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -194,7 +195,12 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 
 		@Override
 		protected Map<String, ListRoutesResponse> determineMapOfResponses(ListRoutesResponse response) {
+			if (response == null || response.getResources() == null) {
+				return Collections.emptyMap();
+			}
+			
 			Map<String, List<RouteResource>> map = new HashMap<>();
+			
 			response.getResources().forEach(rr -> {
 				
 				rr.getDestinations().forEach(dest -> {
@@ -225,6 +231,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 		public @NonNull CompletableFuture<ListRoutesResponse> asyncLoad(@NonNull String key,
 				@NonNull Executor executor) {
 			
+			log.info("Invoking route cache load for {}", key);
 			CompletableFuture<ListRoutesResponse> future = new CompletableFuture<>();
 			routesRequestAggregator.addToQueue(key, future);
 			return future;
@@ -244,6 +251,10 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 
 		@Override
 		protected Map<String, ListProcessesResponse> determineMapOfResponses(ListProcessesResponse response) {
+			if (response == null || response.getResources() == null) {
+				return Collections.emptyMap();
+			}
+			
 			Map<String, List<ProcessResource>> map = new HashMap<>();
 			response.getResources().forEach(pr -> {
 				String appId = pr.getRelationships().getApp().getData().getId();

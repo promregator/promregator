@@ -1,5 +1,6 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
+import org.awaitility.Awaitility;
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -117,23 +118,23 @@ public class CFAccessorCacheCaffeineInvalidationTest {
 	@Test
 	void testInvalidateCacheRoute() {
 		subject.retrieveRoutesForAppId("dummy");
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveRoutesForAppIds(Mockito.anySet());
+		Mockito.verify(this.parentMock, Mockito.timeout(500).times(1)).retrieveRoutesForAppIds(Mockito.anySet());
 		
 		subject.invalidateCacheRoute();
 		
 		subject.retrieveRoutesForAppId("dummy");
-		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveRoutesForAppIds(Mockito.anySet());
+		Mockito.verify(this.parentMock, Mockito.timeout(500).times(2)).retrieveRoutesForAppIds(Mockito.anySet());
 	}
 
 	@Test
 	void testInvalidateCacheProcess() {
 		subject.retrieveWebProcessesForAppId("dummy");
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveWebProcessesForAppId("dummy");
+		Mockito.verify(this.parentMock, Mockito.timeout(500).times(1)).retrieveWebProcessesForAppIds(Mockito.anySet());
 		
 		subject.invalidateCacheProcess();
 		
 		subject.retrieveWebProcessesForAppId("dummy");
-		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveWebProcessesForAppId("dummy");
+		Mockito.verify(this.parentMock, Mockito.timeout(500).times(2)).retrieveWebProcessesForAppIds(Mockito.anySet());
 	}
 
 	
