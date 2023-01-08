@@ -22,13 +22,6 @@ import org.springframework.security.web.savedrequest.RequestCache;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-	@Bean(name = BeanIds.AUTHENTICATION_MANAGER)
-	@Override
-	// see also
-	// https://stackoverflow.com/questions/21633555/how-to-inject-authenticationmanager-using-java-configuration-in-a-custom-filter
-	public AuthenticationManager authenticationManagerBean() throws Exception {
-		return super.authenticationManagerBean();
-	}
 
 	@Value("${promregator.discovery.auth:NONE}")
 	private InboundAuthorizationMode discoveryAuth;
@@ -64,10 +57,20 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	@Value("${promregator.authentication.basic.password:#{null}}")
 	private String basicAuthPassword;
 
-	// see also
-	// https://www.boraji.com/spring-security-4-http-basic-authentication-example
-	// and
-	// https://stackoverflow.com/questions/46999940/spring-boot-passwordencoder-error
+	@Bean(name = BeanIds.AUTHENTICATION_MANAGER)
+	@Override
+	/* 
+	 * see also https://stackoverflow.com/questions/21633555/how-to-inject-authenticationmanager-using-java-configuration-in-a-custom-filter
+	 */
+	public AuthenticationManager authenticationManagerBean() throws Exception {
+		return super.authenticationManagerBean();
+	}
+
+	
+	/*
+	 * see also https://www.boraji.com/spring-security-4-http-basic-authentication-example
+	 * and https://stackoverflow.com/questions/46999940/spring-boot-passwordencoder-error
+	 */
 	@Bean
 	@Override
 	public UserDetailsService userDetailsService() {
@@ -79,8 +82,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 			// NB: Logging does not work here properly yet; better use stderr
 			System.err.println();
-			System.err.println(
-					String.format("Using generated password for user %s: %s", this.basicAuthUsername, password));
+			System.err.println(String.format("Using generated password for user %s: %s", this.basicAuthUsername, password));
 			System.err.println();
 		}
 
@@ -118,8 +120,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		// see also https://github.com/spring-projects/spring-security/issues/4242
 		security.requestCache().requestCache(this.newHttpSessionRequestCache());
 		
-		// see also
-		// https://www.boraji.com/spring-security-4-http-basic-authentication-example
+		// see also https://www.boraji.com/spring-security-4-http-basic-authentication-example
 		sec.httpBasic();
 	}
 
@@ -133,8 +134,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		return sec;
 	}
 
-	// see also
-	// https://stackoverflow.com/questions/30366405/how-to-disable-spring-security-for-particular-url
+	/*
+	 * see also https://stackoverflow.com/questions/30366405/how-to-disable-spring-security-for-particular-url
+	 */
 	@Override
 	public void configure(WebSecurity webInitial) throws Exception {
 		if (!this.isInboundAuthSecurityEnabled()) {
