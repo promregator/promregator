@@ -140,7 +140,7 @@ public abstract class RequestAggregator<K, V> {
 	}
 	
 	public void addToQueue(K item, CompletableFuture<V> future) {
-		log.info("Adding item {}", item);
+		log.debug("Adding item {}", item);
 		this.queue.add(new QueueItem<>(item, future));
 	}
 	

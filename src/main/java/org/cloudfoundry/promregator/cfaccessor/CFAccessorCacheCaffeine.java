@@ -230,7 +230,6 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 		public @NonNull CompletableFuture<ListRoutesResponse> asyncLoad(@NonNull String key,
 				@NonNull Executor executor) {
 			
-			log.info("Invoking route cache load for {}", key);
 			CompletableFuture<ListRoutesResponse> future = new CompletableFuture<>();
 			routesRequestAggregator.addToQueue(key, future);
 			return future;
@@ -245,7 +244,6 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 
 		@Override
 		protected Mono<ListProcessesResponse> sendRequest(List<String> block) {
-			log.info("Sending process block request with {} items", block.size());
 			return parent.retrieveWebProcessesForAppIds(new HashSet<>(block));
 		}
 
