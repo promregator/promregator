@@ -3,6 +3,7 @@ package org.cloudfoundry.promregator.internalmetrics;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
 import javax.annotation.PostConstruct;
 
@@ -31,20 +32,34 @@ public class InternalMetrics {
 
 	private Histogram rateLimitWaitTime;
 	private AtomicInteger rateLimitQueueSize = new AtomicInteger(0);
+
+	private Supplier<Double> dequeRouteSizeFunction;
+	private Supplier<Double> dequeProcessSizeFunction;
 	
 	private class InternalCollector extends Collector {
 
 		private static final String PROMREGATOR_CFFETCH_RATELIMIT_QUEUE_SIZE = "promregator_cffetch_ratelimit_queue_size";
+		private static final String PROMREGATOR_REQUEST_AGGREGATOR_QUEUE_SIZE = "promregator_request_aggregator_queue_size";
 
 		@Override
 		public List<MetricFamilySamples> collect() {
+			ArrayList<MetricFamilySamples> result = new ArrayList<>(2);
 			
 			Sample queueSize = new Sample(PROMREGATOR_CFFETCH_RATELIMIT_QUEUE_SIZE, new ArrayList<>(), new ArrayList<>(), rateLimitQueueSize.doubleValue());
-			
 			MetricFamilySamples queueSizeMFS = new MetricFamilySamples(PROMREGATOR_CFFETCH_RATELIMIT_QUEUE_SIZE, Type.GAUGE, 
 					"The number of CFCC requests being throttled by rate limiting", Lists.newArrayList(queueSize));
+			result.add(queueSizeMFS);
 			
-			return Lists.newArrayList(queueSizeMFS);
+			if (dequeRouteSizeFunction != null && dequeProcessSizeFunction != null) {
+				Sample queueSizeDequeRoute = new Sample(PROMREGATOR_REQUEST_AGGREGATOR_QUEUE_SIZE, Lists.newArrayList("type"), Lists.newArrayList("route"), dequeRouteSizeFunction.get());
+				Sample queueSizeDequeProcess = new Sample(PROMREGATOR_REQUEST_AGGREGATOR_QUEUE_SIZE, Lists.newArrayList("type"), Lists.newArrayList("process"), dequeProcessSizeFunction.get());
+				MetricFamilySamples queueSizeDequeMFS = new MetricFamilySamples(PROMREGATOR_REQUEST_AGGREGATOR_QUEUE_SIZE, Type.GAUGE, 
+						"The number of requests in the RequestAggregator's deque", Lists.newArrayList(queueSizeDequeRoute, queueSizeDequeProcess));
+				result.add(queueSizeDequeMFS);
+			}
+			
+			
+			return result;
 		}
 		
 	}
@@ -112,6 +127,14 @@ public class InternalMetrics {
 			return;
 
 		this.rateLimitQueueSize.decrementAndGet();
+	}
+	
+	public void registerDequeRouteSizeFunction(Supplier<Double> function) {
+		this.dequeRouteSizeFunction = function;
+	}
+	
+	public void registerDequeProcessSizeFunction(Supplier<Double> function) {
+		this.dequeProcessSizeFunction = function;
 	}
 
 }

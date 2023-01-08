@@ -20,7 +20,7 @@ class RequestAggregatorTest {
 	private static class ReqeuestAggregatorUnderTest extends RequestAggregator<Integer, String> {
 
 		public ReqeuestAggregatorUnderTest() {
-			super(Integer.class, String.class, 10, 5);
+			super(RequestAggregator.Type.OTHER, null, Integer.class, String.class, 10, 5);
 		}
 
 		@Override
@@ -102,7 +102,7 @@ class RequestAggregatorTest {
 	private static class ReqeuestAggregatorDropsSecondItem extends RequestAggregator<Integer, String> {
 
 		public ReqeuestAggregatorDropsSecondItem() {
-			super(Integer.class, String.class, 10, 5);
+			super(RequestAggregator.Type.OTHER, null, Integer.class, String.class, 10, 5);
 		}
 
 		@Override
@@ -155,7 +155,7 @@ class RequestAggregatorTest {
 	private static class ReqeuestAggregatorRaisingException extends RequestAggregator<Integer, String> {
 
 		public ReqeuestAggregatorRaisingException() {
-			super(Integer.class, String.class, 10, 5);
+			super(RequestAggregator.Type.OTHER, null, Integer.class, String.class, 10, 5);
 		}
 
 		@Override

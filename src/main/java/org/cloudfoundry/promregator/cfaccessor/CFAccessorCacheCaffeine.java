@@ -185,7 +185,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	private class RoutesRequestAggregator extends RequestAggregator<String, ListRoutesResponse> {
 
 		public RoutesRequestAggregator() {
-			super(String.class, ListRoutesResponse.class, aggregatorCheckintervalRoute, aggregatorBlocksizeRoute);
+			super(RequestAggregator.Type.ROUTE, internalMetrics, String.class, ListRoutesResponse.class, aggregatorCheckintervalRoute, aggregatorBlocksizeRoute);
 		}
 
 		@Override
@@ -240,7 +240,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	private class ProcessRequestAggregator extends RequestAggregator<String, ListProcessesResponse> {
 
 		public ProcessRequestAggregator() {
-			super(String.class, ListProcessesResponse.class, aggregatorCheckintervalProcess, aggregatorBlocksizeProcess);
+			super(RequestAggregator.Type.PROCESS, internalMetrics, String.class, ListProcessesResponse.class, aggregatorCheckintervalProcess, aggregatorBlocksizeProcess);
 		}
 
 		@Override

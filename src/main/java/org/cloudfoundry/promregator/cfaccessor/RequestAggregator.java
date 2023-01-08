@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
+import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
@@ -18,9 +19,25 @@ public abstract class RequestAggregator<K, V> {
 
 	private static record QueueItem<K, V> (K requestItem, CompletableFuture<V> future) {}
 	
-	/*
-	 * TODO V3: internal metrics required for state of queue
-	 */
+	public enum Type {
+		ROUTE("route"),
+		PROCESS("process"),
+		OTHER("other"); // used for unit testing
+		
+		private String typeName;
+		
+		private Type(String typeName) {
+			this.typeName = typeName;
+		}
+
+		/**
+		 * @return the typeName
+		 */
+		public String getTypeName() {
+			return typeName;
+		}
+	}
+	
 	private ConcurrentLinkedDeque<QueueItem<K, V>> queue = new ConcurrentLinkedDeque<>();
 	
 	private Processor processor;
@@ -99,12 +116,28 @@ public abstract class RequestAggregator<K, V> {
 		
 	}
 	
-	public RequestAggregator(Class<K> typeOfK, Class<V> typeOfV, int checkIntervalInMillis, int maxBlockSize) {
+	public RequestAggregator(Type type, InternalMetrics internalMetrics, Class<K> typeOfK, Class<V> typeOfV, int checkIntervalInMillis, int maxBlockSize) {
 		this.checkIntervalInMillis = checkIntervalInMillis;
 		this.maxBlockSize = maxBlockSize;
 		
 		Assert.isTrue(checkIntervalInMillis > 0, "Check Interval must not be negative or zero");
 		Assert.isTrue(maxBlockSize > 0, "BlockSize must not be negative or zero");
+		
+		if (internalMetrics != null) {
+			switch (type) {
+			case ROUTE: 
+				internalMetrics.registerDequeRouteSizeFunction(() -> (double) queue.size());
+				break;
+			case PROCESS: 
+				internalMetrics.registerDequeProcessSizeFunction(() -> (double) queue.size());
+				break;
+			case OTHER:
+				break; // ignore
+			default:
+				throw new UnsupportedOperationException("Unkown RequestAggregator Type");
+			}
+			
+		}
 		
 		this.processor = new Processor(typeOfK, typeOfV);
 		this.processor.start();
