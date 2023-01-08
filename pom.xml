@@ -64,8 +64,6 @@
 		<cloudfoundry.client.version>5.9.0.RELEASE</cloudfoundry.client.version>
 		<!-- see also https://github.com/cloudfoundry/cf-java-client -->
 		
-		<logback.contrib.version>0.1.5</logback.contrib.version>
-
 		<sonar.projectKey>promregator</sonar.projectKey>
 		<sonar.organization>promregator</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
@@ -179,11 +177,6 @@
 			<groupId>io.github.microutils</groupId>
 			<artifactId>kotlin-logging-jvm</artifactId>
 			<version>2.0.11</version>
-		</dependency>
-
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId> <!-- TODO V3: Upgrade to slf4j? -->
 		</dependency>
 
 		<!-- TODO V3: convert all String.format() logs? -->
