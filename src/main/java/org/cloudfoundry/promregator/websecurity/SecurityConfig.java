@@ -61,6 +61,11 @@ public class SecurityConfig {
 
 	private boolean securityDebug = false;
 
+	@Bean
+	public BCryptPasswordEncoder bCryptPasswordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
+	
 	@Bean(name = BeanIds.AUTHENTICATION_MANAGER)
 	/* 
 	 * see also https://stackoverflow.com/questions/21633555/how-to-inject-authenticationmanager-using-java-configuration-in-a-custom-filter
