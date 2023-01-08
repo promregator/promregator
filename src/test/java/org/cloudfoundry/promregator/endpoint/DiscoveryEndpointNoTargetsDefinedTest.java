@@ -1,6 +1,6 @@
 package org.cloudfoundry.promregator.endpoint;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.endpoint.DiscoveryEndpoint.DiscoveryLabel;
