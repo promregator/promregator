@@ -15,25 +15,15 @@ import io.prometheus.client.Collector;
 import io.prometheus.client.Collector.MetricFamilySamples.Sample;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Counter;
-import io.prometheus.client.Gauge;
 import io.prometheus.client.Histogram;
 import io.prometheus.client.Histogram.Timer;
 import io.prometheus.client.cache.caffeine.CacheMetricsCollector;
 
 public class InternalMetrics {
-	private static final String CACHE_MAP_NAME = "cache_map_name";
-
 	@Value("${promregator.metrics.internal:false}")
 	private boolean enabled;
 	
 	private Histogram latencyCFFetch;
-	
-	private Gauge autoRefreshingCacheMapSize;
-	private Counter autoRefreshingCacheMapExpiry;
-	private Counter autoRefreshingCacheMapRefreshSuccess;
-	private Counter autoRefreshingCacheMapRefreshFailure;
-	private Counter autoRefreshingCacheMapErroneousEntryDisplaced;
-	private Gauge autoRefreshingCacheMapLastScan;
 	
 	private Counter connectionWatchdogReconnects;
 	
@@ -69,22 +59,6 @@ public class InternalMetrics {
 		this.latencyCFFetch = Histogram.build("promregator_cffetch_latency", "Latency on retrieving CF values")
 				.labelNames("request_type").linearBuckets(0.1, 0.1, 50).register();
 		
-		this.autoRefreshingCacheMapSize = Gauge.build("promregator_autorefreshingcachemap_size", "The size of objects stored in an AutoRefreshingCacheMap")
-				.labelNames(CACHE_MAP_NAME).register();
-		
-		this.autoRefreshingCacheMapExpiry = Counter.build("promregator_autorefreshingcachemap_expiry", "The number of objects having expired so far in an AutoRefreshingCacheMap")
-				.labelNames(CACHE_MAP_NAME).register();
-		this.autoRefreshingCacheMapRefreshSuccess = Counter.build("promregator_autorefreshingcachemap_refresh_success", "The number of successful refreshes of object so far in an AutoRefreshingCacheMap")
-				.labelNames(CACHE_MAP_NAME).register();
-		this.autoRefreshingCacheMapRefreshFailure = Counter.build("promregator_autorefreshingcachemap_refresh_failure", "The number of failed refreshes of object so far in an AutoRefreshingCacheMap")
-				.labelNames(CACHE_MAP_NAME).register();
-		
-		this.autoRefreshingCacheMapErroneousEntryDisplaced = Counter.build("promregator_autorefreshingcachemap_erroneous_entry_displaced", "The number of cache items displaced in an AutoRefreshingCacheMap, because they were detected to be erroneous")
-				.labelNames(CACHE_MAP_NAME).register();
-
-		this.autoRefreshingCacheMapLastScan = Gauge.build("promregator_autorefreshingcachemap_scantimestamp", "The timestamp of the last execution of the RefreshThread execution of an AutoRefreshingCacheMap")
-				.labelNames(CACHE_MAP_NAME).register();
-		
 		this.connectionWatchdogReconnects = Counter.build("promregator_connection_watchdog_reconnect", "The number of reconnection attempts made by the Connection Watchdog")
 				.register();
 		
@@ -102,48 +76,6 @@ public class InternalMetrics {
 			return null;
 		
 		return this.latencyCFFetch.labels(requestType).startTimer();
-	}
-
-	public void setAutoRefreshingCacheMapSize(String cacheMapName, long size) {
-		if (!this.enabled)
-			return;
-		
-		this.autoRefreshingCacheMapSize.labels(cacheMapName).set(size);
-	}
-	
-	public void countAutoRefreshingCacheMapExpiry(String cacheMapName) {
-		if (!this.enabled)
-			return;
-		
-		this.autoRefreshingCacheMapExpiry.labels(cacheMapName).inc();
-	}
-	
-	public void countAutoRefreshingCacheMapRefreshSuccess(String cacheMapName) {
-		if (!this.enabled)
-			return;
-		
-		this.autoRefreshingCacheMapRefreshSuccess.labels(cacheMapName).inc();
-	}
-	
-	public void countAutoRefreshingCacheMapRefreshFailure(String cacheMapName) {
-		if (!this.enabled)
-			return;
-		
-		this.autoRefreshingCacheMapRefreshFailure.labels(cacheMapName).inc();
-	}
-	
-	public void countAutoRefreshingCacheMapErroneousEntriesDisplaced(String cacheMapName) {
-		if (!this.enabled)
-			return;
-		
-		this.autoRefreshingCacheMapErroneousEntryDisplaced.labels(cacheMapName).inc();
-	}
-	
-	public void setTimestampAutoRefreshingCacheMapRefreshScan(String cacheMapName) {
-		if (!this.enabled)
-			return;
-		
-		this.autoRefreshingCacheMapLastScan.labels(cacheMapName).setToCurrentTime();
 	}
 	
 	public void countConnectionWatchdogReconnect() {
