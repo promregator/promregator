@@ -53,10 +53,11 @@
 		<!-- note: spring-boot.run.fork=false does not work in spring3+ anymore!
 		Use spring-boot.run.jvmArguments=-D.... instead! -->
 
-		<spring-cloud.version>2021.0.5</spring-cloud.version>
+		<spring-cloud.version>2022.0.0</spring-cloud.version>
 		<!--  For release information see also https://spring.io/projects/spring-cloud
 		and https://github.com/spring-cloud/spring-cloud-release/wiki/Spring-Cloud-2020.0-Release-Notes
 		New versions at https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-dependencies -->
+		
 		<prometheus.version>0.16.0</prometheus.version>
 
 		<!-- https://mvnrepository.com/artifact/org.cloudfoundry/cloudfoundry-client-reactor -->
@@ -182,28 +183,16 @@
 
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
+			<artifactId>logback-classic</artifactId> <!-- TODO V3: Upgrade to slf4j? -->
 		</dependency>
 
-		<!-- ch.qos.logback.contrib.jackson.JacksonJsonFormatter -->
-		<dependency>
-			<groupId>ch.qos.logback.contrib</groupId>
-			<artifactId>logback-jackson</artifactId>
-			<version>${logback.contrib.version}</version>
-		</dependency>
-
-		<!-- ch.qos.logback.contrib.json.classic.JsonLayout -->
-		<dependency>
-			<groupId>ch.qos.logback.contrib</groupId>
-			<artifactId>logback-json-classic</artifactId>
-			<version>${logback.contrib.version}</version>
-		</dependency>
+		<!-- TODO V3: convert all String.format() logs? -->
 
 		<!-- CF API -->
 		<dependency>
 			<groupId>org.cloudfoundry</groupId>
 			<artifactId>cloudfoundry-client-reactor</artifactId>
-			<version>${cloudfoundry.client.version}</version>
+			<version>${cloudfoundry.client.version}</version> <!-- TODO V3: requires bumping? -->
 		</dependency>
 
 		<dependency>
