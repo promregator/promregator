@@ -127,7 +127,7 @@ public class DiscoveryEndpoint {
 		}
 	}
 	
-	@GetMapping(produces=MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@GetMapping(produces=MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<DiscoveryResponse[]> getDiscovery(HttpServletRequest request) {
 		
 		List<Instance> instances = this.cfDiscoverer.discover(null, null);
