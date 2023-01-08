@@ -255,7 +255,12 @@ public class CFAccessorSimulator implements CFAccessor {
 				.healthCheck(HealthCheck.builder().type(HealthCheckType.HTTP).build())
 				.memoryInMb(1024)
 				.metadata(Metadata.builder().build())
-				.relationships(ProcessRelationships.builder().build())
+				.relationships(ProcessRelationships.builder()
+						.app(ToOneRelationship.builder().data(Relationship.builder()
+								.id(applicationId)
+								.build())
+							.build())
+						.build())
 				.id(PROCESS_UUID_PREFIX + appNumber)
 				.build();
 		return prWeb;
