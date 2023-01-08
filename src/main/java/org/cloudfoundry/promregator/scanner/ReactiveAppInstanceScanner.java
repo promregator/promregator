@@ -442,7 +442,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 
 		for (Pattern pattern : patterns) {
 			for (String url : urls) {
-				log.debug("Attempting to match Application Route '{}' against pattern '{}'", url, pattern.toString());
+				log.debug("Attempting to match Application Route '{}' against pattern '{}'", url, pattern);
 				Matcher m = pattern.matcher(url);
 				if (m.matches()) {
 					log.debug("Match found, using Application Route '{}'", url);
