@@ -47,7 +47,7 @@ public abstract class RequestAggregator<K, V> {
 					Thread.sleep(checkIntervalInMillis);
 				} catch (InterruptedException e) {
 					log.info("Processor was interrupted", e);
-					continue;
+					Thread.currentThread().interrupt();
 				}
 				
 				if (queue.isEmpty()) {
