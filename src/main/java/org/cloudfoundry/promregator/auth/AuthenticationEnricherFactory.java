@@ -24,7 +24,7 @@ public class AuthenticationEnricherFactory {
 		} else if ("basic".equalsIgnoreCase(type)) {
 			ae = new BasicAuthenticationEnricher(authConfig.getBasic());
 		} else {
-			log.warn(String.format("Authenticator type %s is unknown; skipping", type));
+			log.warn("Authenticator type {} is unknown; skipping", type);
 		}
 
 		return ae;

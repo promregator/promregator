@@ -44,12 +44,11 @@ public class MergableMetricFamilySamples {
 			} else {
 				// Non-trivial case: Both sides have values; check that types are not conflicting
 				if (otherMFS.type != mfs.type) {
-					final String logmsg = String.format("Scraping resulted in a collision of metric types for metric with name %s. "
-							+ "The conflicting types provided were %s and %s. The data with type %s is kept, while the other metrics values will be dropped. "
+					final String logmsg = "Scraping resulted in a collision of metric types for metric with name {}. "
+							+ "The conflicting types provided were {} and {}. The data with type {} is kept, while the other metrics values will be dropped. "
 							+ "For further details see also https://github.com/promregator/promregator/wiki/Multiple-Type-Declarations-of-a-Metric-Cause-a-Collision-in-Single-Endpoint-Scraping-Mode ; "
-							+ "Details: metric data already stored: %s --- metric data requested to be merged, but failed to do so: %s", 
-							metricName, mfs.type.toString(), otherMFS.type.toString(), mfs.type.toString(), mfs.toString(), otherMFS.toString());
-					log.warn(logmsg);
+							+ "Details: metric data already stored: {} --- metric data requested to be merged, but failed to do so: {}";
+					log.warn(logmsg, metricName, mfs.type.toString(), otherMFS.type.toString(), mfs.type.toString(), mfs.toString(), otherMFS.toString());
 					continue;
 				}
 				
@@ -64,7 +63,7 @@ public class MergableMetricFamilySamples {
 		for (Iterator<MetricFamilySamples> iterator = coll.iterator(); iterator.hasNext();) {
 			MetricFamilySamples mfs = iterator.next();
 			if (mfs.type == Type.UNKNOWN) {
-				log.warn(String.format("Dropping metric %s from set of metrics, as it is untyped and the simpleclient's serialization coding does not properly support this", mfs.name));
+				log.warn("Dropping metric {} from set of metrics, as it is untyped and the simpleclient's serialization coding does not properly support this", mfs.name);
 				iterator.remove();
 			}
 		}

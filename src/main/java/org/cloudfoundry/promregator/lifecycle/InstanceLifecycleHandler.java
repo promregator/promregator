@@ -36,7 +36,7 @@ public class InstanceLifecycleHandler implements MessageSubscriber {
 	}
 
 	private void deregisterMetricsSamples(Instance instance) {
-		log.info(String.format("De-registering metrics samples for instance %s", instance));
+		log.info("De-registering metrics samples for instance {}", instance);
 		
 		String orgName = instance.getTarget().getOrgName();
 		String spaceName = instance.getTarget().getSpaceName();

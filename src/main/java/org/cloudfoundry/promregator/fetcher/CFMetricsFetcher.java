@@ -89,7 +89,7 @@ public class CFMetricsFetcher implements MetricsFetcher {
 
 	@Override
 	public HashMap<String, MetricFamilySamples> call() throws Exception {
-		log.debug(String.format("Reading metrics from %s for instance %s", this.endpointUrl, this.instanceId));
+		log.debug("Reading metrics from {} for instance {}", this.endpointUrl, this.instanceId);
 		
 		HttpGet httpget = setupRequest();
 
@@ -98,7 +98,7 @@ public class CFMetricsFetcher implements MetricsFetcher {
 			return null;
 		}
 		
-		log.debug(String.format("Successfully received metrics from %s for instance %s", this.endpointUrl, this.instanceId));
+		log.debug("Successfully received metrics from {} for instance {}", this.endpointUrl, this.instanceId);
 		
 		if (this.mfm.getRequestSize() != null) {
 			this.mfm.getRequestSize().observe(result.length());
@@ -146,20 +146,20 @@ public class CFMetricsFetcher implements MetricsFetcher {
 			response = httpclient.execute(httpget);
 
 			if (response.getStatusLine().getStatusCode() != 200) {
-				log.warn(String.format("Target server at '%s' and instance '%s' responded with a non-200 status code: %d", this.endpointUrl, this.instanceId, response.getStatusLine().getStatusCode()));
+				log.warn("Target server at '{}' and instance '{}' responded with a non-200 status code: {}", this.endpointUrl, this.instanceId, response.getStatusLine().getStatusCode());
 				return null;
 			}
 			
 			result = EntityUtils.toString(response.getEntity());
 			available = true;
 		} catch (HttpHostConnectException hhce) {
-			log.warn(String.format("Unable to connect to server trying to fetch metrics from %s, instance %s", this.endpointUrl, this.instanceId), hhce);
+			log.warn("Unable to connect to server trying to fetch metrics from {}, instance {}", this.endpointUrl, this.instanceId, hhce);
 			return null;
 		} catch (SocketTimeoutException ste) {
-			log.warn(String.format("Read timeout for data from socket while trying to fetch metrics from %s, instance %s", this.endpointUrl, this.instanceId), ste);
+			log.warn("Read timeout for data from socket while trying to fetch metrics from {}, instance {}", this.endpointUrl, this.instanceId, ste);
 			return null;
 		} catch (ConnectTimeoutException cte) {
-			log.warn(String.format("Timeout while trying to connect to %s, instance %s for fetching metrics", this.endpointUrl, this.instanceId), cte);
+			log.warn("Timeout while trying to connect to {}, instance {} for fetching metrics", this.endpointUrl, this.instanceId, cte);
 			return null;
 		} catch (ClientProtocolException e) {
 			log.warn("Client communication error while fetching metrics from target server", e);

@@ -199,7 +199,7 @@ public class SingleTargetMetricsEndpoint {
 
 	protected MetricsFetcher createMetricsFetcher(final Instance instance) {
 		
-		log.debug(String.format("Creating Metrics Fetcher for instance %s", instance.getInstanceId()));
+		log.debug("Creating Metrics Fetcher for instance {}", instance.getInstanceId());
 		
 		ResolvedTarget target = instance.getTarget();
 		String orgName = target.getOrgName();
@@ -209,7 +209,7 @@ public class SingleTargetMetricsEndpoint {
 		String accessURL = instance.getAccessUrl();
 		
 		if (accessURL == null) {
-			log.warn(String.format("Unable to retrieve hostname for %s/%s/%s; skipping", orgName, spaceName, appName));
+			log.warn("Unable to retrieve hostname for {}/{}/{}; skipping", orgName, spaceName, appName);
 			return null;
 		}
 		
@@ -318,7 +318,7 @@ public class SingleTargetMetricsEndpoint {
 		try {
 			response = this.handleRequest(applicationId, instanceId);
 		} catch (ScrapingException e) {
-			log.debug(String.format("ScrapingException was raised for instanceid %s", instanceId), e);
+			log.debug("ScrapingException was raised for instanceid {}", instanceId, e);
 			return new ResponseEntity<>(e.toString(), HttpStatus.NOT_FOUND);
 		}
 		

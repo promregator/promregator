@@ -97,7 +97,7 @@ public class Parser {
 		try {
 			sample = ml.parse();
 		} catch (MetricLine.ParseException e) {
-			log.warn(String.format("Detected non-parsable metric line '%s'", line), e);
+			log.warn("Detected non-parsable metric line '{}'", line, e);
 			return;
 		}
 		
@@ -105,7 +105,7 @@ public class Parser {
 		
 		Collector.Type type = determineType(sampleName);
 		if (type == Type.UNKNOWN) {
-			log.info(String.format("Definition of metric %s without type information (assuming unknown)", sampleName));
+			log.info("Definition of metric {} without type information (assuming unknown)", sampleName);
 		}
 		
 		if (type.equals(Collector.Type.COUNTER) || type.equals(Collector.Type.GAUGE) || type.equals(Collector.Type.UNKNOWN) || type.equals(Collector.Type.INFO) || type.equals(Collector.Type.STATE_SET)) {
@@ -113,7 +113,7 @@ public class Parser {
 		} else if (type.equals(Collector.Type.HISTOGRAM) || type.equals(Collector.Type.SUMMARY)) {
 			this.storeComplexType(sample, sampleName, type);
 		} else {
-			log.warn(String.format("Unknown type %s; unclear how to handle this; skipping", type.toString()));
+			log.warn("Unknown type {}; unclear how to handle this; skipping", type.toString());
 			// return; can be skipped here
 		}
 	}

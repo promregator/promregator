@@ -37,9 +37,7 @@ public class TargetsHaveConsistentAuthenticatorId implements ConfigurationValida
 			}
 
 			if (!authenticatorIds.contains(target.getAuthenticatorId())) {
-				log.error(String.format(
-						"Configuration error: Target %s refers to authenticator with identifier %s, but the latter does not exist",
-						target.toString(), target.getAuthenticatorId()));
+				log.error("Configuration error: Target {} refers to authenticator with identifier {}, but the latter does not exist", target.toString(), target.getAuthenticatorId());
 				broken = true;
 			}
 		}

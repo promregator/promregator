@@ -186,7 +186,7 @@ public class PromregatorApplication {
 	
 	@Bean
 	public ExecutorService metricsFetcherPool() {
-		log.info(String.format("Thread Pool size is set to %d", this.getThreadPoolSize()));
+		log.info("Thread Pool size is set to {}", this.getThreadPoolSize());
 		return Executors.newFixedThreadPool(this.threadPoolSize);
 	}
 	
@@ -222,7 +222,7 @@ public class PromregatorApplication {
 		if (this.javaDnsCacheWorkaroundTimeout != -1) {
 			// see also https://docs.aws.amazon.com/de_de/sdk-for-java/v1/developer-guide/java-dg-jvm-ttl.html
 			// and https://github.com/promregator/promregator/issues/84
-			log.info(String.format("Enabling JVM DNS Cache Workaround with TTL value %d", this.javaDnsCacheWorkaroundTimeout));
+			log.info("Enabling JVM DNS Cache Workaround with TTL value {}", this.javaDnsCacheWorkaroundTimeout);
 			java.security.Security.setProperty("networkaddress.cache.ttl", this.javaDnsCacheWorkaroundTimeout+"");
 		}
 	}

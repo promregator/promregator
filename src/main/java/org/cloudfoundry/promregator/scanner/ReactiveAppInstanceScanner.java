@@ -229,12 +229,12 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			
 			final List<ProcessResource> list = lapr.getResources();
 			if (list.size() > 1) {
-				log.error(String.format("Application Id %s with application name %s in org %s and space %s returned multiple web processes via CF API V3 Processes; Promregator does not know how to handle this. Provide your use case to the developers to understand how this shall be handled properly.", rt.getApplicationId(), rt.getApplicationName(), rt.getOrgName(), rt.getSpaceName()));
+				log.error("Application Id {} with application name {} in org {} and space {} returned multiple web processes via CF API V3 Processes; Promregator does not know how to handle this. Provide your use case to the developers to understand how this shall be handled properly.", rt.getApplicationId(), rt.getApplicationName(), rt.getOrgName(), rt.getSpaceName());
 				return Mono.empty();
 			}
 			
 			if (list.isEmpty()) {
-				log.error(String.format("Application Id %s with application name %s in org %s and space %s returned no web processes via CF API V3 Processes; Promregator does not know how to handle this. Provide your use case to the developers to understand how this shall be handled properly.", rt.getApplicationId(), rt.getApplicationName(), rt.getOrgName(), rt.getSpaceName()));
+				log.error("Application Id {} with application name {} in org {} and space {} returned no web processes via CF API V3 Processes; Promregator does not know how to handle this. Provide your use case to the developers to understand how this shall be handled properly.", rt.getApplicationId(), rt.getApplicationName(), rt.getOrgName(), rt.getSpaceName());
 				return Mono.empty();
 			}
 			
@@ -300,7 +300,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 					
 					v.setInternal(domain.isInternal());
 				} catch (Exception e) {
-					log.warn(String.format("unable to find matching domain for the domain with id %s", v.getDomainId()));
+					log.warn("Unable to find matching domain for the domain with id {}", v.getDomainId());
 				}
 			}
 
@@ -363,14 +363,14 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			}
 
 			if (resources.isEmpty()) {
-				log.warn(String.format("Received empty result on requesting org %s", orgNameString));
+				log.warn("Received empty result on requesting org {}", orgNameString);
 				return Mono.just(INVALID_ORG_ID);
 			}
 
 			org.cloudfoundry.client.v3.organizations.OrganizationResource organizationResource = resources.get(0);
 			return Mono.just(organizationResource.getId());
 		}).onErrorResume(e -> {
-			log.error(String.format("retrieving Org Id for org Name '%s' resulted in an exception", orgNameString), e);
+			log.error("Rrieving Org Id for org Name '{}' resulted in an exception", orgNameString, e);
 			return Mono.just(INVALID_ORG_ID);
 		}).cache();
 	}
@@ -386,15 +386,15 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			}
 
 			if (resources.isEmpty()) {
-				log.warn(String.format("Received empty result on requesting space %s", spaceNameString));
+				log.warn("Received empty result on requesting space {}", spaceNameString);
 				return Mono.just(INVALID_SPACE_ID);
 			}
 
 			org.cloudfoundry.client.v3.spaces.SpaceResource spaceResource = resources.get(0);
 			return Mono.just(spaceResource.getId());
 		}).onErrorResume(e -> {
-			log.error(String.format("retrieving space id for org id '%s' and space name '%s' resulted in an exception",
-					orgIdString, spaceNameString), e);
+			log.error("Retrieving space id for org id '{}' and space name '{}' resulted in an exception",
+					orgIdString, spaceNameString, e);
 			return Mono.just(INVALID_SPACE_ID);
 		}).cache();
 
@@ -402,7 +402,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 
 	private String formatAccessURL(final String protocol, final String hostnameDomain, final String path) {
 		final String applicationUrl = String.format("%s://%s", protocol, hostnameDomain);
-		log.debug(String.format("Using Application URL: '%s'", applicationUrl));
+		log.debug("Using Application URL: '{}'", applicationUrl);
 
 		String applUrl = applicationUrl;
 		if (!applicationUrl.endsWith("/")) {
@@ -424,7 +424,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		}
 		
 		String internalURL = String.format("%s.%s:%s", instanceId, hostnameDomain, port);
-		log.debug(String.format("Using internal Application URL: '%s'", internalURL));
+		log.debug("Using internal Application URL: '{}'", internalURL);
 
 		return formatAccessURL("http", internalURL, path);
 	}
@@ -442,10 +442,10 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 
 		for (Pattern pattern : patterns) {
 			for (String url : urls) {
-				log.debug(String.format("Attempting to match Application Route '%s' against pattern '%s'", url, pattern.toString()));
+				log.debug("Attempting to match Application Route '{}' against pattern '{}'", url, pattern.toString());
 				Matcher m = pattern.matcher(url);
 				if (m.matches()) {
-					log.debug(String.format("Match found, using Application Route '%s'", url));
+					log.debug("Match found, using Application Route '{}'", url);
 					return url;
 				}
 			}
@@ -456,7 +456,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		 * The fallback then is the old behavior by returned just the first-guess
 		 * element.
 		 */
-		log.debug(String.format("Though Preferred Router URLs were provided, no route matched; taking the first route as fallback (compatibility!), which is '%s'", urls.get(0)));
+		log.debug("Though Preferred Router URLs were provided, no route matched; taking the first route as fallback (compatibility!), which is '{}'", urls.get(0));
 		return urls.get(0);
 	}
 }

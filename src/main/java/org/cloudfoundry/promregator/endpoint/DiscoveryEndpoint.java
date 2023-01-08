@@ -140,7 +140,7 @@ public class DiscoveryEndpoint {
 		int localPort = this.myPort != 0 ? this.myPort : request.getLocalPort();
 		final String[] targets = { String.format("%s:%d", localHostname, localPort) };
 		
-		log.info(String.format("Using scraping target %s in discovery response", targets[0]));
+		log.info("Using scraping target {} in discovery response", targets[0]);
 		
 		List<DiscoveryResponse> result = new LinkedList<>();
 		for (Instance instance : instances) {
@@ -158,7 +158,7 @@ public class DiscoveryEndpoint {
 			result.add(new DiscoveryResponse(targets, dl));
 		}
 		
-		log.info(String.format("Returning discovery document with %d targets", result.size()));
+		log.info("Returning discovery document with {} targets", result.size());
 		
 		return new ResponseEntity<>(result.toArray(new DiscoveryResponse[0]), HttpStatus.OK);
 	}

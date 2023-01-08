@@ -59,21 +59,21 @@ public class CFMultiDiscoverer implements CFDiscoverer {
 	@Nullable
 	@Override
 	public List<Instance> discover(@Nullable Predicate<? super String> applicationIdFilter, @Nullable Predicate<? super Instance> instanceFilter) {
-		log.debug(String.format("We have %d targets configured", this.promregatorConfiguration.getTargets().size()));
+		log.debug("We have {} targets configured", this.promregatorConfiguration.getTargets().size());
 		
 		List<ResolvedTarget> resolvedTargets = this.targetResolver.resolveTargets(this.promregatorConfiguration.getTargets());
 		if (resolvedTargets == null) {
 			log.warn("Target resolved was unable to resolve configured targets");
 			return Collections.emptyList();
 		}
-		log.debug(String.format("Raw list contains %d resolved targets", resolvedTargets.size()));
+		log.debug("Raw list contains {} resolved targets", resolvedTargets.size());
 		
 		List<Instance> instanceList = this.appInstanceScanner.determineInstancesFromTargets(resolvedTargets, applicationIdFilter, instanceFilter);
 		if (instanceList == null) {
 			log.warn("Instance Scanner unable to determine instances from provided targets");
 			return Collections.emptyList();
 		}
-		log.debug(String.format("Raw list contains %d instances", instanceList.size()));
+		log.debug("Raw list contains {} instances", instanceList.size());
 
 		// ensure that the instances are registered / touched properly
 		for (Instance instance : instanceList) {
@@ -118,7 +118,7 @@ public class CFMultiDiscoverer implements CFDiscoverer {
 				continue;
 			}
 			
-			log.info(String.format("Instance %s has timed out; cleaning up", entry.getKey()));
+			log.info("Instance {} has timed out; cleaning up", entry.getKey());
 			
 			// broadcast event to JMS topic, that the instance is to be deleted
 			this.messageBus.notifyEvent(MessageBusTopic.DISCOVERER_INSTANCE_REMOVED, entry.getKey());

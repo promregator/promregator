@@ -31,7 +31,7 @@ public class CaffeineAsyncLoadingTest {
 		public @NonNull CompletableFuture<Integer> asyncLoad(@NonNull String key,
 				@NonNull Executor executor) {
 
-			log.info(String.format("Request loading iteration %d for request %s", this.executionNumber, key));
+			log.info("Request loading iteration {} for request {}", this.executionNumber, key);
 			Mono<Integer> result = null;
 			
 			synchronized(this) {
@@ -42,11 +42,11 @@ public class CaffeineAsyncLoadingTest {
 			
 			if (this.executionNumber > 1) {
 				result = result.map( x-> {
-					log.info(String.format("Starting to delay - iteration: %d", x));
+					log.info("Starting to delay - iteration: {}", x);
 					return x;
 				}).delayElement(Duration.ofMillis(200))
 				.map( x-> {
-					log.info(String.format("Finished delaying - iteration: %d", x));
+					log.info("Finished delaying - iteration: {}", x);
 					return x;
 				});
 			}
@@ -102,7 +102,7 @@ public class CaffeineAsyncLoadingTest {
 		public @NonNull CompletableFuture<Integer> asyncLoad(@NonNull String key,
 				@NonNull Executor executor) {
 
-			log.info(String.format("Request loading iteration %d for request %s", this.executionNumber, key));
+			log.info("Request loading iteration {} for request {}", this.executionNumber, key);
 			Mono<Integer> result = null;
 			
 			synchronized(this) {

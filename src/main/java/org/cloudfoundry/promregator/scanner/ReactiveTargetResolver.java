@@ -61,27 +61,27 @@ public class ReactiveTargetResolver implements TargetResolver {
 
 		public ResolvedTarget toResolvedTarget() {
 			if (getResolvedOrgId() == null) {
-				log.error(String.format("Target '%s' created a ResolvedTarget without resolved org id", getConfigTarget()));
+				log.error("Target '{}' created a ResolvedTarget without resolved org id", getConfigTarget());
 			}
 
 			if (getResolvedSpaceId() == null) {
-				log.error(String.format("Target '%s' created a ResolvedTarget without resolved space id", getConfigTarget()));
+				log.error("Target '{}' created a ResolvedTarget without resolved space id", getConfigTarget());
 			}
 
 			if (getResolvedApplicationId() == null) {
-				log.error(String.format("Target '%s' created a ResolvedTarget without resolved application id", getConfigTarget()));
+				log.error("Target '{}' created a ResolvedTarget without resolved application id", getConfigTarget());
 			}
 
 			if (getResolvedOrgName() == null) {
-				log.error(String.format("Target '%s' created a ResolvedTarget without resolved org name", getConfigTarget()));
+				log.error("Target '{}' created a ResolvedTarget without resolved org name", getConfigTarget());
 			}
 
 			if (getResolvedSpaceName() == null) {
-				log.error(String.format("Target '%s' created a ResolvedTarget without resolved space name", getConfigTarget()));
+				log.error("Target '{}' created a ResolvedTarget without resolved space name", getConfigTarget());
 			}
 
 			if (getResolvedApplicationName() == null) {
-				log.error(String.format("Target '%s' created a ResolvedTarget without resolved application name", getConfigTarget()));
+				log.error("Target '{}' created a ResolvedTarget without resolved application name", getConfigTarget());
 			}
 
 
@@ -268,7 +268,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 						it.setResolvedOrgId(res.getId());
 						return it;
 					})
-					.doOnError(e -> log.warn(String.format("Error on retrieving org id for org '%s'", it.getConfigTarget().getOrgName()), e))
+					.doOnError(e -> log.warn("Error on retrieving org id for org '{}'", it.getConfigTarget().getOrgName(), e))
 					.onErrorResume(__ -> Mono.empty());
 			
 			return itMono.flux();
@@ -322,7 +322,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 						it.setResolvedSpaceName(res.getName());
 						it.setResolvedSpaceId(res.getId());
 						return it;
-					}).doOnError(e -> log.warn(String.format("Error on retrieving space id for org '%s' and space '%s'", it.getResolvedOrgName(), it.getConfigTarget().getSpaceName()), e))
+					}).doOnError(e -> log.warn("Error on retrieving space id for org '{}' and space '{}'", it.getResolvedOrgName(), it.getConfigTarget().getSpaceName(), e))
 					.onErrorResume(__ -> Mono.empty());
 			
 			return itMono.flux();
@@ -373,7 +373,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 					.single()
 					.doOnError(e -> {
 						if (e instanceof NoSuchElementException) {
-							logEmptyTarget.warn(String.format("Application id could not be found for org '%s', space '%s' and application '%s'. Check your configuration of targets; skipping it for now; this message may be muted by setting the log level of the emitting logger accordingly!", it.getResolvedOrgName(), it.getResolvedSpaceName(), it.getConfigTarget().getApplicationName()));
+							logEmptyTarget.warn("Application id could not be found for org '{}', space '{}' and application '{}'. Check your configuration of targets; skipping it for now; this message may be muted by setting the log level of the emitting logger accordingly!", it.getResolvedOrgName(), it.getResolvedSpaceName(), it.getConfigTarget().getApplicationName());
 						}
 					})
 					.onErrorResume(e -> Mono.empty())
@@ -383,7 +383,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 						it.setResolvedApplicationId(res.getId());
 						return it;
 					}).doOnError(e ->
-						log.warn(String.format("Error on retrieving application id for org '%s', space '%s' and application '%s'", it.getResolvedOrgName(), it.getResolvedSpaceName(), it.getConfigTarget().getApplicationName()), e)
+						log.warn("Error on retrieving application id for org '{}', space '{}' and application '{}'", it.getResolvedOrgName(), it.getResolvedSpaceName(), it.getConfigTarget().getApplicationName(), e)
 					)
 					.onErrorResume(__ -> Mono.empty());
 			
@@ -395,8 +395,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 
 		Flux<ApplicationResource> appResFlux = responseMono.map(ListApplicationsResponse::getResources)
 			.flatMapMany(Flux::fromIterable)
-			.doOnError(e ->
-				log.warn(String.format("Error on retrieving list of applications in org '%s' and space '%s'", it.getResolvedOrgName(), it.getResolvedSpaceName()), e))
+			.doOnError(e -> log.warn("Error on retrieving list of applications in org '{}' and space '{}'", it.getResolvedOrgName(), it.getResolvedSpaceName(), e))
 			.onErrorResume(__ -> Flux.empty());
 		
 		if (it.getConfigTarget().getApplicationRegex() != null) {
@@ -433,22 +432,18 @@ public class ReactiveTargetResolver implements TargetResolver {
 				}
 
 				return res.getResources().stream()
-						  .filter(app -> it.getResolvedApplicationName()
-										   .equals(app.getName().toLowerCase(Locale.ENGLISH)))
-						  .filter(app -> this.isApplicationInScrapableState(app.getState()))
-						  .filter(app -> app.getMetadata() != null)
-						  .filter(app -> app.getMetadata().getAnnotations() != null)
-						  .filter(app -> app.getMetadata().getAnnotations()
-											.getOrDefault(PROMETHEUS_IO_SCRAPE, "false")
-											.equals("true"))
-						  .map(app -> {
-							  it.setResolvedMetricsPath(app.getMetadata().getAnnotations()
-														   .getOrDefault(PROMETHEUS_IO_PATH, null));
-							  return Mono.just(it);
-						  }).findFirst().orElseGet(Mono::empty);
+						.filter(app -> it.getResolvedApplicationName().equals(app.getName().toLowerCase(Locale.ENGLISH)))
+						.filter(app -> this.isApplicationInScrapableState(app.getState()))
+						.filter(app -> app.getMetadata() != null)
+						.filter(app -> app.getMetadata().getAnnotations() != null)
+						.filter(app -> app.getMetadata().getAnnotations().getOrDefault(PROMETHEUS_IO_SCRAPE, "false").equals("true"))
+						.map(app -> {
+							it.setResolvedMetricsPath(app.getMetadata().getAnnotations().getOrDefault(PROMETHEUS_IO_PATH, null));
+							return Mono.just(it);
+						}).findFirst().orElseGet(Mono::empty);
 			}).doOnError(e ->
-				 log.warn(String.format("Error on retrieving application annotations for org '%s', space '%s' and application '%s'.",
-										it.getResolvedOrgName(), it.getResolvedSpaceName(), it.getConfigTarget().getApplicationName()), e)).flux();
+				 log.warn("Error on retrieving application annotations for org '{}', space '{}' and application '{}'.",
+						it.getResolvedOrgName(), it.getResolvedSpaceName(), it.getConfigTarget().getApplicationName(), e)).flux();
 		}
 
 		return Mono.just(it).flux();

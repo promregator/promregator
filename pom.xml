@@ -179,13 +179,11 @@
 			<version>2.0.11</version>
 		</dependency>
 
-		<!-- TODO V3: convert all String.format() logs? -->
-
 		<!-- CF API -->
 		<dependency>
 			<groupId>org.cloudfoundry</groupId>
 			<artifactId>cloudfoundry-client-reactor</artifactId>
-			<version>${cloudfoundry.client.version}</version> <!-- TODO V3: requires bumping? -->
+			<version>${cloudfoundry.client.version}</version>
 		</dependency>
 
 		<dependency>

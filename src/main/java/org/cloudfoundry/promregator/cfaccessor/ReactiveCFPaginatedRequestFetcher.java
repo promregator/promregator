@@ -64,7 +64,7 @@ public class ReactiveCFPaginatedRequestFetcher {
 			double waitTime = cfccRateLimiter.acquire(1);
 
 			if (waitTime > 0.001) {
-				log.debug(String.format("Rate Limiting has throttled request of %s for %.3f seconds", requestType.getLoggerSuffix(), waitTime));
+				log.debug("Rate Limiting has throttled request of {} for {} seconds", requestType.getLoggerSuffix(), String.format("%.3f", waitTime));
 			}
 
 			if (this.internalMetrics != null) {
@@ -167,7 +167,7 @@ public class ReactiveCFPaginatedRequestFetcher {
 						.doOnError(throwable -> {
 							Throwable unwrappedThrowable = Exceptions.unwrap(throwable);
 							if (unwrappedThrowable instanceof TimeoutException) {
-								log.error(String.format("Async retrieval of %s with key %s caused a timeout after %dms even though we tried three times", logName, key.toString(), timeoutInMS));
+								log.error("Async retrieval of {} with key {} caused a timeout after {}ms even though we tried three times", logName, key.toString(), timeoutInMS);
 							} else if (unwrappedThrowable instanceof OutOfMemoryError){
 								// This may be an direct memory or a heap error!
 								// Using String.format and/or log.error here is a bad idea - it takes memory!
@@ -178,7 +178,7 @@ public class ReactiveCFPaginatedRequestFetcher {
 								}
 
 							} else {
-								log.error(String.format("Async retrieval of %s with key %s raised a reactor error", logName, key.toString()), unwrappedThrowable);
+								log.error("Async retrieval of {} with key {} raised a reactor error", logName, key.toString(), unwrappedThrowable);
 							}
 						})
 						// stop the timer
