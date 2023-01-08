@@ -139,8 +139,8 @@ public class SecurityConfig {
 	}
 
 	@Bean
-	public WebSecurityCustomizer webSecurityCustomizer() throws Exception {
-		return (web) -> web.debug(securityDebug);
+	public WebSecurityCustomizer webSecurityCustomizer() {
+		return web -> web.debug(securityDebug);
 	}
 
 	/*

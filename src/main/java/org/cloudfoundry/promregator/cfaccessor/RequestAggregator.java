@@ -53,7 +53,7 @@ public abstract class RequestAggregator<K, V> {
 			super(String.format("Processor for ReactiveCFAccesor requests %s -> %s", typeOfK.toString(), typeOfV.toString()));
 		}
 		
-		public boolean shouldRun = true;
+		private boolean shouldRun = true;
 		
 		@Override
 		public void run() {
@@ -82,10 +82,6 @@ public abstract class RequestAggregator<K, V> {
 					map.put(queueItem.requestItem(), queueItem.future());
 					
 					block.add(queueItem.requestItem());
-				}
-				
-				if (block.isEmpty()) {
-					continue;
 				}
 				
 				log.debug("Sending a request with a block of {} items", block.size());
@@ -144,7 +140,7 @@ public abstract class RequestAggregator<K, V> {
 	}
 	
 	public void addToQueue(K item, CompletableFuture<V> future) {
-		log.info("Adding item {}", item.toString());
+		log.info("Adding item {}", item);
 		this.queue.add(new QueueItem<>(item, future));
 	}
 	
