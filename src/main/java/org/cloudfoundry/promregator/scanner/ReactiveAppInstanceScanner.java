@@ -182,7 +182,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		
 		Flux<OSAVector> initialOSAVectorFlux = targetsFlux.filter(rt -> rt.getApplicationId() != null)
 			.map(target -> {
-				OSAVector v = new OSAVector();
+				final OSAVector v = new OSAVector();
 				v.setTarget(target);
 				v.setApplicationId(target.getApplicationId());
 				v.setInternalRoutePort(target.getOriginalTarget().getInternalRoutePort());
@@ -191,7 +191,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 
 		Flux<String> orgIdFlux = initialOSAVectorFlux.flatMapSequential(v -> this.getOrgId(v.getTarget().getOrgName()));
 		Flux<OSAVector> osaVectorOrgFlux = Flux.zip(initialOSAVectorFlux, orgIdFlux).flatMap(tuple -> {
-			OSAVector v = tuple.getT1();
+			final OSAVector v = tuple.getT1();
 			if (INVALID_ORG_ID.equals(tuple.getT2())) {
 				// NB: This drops the current target!
 				return Mono.empty();
@@ -202,7 +202,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 
 		Flux<String> spaceIdFlux = osaVectorOrgFlux.flatMapSequential(v -> this.getSpaceId(v.getOrgId(), v.getTarget().getSpaceName()));
 		Flux<OSAVector> osaVectorSpaceFlux = Flux.zip(osaVectorOrgFlux, spaceIdFlux).flatMap(tuple -> {
-			OSAVector v = tuple.getT1();
+			final OSAVector v = tuple.getT1();
 			if (INVALID_SPACE_ID.equals(tuple.getT2())) {
 				// NB: This drops the current target!
 				return Mono.empty();
@@ -225,7 +225,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			final ResolvedTarget rt = osaVector.getTarget();
 			final ListProcessesResponse lapr = tuple.getT2();
 			
-			List<ProcessResource> list = lapr.getResources();
+			final List<ProcessResource> list = lapr.getResources();
 			if (list.size() > 1) {
 				log.error(String.format("Application Id %s with application name %s in org %s and space %s returned multiple web processes via CF API V3 Processes; Promregator does not know how to handle this. Provide your use case to the developers to understand how this shall be handled properly.", rt.getApplicationId(), rt.getApplicationName(), rt.getOrgName(), rt.getSpaceName()));
 				return Mono.empty();
@@ -236,7 +236,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 				return Mono.empty();
 			}
 			
-			ProcessResource pr = list.get(0);
+			final ProcessResource pr = list.get(0);
 			final int numberInstances = pr.getInstances();
 			osaVector.setNumberOfInstances(numberInstances);
 			return Mono.just(osaVector);
@@ -276,8 +276,8 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 
 		Flux<List<DomainResource>> domainFlux = urlDomainOSAVectorFlux.flatMapSequential(v -> this.cfAccessor.retrieveAllDomainsV3(v.getOrgId()).map(ListOrganizationDomainsResponse::getResources));
 		Flux<OSAVector> osaVectorDomainApplicationFlux = Flux.zip(urlDomainOSAVectorFlux, domainFlux).flatMap(tuple -> {
-			OSAVector v = tuple.getT1();
-			List<DomainResource> domains = tuple.getT2();
+			final OSAVector v = tuple.getT1();
+			final List<DomainResource> domains = tuple.getT2();
 
 			if (domains.size() == 0 || v.getDomainId() == null) {
 				// NB: This drops the current target!
@@ -291,7 +291,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			// this is to make sure we have compatibility with existing behaviour
 			else if (!v.getDomainId().isEmpty()) {
 				try {
-					DomainResource domain = domains.stream()
+					final DomainResource domain = domains.stream()
 							.filter(r -> r.getId().equals(v.getDomainId()))
 							.findFirst()
 							.get();
@@ -312,9 +312,9 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		}
 
 		Flux<Instance> instancesFlux = osaVectorDomainApplicationFlux.flatMapSequential(v -> {
-			List<Instance> instances = new ArrayList<>(v.getNumberOfInstances());
+			final List<Instance> instances = new ArrayList<>(v.getNumberOfInstances());
 			for (int i = 0; i < v.numberOfInstances; i++) {
-				Instance inst = new Instance(v.getTarget(), String.format("%s:%d", v.getApplicationId(), i), v.getAccessURL(), v.isInternal());
+				final Instance inst = new Instance(v.getTarget(), String.format("%s:%d", v.getApplicationId(), i), v.getAccessURL(), v.isInternal());
 
 				if (useOverrideRouteAndPath(v)) {
 					inst.setAccessUrl(this.formatAccessURL(v.getTarget().getProtocol(), v.getTarget().getOriginalTarget().getOverrideRouteAndPath(), v.getTarget().getPath()));
