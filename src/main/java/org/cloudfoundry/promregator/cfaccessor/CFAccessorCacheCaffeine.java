@@ -201,8 +201,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 			
 			Map<String, List<RouteResource>> map = new HashMap<>();
 			
-			response.getResources().forEach(rr -> {
-				
+			response.getResources().forEach(rr -> 
 				rr.getDestinations().forEach(dest -> {
 					String appId = dest.getApplication().getApplicationId();
 					map.compute(appId, (key, lrr) -> {
@@ -212,8 +211,8 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 						lrr.add(rr);
 						return lrr;
 					});
-				});
-			});
+				})
+			);
 			
 			Map<String, ListRoutesResponse> resultMap = new HashMap<>();
 			map.forEach((k, lrr) -> {

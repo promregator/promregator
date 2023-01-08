@@ -250,7 +250,7 @@ public class CFAccessorSimulator implements CFAccessor {
 
 	private ProcessResource determineWebProcessesForAppId(String applicationId) {
 		final String appNumber = applicationId.substring(APP_UUID_PREFIX.length());
-		final ProcessResource prWeb = ProcessResource.builder()
+		return ProcessResource.builder()
 				.instances(this.amountInstances)
 				.type("web")
 				.createdAt(CREATED_AT_TIMESTAMP)
@@ -267,7 +267,6 @@ public class CFAccessorSimulator implements CFAccessor {
 						.build())
 				.id(PROCESS_UUID_PREFIX + appNumber)
 				.build();
-		return prWeb;
 	}
 
 	
