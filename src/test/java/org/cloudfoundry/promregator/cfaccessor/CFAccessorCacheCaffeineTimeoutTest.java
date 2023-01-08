@@ -58,10 +58,12 @@ public class CFAccessorCacheCaffeineTimeoutTest {
 		Mockito.when(this.parentMock.retrieveSpaceIdV3("dummy1", "dummy2")).then(new TimeoutMonoAnswer());
 		Mockito.when(this.parentMock.retrieveAllApplicationsInSpaceV3("dummy1", "dummy2")).then(new TimeoutMonoAnswer());
 		Mockito.when(this.parentMock.retrieveAllDomainsV3("dummy")).then(new TimeoutMonoAnswer());
-		Mockito.when(this.parentMock.retrieveWebProcessesForAppId("dummy")).then(new TimeoutMonoAnswer());
 		Mockito.when(this.parentMock.retrieveSpaceIdsInOrgV3("dummy")).then(new TimeoutMonoAnswer());
 		Mockito.when(this.parentMock.retrieveAllOrgIdsV3()).then(new TimeoutMonoAnswer());
+		Mockito.when(this.parentMock.retrieveRoutesForAppId("dummy")).then(new TimeoutMonoAnswer());
 		Mockito.when(this.parentMock.retrieveRoutesForAppIds(Mockito.anySet())).then(new TimeoutMonoAnswer());
+		Mockito.when(this.parentMock.retrieveWebProcessesForAppId("dummy")).then(new TimeoutMonoAnswer());
+		Mockito.when(this.parentMock.retrieveWebProcessesForAppIds(Mockito.anySet())).then(new TimeoutMonoAnswer());
 	}
 
 	public static class TimeoutMonoAnswer implements Answer<Mono<?>> {
@@ -171,16 +173,16 @@ public class CFAccessorCacheCaffeineTimeoutTest {
 	@Test
 	void testRetrieveProcessesForApp() throws InterruptedException {
 		Mono<ListProcessesResponse> response1 = subject.retrieveWebProcessesForAppId("dummy");
-		response1.subscribe();
-		Mockito.verify(this.parentMock, Mockito.timeout(500).times(1)).retrieveWebProcessesForAppId("dummy");
+		response1.onErrorComplete().block(); // .subscribe() isn't sufficient here! We need to wait until we really know the result
+		Mockito.verify(this.parentMock, Mockito.timeout(500).times(1)).retrieveWebProcessesForAppIds(Mockito.anySet());
 		
 		// required to permit asynchronous updates of caches => test stability
 		Thread.sleep(10);
 		
 		Mono<ListProcessesResponse> response2 = subject.retrieveWebProcessesForAppId("dummy");
-		response2.subscribe();
+		response2.onErrorComplete().block(); // .subscribe() isn't sufficient here! We need to wait until we really know the result
 		Assertions.assertNotEquals(response1, response2);
-		Mockito.verify(this.parentMock, Mockito.timeout(500).times(2)).retrieveWebProcessesForAppId("dummy");
+		Mockito.verify(this.parentMock, Mockito.timeout(500).times(2)).retrieveWebProcessesForAppIds(Mockito.anySet());
 	}
 	
 	@Test
@@ -188,7 +190,7 @@ public class CFAccessorCacheCaffeineTimeoutTest {
 		HashSet<String> set = new HashSet<>(Arrays.asList("dummy"));
 		Mono<ListRoutesResponse> response1 = subject.retrieveRoutesForAppIds(set);
 		response1.subscribe();
-		Mockito.verify(this.parentMock, Mockito.timeout(500).times(1)).retrieveRoutesForAppIds(set);
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveRoutesForAppIds(set);
 		
 		// required to permit asynchronous updates of caches => test stability
 		Thread.sleep(10);
@@ -196,22 +198,24 @@ public class CFAccessorCacheCaffeineTimeoutTest {
 		Mono<ListRoutesResponse> response2 = subject.retrieveRoutesForAppIds(set);
 		response2.subscribe();
 		Assertions.assertNotEquals(response1, response2);
-		Mockito.verify(this.parentMock, Mockito.timeout(500).times(2)).retrieveRoutesForAppIds(set);
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveRoutesForAppIds(set);
 	}
 	
 	@Test
 	void testRetrieveRoutesForAppId() throws InterruptedException {
 		Mono<ListRoutesResponse> response1 = subject.retrieveRoutesForAppId("dummy");
-		response1.subscribe();
+		response1.onErrorComplete().block(); // .subscribe() isn't sufficient here! We need to wait until we really know the result
+		
 		Mockito.verify(this.parentMock, Mockito.timeout(500).times(1)).retrieveRoutesForAppIds(Mockito.anySet());
 		
 		// required to permit asynchronous updates of caches => test stability
 		Thread.sleep(10);
 		
 		Mono<ListRoutesResponse> response2 = subject.retrieveRoutesForAppId("dummy");
-		response2.subscribe();
+		response1.onErrorComplete().block(); // .subscribe() isn't sufficient here! We need to wait until we really know the result
+		
 		Assertions.assertNotEquals(response1, response2);
-		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveRoutesForAppIds(Mockito.anySet());
+		Mockito.verify(this.parentMock, Mockito.timeout(500).times(2)).retrieveRoutesForAppIds(Mockito.anySet());
 	}
 	
 	
@@ -219,6 +223,7 @@ public class CFAccessorCacheCaffeineTimeoutTest {
 	void testRetrieveWebProcessForAppIds() throws InterruptedException {
 		HashSet<String> set = new HashSet<>(Arrays.asList("dummy"));
 		Mono<ListProcessesResponse> response1 = subject.retrieveWebProcessesForAppIds(set);
+		Assertions.assertNotNull(response1);
 		response1.subscribe();
 		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveWebProcessesForAppIds(set);
 		
@@ -226,6 +231,7 @@ public class CFAccessorCacheCaffeineTimeoutTest {
 		Thread.sleep(10);
 		
 		Mono<ListProcessesResponse> response2 = subject.retrieveWebProcessesForAppIds(set);
+		Assertions.assertNotNull(response2);
 		response2.subscribe();
 		Assertions.assertNotEquals(response1, response2);
 		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveWebProcessesForAppIds(set);
