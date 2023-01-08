@@ -113,7 +113,7 @@ public class Parser {
 		} else if (type.equals(Collector.Type.HISTOGRAM) || type.equals(Collector.Type.SUMMARY)) {
 			this.storeComplexType(sample, sampleName, type);
 		} else {
-			log.warn("Unknown type {}; unclear how to handle this; skipping", type.toString());
+			log.warn("Unknown type {}; unclear how to handle this; skipping", type);
 			// return; can be skipped here
 		}
 	}

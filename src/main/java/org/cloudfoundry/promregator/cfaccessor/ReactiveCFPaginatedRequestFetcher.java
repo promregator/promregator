@@ -167,7 +167,7 @@ public class ReactiveCFPaginatedRequestFetcher {
 						.doOnError(throwable -> {
 							Throwable unwrappedThrowable = Exceptions.unwrap(throwable);
 							if (unwrappedThrowable instanceof TimeoutException) {
-								log.error("Async retrieval of {} with key {} caused a timeout after {}ms even though we tried three times", logName, key.toString(), timeoutInMS);
+								log.error("Async retrieval of {} with key {} caused a timeout after {}ms even though we tried three times", logName, key, timeoutInMS);
 							} else if (unwrappedThrowable instanceof OutOfMemoryError){
 								// This may be an direct memory or a heap error!
 								// Using String.format and/or log.error here is a bad idea - it takes memory!
@@ -178,7 +178,7 @@ public class ReactiveCFPaginatedRequestFetcher {
 								}
 
 							} else {
-								log.error("Async retrieval of {} with key {} raised a reactor error", logName, key.toString(), unwrappedThrowable);
+								log.error("Async retrieval of {} with key {} raised a reactor error", logName, key, unwrappedThrowable);
 							}
 						})
 						// stop the timer
