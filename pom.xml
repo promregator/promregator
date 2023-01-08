@@ -50,11 +50,8 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>17</java.version>
 
-		<spring-boot.run.fork>false</spring-boot.run.fork>
-		<!-- Why that here? Since spring-boot 2.2, the default is "spring-boot.run.fork=true", 
-			which makes spring-boot:run and others being executed in a forked process. 
-			However, it breaks Eclipse debugging, and processes keep hanging on maven 
-			shutdown. See also https://stackoverflow.com/a/58701275/6350762 and https://github.com/spring-projects/spring-boot/issues/18638 -->
+		<!-- note: spring-boot.run.fork=false does not work in spring3+ anymore!
+		Use spring-boot.run.jvmArguments=-D.... instead! -->
 
 		<spring-cloud.version>2021.0.5</spring-cloud.version>
 		<!--  For release information see also https://spring.io/projects/spring-cloud
