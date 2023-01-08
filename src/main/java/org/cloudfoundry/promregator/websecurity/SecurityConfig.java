@@ -16,6 +16,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
@@ -64,10 +65,12 @@ public class SecurityConfig {
 	@Bean(name = BeanIds.AUTHENTICATION_MANAGER)
 	/* 
 	 * see also https://stackoverflow.com/questions/21633555/how-to-inject-authenticationmanager-using-java-configuration-in-a-custom-filter
+	 * and https://www.baeldung.com/spring-deprecated-websecurityconfigureradapter
 	 */
-	public AuthenticationManager authenticationManagerBean(HttpSecurity http, UserDetailsService userDetailsService) throws Exception {
+	public AuthenticationManager authenticationManagerBean(HttpSecurity http, UserDetailsService userDetailsService, BCryptPasswordEncoder bCryptPasswordEncoder) throws Exception {
 		 return http.getSharedObject(AuthenticationManagerBuilder.class)
 				.userDetailsService(userDetailsService)
+				.passwordEncoder(bCryptPasswordEncoder)
 				.and()
 				.build();
 	}
@@ -103,8 +106,9 @@ public class SecurityConfig {
 		if (iam == InboundAuthorizationMode.BASIC) {
 			System.err.println(String.format("Endpoint %s is BASIC authentication protected", endpoint));
 			sec = sec.authorizeHttpRequests().requestMatchers(endpoint).authenticated().and();
+		} else {
+			sec = sec.authorizeHttpRequests().requestMatchers(endpoint).permitAll().and();
 		}
-		// NB: Ignoring is not possible in this method; see webSecurityCustomizer()
 		return sec;
 	}
 
@@ -130,40 +134,9 @@ public class SecurityConfig {
 		return http.build();
 	}
 
-	private WebSecurity determineWebSecurityForEndpoint(WebSecurity secInitial, String endpoint, InboundAuthorizationMode iam) {
-
-		WebSecurity sec = secInitial;
-		if (iam == InboundAuthorizationMode.NONE) {
-			System.err.println(String.format("Endpoint %s is NOT authentication protected", endpoint));
-			sec = sec.ignoring().requestMatchers(endpoint).and();
-		}
-		return sec;
-	}
-
-	/*
-	 * see also
-	 * https://stackoverflow.com/questions/30366405/how-to-disable-spring-security-for-particular-url
-	 */
 	@Bean
 	public WebSecurityCustomizer webSecurityCustomizer() throws Exception {
-		if (!this.isInboundAuthSecurityEnabled()) {
-			return (web) -> web.debug(securityDebug);
-		}
-		
-		WebSecurityCustomizer webCustomizer = new WebSecurityCustomizer() {
-			
-			@Override
-			public void customize(WebSecurity web) {
-				web = web.debug(securityDebug);
-				web = determineWebSecurityForEndpoint(web, EndpointConstants.ENDPOINT_PATH_DISCOVERY, discoveryAuth);
-				web = determineWebSecurityForEndpoint(web, EndpointConstants.ENDPOINT_PATH_SINGLE_TARGET_SCRAPING + "/**", endpointAuth);
-				web = determineWebSecurityForEndpoint(web, EndpointConstants.ENDPOINT_PATH_PROMREGATOR_METRICS, promregatorMetricsAuth);
-				determineWebSecurityForEndpoint(web, EndpointConstants.ENDPOINT_PATH_CACHE_INVALIDATION, cacheInvalidateAuth);
-			}
-		};
-		
-		return webCustomizer;
-
+		return (web) -> web.debug(securityDebug);
 	}
 
 	/*
