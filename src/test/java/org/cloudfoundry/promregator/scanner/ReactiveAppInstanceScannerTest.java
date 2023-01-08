@@ -147,8 +147,7 @@ public class ReactiveAppInstanceScannerTest {
 				.extracting("accessUrl").containsOnly("https://hostapp2.shared.domain.example.org/additionalPath/testpath2");
 	}
 	
-	@Test
-	void testEmptyResponseOnOrg() {
+	private List<ResolvedTarget> setupTargets(String orgName, String spaceName, String applicationName, String path) {
 		List<ResolvedTarget> targets = new LinkedList<>();
 		
 		ResolvedTarget t = new ResolvedTarget();
@@ -163,10 +162,10 @@ public class ReactiveAppInstanceScannerTest {
 		targets.add(t);
 		
 		t = new ResolvedTarget();
-		t.setOrgName("doesnotexist");
-		t.setSpaceName("shouldneverbeused");
-		t.setApplicationName("shouldneverbeused");
-		t.setPath("/shouldneverbeused");
+		t.setOrgName(orgName);
+		t.setSpaceName(spaceName);
+		t.setApplicationName(applicationName);
+		t.setPath(path);
 		t.setProtocol("https");
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
@@ -181,6 +180,14 @@ public class ReactiveAppInstanceScannerTest {
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
+		return targets;
+
+	}
+	
+	@Test
+	void testEmptyResponseOnOrg() {
+		List<ResolvedTarget> targets = this.setupTargets("doesnotexist", "shouldneverbeused", "shouldneverbeused", "/shouldneverbeused");
+
 		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, null, null);
 		
 		assertThat(result).filteredOn( instance -> instance.getInstanceId().equals(UNITTEST_APP1_UUID+":0") )
@@ -195,37 +202,7 @@ public class ReactiveAppInstanceScannerTest {
 	
 	@Test
 	void testEmptyResponseOnSpace() {
-		List<ResolvedTarget> targets = new LinkedList<>();
-		
-		ResolvedTarget t = new ResolvedTarget();
-		t.setOrgName("unittestorg");
-		t.setSpaceName("unittestspace");
-		t.setApplicationName("testapp");
-		t.setPath("/testpath1");
-		t.setProtocol("http");
-		t.setApplicationId(UNITTEST_APP1_UUID);
-		final Target emptyTarget = new Target();
-		t.setOriginalTarget(emptyTarget);
-		targets.add(t);
-		
-		t = new ResolvedTarget();
-		t.setOrgName("unittestorg");
-		t.setSpaceName("doesnotexist");
-		t.setApplicationName("shouldneverbeused");
-		t.setPath("/shouldneverbeused");
-		t.setOriginalTarget(emptyTarget);
-		t.setProtocol("https");
-		targets.add(t);
-		
-		t = new ResolvedTarget();
-		t.setOrgName("unittestorg");
-		t.setSpaceName("unittestspace");
-		t.setApplicationName("testapp2");
-		t.setPath("/testpath2");
-		t.setProtocol("https");
-		t.setApplicationId(UNITTEST_APP2_UUID);
-		t.setOriginalTarget(emptyTarget);
-		targets.add(t);
+		List<ResolvedTarget> targets = this.setupTargets("unittestorg", "doestnotexist", "shouldneverbeused", "/shouldneverbeused");
 		
 		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, null, null);
 		
@@ -242,37 +219,7 @@ public class ReactiveAppInstanceScannerTest {
 	
 	@Test
 	void testEmptyResponseOnApplicationId() {
-		List<ResolvedTarget> targets = new LinkedList<>();
-		
-		ResolvedTarget t = new ResolvedTarget();
-		t.setOrgName("unittestorg");
-		t.setSpaceName("unittestspace");
-		t.setApplicationName("testapp");
-		t.setPath("/testpath1");
-		t.setProtocol("http");
-		t.setApplicationId(UNITTEST_APP1_UUID);
-		final Target emptyTarget = new Target();
-		t.setOriginalTarget(emptyTarget);
-		targets.add(t);
-		
-		t = new ResolvedTarget();
-		t.setOrgName("unittestorg");
-		t.setSpaceName("unittestspace");
-		t.setApplicationName("doesnotexist");
-		t.setPath("/shouldneverbeused");
-		t.setProtocol("https");
-		t.setOriginalTarget(emptyTarget);
-		targets.add(t);
-		
-		t = new ResolvedTarget();
-		t.setOrgName("unittestorg");
-		t.setSpaceName("unittestspace");
-		t.setApplicationName("testapp2");
-		t.setPath("/testpath2");
-		t.setProtocol("https");
-		t.setApplicationId(UNITTEST_APP2_UUID);
-		t.setOriginalTarget(emptyTarget);
-		targets.add(t);
+		List<ResolvedTarget> targets = this.setupTargets("unittestorg", "unittestorg", "doestnotexist", "/shouldneverbeused");
 		
 		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, null, null);
 
@@ -289,37 +236,7 @@ public class ReactiveAppInstanceScannerTest {
 	
 	@Test
 	void testEmptyResponseOnSummary() {
-		List<ResolvedTarget> targets = new LinkedList<>();
-		
-		ResolvedTarget t = new ResolvedTarget();
-		t.setOrgName("unittestorg");
-		t.setSpaceName("unittestspace");
-		t.setApplicationName("testapp");
-		t.setPath("/testpath1");
-		t.setProtocol("http");
-		t.setApplicationId(UNITTEST_APP1_UUID);
-		final Target emptyTarget = new Target();
-		t.setOriginalTarget(emptyTarget);
-		targets.add(t);
-		
-		t = new ResolvedTarget();
-		t.setOrgName("unittestorg");
-		t.setSpaceName("unittestspace-summarydoesnotexist");
-		t.setApplicationName("testapp");
-		t.setPath("/shouldneverbeused");
-		t.setProtocol("https");
-		t.setOriginalTarget(emptyTarget);
-		targets.add(t);
-		
-		t = new ResolvedTarget();
-		t.setOrgName("unittestorg");
-		t.setSpaceName("unittestspace");
-		t.setApplicationName("testapp2");
-		t.setPath("/testpath2");
-		t.setProtocol("https");
-		t.setApplicationId(UNITTEST_APP2_UUID);
-		t.setOriginalTarget(emptyTarget);
-		targets.add(t);
+		List<ResolvedTarget> targets = this.setupTargets("unittestorg", "unittestspace-summarydoesnotexist", "testapp", "/shouldneverbeused");
 		
 		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, null, null);
 
@@ -335,37 +252,7 @@ public class ReactiveAppInstanceScannerTest {
 	
 	@Test
 	void testExceptionOnOrg() {
-		List<ResolvedTarget> targets = new LinkedList<>();
-		
-		ResolvedTarget t = new ResolvedTarget();
-		t.setOrgName("unittestorg");
-		t.setSpaceName("unittestspace");
-		t.setApplicationName("testapp");
-		t.setPath("/testpath1");
-		t.setProtocol("http");
-		t.setApplicationId(UNITTEST_APP1_UUID);
-		final Target emptyTarget = new Target();
-		t.setOriginalTarget(emptyTarget);
-		targets.add(t);
-		
-		t = new ResolvedTarget();
-		t.setOrgName("exception");
-		t.setSpaceName("shouldneverbeused");
-		t.setApplicationName("shouldneverbeused");
-		t.setPath("/shouldneverbeused");
-		t.setProtocol("https");
-		t.setOriginalTarget(emptyTarget);
-		targets.add(t);
-		
-		t = new ResolvedTarget();
-		t.setOrgName("unittestorg");
-		t.setSpaceName("unittestspace");
-		t.setApplicationName("testapp2");
-		t.setPath("/testpath2");
-		t.setProtocol("https");
-		t.setApplicationId(UNITTEST_APP2_UUID);
-		t.setOriginalTarget(emptyTarget);
-		targets.add(t);
+		List<ResolvedTarget> targets = this.setupTargets("exception", "shouldneverbeused", "shouldneverbeused", "/shouldneverbeused");
 		
 		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, null, null);
 
@@ -383,37 +270,7 @@ public class ReactiveAppInstanceScannerTest {
 
 	@Test
 	void testExceptionOnSpace() {
-		List<ResolvedTarget> targets = new LinkedList<>();
-		
-		ResolvedTarget t = new ResolvedTarget();
-		t.setOrgName("unittestorg");
-		t.setSpaceName("unittestspace");
-		t.setApplicationName("testapp");
-		t.setPath("/testpath1");
-		t.setProtocol("http");
-		t.setApplicationId(UNITTEST_APP1_UUID);
-		final Target emptyTarget = new Target();
-		t.setOriginalTarget(emptyTarget);
-		targets.add(t);
-		
-		t = new ResolvedTarget();
-		t.setOrgName("unittestorg");
-		t.setSpaceName("exception");
-		t.setApplicationName("shouldneverbeused");
-		t.setPath("/shouldneverbeused");
-		t.setProtocol("https");
-		t.setOriginalTarget(emptyTarget);
-		targets.add(t);
-		
-		t = new ResolvedTarget();
-		t.setOrgName("unittestorg");
-		t.setSpaceName("unittestspace");
-		t.setApplicationName("testapp2");
-		t.setPath("/testpath2");
-		t.setProtocol("https");
-		t.setApplicationId(UNITTEST_APP2_UUID);
-		t.setOriginalTarget(emptyTarget);
-		targets.add(t);
+		List<ResolvedTarget> targets = this.setupTargets("unittestorg", "exception", "shouldneverbeused", "/shouldneverbeused");
 		
 		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, null, null);
 
@@ -429,37 +286,7 @@ public class ReactiveAppInstanceScannerTest {
 	
 	@Test
 	void testExceptionOnApplicationId() {
-		List<ResolvedTarget> targets = new LinkedList<>();
-		
-		ResolvedTarget t = new ResolvedTarget();
-		t.setOrgName("unittestorg");
-		t.setSpaceName("unittestspace");
-		t.setApplicationName("testapp");
-		t.setPath("/testpath1");
-		t.setProtocol("http");
-		t.setApplicationId(UNITTEST_APP1_UUID);
-		final Target emptyTarget = new Target();
-		t.setOriginalTarget(emptyTarget);
-		targets.add(t);
-		
-		t = new ResolvedTarget();
-		t.setOrgName("unittestorg");
-		t.setSpaceName("unittestspace");
-		t.setApplicationName("exception");
-		t.setPath("/shouldneverbeused");
-		t.setProtocol("https");
-		t.setOriginalTarget(emptyTarget);
-		targets.add(t);
-		
-		t = new ResolvedTarget();
-		t.setOrgName("unittestorg");
-		t.setSpaceName("unittestspace");
-		t.setApplicationName("testapp2");
-		t.setPath("/testpath2");
-		t.setProtocol("https");
-		t.setApplicationId(UNITTEST_APP2_UUID);
-		t.setOriginalTarget(emptyTarget);
-		targets.add(t);
+		List<ResolvedTarget> targets = this.setupTargets("unittestorg", "unittestspace", "exception", "/shouldneverbeused");
 		
 		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, null, null);
 
@@ -475,37 +302,7 @@ public class ReactiveAppInstanceScannerTest {
 	
 	@Test
 	void testExceptionOnSummary() {
-		List<ResolvedTarget> targets = new LinkedList<>();
-		
-		ResolvedTarget t = new ResolvedTarget();
-		t.setOrgName("unittestorg");
-		t.setSpaceName("unittestspace");
-		t.setApplicationName("testapp");
-		t.setPath("/testpath1");
-		t.setProtocol("http");
-		t.setApplicationId(UNITTEST_APP1_UUID);
-		final Target emptyTarget = new Target();
-		t.setOriginalTarget(emptyTarget);
-		targets.add(t);
-		
-		t = new ResolvedTarget();
-		t.setOrgName("unittestorg");
-		t.setSpaceName("unittestspace-summaryexception");
-		t.setApplicationName("testapp");
-		t.setPath("/shouldneverbeused");
-		t.setProtocol("https");
-		t.setOriginalTarget(emptyTarget);
-		targets.add(t);
-		
-		t = new ResolvedTarget();
-		t.setOrgName("unittestorg");
-		t.setSpaceName("unittestspace");
-		t.setApplicationName("testapp2");
-		t.setPath("/testpath2");
-		t.setProtocol("https");
-		t.setApplicationId(UNITTEST_APP2_UUID);
-		t.setOriginalTarget(emptyTarget);
-		targets.add(t);
+		List<ResolvedTarget> targets = this.setupTargets("unittestorg", "unittestspace-summaryexception", "testapp", "/shouldneverbeused");
 		
 		List<Instance> result = this.appInstanceScanner.determineInstancesFromTargets(targets, null, null);
 
