@@ -116,7 +116,7 @@ public abstract class RequestAggregator<K, V> {
 		
 	}
 	
-	public RequestAggregator(Type type, InternalMetrics internalMetrics, Class<K> typeOfK, Class<V> typeOfV, int checkIntervalInMillis, int maxBlockSize) {
+	protected RequestAggregator(Type type, InternalMetrics internalMetrics, Class<K> typeOfK, Class<V> typeOfV, int checkIntervalInMillis, int maxBlockSize) {
 		this.checkIntervalInMillis = checkIntervalInMillis;
 		this.maxBlockSize = maxBlockSize;
 		
