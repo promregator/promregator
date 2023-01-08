@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.BeanIds;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -22,7 +22,7 @@ import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true, jsr250Enabled = true)
+@EnableMethodSecurity(securedEnabled = true, jsr250Enabled = true)
 public class SecurityConfig {
 
 	@Value("${promregator.discovery.auth:NONE}")
@@ -102,7 +102,7 @@ public class SecurityConfig {
 		HttpSecurity sec = secInitial;
 		if (iam == InboundAuthorizationMode.BASIC) {
 			System.err.println(String.format("Endpoint %s is BASIC authentication protected", endpoint));
-			sec = sec.authorizeRequests().antMatchers(endpoint).authenticated().and();
+			sec = sec.authorizeHttpRequests().requestMatchers(endpoint).authenticated().and();
 		}
 		// NB: Ignoring is not possible in this method; see webSecurityCustomizer()
 		return sec;
@@ -135,7 +135,7 @@ public class SecurityConfig {
 		WebSecurity sec = secInitial;
 		if (iam == InboundAuthorizationMode.NONE) {
 			System.err.println(String.format("Endpoint %s is NOT authentication protected", endpoint));
-			sec = sec.ignoring().antMatchers(endpoint).and();
+			sec = sec.ignoring().requestMatchers(endpoint).and();
 		}
 		return sec;
 	}
