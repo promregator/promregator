@@ -28,6 +28,8 @@ import org.cloudfoundry.client.v3.processes.HealthCheckType;
 import org.cloudfoundry.client.v3.processes.ListProcessesResponse;
 import org.cloudfoundry.client.v3.processes.ProcessRelationships;
 import org.cloudfoundry.client.v3.processes.ProcessResource;
+import org.cloudfoundry.client.v3.routes.Application;
+import org.cloudfoundry.client.v3.routes.Destination;
 import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
 import org.cloudfoundry.client.v3.routes.RouteRelationships;
 import org.cloudfoundry.client.v3.routes.RouteResource;
@@ -206,6 +208,7 @@ public class CFAccessorSimulator implements CFAccessor {
 		ToOneRelationship domain = ToOneRelationship.builder().data(Relationship.builder().id(SHARED_DOMAIN_UUID+appNumber).build()).build();
 		ToOneRelationship space = ToOneRelationship.builder().data(Relationship.builder().id(SPACE_UUID).build()).build();
 		RouteRelationships rels = RouteRelationships.builder().domain(domain).space(space).build();
+		Destination dest = Destination.builder().destinationId("42"+appId).application(Application.builder().applicationId(appId).build()).build();
 		RouteResource rr = RouteResource.builder()
 				.url(APP_HOST_PREFIX+appNumber+"."+SHARED_DOMAIN)
 				.relationships(rels)
@@ -213,6 +216,7 @@ public class CFAccessorSimulator implements CFAccessor {
 				.id(ROUTE_UUID_PREFIX+appNumber)
 				.host(APP_HOST_PREFIX+appNumber)
 				.path(APP_ROUTE_PATH)
+				.destination(dest)
 				.build();
 		return rr;
 	}

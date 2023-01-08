@@ -246,6 +246,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 
 		@Override
 		protected Mono<ListProcessesResponse> sendRequest(List<String> block) {
+			log.info("Sending process block request with {} items", block.size());
 			return parent.retrieveWebProcessesForAppIds(new HashSet<>(block));
 		}
 

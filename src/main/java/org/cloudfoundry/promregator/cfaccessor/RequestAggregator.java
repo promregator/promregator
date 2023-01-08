@@ -37,8 +37,6 @@ public abstract class RequestAggregator<K, V> {
 		
 		@Override
 		public void run() {
-			final ArrayList<K> block = new ArrayList<>(maxBlockSize);
-			final HashMap<K, CompletableFuture<V>> map = new HashMap<>();
 			
 			while (shouldRun) {
 				
@@ -53,11 +51,13 @@ public abstract class RequestAggregator<K, V> {
 					continue;
 				}
 				
-				block.clear();
-				map.clear();
-				// there is something in the queue which needs to be handled now
+				log.debug("Woke up with {} items in the queue", queue.size());
 				
-				while (queue.size() < maxBlockSize && !queue.isEmpty()) {
+				// there is something in the queue which needs to be handled now
+				final ArrayList<K> block = new ArrayList<>(maxBlockSize);
+				final HashMap<K, CompletableFuture<V>> map = new HashMap<>();
+				
+				while (block.size() < maxBlockSize && !queue.isEmpty()) {
 					QueueItem<K,V> queueItem = queue.poll();
 					map.put(queueItem.requestItem(), queueItem.future());
 					

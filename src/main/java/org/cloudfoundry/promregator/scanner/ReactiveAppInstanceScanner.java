@@ -218,7 +218,9 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		 * The ApplicationURL is buried in the Routes.
 		 */
 		
-		Flux<ListProcessesResponse> webProcessForAppFlux = osaVectorSpaceFlux.flatMap(rt -> this.cfAccessor.retrieveWebProcessesForAppId(rt.getTarget().getApplicationId()));
+		Flux<ListProcessesResponse> webProcessForAppFlux = osaVectorSpaceFlux.flatMap(rt -> 
+			this.cfAccessor.retrieveWebProcessesForAppId(rt.getTarget().getApplicationId())
+		);
 		
 		Flux<OSAVector> numberInstancesOSAVectorFlux = Flux.zip(osaVectorSpaceFlux, webProcessForAppFlux).flatMap(tuple -> {
 			final OSAVector osaVector = tuple.getT1();
