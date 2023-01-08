@@ -63,10 +63,11 @@ def springCloudCliPasswordTest(params) {
 		// For most recent version see also https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-cli
 		def springCloudCLIVersion = "3.1.1"
 	
+		# Note: https://repo.spring.io/release/org/springframework/boot/spring-boot-cli/3.0.1/spring-boot-cli-3.0.1-bin.tar.gz is broken
 		sh """
-			wget -nv https://repo.spring.io/release/org/springframework/boot/spring-boot-cli/${springBootCLIVersion}/spring-boot-cli-${springBootCLIVersion}-bin.tar.gz
-			tar xzvf spring-boot-cli-${springBootCLIVersion}-bin.tar.gz
-			rm -f spring-boot-cli-${springBootCLIVersion}-bin.tar.gz
+			wget -nv https://repo.spring.io/release/org/springframework/boot/spring-boot-cli/${springBootCLIVersion}/spring-boot-cli-${springBootCLIVersion}-bin.zip
+			unzip spring-boot-cli-${springBootCLIVersion}-bin.zip
+			rm -f spring-boot-cli-${springBootCLIVersion}-bin.zip
 			cd spring-${springBootCLIVersion}/bin
 			
 			./spring install org.springframework.cloud:spring-cloud-cli:${springCloudCLIVersion}
