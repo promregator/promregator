@@ -18,6 +18,9 @@ public abstract class RequestAggregator<K, V> {
 
 	private static record QueueItem<K, V> (K requestItem, CompletableFuture<V> future) {}
 	
+	/*
+	 * TODO V3: internal metrics required for state of queue
+	 */
 	private ConcurrentLinkedDeque<QueueItem<K, V>> queue = new ConcurrentLinkedDeque<>();
 	
 	private Processor processor;
