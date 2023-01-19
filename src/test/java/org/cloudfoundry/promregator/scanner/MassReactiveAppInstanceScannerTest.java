@@ -8,7 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
-import org.cloudfoundry.promregator.config.Target;
+import org.cloudfoundry.promregator.lite.config.CfTarget;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -39,7 +39,7 @@ public class MassReactiveAppInstanceScannerTest {
 		
 		final int numberOfApps = 100;
 		
-		final Target emptyTarget = new Target();
+		final CfTarget emptyTarget = new CfTarget();
 		for (int i = 0;i<numberOfApps;i++) {
 			t = new ResolvedTarget();
 			t.setOrgName("unittestorg");
@@ -74,7 +74,7 @@ public class MassReactiveAppInstanceScannerTest {
 		
 		final int numberOfApps = 100;
 		
-		final Target emptyTarget = new Target();
+		final CfTarget emptyTarget = new CfTarget();
 		for (int i = 0;i<numberOfApps;i++) {
 			t = new ResolvedTarget();
 			t.setOrgName("unittestorg");
@@ -116,7 +116,7 @@ public class MassReactiveAppInstanceScannerTest {
 		
 		final int numberOfApps = 100;
 		
-		final Target emptyTarget = new Target();
+		final CfTarget emptyTarget = new CfTarget();
 		for (int i = 0;i<numberOfApps;i++) {
 			t = new ResolvedTarget();
 			t.setOrgName("unittestorg");
@@ -166,7 +166,7 @@ public class MassReactiveAppInstanceScannerTest {
 
 		ResolvedTarget t = null;
 		
-		final Target emptyTarget = new Target();
+		final CfTarget emptyTarget = new CfTarget();
 		for (int i = 0;i<numberOfApps;i++) {
 			t = new ResolvedTarget();
 			t.setOrgName("unittestorg");

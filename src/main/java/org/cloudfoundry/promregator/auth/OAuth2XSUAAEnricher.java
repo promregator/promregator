@@ -25,7 +25,7 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher, Closeable {
 	private final CloseableHttpClient httpClient;
 	private final ClientCredentialsTokenFlow tokenClient;
 
-	OAuth2XSUAAEnricher(AbstractOAuth2XSUAAAuthenticationConfiguration config) {
+	public OAuth2XSUAAEnricher(AbstractOAuth2XSUAAAuthenticationConfiguration config) {
 		this(config, null);
 	}
 
@@ -33,7 +33,7 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher, Closeable {
 	 * @param config The configuration.
 	 * @param tokenClient A token client from outside. This is intended only for unit tests.
 	 */
-	OAuth2XSUAAEnricher(AbstractOAuth2XSUAAAuthenticationConfiguration config, ClientCredentialsTokenFlow tokenClient) {
+	public OAuth2XSUAAEnricher(AbstractOAuth2XSUAAAuthenticationConfiguration config, ClientCredentialsTokenFlow tokenClient) {
 		super();
 		OAuth2ServiceConfiguration c = new OAuth2ServiceConfig(config);
 

@@ -2,9 +2,9 @@ package org.cloudfoundry.promregator.config.validations;
 
 import java.util.HashSet;
 
-import org.cloudfoundry.promregator.config.PromregatorConfiguration;
-import org.cloudfoundry.promregator.config.Target;
-import org.cloudfoundry.promregator.config.TargetAuthenticatorConfiguration;
+import org.cloudfoundry.promregator.lite.config.PromregatorConfiguration;
+import org.cloudfoundry.promregator.lite.config.CfTarget;
+import org.cloudfoundry.promregator.lite.config.TargetAuthenticatorConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -31,7 +31,7 @@ public class TargetsHaveConsistentAuthenticatorId implements ConfigurationValida
 			authenticatorIds.add(tac.getId());
 		}
 
-		for (Target target : promregatorConfiguration.getTargets()) {
+		for (CfTarget target : promregatorConfiguration.getTargets()) {
 			if (target.getAuthenticatorId() == null) {
 				continue; // not necessary to check
 			}

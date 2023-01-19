@@ -1,0 +1,122 @@
+package org.cloudfoundry.promregator.lite.auth;
+
+//import com.google.gson.Gson;
+//import com.google.json.JsonSanitizer;
+//import org.apache.http.Consts;
+//import org.apache.http.NameValuePair;
+//import org.apache.http.ParseException;
+//import org.apache.http.client.ClientProtocolException;
+//import org.apache.http.client.config.RequestConfig;
+//import org.apache.http.client.entity.UrlEncodedFormEntity;
+//import org.apache.http.client.methods.CloseableHttpResponse;
+//import org.apache.http.client.methods.HttpGet;
+//import org.apache.http.client.methods.HttpPost;
+//import org.apache.http.impl.client.CloseableHttpClient;
+//import org.apache.http.impl.client.HttpClients;
+//import org.apache.http.message.BasicNameValuePair;
+//import org.apache.http.util.EntityUtils;
+import com.sap.cloud.security.client.HttpClientFactory;
+import com.sap.cloud.security.config.OAuth2ServiceConfiguration;
+import com.sap.cloud.security.xsuaa.client.DefaultOAuth2TokenService;
+import com.sap.cloud.security.xsuaa.client.OAuth2TokenResponse;
+import com.sap.cloud.security.xsuaa.tokenflows.ClientCredentialsTokenFlow;
+import com.sap.cloud.security.xsuaa.tokenflows.TokenFlowException;
+import com.sap.cloud.security.xsuaa.tokenflows.XsuaaTokenFlows;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.cloudfoundry.promregator.auth.OAuth2ServiceConfig;
+import org.cloudfoundry.promregator.auth.PromregatorOAuth2ServiceEndpointsProvider;
+import org.cloudfoundry.promregator.config.AbstractOAuth2XSUAAAuthenticationConfiguration;
+import org.cloudfoundry.promregator.lite.config.OAuth2XSUAAAuthenticationConfiguration;
+import org.cloudfoundry.promregator.lite.config.RequestConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.time.Instant;
+
+public class OAuth2XSUAAEnricher implements AuthenticationEnricher, Closeable {
+
+	private static final Logger log = LoggerFactory.getLogger(org.cloudfoundry.promregator.auth.OAuth2XSUAAEnricher.class);
+
+	private final CloseableHttpClient httpClient;
+	private final ClientCredentialsTokenFlow tokenClient;
+
+	public OAuth2XSUAAEnricher(AbstractOAuth2XSUAAAuthenticationConfiguration config) {
+		this(config, null);
+	}
+
+	/**
+	 * @param config The configuration.
+	 * @param tokenClient A token client from outside. This is intended only for unit tests.
+	 */
+	public OAuth2XSUAAEnricher(AbstractOAuth2XSUAAAuthenticationConfiguration config, ClientCredentialsTokenFlow tokenClient) {
+		super();
+		OAuth2ServiceConfiguration c = new OAuth2ServiceConfig(config);
+
+		if (tokenClient != null) {
+			this.httpClient = null;
+			this.tokenClient = tokenClient;
+		} else {
+			this.httpClient = HttpClientFactory.create(c.getClientIdentity());
+			this.tokenClient = new XsuaaTokenFlows(new DefaultOAuth2TokenService(this.httpClient),
+				new PromregatorOAuth2ServiceEndpointsProvider(c), c.getClientIdentity()).clientCredentialsTokenFlow();
+		}
+		this.tokenClient.scopes(config.getScopes().toArray(new String[0]));
+
+		// Ensure getting the web token works (fail-fast)
+		// We don't raise an exception, but we log the failure.
+		try {
+			String jwt = getJWT();
+			if (jwt == null || jwt.isEmpty()) {
+				log.error("Cannot obtain JWT for client '{}'.", c.getClientId());
+			} else {
+				log.debug("JWT obtained for client '{}': '{}******'", c.getClientId(), jwt.substring(0, Math.min(10, jwt.length()/3)));
+			}
+		} catch (TokenFlowException | RuntimeException e) {
+			log.error("Cannot obtain JWT.", e);
+		}
+	}
+
+	@Override
+	public void enrichWithAuthentication(HttpHeaders headers) {
+		final String jwt = getJWTAndCatchExceptions();
+		if (StringUtils.isAllBlank(jwt)) {
+			log.error("Unable to enrich request with JWT");
+			return;
+		}
+		headers.set("Authorization", String.format("Bearer %s", jwt));
+	}
+
+	private final String getJWTAndCatchExceptions() {
+		String jwt = null;
+		try {
+			jwt = getJWT();
+		} catch (TokenFlowException | RuntimeException e) {
+			log.error("Unable to enrich request with JWT", e);
+		}
+		return jwt;
+	}
+
+	private final String getJWT() throws TokenFlowException {
+		OAuth2TokenResponse tokenResponse = this.tokenClient.execute();
+		if(tokenResponse == null) {
+			return null;
+		}
+		return tokenResponse.getAccessToken();
+	}
+
+	// TODO: currently there is no good place for calling this method.
+	// In case something goes wrong, the whole application will be
+	// restarted. With that the resources used by the old application
+	// we be released.
+	public void close() throws IOException {
+		if (this.httpClient != null) {
+			this.httpClient.close();
+		}
+	}
+}
+

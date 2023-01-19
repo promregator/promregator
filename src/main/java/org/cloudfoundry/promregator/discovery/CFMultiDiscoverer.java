@@ -13,7 +13,7 @@ import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
-import org.cloudfoundry.promregator.config.PromregatorConfiguration;
+import org.cloudfoundry.promregator.lite.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.messagebus.MessageBus;
 import org.cloudfoundry.promregator.messagebus.MessageBusTopic;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;

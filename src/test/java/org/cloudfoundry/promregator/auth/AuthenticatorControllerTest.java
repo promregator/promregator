@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
-import org.cloudfoundry.promregator.config.PromregatorConfiguration;
-import org.cloudfoundry.promregator.config.Target;
+import org.cloudfoundry.promregator.lite.config.PromregatorConfiguration;
+import org.cloudfoundry.promregator.lite.config.CfTarget;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,18 +41,18 @@ public class AuthenticatorControllerTest {
 		AuthenticationEnricher auth3 = subject.getAuthenticationEnricherById(null);
 		assertThat(auth3).isNull();
 		
-		List<Target> targets = this.promregatorConfiguration.getTargets();
-		Target target0 = targets.get(0);
+		List<CfTarget> targets = this.promregatorConfiguration.getTargets();
+		CfTarget target0 = targets.get(0);
 		
 		Assertions.assertEquals("testapp",target0.getApplicationName()); // only as safety for this test (not really a test subject)
 		Assertions.assertEquals(auth0, subject.getAuthenticationEnricherByTarget(target0));
 		
-		Target target1 = targets.get(1);
+		CfTarget target1 = targets.get(1);
 		
 		Assertions.assertEquals("testapp2", target1.getApplicationName()); // only as safety for this test (not really a test subject)
 		Assertions.assertEquals(auth1, subject.getAuthenticationEnricherByTarget(target1));
 		
-		assertThat(subject.getAuthenticationEnricherByTarget(new Target())).isInstanceOf(NullEnricher.class);
+		assertThat(subject.getAuthenticationEnricherByTarget(new CfTarget())).isInstanceOf(NullEnricher.class);
 		assertThat(subject.getAuthenticationEnricherByTarget(null)).isInstanceOf(NullEnricher.class);
 	}
 

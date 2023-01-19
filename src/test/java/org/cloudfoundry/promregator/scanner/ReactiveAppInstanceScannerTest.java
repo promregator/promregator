@@ -5,13 +5,15 @@ import static org.cloudfoundry.promregator.cfaccessor.CFAccessorMock.UNITTEST_AP
 import static org.cloudfoundry.promregator.cfaccessor.CFAccessorMock.UNITTEST_APP2_UUID;
 import static org.cloudfoundry.promregator.cfaccessor.CFAccessorMock.UNITTEST_APP3_UUID;
 import static org.cloudfoundry.promregator.cfaccessor.CFAccessorMock.UNITTEST_APP_INTERNAL_UUID;
+import static org.cloudfoundry.promregator.lite.config.PromregatorConfiguration.DEFAULT_ID;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
-import org.cloudfoundry.promregator.config.Target;
+import org.cloudfoundry.promregator.lite.config.CfTarget;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,7 +46,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setPath("/testpath1");
 		t.setProtocol("http");
 		t.setApplicationId(UNITTEST_APP1_UUID);
-		final Target emptyTarget = new Target();
+		final CfTarget emptyTarget = new CfTarget();
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
@@ -81,7 +83,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setPath("/testpath1");
 		t.setProtocol("http");
 		t.setApplicationId(UNITTEST_APP1_UUID);
-		final Target emptyTarget = new Target();
+		final CfTarget emptyTarget = new CfTarget();
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
@@ -121,7 +123,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setPath("/testpath1");
 		t.setProtocol("http");
 		t.setApplicationId(UNITTEST_APP1_UUID);
-		final Target emptyTarget = new Target();
+		final CfTarget emptyTarget = new CfTarget();
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
@@ -157,7 +159,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setPath("/testpath1");
 		t.setProtocol("http");
 		t.setApplicationId(UNITTEST_APP1_UUID);
-		final Target emptyTarget = new Target();
+		final CfTarget emptyTarget = new CfTarget();
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
@@ -327,7 +329,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setPath("/testpath1");
 		t.setProtocol("http");
 		t.setApplicationId(UNITTEST_APP1_UUID);
-		final Target emptyTarget = new Target();
+		final CfTarget emptyTarget = new CfTarget();
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
@@ -338,11 +340,10 @@ public class ReactiveAppInstanceScannerTest {
 		t.setPath("/testpath2");
 		t.setProtocol("https");
 		t.setApplicationId(UNITTEST_APP2_UUID);
-		
-		Target origTarget = new Target();
+
 		String[] preferredRouteRegex = { ".*additionalSubdomain.*" };
-		origTarget.setPreferredRouteRegex(Arrays.asList(preferredRouteRegex));
-		
+		CfTarget origTarget = new CfTarget(DEFAULT_ID, null, null, null, null, null, null, "/metrics", false, "https", null, Arrays.asList(preferredRouteRegex),0, null);
+
 		t.setOriginalTarget(origTarget);
 		targets.add(t);
 		
@@ -369,7 +370,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setPath("/testpath1");
 		t.setProtocol("http");
 		t.setApplicationId(UNITTEST_APP1_UUID);
-		final Target emptyTarget = new Target();
+		final CfTarget emptyTarget = new CfTarget();
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
@@ -380,11 +381,10 @@ public class ReactiveAppInstanceScannerTest {
 		t.setPath("/testpath2");
 		t.setProtocol("https");
 		t.setApplicationId(UNITTEST_APP2_UUID);
-		
-		Target origTarget = new Target();
+
 		String[] preferredRouteRegex = { ".*notMatched.*" };
-		origTarget.setPreferredRouteRegex(Arrays.asList(preferredRouteRegex));
-		
+		CfTarget origTarget = new CfTarget(DEFAULT_ID, null, null, null, null, null, null, "/metrics", false, "https", null, Arrays.asList(preferredRouteRegex),0, null);
+
 		t.setOriginalTarget(origTarget);
 		targets.add(t);
 		
@@ -411,8 +411,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("internalapp");
 		t.setProtocol("http");
 		t.setApplicationId(UNITTEST_APP_INTERNAL_UUID);
-		final Target emptyTarget = new Target();
-		emptyTarget.setInternalRoutePort(9090);
+		CfTarget emptyTarget = new CfTarget(DEFAULT_ID, null, null, null, null, null, null, "/metrics", false, "https", null, new ArrayList<>(),9090, null);
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 					
@@ -438,7 +437,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("internalapp");
 		t.setProtocol("http");
 		t.setApplicationId(UNITTEST_APP_INTERNAL_UUID);
-		final Target emptyTarget = new Target();
+		final CfTarget emptyTarget = new CfTarget();
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
@@ -465,7 +464,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setPath("/testpath1");
 		t.setProtocol("http");
 		t.setApplicationId(UNITTEST_APP3_UUID);
-		final Target emptyTarget = new Target();
+		final CfTarget emptyTarget = new CfTarget();
 		t.setOriginalTarget(emptyTarget);
 		targets.add(t);
 		
@@ -485,7 +484,7 @@ public class ReactiveAppInstanceScannerTest {
 		t.setApplicationName("internalapp");
 		t.setProtocol("http");
 		t.setApplicationId(UNITTEST_APP_INTERNAL_UUID);
-		final Target targetWithExplicitAccessUrl = new Target();
+		final CfTarget targetWithExplicitAccessUrl = new CfTarget();
 		targetWithExplicitAccessUrl.setOverrideRouteAndPath("someRouteAndPath.com");
 		t.setOriginalTarget(targetWithExplicitAccessUrl);
 		targets.add(t);

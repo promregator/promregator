@@ -12,7 +12,7 @@ import org.cloudfoundry.client.v3.applications.ApplicationResource;
 import org.cloudfoundry.client.v3.applications.ApplicationState;
 import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
-import org.cloudfoundry.promregator.config.Target;
+import org.cloudfoundry.promregator.lite.config.CfTarget;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +31,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 	private CFAccessor cfAccessor;
 
 	private static class IntermediateTarget {
-		private Target configTarget;
+		private CfTarget configTarget;
 		private String resolvedOrgName;
 		private String resolvedOrgId;
 		private String resolvedSpaceName;
@@ -55,7 +55,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 			this.resolvedMetricsPath = source.resolvedMetricsPath;
 		}
 
-		public IntermediateTarget(Target target) {
+		public IntermediateTarget(CfTarget target) {
 			this.configTarget = target;
 		}
 
@@ -111,14 +111,14 @@ public class ReactiveTargetResolver implements TargetResolver {
 		/**
 		 * @return the configTarget
 		 */
-		public Target getConfigTarget() {
+		public CfTarget getConfigTarget() {
 			return configTarget;
 		}
 
 		/**
 		 * @param configTarget the configTarget to set
 		 */
-		public void setConfigTarget(Target configTarget) {
+		public void setConfigTarget(CfTarget configTarget) {
 			this.configTarget = configTarget;
 		}
 
@@ -224,7 +224,7 @@ public class ReactiveTargetResolver implements TargetResolver {
 	}
 
 	@Override
-	public List<ResolvedTarget> resolveTargets(List<Target> configTargets) {
+	public List<ResolvedTarget> resolveTargets(List<CfTarget> configTargets) {
 		return Flux.fromIterable(configTargets)
 				.parallel()
 				.runOn(Schedulers.parallel())

@@ -1,9 +1,9 @@
 package org.cloudfoundry.promregator.scanner;
 
+import org.cloudfoundry.promregator.lite.config.CfTarget;
+
 import java.util.List;
 
-import org.cloudfoundry.promregator.config.Target;
-
 public interface TargetResolver {
-	List<ResolvedTarget> resolveTargets(List<Target> configTarget);
+	List<ResolvedTarget> resolveTargets(List<CfTarget> configTarget);
 }

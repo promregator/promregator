@@ -3,6 +3,7 @@ package org.cloudfoundry.promregator.config;
 import javax.annotation.PostConstruct;
 
 import org.cloudfoundry.promregator.config.validations.ConfigurationValidation;
+import org.cloudfoundry.promregator.lite.config.PromregatorConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;

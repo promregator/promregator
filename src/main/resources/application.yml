@@ -3,6 +3,12 @@ server:
     enabled: true
     mime-types: application/json,application/xml,text/html,text/xml,text/plain,application/javascript,text/css
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,env
+
 # By default, spring configures tomcat-embedded to permit up to 200 worker threads.
 # Our worker threads are "heavy-duty" - and we won't survive 200 parallel requests 
 # in usual configuration environment. 
@@ -11,8 +17,8 @@ server:
 # Then we queue up more and more workers (which can't complete), eating up
 # memory. Usually, we then first die on lack of heap memory before 
 # worker throttling would kick in.
-  tomcat:
-    max-threads: 16
+#  tomcat:
+#    max-threads: 25
 
 # see also https://stackoverflow.com/a/30296748
 spring:

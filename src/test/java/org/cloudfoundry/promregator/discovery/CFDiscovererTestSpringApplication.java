@@ -6,16 +6,17 @@ import java.time.ZoneId;
 
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorMock;
-import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
-import org.cloudfoundry.promregator.messagebus.MessageBus;
+import org.cloudfoundry.promregator.lite.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.ReactiveAppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 
+@EnableConfigurationProperties(PromregatorConfiguration.class)
 @SpringBootApplication
 public class CFDiscovererTestSpringApplication {
 	
@@ -30,7 +31,6 @@ public class CFDiscovererTestSpringApplication {
 		return new ReactiveAppInstanceScanner();
 	}
 
-	
 	@Bean
 	public InternalMetrics internalMetrics() {
 		return new InternalMetrics();
@@ -45,12 +45,7 @@ public class CFDiscovererTestSpringApplication {
 	public Clock clock() {
 		return Clock.fixed(Instant.parse("2007-12-03T10:15:30.00Z"), ZoneId.of("UTC"));
 	}
-	
-	@Bean
-	public PromregatorConfiguration promregatorConfiguration() {
-		return new PromregatorConfiguration();
-	}
-	
+
 	@Bean
 	public CFMultiDiscoverer cfDiscoverer() {
 		return new CFMultiDiscoverer();

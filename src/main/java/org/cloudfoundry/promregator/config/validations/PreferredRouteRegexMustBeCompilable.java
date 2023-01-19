@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.cloudfoundry.promregator.config.PromregatorConfiguration;
-import org.cloudfoundry.promregator.config.Target;
+import org.cloudfoundry.promregator.lite.config.PromregatorConfiguration;
+import org.cloudfoundry.promregator.lite.config.CfTarget;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.slf4j.Logger;
@@ -19,7 +19,7 @@ public class PreferredRouteRegexMustBeCompilable implements ConfigurationValidat
 	public String validate(PromregatorConfiguration promregatorConfiguration) {
 		boolean failed = false;
 	
-		for (Target target : promregatorConfiguration.getTargets()) {
+		for (CfTarget target : promregatorConfiguration.getTargets()) {
 			List<String> preferredRouteRegex = target.getPreferredRouteRegex();
 			if (CollectionUtils.isEmpty(preferredRouteRegex)) {
 				continue;
