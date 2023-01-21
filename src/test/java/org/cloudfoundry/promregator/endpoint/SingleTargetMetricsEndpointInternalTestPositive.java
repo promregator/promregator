@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 public class SingleTargetMetricsEndpointInternalTestPositive extends SingleTargetMetricsEndpoint {
 
 	@Override
-	public String handleRequest(String applicationId, String instanceId, String produceTextFormat) {
+	public String handleRequest(String applicationId, String instanceId) {
 		Assertions.assertEquals("129856d2-c53b-4971-b100-4ce371b78070", applicationId);
 		Assertions.assertEquals("129856d2-c53b-4971-b100-4ce371b78070:42", instanceId);
 		
@@ -16,7 +16,7 @@ public class SingleTargetMetricsEndpointInternalTestPositive extends SingleTarge
 
 	@Test
 	void testfilterInstanceListPositive() {
-		ResponseEntity<String> result = this.getMetrics("129856d2-c53b-4971-b100-4ce371b78070", "42");  // real test: no exception is raised
+		ResponseEntity<String> result = this.getMetricsOpenMetrics100("129856d2-c53b-4971-b100-4ce371b78070", "42");  // real test: no exception is raised
 		Assertions.assertNotNull(result); // trivial assertion to ensure that unit test is providing an assertion
 	}
 

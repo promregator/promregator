@@ -43,7 +43,7 @@ public class SingleTargetMetricsEndpointTest {
 	void testGetMetrics() {
 		Assertions.assertNotNull(subject);
 		
-		String response = subject.getMetrics("faedbb0a-2273-4cb4-a659-bd31331f7daf", "0").getBody();
+		String response = subject.getMetricsOpenMetrics100("faedbb0a-2273-4cb4-a659-bd31331f7daf", "0").getBody();
 		
 		Assertions.assertNotNull(response);
 		Assertions.assertNotEquals("", response);
@@ -61,7 +61,7 @@ public class SingleTargetMetricsEndpointTest {
 		.thenReturn(MockedMetricsEndpointSpringApplication.currentPromregatorInstanceIdentifier.toString());
 
 		Assertions.assertThrows(LoopbackScrapingDetectedException.class, () -> {
-			subject.getMetrics("faedbb0a-2273-4cb4-a659-bd31331f7daf", "0");
+			subject.getMetricsOpenMetrics100("faedbb0a-2273-4cb4-a659-bd31331f7daf", "0");
 		});
 	}
 	
@@ -70,7 +70,7 @@ public class SingleTargetMetricsEndpointTest {
 		Mockito.when(MockedMetricsEndpointSpringApplication.mockedHttpServletRequest.getHeader(EndpointConstants.HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER))
 		.thenReturn(UUID.randomUUID().toString());
 		
-		ResponseEntity<String> result = subject.getMetrics("faedbb0a-2273-4cb4-a659-bd31331f7daf", "0"); // real test: no exception is raised
+		ResponseEntity<String> result = subject.getMetricsOpenMetrics100("faedbb0a-2273-4cb4-a659-bd31331f7daf", "0"); // real test: no exception is raised
 		
 		Assertions.assertNotNull(result); // trivial assertion to ensure that unit test is providing an assertion
 	}

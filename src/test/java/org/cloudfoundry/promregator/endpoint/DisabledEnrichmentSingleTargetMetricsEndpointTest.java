@@ -57,7 +57,7 @@ public class DisabledEnrichmentSingleTargetMetricsEndpointTest {
 	void testGetMetricsLabelsAreCorrectIfLabelEnrichmentIsDisabled() {
 		Assertions.assertNotNull(subject);
 		
-		String response = subject.getMetrics("faedbb0a-2273-4cb4-a659-bd31331f7daf", "0").getBody();
+		String response = subject.getMetricsOpenMetrics100("faedbb0a-2273-4cb4-a659-bd31331f7daf", "0").getBody();
 		
 		Assertions.assertNotNull(response);
 		Assertions.assertNotEquals("", response);

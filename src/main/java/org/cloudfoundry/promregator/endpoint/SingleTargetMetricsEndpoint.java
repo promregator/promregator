@@ -34,7 +34,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -132,7 +131,7 @@ public class SingleTargetMetricsEndpoint {
 		}
 	}
 	
-	protected String handleRequest(String applicationId, String instanceId, String produceTextFormat) throws ScrapingException {
+	protected String handleRequest(String applicationId, String instanceId) throws ScrapingException {
 		log.debug("Received request to a metrics endpoint");
 		Instant start = Instant.now();
 		
@@ -175,7 +174,7 @@ public class SingleTargetMetricsEndpoint {
 		// add also our own request-specific metrics
 		mmfs.merge(this.gmfspr.determineEnumerationOfMetricFamilySamples(this.requestRegistry));
 		
-		return mmfs.toMetricsString(produceTextFormat);
+		return mmfs.toMetricsString();
 	}
 
 	private MergableMetricFamilySamples waitForMetricsFetcher(Future<HashMap<String, MetricFamilySamples>> future) {
@@ -326,24 +325,7 @@ public class SingleTargetMetricsEndpoint {
 			@PathVariable String instanceNumber
 			) {
 		
-		ResponseEntity<String> precheckResults = this.performPrechecks(applicationId, instanceNumber);
-		if (precheckResults != null) {
-			return precheckResults;
-		}
-		
-		final String instanceId = String.format("%s:%s", applicationId, instanceNumber);
-		
-		String response = null;
-		try {
-			response = this.handleRequest(applicationId, instanceId, TextFormat.CONTENT_TYPE_004);
-		} catch (ScrapingException e) {
-			log.debug("ScrapingException was raised for instanceid {}", instanceId, e);
-			return new ResponseEntity<>(e.toString(), HttpStatus.NOT_FOUND);
-		}
-		
-		return ResponseEntity.ok()
-				.header(HttpHeaders.CONTENT_TYPE, TextFormat.CONTENT_TYPE_004)
-				.body(response);
+		return ResponseEntity.badRequest().body("text/plain;version=0.0.4 is no longer supported after Prometheus library simpleclient has dropped supported in version 0.10.0");
 	}
 	
 	@GetMapping(produces=TextFormat.CONTENT_TYPE_OPENMETRICS_100)
@@ -361,14 +343,13 @@ public class SingleTargetMetricsEndpoint {
 		
 		String response = null;
 		try {
-			response = this.handleRequest(applicationId, instanceId, TextFormat.CONTENT_TYPE_OPENMETRICS_100);
+			response = this.handleRequest(applicationId, instanceId);
 		} catch (ScrapingException e) {
 			log.debug("ScrapingException was raised for instanceid {}", instanceId, e);
 			return new ResponseEntity<>(e.toString(), HttpStatus.NOT_FOUND);
 		}
 		
 		return ResponseEntity.ok()
-				.header(HttpHeaders.CONTENT_TYPE, TextFormat.CONTENT_TYPE_OPENMETRICS_100)
 				.body(response);
 	}
 	

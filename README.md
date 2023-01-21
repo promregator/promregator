@@ -73,17 +73,19 @@ During the course of action, we came across several other implementation alterna
 ## Differences on Major Versions
 Promregator is currently preparing to provide a new major version. Here are the main differences from a user perspective between the two versions:
 
-| Aspect                                              | Version 1.x.x                          | Version 0.x.x                                                                               |
-|-----------------------------------------------------|----------------------------------------|---------------------------------------------------------------------------------------------|
-| Java Runtime Version                                | JRE 17 or higher                       | JRE 8 or higher                                                                             |
-| CFCC API Version                                    | V3 only                                | V2 only (special cases with V3)                                                             |
-| Classic Cache                                       | no longer supported                    | default, available in all minor versions                                                    |
-| Caffeine Cache                                      | default                                | optional, starting with 0.7.x                                                               |
-| OAuth2XSUAA Authenticator with Basic Authentication | Only `OAuth2XSUAABasic` supported | `OAuth2XSUAA` (old one) and `OAuth2XSUAABasic` supported (available since v0.10.0) |
-| Scraping Method                                     | Single Target Scraping supported       | Single Endpoint Scraping and Single Target Scraping supported                               |
-| Label Enrichment                                    | not supported                          | supported (for Single Target Scraping)                                                      |
-| Support for INFO-typed metrics                      | supported                              | not supported                                                                               |
-| Support for STATESET-typed metrics                  | supported                              | not supported                                                                               |
+| Aspect                                              | Version 1.x.x                                  | Version 0.x.x                                                                               |
+|-----------------------------------------------------|------------------------------------------------|---------------------------------------------------------------------------------------------|
+| Java Runtime Version                                | JRE 17 or higher                               | JRE 8 or higher                                                                             |
+| CFCC API Version                                    | V3 only                                        | V2 only (special cases with V3)                                                             |
+| Classic Cache                                       | no longer supported                            | default, available in all minor versions                                                    |
+| Caffeine Cache                                      | default                                        | optional, starting with 0.7.x                                                               |
+| OAuth2XSUAA Authenticator with Basic Authentication | Only `OAuth2XSUAABasic` supported         | `OAuth2XSUAA` (old one) and `OAuth2XSUAABasic` supported (available since v0.10.0) |
+| Scraping Method                                     | Single Target Scraping supported               | Single Endpoint Scraping and Single Target Scraping supported                               |
+| Label Enrichment                                    | not supported                                  | supported (for Single Target Scraping)                                                      |
+| Support for metrics formats at scraping targets     | text/plain;version=0.0.4 and OpenMetrics 1.0.0 | text/plain;version=0.0.4 only                                                               |
+| Support for INFO-typed metrics                      | supported                                      | not supported (in some cases passed-through)                                                |
+| Support for STATESET-typed metrics                  | supported                                      | not supported                                                                               |
+| Returned format to scraping callers                 | OpenMetrics 1.0.0 only                         | text/plain;version=0.0.4 only                                                               |
 
 It is recommended that you upgrade to the new major version on next occasion. 
 An upgrade guide is provided [here](docs/upgrade.md).

@@ -146,22 +146,32 @@ If you have used Single Endpoint Scraping (via `/metrics` endpoint) before, you 
 Additionally, if were using label enrichment before, you must adjust Prometheus' configuration to perform that for you. A description how that works can be found in the [document about Label Enrichment](./enrichment.md).
 
 
-## Changes to metric names of type COUNTER
+## Changes to Sample Names of Type COUNTER
 
 With [version 0.10.0](https://github.com/prometheus/client_java/blob/eb4e694b00024043f948e407510f516dea58cbc7/simpleclient_common/src/main/java/io/prometheus/client/exporter/common/TextFormat.java#L70) Prometheus' simpleclient has decided to change the way how counter-typed metrics are serialized. The metric's name automatically follows its sample's naming convention, which has a `_total` suffix attached. This leads to the fact that on the wire, instead of reading
 
 ```
 # HELP metric this is my help text
-# TYPE metric info
-metric_total 12.47 123456789012345600
+# TYPE metric counter
+metric 12.47 123456789012345600
 ```
 
 you will read
 
 ```
-# HELP metric_total this is my help text
-# TYPE metric_total info
+# HELP metric this is my help text
+# TYPE metric counter
 metric_total 12.47 123456789012345600
 ```
 Depending on how the metadata is evaluated by the consumer of Prometheus, this may or may not lead to a renaming of the metric from `metric` to `metric_total`. Check on the impact at your Prometheus' consumer.
 
+
+## Change to the OpenMetrics Format 1.0.0
+
+With [version 0.10.0](https://github.com/prometheus/client_java/blob/eb4e694b00024043f948e407510f516dea58cbc7/simpleclient_common/src/main/java/io/prometheus/client/exporter/common/TextFormat.java#L70) Prometheus' simpleclient only supports generating metricsets, which comply to the [OpenMetrics Format 1.0.0](https://github.com/OpenObservability/OpenMetrics/blob/1386544931307dff279688f332890c31b6c5de36/specification/OpenMetrics.md). This implies that Promregator cannot generate pure [Text 0.0.4 Exposition Format](https://github.com/prometheus/docs/blob/4874c371ee439b11babc13ff88ae9747e19dbd8f/content/docs/instrumenting/exposition_formats.md) responses anymore. If queried by a caller (e.g. Prometheus) for returning Text 0.0.4 Exposition Format responses, a 401 Bad Request response will be issued.
+
+That is why that you must make sure that you use Prometheus [2.5.0](https://github.com/prometheus/prometheus/blob/main/CHANGELOG.md#250--2018-11-06) or higher for scraping with Promregator. Due to some bugs in early Prometheus versions, it is recommended to upgrade Prometheus to version [2.34.0](https://github.com/prometheus/prometheus/blob/64842f137e1ae6e041e12a2707d99d6da4ba885b/CHANGELOG.md#2340--2022-03-15) or higher.
+
+*Note*: This does not also mean that all targets from where Promregator is scraping data have to support the OpenMetrics format as well! If Promregator receives a request to a target to be scraped that is able to only respond with the classic Text 0.0.4 Exposition Format, Promregator parses the old format and automatically converts its content up to the OpenMetrics Format 1.0.0.
+
+*Note*: The same also applies for Promregator's own metrics exposed to Prometheus: Also there only the OpenMetrics Format 1.0.0 is supported.

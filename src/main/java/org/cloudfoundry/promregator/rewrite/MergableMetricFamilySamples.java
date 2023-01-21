@@ -75,11 +75,11 @@ public class MergableMetricFamilySamples {
 		// NB: This is not a deep clone, but only a shallow one!
 	}
 	
-	public String toMetricsString(String contentType) {
+	public String toMetricsString() {
 		Enumeration<MetricFamilySamples> resultEMFS = this.getEnumerationMetricFamilySamples();
 		Writer writer = new StringWriter();
 		try {
-			TextFormat.writeFormat(contentType, writer, resultEMFS);
+			TextFormat.writeFormat(TextFormat.CONTENT_TYPE_OPENMETRICS_100, writer, resultEMFS);
 		} catch (IOException e) {
 			log.error("IO Exception on StringWriter; uuuhhh...", e);
 		}

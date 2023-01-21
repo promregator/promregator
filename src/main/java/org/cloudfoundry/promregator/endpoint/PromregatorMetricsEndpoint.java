@@ -6,7 +6,6 @@ import org.cloudfoundry.promregator.rewrite.GenericMetricFamilySamplesPrefixRewr
 import org.cloudfoundry.promregator.rewrite.MergableMetricFamilySamples;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,13 +26,8 @@ public class PromregatorMetricsEndpoint {
 	private GenericMetricFamilySamplesPrefixRewriter gmfspr = new GenericMetricFamilySamplesPrefixRewriter("promregator");
 
 	@GetMapping(produces = TextFormat.CONTENT_TYPE_004)
-	public String getMetrics004() {
-		HashMap<String, MetricFamilySamples> mfsMap = this.gmfspr.determineEnumerationOfMetricFamilySamples(this.collectorRegistry);
-
-		MergableMetricFamilySamples mmfs = new MergableMetricFamilySamples();
-		mmfs.merge(mfsMap);
-		
-		return mmfs.toMetricsString(TextFormat.CONTENT_TYPE_004);
+	public ResponseEntity<String> getMetrics004() {
+		return ResponseEntity.badRequest().body("text/plain;version=0.0.4 is no longer supported after Prometheus library simpleclient has dropped supported in version 0.10.0");
 	}
 	
 	@GetMapping(produces = TextFormat.CONTENT_TYPE_OPENMETRICS_100)
@@ -43,7 +37,7 @@ public class PromregatorMetricsEndpoint {
 		MergableMetricFamilySamples mmfs = new MergableMetricFamilySamples();
 		mmfs.merge(mfsMap);
 		
-		return mmfs.toMetricsString(TextFormat.CONTENT_TYPE_OPENMETRICS_100);
+		return mmfs.toMetricsString();
 	}
 	
 	@GetMapping
@@ -52,7 +46,6 @@ public class PromregatorMetricsEndpoint {
 	 * then we fall back to the classic response.
 	 */
 	public ResponseEntity<String> getMetricsUnspecified() {
-		// Note, we are missing the "produces" attribute of the annotation here! So we have to specify the Content-Type ourselves.
-		return ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, TextFormat.CONTENT_TYPE_004).body(this.getMetrics004());
+		return this.getMetrics004();
 	}
 }
