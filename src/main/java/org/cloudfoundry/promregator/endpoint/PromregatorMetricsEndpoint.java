@@ -1,9 +1,14 @@
 package org.cloudfoundry.promregator.endpoint;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.Collections;
 import java.util.HashMap;
 
 import org.cloudfoundry.promregator.rewrite.GenericMetricFamilySamplesPrefixRewriter;
-import org.cloudfoundry.promregator.rewrite.MergableMetricFamilySamples;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +25,8 @@ import io.prometheus.client.exporter.common.TextFormat;
 @RequestMapping(EndpointConstants.ENDPOINT_PATH_PROMREGATOR_METRICS)
 @Scope(value = WebApplicationContext.SCOPE_REQUEST)
 public class PromregatorMetricsEndpoint {
+	private static final Logger log = LoggerFactory.getLogger(PromregatorMetricsEndpoint.class);
+	
 	@Autowired
 	private CollectorRegistry collectorRegistry;
 
@@ -34,10 +41,15 @@ public class PromregatorMetricsEndpoint {
 	public String getMetricsOpenMetrics100() {
 		HashMap<String, MetricFamilySamples> mfsMap = this.gmfspr.determineEnumerationOfMetricFamilySamples(this.collectorRegistry);
 
-		MergableMetricFamilySamples mmfs = new MergableMetricFamilySamples();
-		mmfs.merge(mfsMap);
+		Writer writer = new StringWriter();
+		try {
+			TextFormat.writeFormat(TextFormat.CONTENT_TYPE_OPENMETRICS_100, writer, Collections.enumeration(mfsMap.values()));
+		} catch (IOException e) {
+			log.error("Internal error on writing Promregator metrics",  e);
+			return null;
+		}
 		
-		return mmfs.toMetricsString();
+		return writer.toString();
 	}
 	
 	@GetMapping

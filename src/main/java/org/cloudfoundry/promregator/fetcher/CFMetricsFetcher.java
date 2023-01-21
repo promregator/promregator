@@ -2,7 +2,6 @@ package org.cloudfoundry.promregator.fetcher;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
-import java.util.HashMap;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -21,12 +20,10 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.endpoint.EndpointConstants;
-import org.cloudfoundry.promregator.textformat004.Parser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 
-import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.Histogram.Timer;
 import io.prometheus.client.exporter.common.TextFormat;
@@ -97,10 +94,9 @@ public class CFMetricsFetcher implements MetricsFetcher {
 		this.config = requestConfigBuilder.build();
 	}
 
-	private record FetchResult(String data, String contentType) {};
 	
 	@Override
-	public HashMap<String, MetricFamilySamples> call() throws Exception {
+	public FetchResult call() throws Exception {
 		log.debug("Reading metrics from {} for instance {}", this.endpointUrl, this.instanceId);
 		
 		HttpGet httpget = setupRequest();
@@ -113,13 +109,10 @@ public class CFMetricsFetcher implements MetricsFetcher {
 		log.debug("Successfully received metrics from {} for instance {}", this.endpointUrl, this.instanceId);
 		
 		if (this.mfm.getRequestSize() != null) {
-			this.mfm.getRequestSize().observe(result.data.length());
+			this.mfm.getRequestSize().observe(result.data().length());
 		}
 		
-		Parser parser = new Parser(result.data);
-		HashMap<String, MetricFamilySamples> emfs = parser.parse();
-		
-		return emfs;
+		return result;
 	}
 
 	private HttpGet setupRequest() {

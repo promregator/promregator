@@ -1,7 +1,11 @@
 package org.cloudfoundry.promregator.endpoint;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -20,13 +24,13 @@ import org.cloudfoundry.promregator.auth.AuthenticatorController;
 import org.cloudfoundry.promregator.discovery.CFMultiDiscoverer;
 import org.cloudfoundry.promregator.fetcher.CFMetricsFetcher;
 import org.cloudfoundry.promregator.fetcher.CFMetricsFetcherConfig;
+import org.cloudfoundry.promregator.fetcher.FetchResult;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcher;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcherMetrics;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcherSimulator;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.GenericMetricFamilySamplesPrefixRewriter;
-import org.cloudfoundry.promregator.rewrite.MergableMetricFamilySamples;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
 import org.slf4j.Logger;
@@ -34,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -131,7 +136,7 @@ public class SingleTargetMetricsEndpoint {
 		}
 	}
 	
-	protected String handleRequest(String applicationId, String instanceId) throws ScrapingException {
+	private FetchResult handleRequest(String applicationId, String instanceId) throws ScrapingException {
 		log.debug("Received request to a metrics endpoint");
 		Instant start = Instant.now();
 		
@@ -154,9 +159,13 @@ public class SingleTargetMetricsEndpoint {
 			throw new ScrapingException("Unable to create MetricsFetcher");
 		}
 		
-		Future<HashMap<String, MetricFamilySamples>> future = this.metricsFetcherPool.submit(mf);
+		Future<FetchResult> future = this.metricsFetcherPool.submit(mf);
 		
-		MergableMetricFamilySamples mmfs = waitForMetricsFetcher(future);
+		FetchResult fetchResult = waitForMetricsFetcher(future);
+		
+		if (fetchResult == null) {
+			fetchResult = new FetchResult("", TextFormat.CONTENT_TYPE_OPENMETRICS_100);
+		}
 		
 		Instant stop = Instant.now();
 		Duration duration = Duration.between(start, stop);
@@ -165,31 +174,25 @@ public class SingleTargetMetricsEndpoint {
 		 * Note: The scrape_duration_seconds metric is being passed on to Prometheus with
 		 * the normal scraping request.
 		 */
-		
 		Gauge scrapeDuration = Gauge.build("promregator_scrape_duration_seconds", "Duration in seconds indicating how long scraping of all metrics took")
 				.register(requestRegistry);
 		
 		scrapeDuration.set(duration.toMillis() / 1000.0);
 		
 		// add also our own request-specific metrics
-		mmfs.merge(this.gmfspr.determineEnumerationOfMetricFamilySamples(this.requestRegistry));
+		final String enrichedMetricsSet = this.mergeInternalMetricsWithFetchResult(fetchResult, applicationId, instanceId);
 		
-		return mmfs.toMetricsString();
+		return new FetchResult(enrichedMetricsSet, fetchResult.contentType());
 	}
 
-	private MergableMetricFamilySamples waitForMetricsFetcher(Future<HashMap<String, MetricFamilySamples>> future) {
+	private FetchResult waitForMetricsFetcher(Future<FetchResult> future) {
 		final long starttime = System.currentTimeMillis();
-		
-		MergableMetricFamilySamples mmfs = new MergableMetricFamilySamples();
 		
 		final long maxWaitTime = starttime + this.maxProcessingTime - System.currentTimeMillis();
 
 		try {
-			HashMap<String, MetricFamilySamples> emfs = future.get(maxWaitTime, TimeUnit.MILLISECONDS);
-			
-			if (emfs != null) {
-				mmfs.merge(emfs);
-			}
+			FetchResult fetchResult = future.get(maxWaitTime, TimeUnit.MILLISECONDS);
+			return fetchResult;
 		} catch (InterruptedException e) {
 			log.warn("Interrupted unexpectedly", e);
 			Thread.currentThread().interrupt();
@@ -202,8 +205,7 @@ public class SingleTargetMetricsEndpoint {
 					+ "but mind the implications. See also https://github.com/promregator/promregator/wiki/Handling-Timeouts-on-Scraping");
 			// continue not necessary here - other's shall and are still processed
 		}
-		
-		return mmfs;
+		return null;
 	}
 
 	protected MetricsFetcher createMetricsFetcher(final Instance instance) {
@@ -254,6 +256,37 @@ public class SingleTargetMetricsEndpoint {
 		
 		return mf;
 	}
+	
+	private String mergeInternalMetricsWithFetchResult(FetchResult fetchResult, String applicationId, String instanceId) {
+		final String fetchData = fetchResult.data();
+		
+		HashMap<String, MetricFamilySamples> mapMFS = this.gmfspr.determineEnumerationOfMetricFamilySamples(this.requestRegistry);
+		
+		for (String metricName : mapMFS.keySet()) {
+			Pattern pType = Pattern.compile(String.format("^# TYPE +%s +", metricName));
+			if (pType.matcher(fetchData).find()) {
+				log.warn("Instance {} of application {} emitted a metric {}, which is reserved by Promregator. Skipping adding Promregator's metrics", instanceId, applicationId, metricName);
+				return fetchData;
+			}
+			
+			Pattern pMetric = Pattern.compile(String.format("^%s *\\{", metricName));
+			if (pMetric.matcher(fetchData).find()) {
+				log.warn("Instance {} of application {} emitted a sample with name {}, which is reserved by Promregator. Skipping adding Promregator's metrics", instanceId, applicationId, metricName);
+				return fetchData;
+			}
+		}
+		
+		Writer writer = new StringWriter();
+		try {
+			TextFormat.writeFormat(fetchResult.contentType(), writer, Collections.enumeration(mapMFS.values()));
+		} catch (IOException e) {
+			log.error("Internal error on writing internal metrics for instance {} of application {}", instanceId, applicationId, e);
+			return fetchData;
+		}
+		
+		return fetchResult.data()+"\n"+writer.toString();
+	}
+
 	
 	private String[] determineOwnTelemetryLabelValues(String orgName, String spaceName, String appName, String instanceId) {
 		AbstractMetricFamilySamplesEnricher mfse = new CFAllLabelsMetricFamilySamplesEnricher(orgName, spaceName, appName, instanceId);
@@ -319,17 +352,8 @@ public class SingleTargetMetricsEndpoint {
 		return null;
 	}
 	
-	@GetMapping(produces=TextFormat.CONTENT_TYPE_004)
-	public ResponseEntity<String> getMetricsText004(
-			@PathVariable String applicationId,
-			@PathVariable String instanceNumber
-			) {
-		
-		return ResponseEntity.badRequest().body("text/plain;version=0.0.4 is no longer supported after Prometheus library simpleclient has dropped supported in version 0.10.0");
-	}
-	
-	@GetMapping(produces=TextFormat.CONTENT_TYPE_OPENMETRICS_100)
-	public ResponseEntity<String> getMetricsOpenMetrics100(
+	@GetMapping
+	public ResponseEntity<String> getMetrics(
 			@PathVariable String applicationId,
 			@PathVariable String instanceNumber
 			) {
@@ -341,7 +365,7 @@ public class SingleTargetMetricsEndpoint {
 		
 		final String instanceId = String.format("%s:%s", applicationId, instanceNumber);
 		
-		String response = null;
+		FetchResult response = null;
 		try {
 			response = this.handleRequest(applicationId, instanceId);
 		} catch (ScrapingException e) {
@@ -350,16 +374,7 @@ public class SingleTargetMetricsEndpoint {
 		}
 		
 		return ResponseEntity.ok()
-				.body(response);
-	}
-	
-	@GetMapping
-	/* 
-	 * Fallback case for compatibility: if no "Accept" header is specified or "Accept: * /*",
-	 * then we fall back to the classic response.
-	 */
-	public ResponseEntity<String> getMetrics(@PathVariable String applicationId,
-			@PathVariable String instanceNumber) {
-		return this.getMetricsText004(applicationId, instanceNumber);
+				.header(HttpHeaders.CONTENT_TYPE, response.contentType())
+				.body(response.data());
 	}
 }
