@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
 
+import io.prometheus.client.exporter.common.TextFormat;
+
 public class SingleTargetMetricsEndpointInternalTestPositive extends SingleTargetMetricsEndpoint {
 
 	@Override
@@ -12,7 +14,7 @@ public class SingleTargetMetricsEndpointInternalTestPositive extends SingleTarge
 		Assertions.assertEquals("129856d2-c53b-4971-b100-4ce371b78070", applicationId);
 		Assertions.assertEquals("129856d2-c53b-4971-b100-4ce371b78070:42", instanceId);
 		
-		return null;
+		return new FetchResult("", TextFormat.CONTENT_TYPE_OPENMETRICS_100);
 	}
 
 	@Test
