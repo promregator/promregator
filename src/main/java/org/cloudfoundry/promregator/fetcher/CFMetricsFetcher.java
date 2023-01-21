@@ -21,6 +21,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.endpoint.EndpointConstants;
+import org.cloudfoundry.promregator.textformat004.ParseMode;
 import org.cloudfoundry.promregator.textformat004.Parser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,13 +98,15 @@ public class CFMetricsFetcher implements MetricsFetcher {
 		this.config = requestConfigBuilder.build();
 	}
 
+	private record FetchResult(String data, String contentType) {};
+	
 	@Override
 	public HashMap<String, MetricFamilySamples> call() throws Exception {
 		log.debug("Reading metrics from {} for instance {}", this.endpointUrl, this.instanceId);
 		
 		HttpGet httpget = setupRequest();
 
-		String result = performRequest(httpget);
+		FetchResult result = performRequest(httpget);
 		if (result == null) {
 			return null;
 		}
@@ -111,10 +114,22 @@ public class CFMetricsFetcher implements MetricsFetcher {
 		log.debug("Successfully received metrics from {} for instance {}", this.endpointUrl, this.instanceId);
 		
 		if (this.mfm.getRequestSize() != null) {
-			this.mfm.getRequestSize().observe(result.length());
+			this.mfm.getRequestSize().observe(result.data.length());
 		}
 		
-		Parser parser = new Parser(result);
+		final ParseMode parseMode;
+		switch (result.contentType) {
+		case TextFormat.CONTENT_TYPE_004:
+			parseMode = ParseMode.CLASSIC_TEXT_004;
+			break;
+		case TextFormat.CONTENT_TYPE_OPENMETRICS_100:
+			parseMode = ParseMode.OPENMETRICS_100;
+			break;
+		default:
+			throw new Error(String.format("Internal state failure on determining parseMode; should not have been reached: %s", result.contentType));
+		}
+		
+		Parser parser = new Parser(result.data, parseMode);
 		HashMap<String, MetricFamilySamples> emfs = parser.parse();
 		
 		return emfs;
@@ -143,7 +158,7 @@ public class CFMetricsFetcher implements MetricsFetcher {
 		return httpget;
 	}
 	
-	private String performRequest(HttpGet httpget) {
+	private FetchResult performRequest(HttpGet httpget) {
 		CloseableHttpResponse response = null;
 		
 		Timer timer = null;
@@ -153,7 +168,7 @@ public class CFMetricsFetcher implements MetricsFetcher {
 		
 		boolean available = false;
 		
-		String result = null;
+		FetchResult result = null;
 		try {
 			@SuppressWarnings("resource") // there is no closing necessary here - we are just choosing the "right" client here.
 			final CloseableHttpClient httpClient = this.localHttpClient != null ? this.localHttpClient : globalHttpclient;
@@ -170,7 +185,7 @@ public class CFMetricsFetcher implements MetricsFetcher {
 				return null;
 			}
 			
-			result = EntityUtils.toString(response.getEntity());
+			result = new FetchResult(EntityUtils.toString(response.getEntity()), contentType);
 			available = true;
 		} catch (HttpHostConnectException hhce) {
 			log.warn("Unable to connect to server trying to fetch metrics from {}, instance {}", this.endpointUrl, this.instanceId, hhce);

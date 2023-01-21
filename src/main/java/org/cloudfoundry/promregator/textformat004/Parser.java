@@ -23,15 +23,9 @@ import io.prometheus.client.Collector.Type;
 public class Parser {
 	private static final Logger log = LoggerFactory.getLogger(Parser.class);
 	
-	private String textFormat004data;
-	
-	private HashMap<String, String> mapHelps = new HashMap<>();
-	private HashMap<String, Collector.Type> mapTypes = new HashMap<>();
-	
-	private HashMap<String, Collector.MetricFamilySamples> mapMFS = new HashMap<>();
-	
 	private static final Pattern PATTERN_HELP = Pattern.compile("^#[ \t]+HELP[ \t]+");
 	private static final Pattern PATTERN_TYPE = Pattern.compile("^#[ \t]+TYPE[ \t]+");
+	// TODO UNIT support still missing
 	private static final Pattern PATTERN_COMMENT = Pattern.compile("^#");
 	private static final Pattern PATTERN_EMPTYLINE = Pattern.compile("^[ \t]*$");
 	
@@ -55,15 +49,38 @@ public class Parser {
 	
 	private static final Pattern PATTERN_TOTAL_SUFFIX = Pattern.compile(".*_total$");
 	private static final Pattern PATTERN_INFO_SUFFIX = Pattern.compile(".*_info$");
+
+	/*
+	 * For a list of reserved suffixes, see also 
+	 * https://github.com/OpenObservability/OpenMetrics/blob/1386544931307dff279688f332890c31b6c5de36/specification/OpenMetrics.md#suffixes
+	 */
+	private static List<String> RESERVED_SUFFIXES = List.of("_total", "_created", "_count", 
+			"_sum", "_bucket", "_gcount", "_gsum", "_info", 
+			"_max" /* provided as additional metric by micrometer */
+			);
 	
-	public Parser(String textFormat004data) {
-		this.textFormat004data = textFormat004data;
+	private String metricSetData;
+	
+	private HashMap<String, String> mapHelps = new HashMap<>();
+	private HashMap<String, Collector.Type> mapTypes = new HashMap<>();
+	
+	private HashMap<String, Collector.MetricFamilySamples> mapMFS = new HashMap<>();
+
+	private ParseMode parseMode;
+	
+	public Parser(String metricSetData, ParseMode parseMode) {
+		this.metricSetData = metricSetData;
+		this.parseMode = parseMode;
+	}
+	
+	public Parser(String metricSetData) {
+		this(metricSetData, ParseMode.CLASSIC_TEXT_004);
 	}
 	
 	public HashMap<String, Collector.MetricFamilySamples> parse() {
 		this.reset();
 		
-		StringTokenizer lines = new StringTokenizer(this.textFormat004data, "\n");
+		StringTokenizer lines = new StringTokenizer(this.metricSetData, "\n");
 		
 		while(lines.hasMoreTokens()) {
 			String line = lines.nextToken();
@@ -85,7 +102,10 @@ public class Parser {
 			this.parseMetric(line);
 		}
 		
-		this.postProcessSpecialTypes();
+		if (this.parseMode == ParseMode.CLASSIC_TEXT_004) {
+			// we need to fix some things, which the simpleclient library broke with version 0.11.0...
+			this.postProcessSpecialTypes();
+		}
 		
 		return this.mapMFS;
 	}
@@ -185,15 +205,10 @@ public class Parser {
 	}
 
 	private static String determineBaseMetricName(String metricName) {
-		if (metricName.endsWith("_bucket")) {
-			return metricName.substring(0, metricName.length()-7);
-		} else if (metricName.endsWith("_sum")) {
-			return metricName.substring(0, metricName.length()-4);
-		} else if (metricName.endsWith("_count")) {
-			return metricName.substring(0, metricName.length()-6);
-		} else if (metricName.endsWith("_max")) {
-			// provided as additional metric by micrometer
-			return metricName.substring(0, metricName.length()-4);
+		for (String suffix : RESERVED_SUFFIXES) {
+			if (metricName.endsWith(suffix)) {
+				return metricName.substring(0, metricName.length()-suffix.length());
+			}
 		}
 		
 		return metricName;
