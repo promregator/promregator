@@ -176,6 +176,7 @@ public class SingleTargetMetricsEndpoint {
 		 * the normal scraping request.
 		 */
 		Gauge scrapeDuration = Gauge.build("promregator_scrape_duration_seconds", "Duration in seconds indicating how long scraping of all metrics took")
+				.unit("seconds")
 				.register(requestRegistry);
 		
 		scrapeDuration.set(duration.toMillis() / 1000.0);

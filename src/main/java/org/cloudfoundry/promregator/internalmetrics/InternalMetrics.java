@@ -72,7 +72,10 @@ public class InternalMetrics {
 			return;
 		
 		this.latencyCFFetch = Histogram.build("promregator_cffetch_latency", "Latency on retrieving CF values")
-				.labelNames("request_type").linearBuckets(0.1, 0.1, 50).register();
+				.unit("seconds")
+				.labelNames("request_type")
+				.linearBuckets(0.1, 0.1, 50)
+				.register();
 		
 		this.connectionWatchdogReconnects = Counter.build("promregator_connection_watchdog_reconnect", "The number of reconnection attempts made by the Connection Watchdog")
 				.register();
@@ -80,7 +83,10 @@ public class InternalMetrics {
 		this.caffeineCacheMetricsCollector = new CacheMetricsCollector().register();
 		
 		this.rateLimitWaitTime = Histogram.build("promregator_cffetch_ratelimit_waittime", "Wait time due to CFCC rate limiting")
-				.labelNames("request_type").linearBuckets(0.0, 0.05, 50).register();
+				.unit("seconds")
+				.labelNames("request_type")
+				.linearBuckets(0.0, 0.05, 50)
+				.register();
 		
 		CollectorRegistry.defaultRegistry.register(new InternalCollector());
 	}
