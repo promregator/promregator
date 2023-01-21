@@ -21,7 +21,6 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.endpoint.EndpointConstants;
-import org.cloudfoundry.promregator.textformat004.ParseMode;
 import org.cloudfoundry.promregator.textformat004.Parser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -117,19 +116,7 @@ public class CFMetricsFetcher implements MetricsFetcher {
 			this.mfm.getRequestSize().observe(result.data.length());
 		}
 		
-		final ParseMode parseMode;
-		switch (result.contentType) {
-		case TextFormat.CONTENT_TYPE_004:
-			parseMode = ParseMode.CLASSIC_TEXT_004;
-			break;
-		case TextFormat.CONTENT_TYPE_OPENMETRICS_100:
-			parseMode = ParseMode.OPENMETRICS_100;
-			break;
-		default:
-			throw new Error(String.format("Internal state failure on determining parseMode; should not have been reached: %s", result.contentType));
-		}
-		
-		Parser parser = new Parser(result.data, parseMode);
+		Parser parser = new Parser(result.data);
 		HashMap<String, MetricFamilySamples> emfs = parser.parse();
 		
 		return emfs;

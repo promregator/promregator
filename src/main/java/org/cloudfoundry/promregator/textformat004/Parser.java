@@ -3,7 +3,6 @@ package org.cloudfoundry.promregator.textformat004;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -47,9 +46,6 @@ public class Parser {
 	
 	private static final Pattern PATTERN_PARSE_TYPE = Pattern.compile("^#[ \t]+TYPE[ \t]+([a-zA-Z0-9:_\\\"]+)[ \\t]+([a-zA-Z]*)$");
 	
-	private static final Pattern PATTERN_TOTAL_SUFFIX = Pattern.compile(".*_total$");
-	private static final Pattern PATTERN_INFO_SUFFIX = Pattern.compile(".*_info$");
-
 	/*
 	 * For a list of reserved suffixes, see also 
 	 * https://github.com/OpenObservability/OpenMetrics/blob/1386544931307dff279688f332890c31b6c5de36/specification/OpenMetrics.md#suffixes
@@ -65,16 +61,9 @@ public class Parser {
 	private HashMap<String, Collector.Type> mapTypes = new HashMap<>();
 	
 	private HashMap<String, Collector.MetricFamilySamples> mapMFS = new HashMap<>();
-
-	private ParseMode parseMode;
-	
-	public Parser(String metricSetData, ParseMode parseMode) {
-		this.metricSetData = metricSetData;
-		this.parseMode = parseMode;
-	}
 	
 	public Parser(String metricSetData) {
-		this(metricSetData, ParseMode.CLASSIC_TEXT_004);
+		this.metricSetData = metricSetData;
 	}
 	
 	public HashMap<String, Collector.MetricFamilySamples> parse() {
@@ -100,11 +89,6 @@ public class Parser {
 			
 			// we need to assume that this is a metric line
 			this.parseMetric(line);
-		}
-		
-		if (this.parseMode == ParseMode.CLASSIC_TEXT_004) {
-			// we need to fix some things, which the simpleclient library broke with version 0.11.0...
-			this.postProcessSpecialTypes();
 		}
 		
 		return this.mapMFS;
@@ -275,71 +259,6 @@ public class Parser {
 	private boolean isEmptyLine(String line) {
 		return PATTERN_EMPTYLINE.matcher(line).find();
 	}
-	
-	private void postProcessSpecialTypes() {
-		/*
-		 * Newer versions of the format automatically generate
-		 * "_total" suffixes to COUNTER-typed metrics. Note that we will
-		 * have to deal with both types of input data properly.
-		 * The metric still internally is called with its base name only.
-		 * 
-		 * The same also applies to INFO-typed metrics, which may have
-		 * a "_info" suffix at the end.
-		 * 
-		 * Note that this only applies to the metric's name - the sample's
-		 * name are still kept *with* the suffix!
-		 */
-		
-		
-		// handling of COUNTER-typed metrics
-		final List<String> keysToChangeCounter = this.mapTypes.entrySet().stream()
-			.filter(e -> e.getValue() == Type.COUNTER)
-			.map(Entry::getKey)
-			.filter(k -> PATTERN_TOTAL_SUFFIX.matcher(k).matches())
-			.toList();
-
-		keysToChangeCounter.forEach(key -> {
-			final String keyStripped = key.substring(0, key.length() - "_total".length());
-			
-			final String help = this.mapHelps.get(key);
-			this.mapHelps.put(keyStripped, help);
-			this.mapHelps.remove(key);
-			
-			Type type = this.mapTypes.get(key);
-			this.mapTypes.put(keyStripped, type);
-			this.mapTypes.remove(key);
-			
-			MetricFamilySamples mfsOld = this.mapMFS.get(key);
-			this.mapMFS.put(keyStripped, new MetricFamilySamples(keyStripped, mfsOld.unit, mfsOld.type, mfsOld.help, mfsOld.samples));
-			this.mapMFS.remove(key);
-			// no need to dig into the sample's name in variable mfs
-		});
-		
-		// handling of INFO-typed metrics
-		final List<String> keysToChangeInfo = this.mapTypes.entrySet().stream()
-			.filter(e -> e.getValue() == Type.INFO)
-			.map(Entry::getKey)
-			.filter(k -> PATTERN_INFO_SUFFIX.matcher(k).matches())
-			.toList();
-
-		keysToChangeInfo.forEach(key -> {
-			final String keyStripped = key.substring(0, key.length() - "_info".length());
-			
-			final String help = this.mapHelps.get(key);
-			this.mapHelps.put(keyStripped, help);
-			this.mapHelps.remove(key);
-			
-			Type type = this.mapTypes.get(key);
-			this.mapTypes.put(keyStripped, type);
-			this.mapTypes.remove(key);
-			
-			MetricFamilySamples mfsOld = this.mapMFS.get(key);
-			this.mapMFS.put(keyStripped, new MetricFamilySamples(keyStripped, mfsOld.unit, mfsOld.type, mfsOld.help, mfsOld.samples));
-			this.mapMFS.remove(key);
-			// no need to dig into the sample's name in variable mfs
-		});
-	}
-
 	
 	private String unescapeDocString(String s) {
 		if (s == null)
