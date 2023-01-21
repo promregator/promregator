@@ -43,7 +43,7 @@ public class CFMetricsFetcher implements MetricsFetcher {
 
 	private static final Logger log = LoggerFactory.getLogger(CFMetricsFetcher.class);
 	
-	private static final Pattern CONTENT_TYPE_OPENMETRIC_100 = Pattern.compile("^application/openmetrics-text; *version=1.[0-9]+.[0-9]+; *charset=utf-8");
+	private static final Pattern CONTENT_TYPE_OPENMETRIC_100 = Pattern.compile("^application/openmetrics-text; *version=1.[0-9]++.[0-9]++; *charset=utf-8");
 	private static final Pattern CONTENT_TYPE_TEXT_004 = Pattern.compile("^text/plain; *version=0.0.4; *charset=utf-8");
 	
 	private String endpointUrl;
