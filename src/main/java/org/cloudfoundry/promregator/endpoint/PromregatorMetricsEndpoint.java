@@ -9,7 +9,6 @@ import java.util.HashMap;
 import org.cloudfoundry.promregator.rewrite.GenericMetricFamilySamplesPrefixRewriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,9 +26,6 @@ import io.prometheus.client.exporter.common.TextFormat;
 public class PromregatorMetricsEndpoint {
 	private static final Logger log = LoggerFactory.getLogger(PromregatorMetricsEndpoint.class);
 	
-	@Autowired
-	private CollectorRegistry collectorRegistry;
-
 	private GenericMetricFamilySamplesPrefixRewriter gmfspr = new GenericMetricFamilySamplesPrefixRewriter("promregator");
 
 	@GetMapping(produces = TextFormat.CONTENT_TYPE_004)
@@ -38,8 +34,8 @@ public class PromregatorMetricsEndpoint {
 	}
 	
 	@GetMapping(produces = TextFormat.CONTENT_TYPE_OPENMETRICS_100)
-	public String getMetricsOpenMetrics100() {
-		HashMap<String, MetricFamilySamples> mfsMap = this.gmfspr.determineEnumerationOfMetricFamilySamples(this.collectorRegistry);
+	public String getMetricsOpenMetrics100(CollectorRegistry collectorRegistry) {
+		HashMap<String, MetricFamilySamples> mfsMap = this.gmfspr.determineEnumerationOfMetricFamilySamples(collectorRegistry);
 
 		Writer writer = new StringWriter();
 		try {
