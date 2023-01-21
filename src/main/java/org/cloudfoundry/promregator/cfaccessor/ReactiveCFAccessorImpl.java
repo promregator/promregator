@@ -9,8 +9,7 @@ import java.util.regex.Pattern;
 import javax.annotation.PostConstruct;
 
 import org.apache.http.conn.util.InetAddressUtils;
-import org.cloudfoundry.client.v2.info.GetInfoRequest;
-import org.cloudfoundry.client.v2.info.GetInfoResponse;
+import org.apache.logging.log4j.util.Strings;
 import org.cloudfoundry.client.v3.Pagination;
 import org.cloudfoundry.client.v3.applications.ApplicationResource;
 import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
@@ -19,6 +18,7 @@ import org.cloudfoundry.client.v3.processes.ListProcessesRequest;
 import org.cloudfoundry.client.v3.processes.ListProcessesResponse;
 import org.cloudfoundry.client.v3.routes.ListRoutesRequest;
 import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
+import org.cloudfoundry.promregator.cfaccessor.client.InfoV3;
 import org.cloudfoundry.promregator.cfaccessor.client.ReactorInfoV3;
 import org.cloudfoundry.promregator.config.ConfigurationException;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
@@ -33,9 +33,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 
 import reactor.core.publisher.Mono;
 
@@ -98,9 +95,6 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 
 	@Value("${promregator.internal.preCheckAPIVersion:true}")
 	private boolean performPrecheckOfAPIVersion;
-
-	@Value("${promregator.internal.checkAPIVersion3:true}")
-	private boolean performAPIVersion3Check;
 	
 	@Value("${cf.request.rateLimit:0}") 
 	private double requestRateLimit;
@@ -193,36 +187,13 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	private void constructCloudFoundryClient() {
 		this.reset();
 		
-		if (this.performPrecheckOfAPIVersion) {
-			GetInfoRequest request = GetInfoRequest.builder().build();
-			GetInfoResponse getInfo = this.cloudFoundryClient.info().get(request).block();
-			// NB: This also ensures that the connection has been established properly...
-			
-			if (getInfo == null) {
-				log.warn("unable to get info endpoint of CF platform");
-				return;
-			} 
-
-			String apiVersion = getInfo.getApiVersion();
-			if (apiVersion == null) {
-				log.warn("Target CF Platform did not provide a proper API version");
-				return;
-			}
-			
-			log.info("Target CF platform is running on API version {}", apiVersion);
+		String rootV3EndpointURL = this.cloudFoundryClient.getRootV3().block();
+		if (Strings.isEmpty(rootV3EndpointURL)) {
+			log.error("Unable to get v3 info endpoint of CF platform. This version requires that CF API V3 is supported");
+			throw new UnsupportedOperationException("CF API V3 is not supported");
 		}
-
-		if (this.performAPIVersion3Check) {
-			// Ensures v3 API exists. The CF Java Client does not yet implement the info endpoint for V3, so we do it manually.
-			JsonNode v3Info = new ReactorInfoV3(this.cloudFoundryClient.getConnectionContext(), this.cloudFoundryClient.getRootV3(),
-												this.cloudFoundryClient.getTokenProvider(), this.cloudFoundryClient.getRequestTags())
-				.get().onErrorReturn(JsonNodeFactory.instance.nullNode()).block();
-	
-			if (v3Info == null || v3Info.isNull()) {
-				log.error("Unable to get v3 info endpoint of CF platform. This version requires that CF API V3 is supported");
-				throw new UnsupportedOperationException("CF API V3 is not supported");
-			}
-		}
+		
+		log.info("Using Cloud Controller API V3 at {}", rootV3EndpointURL);
 	}
 
 	@Override
@@ -262,11 +233,12 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 				Duration.ofMillis(this.backoffDelay));
 	}
 
-	private static final GetInfoRequest DUMMY_GET_INFO_REQUEST = GetInfoRequest.builder().build();
-	
 	@Override
-	public Mono<GetInfoResponse> getInfo() {
-		return this.cloudFoundryClient.info().get(DUMMY_GET_INFO_REQUEST);
+	public Mono<InfoV3> getInfo() {
+		ReactorInfoV3 reactorInfoV3 = new ReactorInfoV3(this.cloudFoundryClient.getConnectionContext(), this.cloudFoundryClient.getRootV3(), 
+				this.cloudFoundryClient.getTokenProvider(), this.cloudFoundryClient.getRequestTags());
+		
+		return reactorInfoV3.get();
 	}
 
 	@Override

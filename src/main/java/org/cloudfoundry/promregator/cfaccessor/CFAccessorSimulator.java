@@ -8,7 +8,6 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 
-import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v3.BuildpackData;
 import org.cloudfoundry.client.v3.Lifecycle;
 import org.cloudfoundry.client.v3.LifecycleType;
@@ -35,6 +34,7 @@ import org.cloudfoundry.client.v3.routes.RouteRelationships;
 import org.cloudfoundry.client.v3.routes.RouteResource;
 import org.cloudfoundry.client.v3.spaces.ListSpacesResponse;
 import org.cloudfoundry.client.v3.spaces.SpaceResource;
+import org.cloudfoundry.promregator.cfaccessor.client.InfoV3;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,14 +72,10 @@ public class CFAccessorSimulator implements CFAccessor {
 	}
 
 	@Override
-	public Mono<GetInfoResponse> getInfo() {
-		GetInfoResponse data = GetInfoResponse.builder()
-				.description("CFSimulator")
-				.name("CFSimulator")
-				.version(1)
-				.build();
-		
-		return Mono.just(data);
+	public Mono<InfoV3> getInfo() {
+		InfoV3 info = new InfoV3();
+		info.setBuild("CFSimulator");
+		return Mono.just(info);
 	}
 	
 	@Override

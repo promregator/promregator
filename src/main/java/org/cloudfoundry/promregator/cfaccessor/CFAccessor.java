@@ -2,18 +2,18 @@ package org.cloudfoundry.promregator.cfaccessor;
 
 import java.util.Set;
 
-import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse;
 import org.cloudfoundry.client.v3.processes.ListProcessesResponse;
 import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
 import org.cloudfoundry.client.v3.spaces.ListSpacesResponse;
+import org.cloudfoundry.promregator.cfaccessor.client.InfoV3;
 
 import reactor.core.publisher.Mono;
 
 public interface CFAccessor {
-	Mono<GetInfoResponse> getInfo();
+	Mono<InfoV3> getInfo();
 	
 	Mono<ListOrganizationsResponse> retrieveOrgIdV3(String orgName);
 

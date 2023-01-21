@@ -24,6 +24,7 @@ import org.cloudfoundry.client.v3.processes.ProcessResource;
 import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
 import org.cloudfoundry.client.v3.routes.RouteResource;
 import org.cloudfoundry.client.v3.spaces.ListSpacesResponse;
+import org.cloudfoundry.promregator.cfaccessor.client.InfoV3;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -366,7 +367,7 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 	}
 
 	@Override
-	public Mono<GetInfoResponse> getInfo() {
+	public Mono<InfoV3> getInfo() {
 		return this.parent.getInfo();
 	}
 

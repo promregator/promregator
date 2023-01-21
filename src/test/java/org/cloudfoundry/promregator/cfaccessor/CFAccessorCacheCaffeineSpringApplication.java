@@ -3,7 +3,6 @@ package org.cloudfoundry.promregator.cfaccessor;
 import java.util.List;
 import java.util.Set;
 
-import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.client.v3.Metadata;
 import org.cloudfoundry.client.v3.Relationship;
 import org.cloudfoundry.client.v3.ToOneRelationship;
@@ -19,6 +18,7 @@ import org.cloudfoundry.client.v3.routes.Destination;
 import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
 import org.cloudfoundry.client.v3.routes.RouteRelationships;
 import org.cloudfoundry.client.v3.routes.RouteResource;
+import org.cloudfoundry.promregator.cfaccessor.client.InfoV3;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -38,8 +38,8 @@ public class CFAccessorCacheCaffeineSpringApplication {
 	public static class ParentMock implements CFAccessor {
 
 		@Override
-		public Mono<GetInfoResponse> getInfo() {
-			return Mono.just(GetInfoResponse.builder().build());
+		public Mono<InfoV3> getInfo() {
+			return Mono.just(new InfoV3());
 		}
 
 		@Override
