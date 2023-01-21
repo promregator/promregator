@@ -898,7 +898,7 @@ public class ParserTestFormat004 {
 		Assertions.assertEquals(1, resultList.size());
 		MetricFamilySamples mfs = resultList.get(0);
 		
-		Assertions.assertEquals("metric_without_labels", mfs.name);
+		Assertions.assertEquals("metric_without_labels_info", mfs.name);
 		Assertions.assertEquals(Type.INFO, mfs.type);
 		Assertions.assertEquals("this is my help text", mfs.help);
 		

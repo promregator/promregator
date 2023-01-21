@@ -3,6 +3,7 @@ package org.cloudfoundry.promregator.textformat004;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -55,6 +56,8 @@ public class Parser {
 			"_max" /* provided as additional metric by micrometer */
 			);
 	
+	private static final Pattern PATTERN_TOTAL_SUFFIX = Pattern.compile(".*_total$");
+	
 	private String metricSetData;
 	
 	private HashMap<String, String> mapHelps = new HashMap<>();
@@ -91,6 +94,8 @@ public class Parser {
 			this.parseMetric(line);
 		}
 		
+		this.postProcessSpecialTypes();
+		
 		return this.mapMFS;
 	}
 
@@ -123,7 +128,12 @@ public class Parser {
 	}
 
 	private void storeSimpleType(Sample sample, final String metricName, Collector.Type type) {
-		MetricFamilySamples mfsStored = this.mapMFS.get(metricName);
+		String baseMetricName = metricName;
+		if (type == Type.COUNTER) {
+			baseMetricName = determineBaseMetricName(metricName);
+		}
+		
+		MetricFamilySamples mfsStored = this.mapMFS.get(baseMetricName);
 		if (mfsStored != null) {
 			// we already have created a metric for this line; we just have to add the sample
 			mfsStored.samples.add(sample);
@@ -132,7 +142,7 @@ public class Parser {
 			List<Sample> samples = new LinkedList<>();
 			samples.add(sample);
 
-			String docString = this.mapHelps.get(metricName);
+			String docString = this.mapHelps.get(baseMetricName);
 			/*
 			 * mfs.help must not be empty - see also  https://github.com/promregator/promregator/issues/73
 			 */
@@ -141,7 +151,7 @@ public class Parser {
 			}
 
 			Collector.MetricFamilySamples mfs = new Collector.MetricFamilySamples(metricName, type, docString, samples);
-			this.mapMFS.put(metricName, mfs);
+			this.mapMFS.put(baseMetricName, mfs);
 		}
 	}
 
@@ -180,7 +190,7 @@ public class Parser {
 		String baseMetricName = determineBaseMetricName(metricName);
 		type = this.mapTypes.get(baseMetricName);
 		// check that this also really makes sense and is a type, which requires baseMetricNames
-		if (type == Type.HISTOGRAM || type == Type.SUMMARY) {
+		if (type == Type.HISTOGRAM || type == Type.SUMMARY || type == Type.COUNTER) {
 			return type;
 		}
 		
@@ -268,6 +278,46 @@ public class Parser {
 		sTemp = sTemp.replace("\\n", "\n");
 		
 		return sTemp;
+	}
+	
+	private void postProcessSpecialTypes() {
+		/*
+		 * Newer versions of the format automatically generate
+		 * "_total" suffixes to COUNTER-typed metrics. Note that we will
+		 * have to deal with both types of input data properly.
+		 * The metric still internally is called with its base name only.
+		 * 
+		 * For INFO-typed metrics, this may also happen, but they are only
+		 * specified in the new OpenMetrics 1.0.0 format.
+		 * 
+		 * Note that this only applies to the metric's name - the sample's
+		 * name are still kept *with* the suffix!
+		 */
+		
+		
+		// handling of COUNTER-typed metrics
+		final List<String> keysToChangeCounter = this.mapTypes.entrySet().stream()
+			.filter(e -> e.getValue() == Type.COUNTER)
+			.map(Entry::getKey)
+			.filter(k -> PATTERN_TOTAL_SUFFIX.matcher(k).matches())
+			.toList();
+
+		keysToChangeCounter.forEach(key -> {
+			final String keyStripped = key.substring(0, key.length() - "_total".length());
+			
+			final String help = this.mapHelps.get(key);
+			this.mapHelps.put(keyStripped, help);
+			this.mapHelps.remove(key);
+			
+			Type type = this.mapTypes.get(key);
+			this.mapTypes.put(keyStripped, type);
+			this.mapTypes.remove(key);
+			
+			MetricFamilySamples mfsOld = this.mapMFS.get(key);
+			this.mapMFS.put(keyStripped, new MetricFamilySamples(keyStripped, mfsOld.unit, mfsOld.type, mfsOld.help, mfsOld.samples));
+			this.mapMFS.remove(key);
+			// no need to dig into the sample's name in variable mfs
+		});
 	}
 	
 	private void reset() {

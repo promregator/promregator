@@ -172,5 +172,38 @@ public class ParserTestBaseName {
 		Assertions.assertTrue(sum);
 		Assertions.assertTrue(count);
 	}
+	
+	
+	@Test
+	void testBaseNameNewProperWayWithCounter() {
+		String textToParse = "# TYPE basename counter\n" + 
+				"basename_total 42\n";
+		
+		Parser subject = new Parser(textToParse);
+		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
+		
+		Assertions.assertEquals(1, resultMap.keySet().size());
+		MetricFamilySamples mfs = resultMap.get("basename");
+		Assertions.assertNotNull(mfs);
+		
+		Assertions.assertEquals(1, mfs.samples.size());
+		Assertions.assertEquals("basename_total", mfs.samples.get(0).name);
+	}
+	
+	@Test
+	void testBaseNameWithCounterBrokenOldWay() {
+		String textToParse = "# TYPE basename_total counter\n" + 
+				"basename_total 42\n";
+		
+		Parser subject = new Parser(textToParse);
+		HashMap<String, Collector.MetricFamilySamples> resultMap = subject.parse();
+		
+		Assertions.assertEquals(1, resultMap.keySet().size());
+		MetricFamilySamples mfs = resultMap.get("basename");
+		Assertions.assertNotNull(mfs);
+		
+		Assertions.assertEquals(1, mfs.samples.size());
+		Assertions.assertEquals("basename_total", mfs.samples.get(0).name);
+	}
 }
 
