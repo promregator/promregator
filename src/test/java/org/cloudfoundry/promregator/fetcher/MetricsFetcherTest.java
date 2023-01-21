@@ -1,8 +1,6 @@
 package org.cloudfoundry.promregator.fetcher;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,7 +12,6 @@ import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.endpoint.EndpointConstants;
 import org.cloudfoundry.promregator.mockServer.MetricsEndpointMockServer;
 import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
-import org.cloudfoundry.promregator.textformat004.Parser;
 import org.cloudfoundry.promregator.textformat004.ParserCompareUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -31,10 +28,7 @@ public class MetricsFetcherTest {
 			"dummy 42 1395066363000";
 	private MetricsEndpointMockServer mems;
 	
-	private Enumeration<MetricFamilySamples> expectedResult;
-	
 	public MetricsFetcherTest() {
-		this.expectedResult = Collections.enumeration(new Parser(DUMMY_METRICS_LIST).parse().values());
 	}
 	
 	@BeforeEach
@@ -85,9 +79,9 @@ public class MetricsFetcherTest {
 		
 		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
 		
-		HashMap<String, MetricFamilySamples> response = subject.call();
+		FetchResult response = subject.call();
 		
-		ParserCompareUtils.compareEMFS(this.expectedResult, Collections.enumeration(response.values()));
+		ParserCompareUtils.compareFetchResult(response, DUMMY_METRICS_LIST);
 		Assertions.assertEquals(instanceId, this.mems.getMetricsEndpointHandler().getHeaders().getFirst("X-CF-APP-INSTANCE"));
 		Assertions.assertEquals(currentUUID.toString(), this.mems.getMetricsEndpointHandler().getHeaders().getFirst(EndpointConstants.HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER));
 	}
@@ -112,9 +106,9 @@ public class MetricsFetcherTest {
 		
 		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
 		
-		HashMap<String, MetricFamilySamples> response = subject.call();
+		FetchResult response = subject.call();
 		
-		ParserCompareUtils.compareEMFS(this.expectedResult, Collections.enumeration(response.values()));
+		ParserCompareUtils.compareFetchResult(response, DUMMY_METRICS_LIST);
 		Assertions.assertNull(this.mems.getMetricsEndpointHandler().getHeaders().getFirst("X-CF-APP-INSTANCE"));
 		Assertions.assertEquals(currentUUID.toString(), this.mems.getMetricsEndpointHandler().getHeaders().getFirst(EndpointConstants.HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER));
 	}
@@ -158,11 +152,11 @@ public class MetricsFetcherTest {
 		
 		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
 		
-		HashMap<String, MetricFamilySamples> response = subject.call();
+		FetchResult response = subject.call();
 		
 		Assertions.assertTrue(ae.isCalled());
 		
-		ParserCompareUtils.compareEMFS(this.expectedResult, Collections.enumeration(response.values()));
+		ParserCompareUtils.compareFetchResult(response, DUMMY_METRICS_LIST);
 		Assertions.assertEquals(instanceId, this.mems.getMetricsEndpointHandler().getHeaders().getFirst("X-CF-APP-INSTANCE"));
 		Assertions.assertEquals("Bearer abc", this.mems.getMetricsEndpointHandler().getHeaders().getFirst("Authentication"));
 	}
@@ -188,7 +182,7 @@ public class MetricsFetcherTest {
 		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
 		this.mems.getMetricsEndpointHandler().setDelayInMillis(500);
 		
-		HashMap<String, MetricFamilySamples> response = subject.call();
+		FetchResult response = subject.call();
 		
 		Assertions.assertNull(response);
 	}
@@ -214,7 +208,7 @@ public class MetricsFetcherTest {
 		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
 		this.mems.getMetricsEndpointHandler().setDelayInMillis(500);
 		
-		HashMap<String, MetricFamilySamples> response = subject.call();
+		FetchResult response = subject.call();
 		
 		Assertions.assertNull(response);
 	}

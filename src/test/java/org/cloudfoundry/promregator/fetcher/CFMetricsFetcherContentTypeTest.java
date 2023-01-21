@@ -2,7 +2,6 @@ package org.cloudfoundry.promregator.fetcher;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.Charset;
-import java.util.HashMap;
 import java.util.UUID;
 
 import org.apache.http.Header;
@@ -13,13 +12,13 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicStatusLine;
+import org.cloudfoundry.promregator.textformat004.ParserCompareUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.http.HttpHeaders;
 
-import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.exporter.common.TextFormat;
 
 class CFMetricsFetcherContentTypeTest {
@@ -107,7 +106,7 @@ class CFMetricsFetcherContentTypeTest {
 		
 		Mockito.when(subject.getMockedCloseableHttpClient().execute(Mockito.any())).thenReturn(response);
 		
-		HashMap<String, MetricFamilySamples> result = subject.call();
+		FetchResult result = subject.call();
 		
 		Assertions.assertNull(result);
 	}
@@ -138,11 +137,11 @@ class CFMetricsFetcherContentTypeTest {
 		
 		Mockito.when(subject.getMockedCloseableHttpClient().execute(Mockito.any())).thenReturn(response);
 		
-		HashMap<String, MetricFamilySamples> result = subject.call();
+		FetchResult result = subject.call();
 		
-		// just prove that the parser was called
-		Assertions.assertEquals(1, result.size());
-		Assertions.assertNotNull(result.get("dummy"));
+		Assertions.assertNotNull(result);
+		Assertions.assertEquals(TextFormat.CONTENT_TYPE_004, result.contentType());
+		ParserCompareUtils.compareFetchResult(result, DUMMY_METRICS_LIST);
 	}
 	
 	@Test
@@ -171,11 +170,11 @@ class CFMetricsFetcherContentTypeTest {
 		
 		Mockito.when(subject.getMockedCloseableHttpClient().execute(Mockito.any())).thenReturn(response);
 		
-		HashMap<String, MetricFamilySamples> result = subject.call();
+		FetchResult result = subject.call();
 		
-		// just prove that the parser was called
-		Assertions.assertEquals(1, result.size());
-		Assertions.assertNotNull(result.get("dummy"));
+		Assertions.assertNotNull(result);
+		Assertions.assertEquals(TextFormat.CONTENT_TYPE_OPENMETRICS_100, result.contentType());
+		ParserCompareUtils.compareFetchResult(result, DUMMY_METRICS_LIST);
 	}
 
 }

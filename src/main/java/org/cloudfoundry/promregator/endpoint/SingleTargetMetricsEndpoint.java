@@ -136,7 +136,8 @@ public class SingleTargetMetricsEndpoint {
 		}
 	}
 	
-	private FetchResult handleRequest(String applicationId, String instanceId) throws ScrapingException {
+	// protected due to unit tests!
+	protected FetchResult handleRequest(String applicationId, String instanceId) throws ScrapingException {
 		log.debug("Received request to a metrics endpoint");
 		Instant start = Instant.now();
 		
