@@ -83,9 +83,10 @@ Promregator is currently preparing to provide a new major version. Here are the 
 | Scraping Method                                     | Single Target Scraping supported               | Single Endpoint Scraping and Single Target Scraping supported                               |
 | Label Enrichment                                    | not supported                                  | supported (for Single Target Scraping)                                                      |
 | Support for metrics formats at scraping targets     | text/plain;version=0.0.4 and OpenMetrics 1.0.0 | text/plain;version=0.0.4 only                                                               |
-| Support for INFO-typed metrics                      | supported                                      | not supported (in some cases passed-through)                                                |
-| Support for STATESET-typed metrics                  | supported                                      | not supported                                                                               |
-| Returned format to scraping callers                 | OpenMetrics 1.0.0 only                         | text/plain;version=0.0.4 only                                                               |
+| Support for INFO-typed metrics                      | supported (pass-through)                       | not supported (in some cases passed-through)                                                |
+| Support for STATESET-typed metrics                  | supported (pass-through)                       | not supported                                                                               |
+| Support for UNIT metric descriptor                  | supported (pass-through)                       | not supported                                                                               |
+| Returned format to scraping callers                 | pass-through as scraped                        | text/plain;version=0.0.4 (parsed and reformatted)                                           |
 
 It is recommended that you upgrade to the new major version on next occasion. 
 An upgrade guide is provided [here](docs/upgrade.md).

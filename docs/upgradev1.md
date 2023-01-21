@@ -172,6 +172,6 @@ With [version 0.10.0](https://github.com/prometheus/client_java/blob/eb4e694b000
 
 That is why that you must make sure that you use Prometheus [2.5.0](https://github.com/prometheus/prometheus/blob/main/CHANGELOG.md#250--2018-11-06) or higher for scraping with Promregator. Due to some bugs in early Prometheus versions, it is recommended to upgrade Prometheus to version [2.34.0](https://github.com/prometheus/prometheus/blob/64842f137e1ae6e041e12a2707d99d6da4ba885b/CHANGELOG.md#2340--2022-03-15) or higher.
 
-*Note*: This does not also mean that all targets from where Promregator is scraping data have to support the OpenMetrics format as well! If Promregator receives a request to a target to be scraped that is able to only respond with the classic Text 0.0.4 Exposition Format, Promregator parses the old format and automatically converts its content up to the OpenMetrics Format 1.0.0.
+*Note*: This does not also mean that all targets from where Promregator is scraping data have to support the OpenMetrics format as well! Promregator will pass through all metricsets - also if the scraped target uses the Text 0.0.04 Exposition Format - verbatim.
 
-*Note*: The same also applies for Promregator's own metrics exposed to Prometheus: Also there only the OpenMetrics Format 1.0.0 is supported.
+*Note*: Also Promregator's own metrics will be exposed to Prometheus using the OpenMetrics Format 1.0.0.
