@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 public class SingleTargetMetricsEndpointInternalTestPositive extends SingleTargetMetricsEndpoint {
 
 	@Override
-	public String handleRequest(String applicationId, String instanceId) {
+	public String handleRequest(String applicationId, String instanceId, String produceTextFormat) {
 		Assertions.assertEquals("129856d2-c53b-4971-b100-4ce371b78070", applicationId);
 		Assertions.assertEquals("129856d2-c53b-4971-b100-4ce371b78070:42", instanceId);
 		

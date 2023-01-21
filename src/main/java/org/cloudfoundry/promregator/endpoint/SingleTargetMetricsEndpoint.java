@@ -14,7 +14,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
-import jakarta.servlet.http.HttpServletRequest;
 
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.auth.AuthenticatorController;
@@ -35,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -48,6 +48,7 @@ import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.Gauge.Builder;
 import io.prometheus.client.exporter.common.TextFormat;
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @Scope(value=WebApplicationContext.SCOPE_REQUEST) // see also https://github.com/promregator/promregator/issues/51
@@ -131,7 +132,7 @@ public class SingleTargetMetricsEndpoint {
 		}
 	}
 	
-	protected String handleRequest(String applicationId, String instanceId) throws ScrapingException {
+	protected String handleRequest(String applicationId, String instanceId, String produceTextFormat) throws ScrapingException {
 		log.debug("Received request to a metrics endpoint");
 		Instant start = Instant.now();
 		
@@ -160,12 +161,21 @@ public class SingleTargetMetricsEndpoint {
 		
 		Instant stop = Instant.now();
 		Duration duration = Duration.between(start, stop);
-		this.handleScrapeDuration(this.requestRegistry, duration);
+		
+		/*
+		 * Note: The scrape_duration_seconds metric is being passed on to Prometheus with
+		 * the normal scraping request.
+		 */
+		
+		Gauge scrapeDuration = Gauge.build("promregator_scrape_duration_seconds", "Duration in seconds indicating how long scraping of all metrics took")
+				.register(requestRegistry);
+		
+		scrapeDuration.set(duration.toMillis() / 1000.0);
 		
 		// add also our own request-specific metrics
 		mmfs.merge(this.gmfspr.determineEnumerationOfMetricFamilySamples(this.requestRegistry));
 		
-		return mmfs.toType004String();
+		return mmfs.toMetricsString(produceTextFormat);
 	}
 
 	private MergableMetricFamilySamples waitForMetricsFetcher(Future<HashMap<String, MetricFamilySamples>> future) {
@@ -291,12 +301,7 @@ public class SingleTargetMetricsEndpoint {
 		return loopback;
 	}
 	
-	@GetMapping(produces=TextFormat.CONTENT_TYPE_004)
-	public ResponseEntity<String> getMetrics(
-			@PathVariable String applicationId,
-			@PathVariable String instanceNumber
-			) {
-		
+	private ResponseEntity<String> performPrechecks(String applicationId,  String instanceNumber) {
 		if (this.isLoopbackRequest()) {
 			throw new LoopbackScrapingDetectedException("Erroneous Loopback Scraping request detected");
 		}
@@ -312,37 +317,68 @@ public class SingleTargetMetricsEndpoint {
 			return new ResponseEntity<>("Invalid Application Id provided", HttpStatus.BAD_REQUEST);
 		}
 		
+		return null;
+	}
+	
+	@GetMapping(produces=TextFormat.CONTENT_TYPE_004)
+	public ResponseEntity<String> getMetricsText004(
+			@PathVariable String applicationId,
+			@PathVariable String instanceNumber
+			) {
+		
+		ResponseEntity<String> precheckResults = this.performPrechecks(applicationId, instanceNumber);
+		if (precheckResults != null) {
+			return precheckResults;
+		}
+		
 		final String instanceId = String.format("%s:%s", applicationId, instanceNumber);
 		
 		String response = null;
 		try {
-			response = this.handleRequest(applicationId, instanceId);
+			response = this.handleRequest(applicationId, instanceId, TextFormat.CONTENT_TYPE_004);
 		} catch (ScrapingException e) {
 			log.debug("ScrapingException was raised for instanceid {}", instanceId, e);
 			return new ResponseEntity<>(e.toString(), HttpStatus.NOT_FOUND);
 		}
 		
-		return new ResponseEntity<>(response, HttpStatus.OK);
+		return ResponseEntity.ok()
+				.header(HttpHeaders.CONTENT_TYPE, TextFormat.CONTENT_TYPE_004)
+				.body(response);
 	}
-
 	
-	/**
-	 * called when scraping has been finished; contains the overall duration of the scraping request.
-	 * 
-	 * The implementing class is suggested to write the duration into an own sample for the corresponding
-	 * metric.
-	 * @param requestRegistry the registry to which the metric shall be / is registered.
-	 * @param duration the duration of the just completed scrape request.
+	@GetMapping(produces=TextFormat.CONTENT_TYPE_OPENMETRICS_100)
+	public ResponseEntity<String> getMetricsOpenMetrics100(
+			@PathVariable String applicationId,
+			@PathVariable String instanceNumber
+			) {
+		
+		ResponseEntity<String> precheckResults = this.performPrechecks(applicationId, instanceNumber);
+		if (precheckResults != null) {
+			return precheckResults;
+		}
+		
+		final String instanceId = String.format("%s:%s", applicationId, instanceNumber);
+		
+		String response = null;
+		try {
+			response = this.handleRequest(applicationId, instanceId, TextFormat.CONTENT_TYPE_OPENMETRICS_100);
+		} catch (ScrapingException e) {
+			log.debug("ScrapingException was raised for instanceid {}", instanceId, e);
+			return new ResponseEntity<>(e.toString(), HttpStatus.NOT_FOUND);
+		}
+		
+		return ResponseEntity.ok()
+				.header(HttpHeaders.CONTENT_TYPE, TextFormat.CONTENT_TYPE_OPENMETRICS_100)
+				.body(response);
+	}
+	
+	@GetMapping
+	/* 
+	 * Fallback case for compatibility: if no "Accept" header is specified or "Accept: * /*",
+	 * then we fall back to the classic response.
 	 */
-	private void handleScrapeDuration(CollectorRegistry requestRegistry, Duration duration) {
-		/*
-		 * Note: The scrape_duration_seconds metric is being passed on to Prometheus with
-		 * the normal scraping request.
-		 */
-		
-		Gauge scrapeDuration = Gauge.build("promregator_scrape_duration_seconds", "Duration in seconds indicating how long scraping of all metrics took")
-				.register(requestRegistry);
-		
-		scrapeDuration.set(duration.toMillis() / 1000.0);
+	public ResponseEntity<String> getMetrics(@PathVariable String applicationId,
+			@PathVariable String instanceNumber) {
+		return this.getMetricsText004(applicationId, instanceNumber);
 	}
 }
