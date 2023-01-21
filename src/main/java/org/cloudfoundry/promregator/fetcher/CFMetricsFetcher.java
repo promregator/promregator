@@ -4,7 +4,10 @@ import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.util.HashMap;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.apache.http.Header;
 import org.apache.http.HttpHost;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
@@ -21,10 +24,12 @@ import org.cloudfoundry.promregator.endpoint.EndpointConstants;
 import org.cloudfoundry.promregator.textformat004.Parser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.Histogram.Timer;
+import io.prometheus.client.exporter.common.TextFormat;
 
 /**
  * A MetricsFetcher is a class which retrieves Prometheus metrics at an endpoint URL, which is run
@@ -41,6 +46,9 @@ public class CFMetricsFetcher implements MetricsFetcher {
 
 	private static final Logger log = LoggerFactory.getLogger(CFMetricsFetcher.class);
 	
+	private static final Pattern CONTENT_TYPE_OPENMETRIC_100 = Pattern.compile("^application/openmetrics-text; *version=1.[0-9]+.[0-9]+; *charset=utf-8");
+	private static final Pattern CONTENT_TYPE_TEXT_004 = Pattern.compile("^text/plain; *version=0.0.4; *charset=utf-8");
+	
 	private String endpointUrl;
 	private String instanceId;
 	private boolean withInternalRouting;
@@ -49,8 +57,10 @@ public class CFMetricsFetcher implements MetricsFetcher {
 	
 	private Gauge.Child up;
 	
-	static final CloseableHttpClient httpclient = HttpClients.createSystem();
-
+	static final CloseableHttpClient globalHttpclient = HttpClients.createSystem();
+	
+	private CloseableHttpClient localHttpClient;
+	
 	private MetricsFetcherMetrics mfm;
 
 	private UUID promregatorUUID;
@@ -125,6 +135,8 @@ public class CFMetricsFetcher implements MetricsFetcher {
 		// provided for recursive scraping / loopback detection
 		httpget.setHeader(EndpointConstants.HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER, this.promregatorUUID.toString());
 		
+		httpget.setHeader(HttpHeaders.ACCEPT, String.format("%s, %s;q=0.9", TextFormat.CONTENT_TYPE_OPENMETRICS_100, TextFormat.CONTENT_TYPE_004));
+		
 		if (this.ae != null) {
 			this.ae.enrichWithAuthentication(httpget);
 		}
@@ -143,10 +155,18 @@ public class CFMetricsFetcher implements MetricsFetcher {
 		
 		String result = null;
 		try {
-			response = httpclient.execute(httpget);
+			@SuppressWarnings("resource") // there is no closing necessary here - we are just choosing the "right" client here.
+			final CloseableHttpClient httpClient = this.localHttpClient != null ? this.localHttpClient : globalHttpclient;
+			response = httpClient.execute(httpget);
 
 			if (response.getStatusLine().getStatusCode() != 200) {
 				log.warn("Target server at '{}' and instance '{}' responded with a non-200 status code: {}", this.endpointUrl, this.instanceId, response.getStatusLine().getStatusCode());
+				return null;
+			}
+			
+			final Header contentTypeHeader = response.getFirstHeader(HttpHeaders.CONTENT_TYPE);
+			final String contentType = this.determineTextFormat(contentTypeHeader);
+			if (contentType == null) {
 				return null;
 			}
 			
@@ -187,6 +207,30 @@ public class CFMetricsFetcher implements MetricsFetcher {
 		return result;
 	}
 
+	private String determineTextFormat(Header contentTypeHeader) {
+		if (contentTypeHeader == null) {
+			return TextFormat.CONTENT_TYPE_004;
+		}
+		
+		final String contentTypeValue = contentTypeHeader.getValue();
+		if (contentTypeValue == null) {
+			return TextFormat.CONTENT_TYPE_004;
+		}
+		
+		final Matcher matcherOpenMetric100 = CONTENT_TYPE_OPENMETRIC_100.matcher(contentTypeValue);
+		if (matcherOpenMetric100.find()) {
+			return TextFormat.CONTENT_TYPE_OPENMETRICS_100;
+		}
+		
+		final Matcher matcherText004 = CONTENT_TYPE_TEXT_004.matcher(contentTypeValue);
+		if (matcherText004.find()) {
+			return TextFormat.CONTENT_TYPE_004;
+		}
+		
+		log.warn("Target at endpoint URL {} and instance {} returned a Content-Type header on scraping which is unknown by Promregator: {}", this.endpointUrl, this.instanceId, contentTypeValue);
+		return null;
+	}
+
 	private void countSuccessOrFailure(boolean available) {
 		if (this.up != null) {
 			this.up.set(available ? 1.0 : 0.0);
@@ -196,4 +240,14 @@ public class CFMetricsFetcher implements MetricsFetcher {
 			this.mfm.getFailedRequests().inc();
 		}
 	}
+	
+
+	/**
+	 * shall only be used by unit tests!
+	 * @param localHttpClient the localHttpClient to set
+	 */
+	protected void setLocalHttpClient(CloseableHttpClient localHttpClient) {
+		this.localHttpClient = localHttpClient;
+	}
+
 }
