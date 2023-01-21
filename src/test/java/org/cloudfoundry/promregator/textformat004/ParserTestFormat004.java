@@ -21,7 +21,7 @@ import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Collector.MetricFamilySamples.Sample;
 import io.prometheus.client.Collector.Type;
 
-public class ParserTest {
+public class ParserTestFormat004 {
 	@AfterAll
 	static void cleanupEnvironment() {
 		JUnitTestUtils.cleanUpAll();
