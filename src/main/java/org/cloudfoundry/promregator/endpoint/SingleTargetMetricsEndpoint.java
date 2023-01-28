@@ -31,6 +31,7 @@ import org.cloudfoundry.promregator.fetcher.MetricsFetcherSimulator;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.GenericMetricFamilySamplesPrefixRewriter;
+import org.cloudfoundry.promregator.rewrite.MetricSetMerger;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
 import org.slf4j.Logger;
@@ -286,7 +287,7 @@ public class SingleTargetMetricsEndpoint {
 			return fetchData;
 		}
 		
-		return fetchResult.data()+"\n"+writer.toString();
+		return new MetricSetMerger(fetchResult, writer.toString()).merge();
 	}
 
 	
