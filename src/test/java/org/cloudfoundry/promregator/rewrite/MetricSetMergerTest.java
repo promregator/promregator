@@ -93,4 +93,55 @@ class MetricSetMergerTest {
 				""", actual);
 		
 	}
+	
+	@Test
+	void testAdditionalDataNull() {
+		FetchResult fetchResult = new FetchResult("# TYPE test COUNTER\n"
+				+ "test 2.0\n"
+				+ "# EOF\n", TextFormat.CONTENT_TYPE_OPENMETRICS_100);
+		
+		MetricSetMerger subject = new MetricSetMerger(fetchResult, null);
+		
+		String actual = subject.merge();
+		
+		Assertions.assertEquals("""
+				# TYPE test COUNTER
+				test 2.0
+				# EOF
+				""", actual);
+		
+	}
+	
+	@Test
+	void testAdditionalDataEmpty() {
+		FetchResult fetchResult = new FetchResult("# TYPE test COUNTER\n"
+				+ "test 2.0\n"
+				+ "# EOF\n", TextFormat.CONTENT_TYPE_OPENMETRICS_100);
+		
+		MetricSetMerger subject = new MetricSetMerger(fetchResult, "");
+		
+		String actual = subject.merge();
+		
+		Assertions.assertEquals("""
+				# TYPE test COUNTER
+				test 2.0
+				# EOF
+				""", actual);
+		
+	}
+	
+	@Test
+	void testFetchResultNull() {
+		String additionalMetrics = "# TYPE test2 COUNTER\n"
+				+ "test2 4.0\n";
+		
+		MetricSetMerger subject = new MetricSetMerger(null, additionalMetrics);
+		
+		String actual = subject.merge();
+		
+		Assertions.assertEquals("""
+				# TYPE test2 COUNTER
+				test2 4.0
+				""", actual);
+	}
 }
