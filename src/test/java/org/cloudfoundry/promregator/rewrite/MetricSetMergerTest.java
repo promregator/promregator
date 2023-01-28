@@ -144,4 +144,27 @@ class MetricSetMergerTest {
 				test2 4.0
 				""", actual);
 	}
+	
+	@Test
+	void testOpenMetricsWithBothEOF() {
+		FetchResult fetchResult = new FetchResult("# TYPE test COUNTER\n"
+				+ "test 2.0\n"
+				+ "# EOF\n\r\n", TextFormat.CONTENT_TYPE_OPENMETRICS_100);
+		
+		String additionalMetrics = "# TYPE test2 COUNTER\n"
+				+ "test2 4.0\n"
+				+ "# EOF\n\r\n";
+		
+		MetricSetMerger subject = new MetricSetMerger(fetchResult, additionalMetrics);
+		
+		String actual = subject.merge();
+		
+		Assertions.assertEquals("""
+				# TYPE test COUNTER
+				test 2.0
+				# TYPE test2 COUNTER
+				test2 4.0
+				# EOF
+				""", actual);
+	}
 }

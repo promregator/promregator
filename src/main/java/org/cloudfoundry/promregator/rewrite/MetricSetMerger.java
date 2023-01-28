@@ -7,6 +7,8 @@ import io.prometheus.client.exporter.common.TextFormat;
 
 public class MetricSetMerger {
 	private static final String EOF_MARKER = "# EOF";
+	// Note that Prometheus is very picky about anything that comes after a "# EOF" marker!
+	
 	private FetchResult fetchResult;
 	private String additionalMetrics;
 
@@ -38,21 +40,25 @@ public class MetricSetMerger {
 		
 		String metricSetData = fetchResult.data();
 		
-		metricSetData = trimTrailingNewLineChars(metricSetData);
+		metricSetData = trimEOF(metricSetData);
+		additionalMetrics = trimEOF(additionalMetrics);
 		
-		if (metricSetData.endsWith(EOF_MARKER)) {
-			metricSetData = metricSetData.substring(0, metricSetData.length()-EOF_MARKER.length());
-		}
-		
-		metricSetData = trimTrailingNewLineChars(metricSetData);
-		
-		additionalMetrics = trimTrailingNewLineChars(additionalMetrics);
-		
-		metricSetData += String.format("\n%s\n%s\n", additionalMetrics, EOF_MARKER);
+		metricSetData = String.format("%s\n%s\n%s\n", metricSetData, additionalMetrics, EOF_MARKER);
 		
 		return metricSetData;
 	}
 	
+	private static String trimEOF(String s) {
+		s = trimTrailingNewLineChars(s);
+		
+		if (s.endsWith(EOF_MARKER)) {
+			s = s.substring(0, s.length()-EOF_MARKER.length());
+		}
+		
+		s = trimTrailingNewLineChars(s);
+		return s;
+	}
+
 	private static String trimTrailingNewLineChars(String s) {
 		while (s.endsWith("\n") || s.endsWith("\r")) {
 			s = s.substring(0, s.length()-1);
