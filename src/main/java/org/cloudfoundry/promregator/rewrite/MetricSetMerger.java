@@ -43,7 +43,7 @@ public class MetricSetMerger {
 		metricSetData = trimEOF(metricSetData);
 		additionalMetrics = trimEOF(additionalMetrics);
 		
-		metricSetData = String.format("%s\n%s\n%s\n", metricSetData, additionalMetrics, EOF_MARKER);
+		metricSetData = String.format("%s%n%s%n%s%n", metricSetData, additionalMetrics, EOF_MARKER);
 		
 		return metricSetData;
 	}
