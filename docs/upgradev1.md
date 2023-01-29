@@ -41,7 +41,7 @@ If your platform supports that API, you will see a JSON file like this:
 }
 ```
 
-Note that you upgrade to Promregator V1 (or later), if your platform does not support API V3 (or later).
+Note that you cannot upgrade to Promregator V1 (or later), if your platform does not support API V3 (or later).
 
 ## Switch to new Proxy Nomenclature
 
@@ -168,10 +168,10 @@ Depending on how the metadata is evaluated by the consumer of Prometheus, this m
 
 ## Change to the OpenMetrics Format 1.0.0
 
-With [version 0.10.0](https://github.com/prometheus/client_java/blob/eb4e694b00024043f948e407510f516dea58cbc7/simpleclient_common/src/main/java/io/prometheus/client/exporter/common/TextFormat.java#L70) Prometheus' simpleclient only supports generating metricsets, which comply to the [OpenMetrics Format 1.0.0](https://github.com/OpenObservability/OpenMetrics/blob/1386544931307dff279688f332890c31b6c5de36/specification/OpenMetrics.md). This implies that Promregator cannot generate pure [Text 0.0.4 Exposition Format](https://github.com/prometheus/docs/blob/4874c371ee439b11babc13ff88ae9747e19dbd8f/content/docs/instrumenting/exposition_formats.md) responses anymore. If queried by a caller (e.g. Prometheus) for returning Text 0.0.4 Exposition Format responses, a 401 Bad Request response will be issued.
+With [version 0.10.0](https://github.com/prometheus/client_java/blob/eb4e694b00024043f948e407510f516dea58cbc7/simpleclient_common/src/main/java/io/prometheus/client/exporter/common/TextFormat.java#L70) Prometheus' simpleclient only supports generating metricsets, which comply to the [OpenMetrics Format 1.0.0](https://github.com/OpenObservability/OpenMetrics/blob/1386544931307dff279688f332890c31b6c5de36/specification/OpenMetrics.md). This implies that Promregator cannot generate pure [Text 0.0.4 Exposition Format](https://github.com/prometheus/docs/blob/4874c371ee439b11babc13ff88ae9747e19dbd8f/content/docs/instrumenting/exposition_formats.md) responses anymore. If queried by a caller (e.g. Prometheus) for returning Text 0.0.4 Exposition Format responses, a `400 Bad Request` response will be issued.
 
 That is why that you must make sure that you use Prometheus [2.5.0](https://github.com/prometheus/prometheus/blob/main/CHANGELOG.md#250--2018-11-06) or higher for scraping with Promregator. Due to some bugs in early Prometheus versions, it is recommended to upgrade Prometheus to version [2.34.0](https://github.com/prometheus/prometheus/blob/64842f137e1ae6e041e12a2707d99d6da4ba885b/CHANGELOG.md#2340--2022-03-15) or higher.
 
-*Note*: This does not also mean that all targets from where Promregator is scraping data have to support the OpenMetrics format as well! Promregator will pass through all metricsets - also if the scraped target uses the Text 0.0.04 Exposition Format - verbatim.
+*Note*: This does not also mean that all targets (from where Promregator is scraping data) have to support the OpenMetrics format as well! Promregator will pass through all metricsets - also if the scraped target uses the Text 0.0.4 Exposition Format - verbatim.
 
-*Note*: Also Promregator's own metrics will be exposed to Prometheus using the OpenMetrics Format 1.0.0.
+*Note*: Also Promregator's own metrics will be exposed to Prometheus using the OpenMetrics Format 1.0.0 only.
