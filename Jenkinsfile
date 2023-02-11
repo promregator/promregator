@@ -108,7 +108,7 @@ def springCloudCliPasswordTest(params) {
 			
 			sleep 30
 			
-			curl -m 10 http://localhost:8080/discovery > discovery.json
+			curl -m 10 -u 'integrationtest:1ntegrat1ontest' http://localhost:8080/discovery > discovery.json
 			cat discovery.json
 
 			kill \$PROMREGATOR_PID
