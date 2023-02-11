@@ -85,7 +85,7 @@ public class SecurityConfig {
 	 * and https://stackoverflow.com/questions/46999940/spring-boot-passwordencoder-error
 	 */
 	@Bean
-	public UserDetailsService userDetailsService() {
+	public UserDetailsService userDetailsService(BCryptPasswordEncoder bCryptPasswordEncoder) {
 		InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
 
 		String password = this.basicAuthPassword;
@@ -98,8 +98,10 @@ public class SecurityConfig {
 			System.err.println();
 		}
 
-		manager.createUser(User.withUsername(this.basicAuthUsername).password(String.format("{noop}%s", password))
-				.roles("USER").build());
+		manager.createUser(User.withUsername(this.basicAuthUsername)
+				.password(bCryptPasswordEncoder.encode(password))
+				.roles("USER")
+				.build());
 		return manager;
 	}
 
