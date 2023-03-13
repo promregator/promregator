@@ -378,11 +378,11 @@ EOT
 				}
 				
 				sh """
-					cat promregator-${currentVersion}.hashsums.json
+					cat promregator-${currentVersion}.hashsums.json.asc
 				"""
 				
 				archiveArtifacts "promregator-${currentVersion}.hashsums.json"
-				archiveArtifacts "promregator-${currentVersion}.hashsums.json.gpg"
+				archiveArtifacts "promregator-${currentVersion}.hashsums.json.asc"
 				
 				archiveArtifacts 'target/promregator*.jar'
 				
