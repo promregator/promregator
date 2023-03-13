@@ -94,6 +94,11 @@ def springCloudCliPasswordTest(params) {
 			rm -f encrypted.txt
 		"""
 		
+		/*
+		This currently still requires our bluemix. Bluemix will be discontinued on June 2023.
+		Alternative idea: local CF installation: https://bbv.ch/cloud-foundry-lokal-installieren/
+		*/
+		
 		// Run Test itself
 		sh """#!/bin/bash -xe
 			ls -al .
