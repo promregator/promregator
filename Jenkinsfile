@@ -373,7 +373,7 @@ EOT
 				
 				runWithGPG() {
 					sh """
-						gpg --sign --personal-digest-preferences SHA512,SHA384,SHA256,SHA224,SHA1 promregator-${currentVersion}.hashsums.json
+						gpg --sign -a --personal-digest-preferences SHA512,SHA384,SHA256,SHA224,SHA1 promregator-${currentVersion}.hashsums.json
 					"""
 				}
 				
