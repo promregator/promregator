@@ -15,6 +15,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.util.ReflectionTestUtils;
+
+import java.sql.Ref;
+import java.util.Arrays;
 
 
 @ExtendWith(SpringExtension.class)
@@ -91,4 +95,52 @@ public class DiscoveryEndpointTest {
 		
 	}
 
+	@Test
+	void testSchemePropertySetsSchemeInOutput(){
+		//given promregator.discovery.port:443 and promregator.discovery.scheme unset
+		ReflectionTestUtils.setField(subject, "myScheme", "https");
+
+		//when getDiscovery
+		HttpServletRequest requestMock = Mockito.mock(HttpServletRequest.class);
+		ResponseEntity<DiscoveryResponse[]> responseE = this.subject.getDiscovery(requestMock);
+		DiscoveryResponse[] responses = responseE.getBody();
+
+		//then response labels contain __scheme__: https
+		Assertions.assertTrue(Arrays.stream(responses).allMatch(
+			response -> "https".equals(response.getLabels().getScheme())
+		));
+	}
+
+	@Test
+	void testPort443SetsHttpsIfSchemeNotSet(){
+		//given promregator.discovery.port:443 and promregator.discovery.scheme unset
+		ReflectionTestUtils.setField(subject, "myPort", 443);
+
+		//when getDiscovery
+		HttpServletRequest requestMock = Mockito.mock(HttpServletRequest.class);
+		ResponseEntity<DiscoveryResponse[]> responseE = this.subject.getDiscovery(requestMock);
+		DiscoveryResponse[] responses = responseE.getBody();
+
+		//then response labels contain __scheme__: https
+		Assertions.assertTrue(Arrays.stream(responses).allMatch(
+			response -> "https".equals(response.getLabels().getScheme())
+		));
+	}
+
+	@Test
+	void testPort443DoesntSetHttpsIfSchemeIsExplicitlySetToHttp(){
+		//given promregator.discovery.port:443 and promregator.discovery.scheme unset
+		ReflectionTestUtils.setField(subject, "myPort", 443);
+		ReflectionTestUtils.setField(subject, "myScheme", "http");
+
+		//when getDiscovery
+		HttpServletRequest requestMock = Mockito.mock(HttpServletRequest.class);
+		ResponseEntity<DiscoveryResponse[]> responseE = this.subject.getDiscovery(requestMock);
+		DiscoveryResponse[] responses = responseE.getBody();
+
+		//then response labels contain __scheme__: https
+		Assertions.assertTrue(Arrays.stream(responses).allMatch(
+			response -> "http".equals(response.getLabels().getScheme())
+		));
+	}
 }
