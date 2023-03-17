@@ -1,9 +1,6 @@
 package org.cloudfoundry.promregator.fetcher;
 
-import java.util.HashMap;
 import java.util.concurrent.Callable;
-
-import io.prometheus.client.Collector.MetricFamilySamples;
 
 /**
  * A MetricsFetcher is some interface which implements a Callable, which returns
@@ -13,6 +10,7 @@ import io.prometheus.client.Collector.MetricFamilySamples;
  * means) is not defined.
  *
  */
-public interface MetricsFetcher extends Callable<HashMap<String, MetricFamilySamples>>{
+public interface MetricsFetcher extends Callable<FetchResult>{
 
+	
 }

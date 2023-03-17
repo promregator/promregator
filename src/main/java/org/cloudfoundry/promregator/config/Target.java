@@ -224,7 +224,7 @@ public class Target {
 				Pattern pattern = Pattern.compile(routeRegex);
 				patterns.add(pattern);
 			} catch (PatternSyntaxException e) {
-				log.warn(String.format("Invalid preferredRouteRegex '%s' detected. Fix your configuration; until then, the regex will be ignored", routeRegex), e);
+				log.warn("Invalid preferredRouteRegex '{}' detected. Fix your configuration; until then, the regex will be ignored", routeRegex, e);
 				// continue not necessary here
 			}
 		}

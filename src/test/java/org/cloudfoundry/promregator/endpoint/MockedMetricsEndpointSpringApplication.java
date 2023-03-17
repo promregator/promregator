@@ -10,13 +10,14 @@ import java.util.concurrent.Executors;
 import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.auth.AuthenticatorController;
 import org.cloudfoundry.promregator.auth.NullEnricher;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.discovery.CFMultiDiscoverer;
+import org.cloudfoundry.promregator.messagebus.MessageBus;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
@@ -38,9 +39,6 @@ import io.prometheus.client.CollectorRegistry;
 @EnableAutoConfiguration
 @ComponentScan(excludeFilters = { @Filter(type = FilterType.CUSTOM, classes = { TypeExcludeFilter.class }),
 		@Filter(type = FilterType.CUSTOM, classes = { AutoConfigurationExcludeFilter.class }),
-		@Filter(type = FilterType.ASSIGNABLE_TYPE, value=MetricsEndpoint.class),
-		// NB: Handling is taken over by TestableMetricsEndpoint! That one is
-		// NOT excluded
 		@Filter(type = FilterType.ASSIGNABLE_TYPE, value=SingleTargetMetricsEndpoint.class),
 		// NB: Handling is taken over by TestableSingleTargetMetricsEndpoint! That one is
 		// NOT excluded
@@ -142,5 +140,10 @@ public class MockedMetricsEndpointSpringApplication {
 	@Bean
 	public HttpServletRequest httpServletRequest() {
 		return mockedHttpServletRequest;
+	}
+	
+	@Bean
+	public MessageBus messageBus() {
+		return new MessageBus();
 	}
 }

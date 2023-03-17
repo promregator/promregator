@@ -1,49 +1,39 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
-import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
-import org.cloudfoundry.client.v2.info.GetInfoResponse;
-import org.cloudfoundry.client.v2.organizations.ListOrganizationDomainsResponse;
-import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
-import org.cloudfoundry.client.v2.spaces.GetSpaceSummaryResponse;
-import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
+import java.util.Set;
 
-import org.cloudfoundry.client.v3.spaces.GetSpaceResponse;
+import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
+import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
+import org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse;
+import org.cloudfoundry.client.v3.processes.ListProcessesResponse;
+import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
+import org.cloudfoundry.client.v3.spaces.ListSpacesResponse;
+import org.cloudfoundry.promregator.cfaccessor.client.InfoV3;
+
 import reactor.core.publisher.Mono;
 
 public interface CFAccessor {
-	Mono<GetInfoResponse> getInfo();
+	Mono<InfoV3> getInfo();
 	
-	Mono<ListOrganizationsResponse> retrieveOrgId(String orgName);
+	Mono<ListOrganizationsResponse> retrieveOrgIdV3(String orgName);
+
+	Mono<ListOrganizationsResponse> retrieveAllOrgIdsV3();
+
+	Mono<ListSpacesResponse> retrieveSpaceIdV3(String orgId, String spaceName);
+
+	Mono<ListSpacesResponse> retrieveSpaceIdsInOrgV3(String orgId);
+
+	Mono<ListApplicationsResponse> retrieveAllApplicationsInSpaceV3(String orgId, String spaceId);
+
+	Mono<ListOrganizationDomainsResponse> retrieveAllDomainsV3(String orgId);
+
+	Mono<ListRoutesResponse> retrieveRoutesForAppId(String appId);
 	
-	Mono<ListOrganizationsResponse> retrieveAllOrgIds();
-
-	Mono<ListSpacesResponse> retrieveSpaceId(String orgId, String spaceName);
+	Mono<ListRoutesResponse> retrieveRoutesForAppIds(Set<String> appIds);
 	
-	Mono<ListSpacesResponse> retrieveSpaceIdsInOrg(String orgId);
+	Mono<ListProcessesResponse> retrieveWebProcessesForAppId(String applicationId);
 
-	Mono<ListApplicationsResponse> retrieveAllApplicationIdsInSpace(String orgId, String spaceId);
-	
-	Mono<GetSpaceSummaryResponse> retrieveSpaceSummary(String spaceId);	
-
-	Mono<ListOrganizationDomainsResponse> retrieveAllDomains(String orgId);
-
-	Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> retrieveOrgIdV3(String orgName);
-
-	Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> retrieveAllOrgIdsV3();
-
-	Mono<org.cloudfoundry.client.v3.spaces.ListSpacesResponse> retrieveSpaceIdV3(String orgId, String spaceName);
-
-	Mono<org.cloudfoundry.client.v3.spaces.ListSpacesResponse> retrieveSpaceIdsInOrgV3(String orgId);
-
-	Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> retrieveAllApplicationsInSpaceV3(String orgId, String spaceId);
-
-	Mono<GetSpaceResponse> retrieveSpaceV3(String spaceId);
-
-	Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse> retrieveAllDomainsV3(String orgId);
-
-	Mono<org.cloudfoundry.client.v3.applications.ListApplicationRoutesResponse> retrieveRoutesForAppId(String appId);
-
-	boolean isV3Enabled();
+	Mono<ListProcessesResponse> retrieveWebProcessesForAppIds(Set<String> applicationIds);
 	
 	void reset();
 }

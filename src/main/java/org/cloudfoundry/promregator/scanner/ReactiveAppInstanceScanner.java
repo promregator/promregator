@@ -1,27 +1,29 @@
 package org.cloudfoundry.promregator.scanner;
 
+
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import javax.annotation.Nullable;
+
 import org.apache.logging.log4j.util.Strings;
-import org.cloudfoundry.client.v2.domains.DomainResource;
-import org.cloudfoundry.client.v2.organizations.OrganizationResource;
-import org.cloudfoundry.client.v2.routes.Route;
-import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
-import org.cloudfoundry.client.v2.spaces.SpaceApplicationSummary;
-import org.cloudfoundry.client.v2.spaces.SpaceResource;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.cloudfoundry.client.v3.domains.DomainResource;
+import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
+import org.cloudfoundry.client.v3.processes.ListProcessesResponse;
+import org.cloudfoundry.client.v3.processes.ProcessResource;
+import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
+import org.cloudfoundry.client.v3.routes.RouteResource;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.CollectionUtils;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -30,21 +32,9 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	private static final Logger log = LoggerFactory.getLogger(ReactiveAppInstanceScanner.class);
 	private static final String INVALID_ORG_ID = "***invalid***";
 	private static final String INVALID_SPACE_ID = "***invalid***";
-	private static final Map<String, SpaceApplicationSummary> INVALID_SUMMARY = new HashMap<>();
 
 	@Value("${promregator.defaultInternalRoutePort:8080}")
 	private int defaultInternalRoutePort;
-
-	/*
-	 * see also https://github.com/promregator/promregator/issues/76 This is the
-	 * locale, which we use to convert both "what we get from CF" and "the stuff,
-	 * which we get from the configuration" into lower case before we try to match
-	 * them.
-	 * 
-	 * Note that this might be wrong, if someone might have an app(/org/space) name
-	 * in Turkish and expects a Turkish case conversion.
-	 */
-	private static final Locale LOCALE_OF_LOWER_CASE_CONVERSION_FOR_IDENTIFIER_COMPARISON = Locale.ENGLISH;
 
 	/**
 	 * OSA stands for Org-Space-Application
@@ -186,17 +176,22 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			@Nullable Predicate<? super Instance> instanceFilter) {
 		Flux<ResolvedTarget> targetsFlux = Flux.fromIterable(targets);
 
-		Flux<OSAVector> initialOSAVectorFlux = targetsFlux.map(target -> {
-			OSAVector v = new OSAVector();
-			v.setTarget(target);
-			v.setApplicationId(target.getApplicationId());
-			v.setInternalRoutePort(target.getOriginalTarget().getInternalRoutePort());
-			return v;
-		});
+		/*
+		 * TODO V3: Check, if this serial approach below can be executed more in parallel
+		 */
+		
+		Flux<OSAVector> initialOSAVectorFlux = targetsFlux.filter(rt -> rt.getApplicationId() != null)
+			.map(target -> {
+				final OSAVector v = new OSAVector();
+				v.setTarget(target);
+				v.setApplicationId(target.getApplicationId());
+				v.setInternalRoutePort(target.getOriginalTarget().getInternalRoutePort());
+				return v;
+			});
 
 		Flux<String> orgIdFlux = initialOSAVectorFlux.flatMapSequential(v -> this.getOrgId(v.getTarget().getOrgName()));
 		Flux<OSAVector> osaVectorOrgFlux = Flux.zip(initialOSAVectorFlux, orgIdFlux).flatMap(tuple -> {
-			OSAVector v = tuple.getT1();
+			final OSAVector v = tuple.getT1();
 			if (INVALID_ORG_ID.equals(tuple.getT2())) {
 				// NB: This drops the current target!
 				return Mono.empty();
@@ -205,10 +200,9 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			return Mono.just(v);
 		});
 
-		Flux<String> spaceIdFlux = osaVectorOrgFlux
-				.flatMapSequential(v -> this.getSpaceId(v.getOrgId(), v.getTarget().getSpaceName()));
+		Flux<String> spaceIdFlux = osaVectorOrgFlux.flatMapSequential(v -> this.getSpaceId(v.getOrgId(), v.getTarget().getSpaceName()));
 		Flux<OSAVector> osaVectorSpaceFlux = Flux.zip(osaVectorOrgFlux, spaceIdFlux).flatMap(tuple -> {
-			OSAVector v = tuple.getT1();
+			final OSAVector v = tuple.getT1();
 			if (INVALID_SPACE_ID.equals(tuple.getT2())) {
 				// NB: This drops the current target!
 				return Mono.empty();
@@ -217,59 +211,75 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			return Mono.just(v);
 		});
 
-		Flux<Map<String, SpaceApplicationSummary>> spaceSummaryFlux = osaVectorSpaceFlux
-				.flatMapSequential(v -> this.getSpaceSummary(v.getSpaceId()));
-		Flux<OSAVector> osaVectorApplicationFlux = Flux.zip(osaVectorSpaceFlux, spaceSummaryFlux).flatMap(tuple -> {
-			OSAVector v = tuple.getT1();
-
-			if (INVALID_SUMMARY == tuple.getT2()) {
-				// NB: This drops the current target!
+		/*
+		 * For V3 it is no longer possible to get the SpaceSummary.
+		 * This implies that we need to retrieve data on application level :-(
+		 * Instead, the instance count can be found at the Processes endpoint.
+		 * The ApplicationURL is buried in the Routes.
+		 */
+		
+		Flux<ListProcessesResponse> webProcessForAppFlux = osaVectorSpaceFlux.flatMap(rt -> 
+			this.cfAccessor.retrieveWebProcessesForAppId(rt.getTarget().getApplicationId())
+		);
+		
+		Flux<OSAVector> numberInstancesOSAVectorFlux = Flux.zip(osaVectorSpaceFlux, webProcessForAppFlux).flatMap(tuple -> {
+			final OSAVector osaVector = tuple.getT1();
+			final ResolvedTarget rt = osaVector.getTarget();
+			final ListProcessesResponse lapr = tuple.getT2();
+			
+			final List<ProcessResource> list = lapr.getResources();
+			if (list.size() > 1) {
+				log.error("Application Id {} with application name {} in org {} and space {} returned multiple web processes via CF API V3 Processes; Promregator does not know how to handle this. Provide your use case to the developers to understand how this shall be handled properly.", rt.getApplicationId(), rt.getApplicationName(), rt.getOrgName(), rt.getSpaceName());
 				return Mono.empty();
-			}
-
-			Map<String, SpaceApplicationSummary> spaceSummaryMap = tuple.getT2();
-			SpaceApplicationSummary sas = spaceSummaryMap.get(v.getTarget().getApplicationName()
-					.toLowerCase(LOCALE_OF_LOWER_CASE_CONVERSION_FOR_IDENTIFIER_COMPARISON));
-			/*
-			 * Due to https://github.com/cloudfoundry/cloud_controller_ng/issues/1523, we
-			 * cannot rely on sas.getId() (i.e. it may contain wrong information)
-			 */
-
-			if (sas == null) {
-				// NB: This drops the current target!
-				return Mono.empty();
-			}
-
-			List<String> urls = sas.getUrls();
-			if (urls != null && !urls.isEmpty()) {
-				// Set the access url to the selected route (without any protocol or path yet)
-				v.setAccessURL(this.determineApplicationRoute(urls,
-						v.getTarget().getOriginalTarget().getPreferredRouteRegexPatterns()));
-			} else {
-				// if there is no url, skip this one
-				return Mono.empty();
-			}
-
-			// In the interest of backwards compatibility lest do this inside a try.
-			// There is little reason why this should not find the correct domain
-			try {
-				Route route = sas.getRoutes().stream().filter(rt -> v.getAccessURL().startsWith(rt.getHost()+"."+rt.getDomain().getName())).findFirst().get();
-				v.setDomainId(route.getDomain().getId());
-			} catch (Exception e) {
-				log.warn(String.format("unable to find matching domain for the url %s", v.getAccessURL()));
 			}
 			
-			v.setNumberOfInstances(sas.getInstances());
-
-			return Mono.just(v);
+			if (list.isEmpty()) {
+				log.error("Application Id {} with application name {} in org {} and space {} returned no web processes via CF API V3 Processes; Promregator does not know how to handle this. Provide your use case to the developers to understand how this shall be handled properly.", rt.getApplicationId(), rt.getApplicationName(), rt.getOrgName(), rt.getSpaceName());
+				return Mono.empty();
+			}
+			
+			final ProcessResource pr = list.get(0);
+			final int numberInstances = pr.getInstances();
+			osaVector.setNumberOfInstances(numberInstances);
+			return Mono.just(osaVector);
 		});
-
-		Flux<List<DomainResource>> domainFlux = osaVectorApplicationFlux.flatMapSequential(v -> {
-			return this.cfAccessor.retrieveAllDomains(v.getOrgId()).map(mapper -> mapper.getResources());
+		
+		Flux<ListRoutesResponse> routesForAppFlux = numberInstancesOSAVectorFlux.flatMap(rt -> this.cfAccessor.retrieveRoutesForAppId(rt.getTarget().getApplicationId()));
+		Flux<OSAVector> urlDomainOSAVectorFlux = Flux.zip(numberInstancesOSAVectorFlux, routesForAppFlux).flatMap(tuple -> {
+			final OSAVector osaVector = tuple.getT1();
+			final ListRoutesResponse lrp = tuple.getT2();
+			
+			final List<RouteResource> list = lrp.getResources();
+			if (list == null || list.isEmpty()) {
+				// no route defined; the target cannot be reached anyway
+				return Mono.empty();
+			}
+			
+			final List<String> urls = list.stream().map(RouteResource::getUrl).toList();
+			@NonNull
+			final List<Pattern> preferredRouteRegexPatterns = osaVector.getTarget().getOriginalTarget().getPreferredRouteRegexPatterns();
+			final String url = this.determineApplicationRoute(urls, preferredRouteRegexPatterns);
+			
+			if (url == null) {
+				// no suitable route found
+				return Mono.empty();
+			}
+			
+			osaVector.setAccessURL(url);
+			
+			// determine domain
+			final RouteResource selectedRouteResource = list.stream().filter(e -> e.getUrl().equals(url)).findFirst().get();
+			final String domainId = selectedRouteResource.getRelationships().getDomain().getData().getId();
+			osaVector.setDomainId(domainId);
+			
+			return Mono.just(osaVector);
 		});
-		Flux<OSAVector> osaVectorDomainApplicationFlux = Flux.zip(osaVectorApplicationFlux, domainFlux).flatMap(tuple -> {
-			OSAVector v = tuple.getT1();
-			List<DomainResource> domains = tuple.getT2();
+		
+
+		Flux<List<DomainResource>> domainFlux = urlDomainOSAVectorFlux.flatMapSequential(v -> this.cfAccessor.retrieveAllDomainsV3(v.getOrgId()).map(ListOrganizationDomainsResponse::getResources));
+		Flux<OSAVector> osaVectorDomainApplicationFlux = Flux.zip(urlDomainOSAVectorFlux, domainFlux).flatMap(tuple -> {
+			final OSAVector v = tuple.getT1();
+			final List<DomainResource> domains = tuple.getT2();
 
 			if (domains.size() == 0 || v.getDomainId() == null) {
 				// NB: This drops the current target!
@@ -277,17 +287,20 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			}
 
 			if (useOverrideRouteAndPath(v)) {
-			  v.setInternal(true);
+				v.setInternal(true);
 			}
 			// we should only run this if we found a domain in the above step
 			// this is to make sure we have compatibility with existing behaviour
-			else if( !v.getDomainId().isEmpty()) {
+			else if (!v.getDomainId().isEmpty()) {
 				try {
-					DomainResource domain = domains.stream().filter(r -> r.getMetadata().getId().equals(v.getDomainId()))
-						.findFirst().get();
-					v.setInternal(domain.getEntity().getInternal());
+					final DomainResource domain = domains.stream()
+							.filter(r -> r.getId().equals(v.getDomainId()))
+							.findFirst()
+							.get();
+					
+					v.setInternal(domain.isInternal());
 				} catch (Exception e) {
-					log.warn(String.format("unable to find matching domain for the domain with id %s", v.getDomainId()));
+					log.warn("Unable to find matching domain for the domain with id {}", v.getDomainId());
 				}
 			}
 
@@ -297,26 +310,21 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 
 		// perform pre-filtering, if available
 		if (applicationIdFilter != null) {
-			osaVectorDomainApplicationFlux = osaVectorDomainApplicationFlux
-					.filter(v -> applicationIdFilter.test(v.getApplicationId()));
+			osaVectorDomainApplicationFlux = osaVectorDomainApplicationFlux.filter(v -> applicationIdFilter.test(v.getApplicationId()));
 		}
 
 		Flux<Instance> instancesFlux = osaVectorDomainApplicationFlux.flatMapSequential(v -> {
-			List<Instance> instances = new ArrayList<>(v.getNumberOfInstances());
+			final List<Instance> instances = new ArrayList<>(v.getNumberOfInstances());
 			for (int i = 0; i < v.numberOfInstances; i++) {
-				Instance inst = new Instance(v.getTarget(), String.format("%s:%d", v.getApplicationId(), i),
-						v.getAccessURL(), v.isInternal());
+				final Instance inst = new Instance(v.getTarget(), String.format("%s:%d", v.getApplicationId(), i), v.getAccessURL(), v.isInternal());
 
-				if(useOverrideRouteAndPath(v)) {
-					inst.setAccessUrl(this.formatAccessURL(v.getTarget().getProtocol(), v.getTarget().getOriginalTarget().getOverrideRouteAndPath(),
-							v.getTarget().getPath()));
+				if (useOverrideRouteAndPath(v)) {
+					inst.setAccessUrl(this.formatAccessURL(v.getTarget().getProtocol(), v.getTarget().getOriginalTarget().getOverrideRouteAndPath(), v.getTarget().getPath()));
 				}
 				else if (v.isInternal()) {
-					inst.setAccessUrl(this.formatInternalAccessURL(v.getAccessURL(), v.getTarget().getPath(),
-							v.getInternalRoutePort(), i));
+					inst.setAccessUrl(this.formatInternalAccessURL(v.getAccessURL(), v.getTarget().getPath(), v.getInternalRoutePort(), i));
 				} else {
-					inst.setAccessUrl(this.formatAccessURL(v.getTarget().getProtocol(), v.getAccessURL(),
-							v.getTarget().getPath()));
+					inst.setAccessUrl(this.formatAccessURL(v.getTarget().getProtocol(), v.getAccessURL(), v.getTarget().getPath()));
 				}
 
 				instances.add(inst);
@@ -348,72 +356,53 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	}
 
 	private Mono<String> getOrgId(String orgNameString) {
-		return this.cfAccessor.retrieveOrgId(orgNameString).flatMap(response -> {
-			List<OrganizationResource> resources = response.getResources();
+		return this.cfAccessor.retrieveOrgIdV3(orgNameString).flatMap(response -> {
+			List<org.cloudfoundry.client.v3.organizations.OrganizationResource> resources = response.getResources();
 			if (resources == null) {
 				return Mono.just(INVALID_ORG_ID);
 			}
 
 			if (resources.isEmpty()) {
-				log.warn(String.format("Received empty result on requesting org %s", orgNameString));
+				log.warn("Received empty result on requesting org {}", orgNameString);
 				return Mono.just(INVALID_ORG_ID);
 			}
 
-			OrganizationResource organizationResource = resources.get(0);
-			return Mono.just(organizationResource.getMetadata().getId());
+			org.cloudfoundry.client.v3.organizations.OrganizationResource organizationResource = resources.get(0);
+			return Mono.just(organizationResource.getId());
 		}).onErrorResume(e -> {
-			log.error(String.format("retrieving Org Id for org Name '%s' resulted in an exception", orgNameString), e);
+			log.error("Rrieving Org Id for org Name '{}' resulted in an exception", orgNameString, e);
 			return Mono.just(INVALID_ORG_ID);
 		}).cache();
 	}
 
 	private Mono<String> getSpaceId(String orgIdString, String spaceNameString) {
 
-		Mono<ListSpacesResponse> listSpacesResponse = this.cfAccessor.retrieveSpaceId(orgIdString, spaceNameString);
+		Mono<org.cloudfoundry.client.v3.spaces.ListSpacesResponse> listSpacesResponse = this.cfAccessor.retrieveSpaceIdV3(orgIdString, spaceNameString);
 
 		return listSpacesResponse.flatMap(response -> {
-			List<SpaceResource> resources = response.getResources();
+			List<org.cloudfoundry.client.v3.spaces.SpaceResource> resources = response.getResources();
 			if (resources == null) {
 				return Mono.just(INVALID_SPACE_ID);
 			}
 
 			if (resources.isEmpty()) {
-				log.warn(String.format("Received empty result on requesting space %s", spaceNameString));
+				log.warn("Received empty result on requesting space {}", spaceNameString);
 				return Mono.just(INVALID_SPACE_ID);
 			}
 
-			SpaceResource spaceResource = resources.get(0);
-			return Mono.just(spaceResource.getMetadata().getId());
+			org.cloudfoundry.client.v3.spaces.SpaceResource spaceResource = resources.get(0);
+			return Mono.just(spaceResource.getId());
 		}).onErrorResume(e -> {
-			log.error(String.format("retrieving space id for org id '%s' and space name '%s' resulted in an exception",
-					orgIdString, spaceNameString), e);
+			log.error("Retrieving space id for org id '{}' and space name '{}' resulted in an exception",
+					orgIdString, spaceNameString, e);
 			return Mono.just(INVALID_SPACE_ID);
 		}).cache();
 
 	}
 
-	private Mono<Map<String, SpaceApplicationSummary>> getSpaceSummary(String spaceIdString) {
-		return this.cfAccessor.retrieveSpaceSummary(spaceIdString).flatMap(response -> {
-			List<SpaceApplicationSummary> applications = response.getApplications();
-			if (applications == null) {
-				return Mono.just(INVALID_SUMMARY);
-			}
-
-			Map<String, SpaceApplicationSummary> map = new HashMap<>(applications.size());
-			for (SpaceApplicationSummary sas : applications) {
-				map.put(sas.getName().toLowerCase(LOCALE_OF_LOWER_CASE_CONVERSION_FOR_IDENTIFIER_COMPARISON), sas);
-			}
-
-			return Mono.just(map);
-		}).onErrorResume(e -> {
-			log.error(String.format("retrieving summary for space id '%s' resulted in an exception", spaceIdString), e);
-			return Mono.just(INVALID_SUMMARY);
-		});
-	}
-
 	private String formatAccessURL(final String protocol, final String hostnameDomain, final String path) {
 		final String applicationUrl = String.format("%s://%s", protocol, hostnameDomain);
-		log.debug(String.format("Using Application URL: '%s'", applicationUrl));
+		log.debug("Using Application URL: '{}'", applicationUrl);
 
 		String applUrl = applicationUrl;
 		if (!applicationUrl.endsWith("/")) {
@@ -428,15 +417,14 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		return applUrl + internalPath;
 	}
 
-	private String formatInternalAccessURL(final String hostnameDomain, final String path, final int internalRoutePort,
-			final int instanceId) {
+	private String formatInternalAccessURL(final String hostnameDomain, final String path, final int internalRoutePort, final int instanceId) {
 		int port = internalRoutePort;
 		if(port == 0) {
 			port = defaultInternalRoutePort;
 		}
 		
 		String internalURL = String.format("%s.%s:%s", instanceId, hostnameDomain, port);
-		log.debug(String.format("Using internal Application URL: '%s'", internalURL));
+		log.debug("Using internal Application URL: '{}'", internalURL);
 
 		return formatAccessURL("http", internalURL, path);
 	}
@@ -454,22 +442,21 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 
 		for (Pattern pattern : patterns) {
 			for (String url : urls) {
-				log.debug(String.format("Attempting to match Application Route '%s' against pattern '%s'", url,
-						pattern.toString()));
+				log.debug("Attempting to match Application Route '{}' against pattern '{}'", url, pattern);
 				Matcher m = pattern.matcher(url);
 				if (m.matches()) {
-					log.debug(String.format("Match found, using Application Route '%s'", url));
+					log.debug("Match found, using Application Route '{}'", url);
 					return url;
 				}
 			}
 		}
 
-		// if we reach this here, then we did not find any match in the regex.
-		// The fallback then is the old behavior by returned just the first-guess
-		// element
-		log.debug(String.format(
-				"Though Preferred Router URLs were provided, no route matched; taking the first route as fallback (compatibility!), which is '%s'",
-				urls.get(0)));
+		/* 
+		 * If we reach this here, then we did not find any match in the regex.
+		 * The fallback then is the old behavior by returned just the first-guess
+		 * element.
+		 */
+		log.debug("Though Preferred Router URLs were provided, no route matched; taking the first route as fallback (compatibility!), which is '{}'", urls.get(0));
 		return urls.get(0);
 	}
 }

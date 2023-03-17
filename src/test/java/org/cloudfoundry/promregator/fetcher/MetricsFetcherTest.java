@@ -1,8 +1,6 @@
 package org.cloudfoundry.promregator.fetcher;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,7 +12,6 @@ import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.endpoint.EndpointConstants;
 import org.cloudfoundry.promregator.mockServer.MetricsEndpointMockServer;
 import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
-import org.cloudfoundry.promregator.textformat004.Parser;
 import org.cloudfoundry.promregator.textformat004.ParserCompareUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -24,17 +21,14 @@ import org.junit.jupiter.api.Test;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
 
-class MetricsFetcherTest {
+public class MetricsFetcherTest {
 
 	private static final String DUMMY_METRICS_LIST = "# HELP dummy This is a dummy metric\n"+
 			"# TYPE dummy counter\n"+
 			"dummy 42 1395066363000";
 	private MetricsEndpointMockServer mems;
 	
-	private Enumeration<MetricFamilySamples> expectedResult;
-	
 	public MetricsFetcherTest() {
-		this.expectedResult = Collections.enumeration(new Parser(DUMMY_METRICS_LIST).parse().values());
 	}
 	
 	@BeforeEach
@@ -76,7 +70,6 @@ class MetricsFetcherTest {
 		UUID currentUUID = UUID.randomUUID();
 		
 		CFMetricsFetcherConfig config = new CFMetricsFetcherConfig();
-		config.setMetricFamilySamplesEnricher(dummymfse);
 		config.setMetricsFetcherMetrics(mfm);
 		config.setPromregatorInstanceIdentifier(currentUUID);
 		config.setConnectionTimeoutInMillis(5000);
@@ -86,9 +79,9 @@ class MetricsFetcherTest {
 		
 		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
 		
-		HashMap<String, MetricFamilySamples> response = subject.call();
+		FetchResult response = subject.call();
 		
-		ParserCompareUtils.compareEMFS(this.expectedResult, Collections.enumeration(response.values()));
+		ParserCompareUtils.compareFetchResult(response, DUMMY_METRICS_LIST);
 		Assertions.assertEquals(instanceId, this.mems.getMetricsEndpointHandler().getHeaders().getFirst("X-CF-APP-INSTANCE"));
 		Assertions.assertEquals(currentUUID.toString(), this.mems.getMetricsEndpointHandler().getHeaders().getFirst(EndpointConstants.HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER));
 	}
@@ -104,7 +97,6 @@ class MetricsFetcherTest {
 		UUID currentUUID = UUID.randomUUID();
 		
 		CFMetricsFetcherConfig config = new CFMetricsFetcherConfig();
-		config.setMetricFamilySamplesEnricher(dummymfse);
 		config.setMetricsFetcherMetrics(mfm);
 		config.setPromregatorInstanceIdentifier(currentUUID);
 		config.setConnectionTimeoutInMillis(5000);
@@ -114,9 +106,9 @@ class MetricsFetcherTest {
 		
 		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
 		
-		HashMap<String, MetricFamilySamples> response = subject.call();
+		FetchResult response = subject.call();
 		
-		ParserCompareUtils.compareEMFS(this.expectedResult, Collections.enumeration(response.values()));
+		ParserCompareUtils.compareFetchResult(response, DUMMY_METRICS_LIST);
 		Assertions.assertNull(this.mems.getMetricsEndpointHandler().getHeaders().getFirst("X-CF-APP-INSTANCE"));
 		Assertions.assertEquals(currentUUID.toString(), this.mems.getMetricsEndpointHandler().getHeaders().getFirst(EndpointConstants.HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER));
 	}
@@ -150,7 +142,6 @@ class MetricsFetcherTest {
 		
 		CFMetricsFetcherConfig config = new CFMetricsFetcherConfig();
 		config.setAuthenticationEnricher(ae);
-		config.setMetricFamilySamplesEnricher(dummymfse);
 		config.setMetricsFetcherMetrics(mfm);
 		config.setPromregatorInstanceIdentifier(UUID.randomUUID());
 		config.setConnectionTimeoutInMillis(5000);
@@ -161,11 +152,11 @@ class MetricsFetcherTest {
 		
 		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
 		
-		HashMap<String, MetricFamilySamples> response = subject.call();
+		FetchResult response = subject.call();
 		
 		Assertions.assertTrue(ae.isCalled());
 		
-		ParserCompareUtils.compareEMFS(this.expectedResult, Collections.enumeration(response.values()));
+		ParserCompareUtils.compareFetchResult(response, DUMMY_METRICS_LIST);
 		Assertions.assertEquals(instanceId, this.mems.getMetricsEndpointHandler().getHeaders().getFirst("X-CF-APP-INSTANCE"));
 		Assertions.assertEquals("Bearer abc", this.mems.getMetricsEndpointHandler().getHeaders().getFirst("Authentication"));
 	}
@@ -181,7 +172,6 @@ class MetricsFetcherTest {
 		UUID currentUUID = UUID.randomUUID();
 		
 		CFMetricsFetcherConfig config = new CFMetricsFetcherConfig();
-		config.setMetricFamilySamplesEnricher(dummymfse);
 		config.setMetricsFetcherMetrics(mfm);
 		config.setPromregatorInstanceIdentifier(currentUUID);
 		config.setConnectionTimeoutInMillis(5000);
@@ -192,7 +182,7 @@ class MetricsFetcherTest {
 		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
 		this.mems.getMetricsEndpointHandler().setDelayInMillis(500);
 		
-		HashMap<String, MetricFamilySamples> response = subject.call();
+		FetchResult response = subject.call();
 		
 		Assertions.assertNull(response);
 	}
@@ -208,7 +198,6 @@ class MetricsFetcherTest {
 		UUID currentUUID = UUID.randomUUID();
 		
 		CFMetricsFetcherConfig config = new CFMetricsFetcherConfig();
-		config.setMetricFamilySamplesEnricher(dummymfse);
 		config.setMetricsFetcherMetrics(mfm);
 		config.setPromregatorInstanceIdentifier(currentUUID);
 		config.setConnectionTimeoutInMillis(5000);
@@ -219,7 +208,7 @@ class MetricsFetcherTest {
 		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
 		this.mems.getMetricsEndpointHandler().setDelayInMillis(500);
 		
-		HashMap<String, MetricFamilySamples> response = subject.call();
+		FetchResult response = subject.call();
 		
 		Assertions.assertNull(response);
 	}

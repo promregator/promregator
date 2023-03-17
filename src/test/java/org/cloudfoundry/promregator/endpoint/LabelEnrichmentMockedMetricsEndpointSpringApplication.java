@@ -10,13 +10,14 @@ import java.util.concurrent.Executors;
 import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.auth.AuthenticatorController;
 import org.cloudfoundry.promregator.auth.NullEnricher;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.discovery.CFMultiDiscoverer;
+import org.cloudfoundry.promregator.messagebus.MessageBus;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
@@ -38,11 +39,6 @@ import io.prometheus.client.CollectorRegistry;
 @EnableAutoConfiguration
 @ComponentScan(excludeFilters = { @Filter(type = FilterType.CUSTOM, classes = { TypeExcludeFilter.class }),
 		@Filter(type = FilterType.CUSTOM, classes = { AutoConfigurationExcludeFilter.class }),
-		@Filter(type = FilterType.ASSIGNABLE_TYPE, value = TestableMetricsEndpoint.class ),
-		/* NB: We want to have a the real MetricsEndpoint and not the TestableMetricsEndpoint here! 
-		 * That's why TestableMetricsEndpoint is excluded, but MetricsEndpoint is not (which is the opposite of a
-		 * very similar test)!
-		 */
 		@Filter(type = FilterType.ASSIGNABLE_TYPE, value = TestableSingleTargetMetricsEndpoint.class ),
 		/* NB: We want to have a the real SingleTargetMetricsEndpoint and not the TestableSingleTargetMetricsEndpoint here! 
 		 * That's why TestableSingleTargetMetricsEndpoint is excluded, but SingleTargetMetricsEndpoint is not (which is the opposite of a
@@ -138,4 +134,10 @@ public class LabelEnrichmentMockedMetricsEndpointSpringApplication {
 	public HttpServletRequest httpServletRequest() {
 		return mockedHttpServletRequest;
 	}
+	
+	@Bean
+	public MessageBus messageBus() {
+		return new MessageBus();
+	}
+	
 }

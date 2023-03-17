@@ -7,9 +7,10 @@ import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.auth.AuthenticatorController;
 import org.cloudfoundry.promregator.auth.NullEnricher;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
-import org.cloudfoundry.promregator.cfaccessor.CFAccessorCacheClassic;
+import org.cloudfoundry.promregator.cfaccessor.CFAccessorCacheCaffeine;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
+import org.cloudfoundry.promregator.messagebus.MessageBus;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.CachingTargetResolver;
 import org.cloudfoundry.promregator.scanner.ReactiveAppInstanceScanner;
@@ -41,7 +42,7 @@ import io.prometheus.client.CollectorRegistry;
 @TestPropertySource(locations="../default.properties")
 public class MockedAppInstanceScannerEndpointSpringApplication {
 	
-	public class MockedCFAccessorCache extends CFAccessorCacheClassic {
+	public static class MockedCFAccessorCache extends CFAccessorCacheCaffeine {
 		public MockedCFAccessorCache() {
 			super(null);
 		}
@@ -49,9 +50,12 @@ public class MockedAppInstanceScannerEndpointSpringApplication {
 		private boolean applicationCache = false;
 		private boolean spaceCache = false;
 		private boolean orgCache = false;
+		private boolean routeCache = false;
+		private boolean domainCache = false;
+		private boolean processCache = false;
 		
 		@Override
-		public void invalidateCacheApplications() {
+		public void invalidateCacheApplication() {
 			this.applicationCache = true;
 		}
 
@@ -63,6 +67,21 @@ public class MockedAppInstanceScannerEndpointSpringApplication {
 		@Override
 		public void invalidateCacheOrg() {
 			this.orgCache = true;
+		}
+		
+		@Override
+		public void invalidateCacheDomain() {
+			this.domainCache = true;
+		}
+
+		@Override
+		public void invalidateCacheRoute() {
+			this.routeCache = true;
+		}
+
+		@Override
+		public void invalidateCacheProcess() {
+			this.processCache = true;
 		}
 
 		public boolean isApplicationCache() {
@@ -76,6 +95,19 @@ public class MockedAppInstanceScannerEndpointSpringApplication {
 		public boolean isOrgCache() {
 			return orgCache;
 		}
+		
+		public boolean isDomainCache() {
+			return domainCache;
+		}
+		
+		public boolean isRouteCache() {
+			return routeCache;
+		}
+		
+		public boolean isProcessCache() {
+			return processCache;
+		}
+		
 	}
 	
 	public static class MockedCachingTargetResolver extends CachingTargetResolver {
@@ -101,8 +133,8 @@ public class MockedAppInstanceScannerEndpointSpringApplication {
 	}
 	
 	@Bean
-	public CFAccessorCacheClassic cfAccessorCache(@Qualifier("cfAccessor") CFAccessor cfAccessor) {
-		return (CFAccessorCacheClassic) cfAccessor;
+	public CFAccessorCacheCaffeine cfAccessorCache(@Qualifier("cfAccessor") CFAccessor cfAccessor) {
+		return (CFAccessorCacheCaffeine) cfAccessor;
 	}
 	
 	@Bean
@@ -145,4 +177,9 @@ public class MockedAppInstanceScannerEndpointSpringApplication {
 		return new NullEnricher();
 	}
 
+	@Bean
+	public MessageBus messageBus() {
+		return new MessageBus();
+	}
+	
 }

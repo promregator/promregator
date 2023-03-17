@@ -6,29 +6,24 @@ import org.cloudfoundry.promregator.config.InboundAuthorizationMode;
 import org.cloudfoundry.promregator.endpoint.EndpointConstants;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.BeanIds;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 
-@Configuration
 @EnableWebSecurity
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
-	@Bean(name = BeanIds.AUTHENTICATION_MANAGER)
-	@Override
-	// see also
-	// https://stackoverflow.com/questions/21633555/how-to-inject-authenticationmanager-using-java-configuration-in-a-custom-filter
-	public AuthenticationManager authenticationManagerBean() throws Exception {
-		return super.authenticationManagerBean();
-	}
+@EnableMethodSecurity(securedEnabled = true, jsr250Enabled = true)
+public class SecurityConfig {
 
 	@Value("${promregator.discovery.auth:NONE}")
 	private InboundAuthorizationMode discoveryAuth;
@@ -38,7 +33,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Value("${promregator.metrics.auth:NONE}")
 	private InboundAuthorizationMode promregatorMetricsAuth;
-	
+
 	@Value("${promregator.cache.invalidate.auth:NONE}")
 	private InboundAuthorizationMode cacheInvalidateAuth;
 
@@ -54,7 +49,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 		if (this.cacheInvalidateAuth != InboundAuthorizationMode.NONE)
 			return true;
-		
+
 		return false;
 	}
 
@@ -64,13 +59,33 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	@Value("${promregator.authentication.basic.password:#{null}}")
 	private String basicAuthPassword;
 
-	// see also
-	// https://www.boraji.com/spring-security-4-http-basic-authentication-example
-	// and
-	// https://stackoverflow.com/questions/46999940/spring-boot-passwordencoder-error
+	private boolean securityDebug = false;
+
 	@Bean
-	@Override
-	public UserDetailsService userDetailsService() {
+	public BCryptPasswordEncoder bCryptPasswordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
+	
+	@Bean(name = BeanIds.AUTHENTICATION_MANAGER)
+	/* 
+	 * see also https://stackoverflow.com/questions/21633555/how-to-inject-authenticationmanager-using-java-configuration-in-a-custom-filter
+	 * and https://www.baeldung.com/spring-deprecated-websecurityconfigureradapter
+	 */
+	public AuthenticationManager authenticationManagerBean(HttpSecurity http, UserDetailsService userDetailsService, BCryptPasswordEncoder bCryptPasswordEncoder) throws Exception {
+		 return http.getSharedObject(AuthenticationManagerBuilder.class)
+				.userDetailsService(userDetailsService)
+				.passwordEncoder(bCryptPasswordEncoder)
+				.and()
+				.build();
+	}
+
+	/*
+	 * see also
+	 * https://www.boraji.com/spring-security-4-http-basic-authentication-example
+	 * and https://stackoverflow.com/questions/46999940/spring-boot-passwordencoder-error
+	 */
+	@Bean
+	public UserDetailsService userDetailsService(BCryptPasswordEncoder bCryptPasswordEncoder) {
 		InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
 
 		String password = this.basicAuthPassword;
@@ -79,13 +94,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 			// NB: Logging does not work here properly yet; better use stderr
 			System.err.println();
-			System.err.println(
-					String.format("Using generated password for user %s: %s", this.basicAuthUsername, password));
+			System.err.println(String.format("Using generated password for user %s: %s", this.basicAuthUsername, password));
 			System.err.println();
 		}
 
-		manager.createUser(User.withUsername(this.basicAuthUsername).password(String.format("{noop}%s", password))
-				.roles("USER").build());
+		manager.createUser(User.withUsername(this.basicAuthUsername)
+				.password(bCryptPasswordEncoder.encode(password))
+				.roles("USER")
+				.build());
 		return manager;
 	}
 
@@ -95,61 +111,38 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		HttpSecurity sec = secInitial;
 		if (iam == InboundAuthorizationMode.BASIC) {
 			System.err.println(String.format("Endpoint %s is BASIC authentication protected", endpoint));
-			sec = sec.authorizeRequests().antMatchers(endpoint).authenticated().and();
+			sec = sec.authorizeHttpRequests().requestMatchers(endpoint).authenticated().and();
+		} else {
+			sec = sec.authorizeHttpRequests().requestMatchers(endpoint).permitAll().and();
 		}
-		// NB: Ignoring is not possible in this method; see configure(WebSecurity web)
 		return sec;
 	}
 
-	@Override
-	protected void configure(HttpSecurity security) throws Exception {
+	@Bean
+	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		if (!this.isInboundAuthSecurityEnabled()) {
-			security.httpBasic().disable();
-			return;
+			http.httpBasic().disable();
+			return http.build();
 		}
 
-		HttpSecurity sec = security;
+		HttpSecurity sec = http;
 		sec = this.determineHttpSecurityForEndpoint(sec, EndpointConstants.ENDPOINT_PATH_DISCOVERY, this.discoveryAuth);
-		sec = this.determineHttpSecurityForEndpoint(sec, EndpointConstants.ENDPOINT_PATH_SINGLE_ENDPOINT_SCRAPING, this.endpointAuth);
-		sec = this.determineHttpSecurityForEndpoint(sec, EndpointConstants.ENDPOINT_PATH_SINGLE_TARGET_SCRAPING+"/**", this.endpointAuth);
+		sec = this.determineHttpSecurityForEndpoint(sec, EndpointConstants.ENDPOINT_PATH_SINGLE_TARGET_SCRAPING + "/**", this.endpointAuth);
 		sec = this.determineHttpSecurityForEndpoint(sec, EndpointConstants.ENDPOINT_PATH_PROMREGATOR_METRICS, this.promregatorMetricsAuth);
 		sec = this.determineHttpSecurityForEndpoint(sec, EndpointConstants.ENDPOINT_PATH_CACHE_INVALIDATION, this.cacheInvalidateAuth);
 
-		
 		// see also https://github.com/spring-projects/spring-security/issues/4242
-		security.requestCache().requestCache(this.newHttpSessionRequestCache());
-		
-		// see also
-		// https://www.boraji.com/spring-security-4-http-basic-authentication-example
+		http.requestCache().requestCache(this.newHttpSessionRequestCache());
+
+		// see also https://www.boraji.com/spring-security-4-http-basic-authentication-example
 		sec.httpBasic();
+		
+		return http.build();
 	}
 
-	private WebSecurity determineWebSecurityForEndpoint(WebSecurity secInitial, String endpoint, InboundAuthorizationMode iam) {
-
-		WebSecurity sec = secInitial;
-		if (iam == InboundAuthorizationMode.NONE) {
-			System.err.println(String.format("Endpoint %s is NOT authentication protected", endpoint));
-			sec = sec.ignoring().antMatchers(endpoint).and();
-		}
-		return sec;
-	}
-
-	// see also
-	// https://stackoverflow.com/questions/30366405/how-to-disable-spring-security-for-particular-url
-	@Override
-	public void configure(WebSecurity webInitial) throws Exception {
-		if (!this.isInboundAuthSecurityEnabled()) {
-			return;
-		}
-
-		WebSecurity web = webInitial;
-
-		web = this.determineWebSecurityForEndpoint(web, EndpointConstants.ENDPOINT_PATH_DISCOVERY, this.discoveryAuth);
-		web = this.determineWebSecurityForEndpoint(web, EndpointConstants.ENDPOINT_PATH_SINGLE_ENDPOINT_SCRAPING, this.endpointAuth);
-		web = this.determineWebSecurityForEndpoint(web, EndpointConstants.ENDPOINT_PATH_SINGLE_TARGET_SCRAPING+"/**", this.endpointAuth);
-		web = this.determineWebSecurityForEndpoint(web, EndpointConstants.ENDPOINT_PATH_PROMREGATOR_METRICS, this.promregatorMetricsAuth);
-		this.determineWebSecurityForEndpoint(web, EndpointConstants.ENDPOINT_PATH_CACHE_INVALIDATION, this.cacheInvalidateAuth);
-
+	@Bean
+	public WebSecurityCustomizer webSecurityCustomizer() {
+		return web -> web.debug(securityDebug);
 	}
 
 	/*

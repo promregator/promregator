@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 
 import io.prometheus.client.Collector.MetricFamilySamples;
 
-class MetricsFetcherTestTLSPKIX {
+public class MetricsFetcherTestTLSPKIX {
 
 	private static final String DUMMY_METRICS_LIST = "# HELP dummy This is a dummy metric\n"+
 			"# TYPE dummy counter\n"+
@@ -66,7 +66,6 @@ class MetricsFetcherTestTLSPKIX {
 		UUID currentUUID = UUID.randomUUID();
 		
 		CFMetricsFetcherConfig config = new CFMetricsFetcherConfig();
-		config.setMetricFamilySamplesEnricher(dummymfse);
 		config.setMetricsFetcherMetrics(mfm);
 		config.setPromregatorInstanceIdentifier(currentUUID);
 		config.setConnectionTimeoutInMillis(5000);
@@ -76,7 +75,7 @@ class MetricsFetcherTestTLSPKIX {
 		
 		this.mems.getMetricsEndpointHandler().setResponse(DUMMY_METRICS_LIST);
 		
-		HashMap<String, MetricFamilySamples> response = subject.call();
+		FetchResult response = subject.call();
 		
 		Assertions.assertNull(response);
 	}

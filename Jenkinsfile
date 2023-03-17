@@ -2,6 +2,20 @@
 
 import groovy.xml.XmlUtil
 
+properties([
+  // see also https://docs.cloudbees.com/docs/cloudbees-ci-kb/latest/client-and-managed-masters/how-do-i-set-discard-old-builds-for-a-multi-branch-pipeline-job
+  // only keep 25 builds to prevent disk usage from growing out of control
+  buildDiscarder(
+    logRotator(
+      artifactDaysToKeepStr: '', 
+      artifactNumToKeepStr: '', 
+      daysToKeepStr: '', 
+      numToKeepStr: '25',
+    ),
+  ),
+])
+
+
 def executeShell(command) {
 	def result = sh returnStdout: true, script: command
 	return result.trim()
@@ -44,10 +58,11 @@ def springCloudCliPasswordTest(params) {
 
 	dir("../springCloudTest") {
 		// For most recent version look at https://repo.spring.io/release/org/springframework/boot/spring-boot-cli/
-		def springBootCLIVersion = "2.6.2"
+		def springBootCLIVersion = "2.7.7"
+		// Warning! Bumping this to 3.0.x requires JDK19 or higher!
 		
 		// For most recent version see also https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-cli
-		def springCloudCLIVersion = "3.1.0"
+		def springCloudCLIVersion = "3.1.1"
 	
 		sh """
 			wget -nv https://repo.spring.io/release/org/springframework/boot/spring-boot-cli/${springBootCLIVersion}/spring-boot-cli-${springBootCLIVersion}-bin.tar.gz
@@ -79,6 +94,11 @@ def springCloudCliPasswordTest(params) {
 			rm -f encrypted.txt
 		"""
 		
+		/*
+		This currently still requires our bluemix. Bluemix will be discontinued on June 2023.
+		Alternative idea: local CF installation: https://bbv.ch/cloud-foundry-lokal-installieren/
+		*/
+		
 		// Run Test itself
 		sh """#!/bin/bash -xe
 			ls -al .
@@ -93,7 +113,7 @@ def springCloudCliPasswordTest(params) {
 			
 			sleep 30
 			
-			curl -m 10 http://localhost:8080/discovery > discovery.json
+			curl -m 10 -u 'integrationtest:1ntegrat1ontest' http://localhost:8080/discovery > discovery.json
 			cat discovery.json
 
 			kill \$PROMREGATOR_PID
@@ -185,7 +205,7 @@ timestamps {
 			
 			stage("SecDependency Scan") {
 				sh """
-					mvn -B -DsuppressionFiles=./secscan/owasp-suppression.xml org.owasp:dependency-check-maven:6.5.3:check
+					mvn -B -DsuppressionFiles=./secscan/owasp-suppression.xml org.owasp:dependency-check-maven:8.1.2:check
 				"""
 				
 				archiveArtifacts "target/dependency-check-report.html"
@@ -353,16 +373,16 @@ EOT
 				
 				runWithGPG() {
 					sh """
-						gpg --sign --personal-digest-preferences SHA512,SHA384,SHA256,SHA224,SHA1 promregator-${currentVersion}.hashsums.json
+						gpg --clear-sign --personal-digest-preferences SHA512,SHA384,SHA256,SHA224,SHA1 promregator-${currentVersion}.hashsums.json
 					"""
 				}
 				
 				sh """
-					cat promregator-${currentVersion}.hashsums.json
+					cat promregator-${currentVersion}.hashsums.json.asc
 				"""
 				
 				archiveArtifacts "promregator-${currentVersion}.hashsums.json"
-				archiveArtifacts "promregator-${currentVersion}.hashsums.json.gpg"
+				archiveArtifacts "promregator-${currentVersion}.hashsums.json.asc"
 				
 				archiveArtifacts 'target/promregator*.jar'
 				

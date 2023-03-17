@@ -1,6 +1,6 @@
 # Annotation-Driven Configuration
 
-Starting with version 0.9.0 of Promregator, annotation-driven configuration of targets is supported if the underlying Cloud Foundry platform supports the CAPI V3 interface. Note that in these days the latter should not be a challenging requirement given the fact that the former interface, CAPI V2, has been deprecated.
+Starting with version 0.9.0 of Promregator, annotation-driven configuration of targets is supported.
 
 Configuration follows the approach suggested by [cf-for-k8s](https://github.com/cloudfoundry/cf-for-k8s-metric-examples). See also that page fro examples how to set annotations.
 

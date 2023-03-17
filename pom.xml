@@ -6,7 +6,7 @@
 
 	<groupId>com.github.promregator</groupId>
 	<artifactId>promregator</artifactId>
-	<version>0.11.0-SNAPSHOT</version>
+	<version>1.1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>Promregator</name>
@@ -38,7 +38,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.6.6</version> <!-- see also https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-parent -->
+		<version>3.0.1</version> <!-- see also https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-parent -->
 		<!-- Warning! On bumping also check guava-version below! -->
 		<!-- Note! If you bump this version here, also check the spring-boot CLI version 
 		in our integration tests (see Jenkinsfile) -->
@@ -48,33 +48,22 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<java.version>1.8</java.version>
+		<java.version>17</java.version>
 
-		<spring-boot.run.fork>false</spring-boot.run.fork>
-		<!-- Why that here? Since spring-boot 2.2, the default is "spring-boot.run.fork=true", 
-			which makes spring-boot:run and others being executed in a forked process. 
-			However, it breaks Eclipse debugging, and processes keep hanging on maven 
-			shutdown. See also https://stackoverflow.com/a/58701275/6350762 and https://github.com/spring-projects/spring-boot/issues/18638 -->
+		<!-- note: spring-boot.run.fork=false does not work in spring3+ anymore!
+		Use spring-boot.run.jvmArguments=-D.... instead! -->
 
-		<spring-cloud.version>2021.0.0</spring-cloud.version>
+		<spring-cloud.version>2022.0.0</spring-cloud.version>
 		<!--  For release information see also https://spring.io/projects/spring-cloud
-		and https://github.com/spring-cloud/spring-cloud-release/wiki/Spring-Cloud-2020.0-Release-Notes -->
-		<prometheus.version>0.9.0</prometheus.version>
-		<!-- 
-		Warning on bumping to 0.10.0: 
-		* The bump is incompatible, changing Type.UNTYPED apparently to Type.UNKNOWN
-		* The bump is incompatible, as reading "dummy" for a counter ends up in a
-		  response where the name of the metric is changed to "dummy_total" implicitly.
-		  
-		  Further impact assessment especially on the second topic is needed
-		 -->
+		and https://github.com/spring-cloud/spring-cloud-release/wiki/Spring-Cloud-2020.0-Release-Notes
+		New versions at https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-dependencies -->
+		
+		<prometheus.version>0.16.0</prometheus.version>
 
 		<!-- https://mvnrepository.com/artifact/org.cloudfoundry/cloudfoundry-client-reactor -->
-		<cloudfoundry.client.version>5.6.0.RELEASE</cloudfoundry.client.version>
+		<cloudfoundry.client.version>5.9.0.RELEASE</cloudfoundry.client.version>
 		<!-- see also https://github.com/cloudfoundry/cf-java-client -->
 		
-		<logback.contrib.version>0.1.5</logback.contrib.version>
-
 		<sonar.projectKey>promregator</sonar.projectKey>
 		<sonar.organization>promregator</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
@@ -82,7 +71,7 @@
 
 		<!-- Warning! This should be in line to what spring-framework uses. Unfortunately, 
 			there is no global constant provided by spring-boot for the version. -->
-		<guava-version>30.1-jre</guava-version>
+		<guava-version>31.1-jre</guava-version>
 	</properties>
 
 	<dependencies>
@@ -112,15 +101,6 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-thymeleaf</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-activemq</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-broker</artifactId>
 		</dependency>
 
 		<!-- 
@@ -159,7 +139,7 @@
 		<dependency>
 			<groupId>com.sap.cloud.security.xsuaa</groupId>
 			<artifactId>token-client</artifactId>
-			<version>2.11.11</version>
+			<version>2.13.4</version>
 			<!--  see also https://mvnrepository.com/artifact/com.sap.cloud.security.xsuaa/token-client -->
 		</dependency>
 
@@ -207,25 +187,6 @@
 			<version>2.0.11</version>
 		</dependency>
 
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-		</dependency>
-
-		<!-- ch.qos.logback.contrib.jackson.JacksonJsonFormatter -->
-		<dependency>
-			<groupId>ch.qos.logback.contrib</groupId>
-			<artifactId>logback-jackson</artifactId>
-			<version>${logback.contrib.version}</version>
-		</dependency>
-
-		<!-- ch.qos.logback.contrib.json.classic.JsonLayout -->
-		<dependency>
-			<groupId>ch.qos.logback.contrib</groupId>
-			<artifactId>logback-json-classic</artifactId>
-			<version>${logback.contrib.version}</version>
-		</dependency>
-
 		<!-- CF API -->
 		<dependency>
 			<groupId>org.cloudfoundry</groupId>
@@ -255,7 +216,6 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-collections4</artifactId>
-			<version>4.4</version>
 		</dependency>
 
 		<!-- see also https://github.com/google/guava/issues/2350#issuecomment-169097253 
@@ -339,7 +299,8 @@
 			<version>3.0.1</version>
 		</dependency>
 
-		<!-- see also https://github.com/owasp/json-sanitizer - Apache 2.0 license -->
+		<!-- see also https://github.com/owasp/json-sanitizer - Apache 2.0 license 
+		most recent version https://mvnrepository.com/artifact/com.mikesamuel/json-sanitizer -->
 		<dependency>
 			<groupId>com.mikesamuel</groupId>
 			<artifactId>json-sanitizer</artifactId>
@@ -405,7 +366,6 @@
 			<plugin>
 				<groupId>org.jetbrains.kotlin</groupId>
 				<artifactId>kotlin-maven-plugin</artifactId>
-				<version>${kotlin.version}</version>
 				<configuration>
 					<args>
 						<arg>-Xjsr305=strict -Xopt-in=kotlin.RequiresOptIn</arg>
@@ -455,7 +415,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.5.1</version>
 				<executions>
 					<!-- Replacing default-compile as it is treated specially by maven -->
 					<execution>
@@ -494,7 +453,7 @@
 					<plugin>
 						<groupId>org.jacoco</groupId>
 						<artifactId>jacoco-maven-plugin</artifactId>
-						<version>0.8.6</version>
+						<version>0.8.8</version>
 						<executions>
 							<!-- Prepares the property pointing to the JaCoCo runtime agent which 
 								is passed as VM argument when Maven the Surefire plugin is executed. -->
@@ -539,14 +498,14 @@
 					</plugin>
 
 					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>findbugs-maven-plugin</artifactId>
-						<version>3.0.5</version>
+						<groupId>com.github.spotbugs</groupId>
+						<artifactId>spotbugs-maven-plugin</artifactId>
+						<version>4.7.3.0</version>
 						<executions>
 							<execution>
 								<phase>verify</phase>
 								<goals>
-									<goal>findbugs</goal>
+									<goal>spotbugs</goal>
 								</goals>
 							</execution>
 						</executions>
@@ -555,7 +514,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-pmd-plugin</artifactId>
-						<version>3.14.0</version>
+						<version>3.19.0</version>
 						<configuration>
 							<linkXRef>false</linkXRef> <!-- see also https://stackoverflow.com/a/18390459 -->
 							<!-- see also https://stackoverflow.com/a/38958480 -->
@@ -604,7 +563,7 @@
 					<plugin>
 						<groupId>org.sonatype.plugins</groupId>
 						<artifactId>nexus-staging-maven-plugin</artifactId>
-						<version>1.6.8</version>
+						<version>1.6.13</version>
 						<extensions>true</extensions>
 						<configuration>
 							<serverId>ossrh</serverId>

@@ -1,6 +1,6 @@
 package org.cloudfoundry.promregator.endpoint;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.endpoint.DiscoveryEndpoint.DiscoveryLabel;
@@ -20,7 +20,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = MockedMetricsEndpointSpringApplication.class)
 @TestPropertySource(locations="default.properties")
-class DiscoveryEndpointTest {
+public class DiscoveryEndpointTest {
 
 	@AfterAll
 	static void cleanupEnvironment() {

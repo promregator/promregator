@@ -48,12 +48,6 @@ export CF_PASSWORD=mysecretPassword
 java -Dspring.config.location=file:/path/to/your/myconfig.yaml -jar promregator-0.0.1-SNAPSHOT.jar
 ```
 
-### Option "cf.proxyHost" (optional)
-This option is no longer in use. Use `cf.proxy.host` and/or `promregator.scraping.proxy.host` instead.
-
-### Option "cf.proxyPort" (optional)
-This option is no longer in use. Use `cf.proxy.port` and/or `promregator.scraping.proxy.port` instead.
-
 ### Option "cf.skipSslValidation" (optional)
 This option became available starting with version 0.2.0.
 
@@ -157,16 +151,15 @@ Do not exaggerate this value by going beyond the number of cores available! Othe
 ### Option "cf.cache.type" (optional)
 This option became available starting with version 0.7.1.
 
-Promregator highly relies on caching the metadata provided by the Cloud Controller of Cloud Foundry. In versions before 0.7.1 there was only the "classical" cache available, which is a custom implementation. Starting with 0.7.1 (and later) the open source library [Caffeine](https://github.com/ben-manes/caffeine) gets used.
+Promregator highly relies on caching the metadata provided by the Cloud Controller of Cloud Foundry. In earlier versions of Promregator, a "classic cache" was available, which was discontinued with version 1.0.0. Version 1.x.y makes use of the Caffeine-based cache by default
 
 Possible values for this option are:
 
 | Value         | Meaning |
 |---------------|---------|
-| CLASSIC       | The classical cache (used before 0.7.x) is being used (default) |
-| CAFFEINE      | The Caffeine-based cache is being used |
+| CAFFEINE      | The Caffeine-based cache is being used (default) |
 
-The default value of this option is `CLASSIC`.
+The default value of this option is `CAFFEINE`.
 
 The caches have differences in their behavior. For more details refer to the [page "Cache Types"](cache-types.md).
 
@@ -216,6 +209,29 @@ Note that domains typically do not change often. That is why you should pick a h
 
 Caches can also be invalidated out of line by sending an HTTP REST request to Promregator. Further details can be found at the [Cache Invalidation page](./invalidate-cache.md).
 
+### Option "cf.cache.timeout.route" (optional)
+For performance reasons the metadata of the Cloud Foundry environment (organization, space, applications, routes, domains) is cached locally in Promregator.
+
+This option allows you to specify how often the metadata of the routes you have selected in your targets shall be verified after they have been fetched. The value is a timeout after which the metadata is retrieved again. Its unit is seconds.
+
+By default, this value is set to 300 seconds, which means that the metadata is retrieved (again) after an hour.
+
+Note that routes typically may change, if you deploy a new version of your application. That is why you should pick a a reasonable value here, typically in the same order of the timeout of applications.
+
+Caches can also be invalidated out of line by sending an HTTP REST request to Promregator. Further details can be found at the [Cache Invalidation page](./invalidate-cache.md).
+
+### Option "cf.cache.timeout.process" (optional)
+For performance reasons the metadata of the Cloud Foundry environment (organization, space, applications, routes, domains) is cached locally in Promregator.
+
+This option allows you to specify how often the process information of the applications you have selected in your targets shall be verified after they have been fetched. The value is a timeout after which the metadata is retrieved again. Its unit is seconds.
+
+By default, this value is set to 300 seconds, which means that the metadata is retrieved (again) after an hour.
+
+Note that processes typically may change, if you up-/downscale your application. That is why you should pick a a reasonable value here, typically in the same order of the timeout of applications.
+
+Caches can also be invalidated out of line by sending an HTTP REST request to Promregator. Further details can be found at the [Cache Invalidation page](./invalidate-cache.md).
+
+
 ### Option "cf.cache.timeout.resolver" (optional)
 For performance reasons the metadata of the Cloud Foundry environment (organization, space, applications, routes) is cached locally in Promregator.
 
@@ -263,6 +279,68 @@ By default, this value is set to 300 seconds, which means that records, which we
 
 Caches can also be invalidated out of line by sending an HTTP REST request to Promregator. Further details can be found at the [Cache Invalidation page](./invalidate-cache.md).
 
+### Option "cf.cache.expiry.route" (optional)
+For performance reasons the metadata of the Cloud Foundry environment (organization, space, applications, routes, domains) is cached locally in Promregator.
+
+This option allows you to specify how long an apparently no-longer-used record should stay in the route cache, before it is removed. Its unit is seconds.
+
+By default, this value is set to 120 seconds, which means that records, which were not used for more than two minutes, are considered deprecated and removed from the cache.
+
+Caches can also be invalidated out of line by sending an HTTP REST request to Promregator. Further details can be found at the [Cache Invalidation page](./invalidate-cache.md).
+
+### Option "cf.cache.expiry.process" (optional)
+For performance reasons the metadata of the Cloud Foundry environment (organization, space, applications, routes, domains) is cached locally in Promregator.
+
+This option allows you to specify how long an apparently no-longer-used record should stay in the process cache of applications, before it is removed. Its unit is seconds.
+
+By default, this value is set to 120 seconds, which means that records, which were not used for more than two minutes, are considered deprecated and removed from the cache.
+
+Caches can also be invalidated out of line by sending an HTTP REST request to Promregator. Further details can be found at the [Cache Invalidation page](./invalidate-cache.md).
+
+### Option "cf.cache.aggregator.blocksize.route" (optional)
+If multiple applications are configured to be scraped by Promregator, the number of requests on fetching route metadata of of the Cloud Foundry environment may become high.
+To limit the load Promregator imposes on the CF infrastructure, multiple route requests are being bundled into one big route request to the platform. This process is called "Request Aggregation". 
+
+This parameter configures the maximal number of requests aggregating route data. Its default value is 100.
+
+The logic does not wait until a block is full - this parameter only defines what is the maximal number of requests allowed (upper boundary).
+
+In high load situation (i.e. thousands of applications configured), increasing this value may be counterproductive in that sense that it will cause additional latency: As the platform will require more time to respond to the request, scrape requests will have to wait longer until their individual request for data can be fulfilled.
+
+### Option "cf.cache.aggregator.checkinterval.route" (optional)
+If multiple applications are configured to be scraped by Promregator, the number of requests on fetching route metadata of of the Cloud Foundry environment may become high.
+To limit the load Promregator imposes on the CF infrastructure, multiple route requests are being bundled into one big route request to the platform. This process is called "Request Aggregation". 
+
+This parameter configures the duration (unit: milliseconds) of how long the Request Aggregator waits for requests to come in, which shall be bundled together in one block.
+
+The default value of this parameter is 125 (milliseconds).
+
+Assuming a value of "cf.cache.aggregator.blocksize.route" to be set to 100 and this parameter to be set to the default value, this means that the Request Aggregator may send out 8 blocks of requests per second with 100 (applications) each. Given a scraping interval of 15 seconds, this means that at maximum (i. e. no caching considered) 12,000 requests can be handled. In case you have more applications configured and you need to increase the performance due to your high load situation, you should *lower* this configuration parameter's value: Cutting it by half (i.e. 62), Promregator may serve double as many applications.
+
+Note, be careful to go below a value of 10 for this parameter: With such a low value, the algorithm will become ineffective - the managerial overhead may consume a lot of CPU cycles unnecessarily. If you are reaching such a high load, consider increasing the value of "cf.cache.timeout.route" instead.
+
+### Option "cf.cache.aggregator.blocksize.process" (optional)
+If multiple applications are configured to be scraped by Promregator, the number of requests on fetching route metadata of of the Cloud Foundry environment may become high.
+To limit the load Promregator imposes on the CF infrastructure, multiple process requests are being bundled into one big process request to the platform. This process is called "Request Aggregation". 
+
+This parameter configures the maximal number of requests aggregating process data. Its default value is 100.
+
+The logic does not wait until a block is full - this parameter only defines what is the maximal number of requests allowed (upper boundary).
+
+In high load situation (i.e. thousands of applications configured), increasing this value may be counterproductive in that sense that it will cause additional latency: As the platform will require more time to respond to the request, scrape requests will have to wait longer until their individual request for data can be fulfilled.
+
+### Option "cf.cache.aggregator.checkinterval.process" (optional)
+If multiple applications are configured to be scraped by Promregator, the number of requests on fetching process metadata of of the Cloud Foundry environment may become high.
+To limit the load Promregator imposes on the CF infrastructure, multiple process requests are being bundled into one big process request to the platform. This process is called "Request Aggregation". 
+
+This parameter configures the duration (unit: milliseconds) of how long the Request Aggregator waits for requests to come in, which shall be bundled together in one block.
+
+The default value of this parameter is 125 (milliseconds).
+
+Assuming a value of "cf.cache.aggregator.blocksize.process" to be set to 100 and this parameter to be set to the default value, this means that the Request Aggregator may send out 8 blocks of requests per second with 100 (applications) each. Given a scraping interval of 15 seconds, this means that at maximum (i. e. no caching considered) 12,000 requests can be handled. In case you have more applications configured and you need to increase the performance due to your high load situation, you should *lower* this configuration parameter's value: Cutting it by half (i.e. 62), Promregator may serve double as many applications.
+
+Note, be careful to go below a value of 10 for this parameter: With such a low value, the algorithm will become ineffective - the managerial overhead may consume a lot of CPU cycles unnecessarily. If you are reaching such a high load, consider increasing the value of "cf.cache.timeout.process" instead.
+
 
 ### Option "cf.request.timeout.org" (optional)
 During discovery Promregator needs to retrieve metadata from the Cloud Foundry platform. To prevent congestion on requests, which may be caused by ongoing requests of scraping by Prometheus, requests sent to the Cloud Foundry platform have to respond within a certain timeframe (the "request timeout"). 
@@ -285,8 +363,19 @@ This option defines the request timeout value for sending requests retrieving da
 
 By default, this value is set to 2500 milliseconds.
 
-### Option "cf.request.timeout.app" (deprecated)
-This option is no longer in use. Use `cf.request.timeout.appInSpace` instead.
+### Option "cf.request.timeout.route" (optional)
+During discovery Promregator needs to retrieve metadata from the Cloud Foundry platform. To prevent congestion on requests, which may be caused by ongoing requests of scraping by Prometheus, requests sent to the Cloud Foundry platform have to respond within a certain timeframe (the "request timeout").
+
+This option defines the request timeout value for sending requests retrieving data about routes. Its unit always is specified in milliseconds.
+
+By default, this value is set to 2500 milliseconds.
+
+### Option "cf.request.timeout.process" (optional)
+During discovery Promregator needs to retrieve metadata from the Cloud Foundry platform. To prevent congestion on requests, which may be caused by ongoing requests of scraping by Prometheus, requests sent to the Cloud Foundry platform have to respond within a certain timeframe (the "request timeout").
+
+This option defines the request timeout value for sending requests retrieving data about processes of applications. Its unit always is specified in milliseconds.
+
+By default, this value is set to 2500 milliseconds.
 
 
 ### Option "cf.request.timeout.appInSpace" (optional)
@@ -295,30 +384,6 @@ During discovery Promregator needs to retrieve metadata from the Cloud Foundry p
 This option defines the request timeout value for sending requests retrieving a list of applications within a space. Its unit always is specified in milliseconds.
 
 By default, this value is set to 2500 milliseconds.
-
-
-### Option "cf.request.timeout.routeMapping" (optional)
-This option became obsolete with version 0.5.0. If applicable, consider using `cf.request.timeout.appSummary` instead.
-Any value specified for this option will be ignored in higher versions.
-
-### Option "cf.request.timeout.route" (optional)
-This option became obsolete with version 0.5.0. If applicable, consider using `cf.request.timeout.appSummary` instead.
-Any value specified for this option will be ignored in higher versions.
-
-### Option "cf.request.timeout.sharedDomain" (optional)
-This option became obsolete with version 0.5.0. If applicable, consider using `cf.request.timeout.appSummary` instead.
-Any value specified for this option will be ignored in higher versions.
-
-### Option "cf.request.timeout.process" (optional)
-This option became obsolete with version 0.5.0. If applicable, consider using `cf.request.timeout.appSummary` instead.
-Any value specified for this option will be ignored in higher versions.
-
-### Option "cf.request.timeout.appSummary" (optional)
-During discovery Promregator needs to retrieve metadata from the Cloud Foundry platform. To prevent congestion on requests, which may be caused by ongoing requests of scraping by Prometheus, requests sent to the Cloud Foundry platform have to respond within a certain timeframe (the "request timeout"). 
-
-This option defines the request timeout value for sending requests retrieving a detailed (summary) configurations of applications within a space. Its unit always is specified in milliseconds.
-
-By default, this value is set to 4000 milliseconds.
 
 
 ### Option "cf.request.backoff" (optional)
@@ -351,7 +416,7 @@ If you want to make the system establish the connection to the API host using an
 
 Please also make sure that you set "cf.proxy.port", too, as otherwise proxy support will be disabled.
 
-Note: In contrast to the deprecated option `cf.proxyHost`, this configuration option will *not* be used for accessing the targets in any case.
+Note: This configuration option will *not* be used for accessing the targets in any case. Use configuration options "promregator.scraping.proxy" instead.
 
 #### Option "cf.proxy.port" (optional)
 This option became available starting with version 0.6.4 and 0.7.0.
@@ -522,12 +587,6 @@ The default value is 600 seconds (i.e. 10 minutes).
 ### Subgroup "promregator.endpoint"
 Configures the way how the metrics endpoints `/metrics` and `/singleTargetMetrics` behave.
 
-#### Option "promregator.endpoint.maxProcessingTime" (optional, *deprecated*)
-This option is deprecated since version 0.5.0. Please use `promregator.scraping.maxProcessingTime` instead.
-
-#### Option "promregator.endpoint.threads" (optional, *deprecated*)
-This option is deprecated since version 0.5.0. Please use `promregator.scraping.threads` instead.
-
 #### Option "promregator.endpoint.auth" (optional)
 Specifies the way how authentication shall be verified, if a request reaches the scraping endpoints of Promregator (e.g. `/metrics` and `/singleTargetMetrics`). Valid values are:
 
@@ -577,19 +636,6 @@ Note that if you increase this value, more threads will spawned inside of Promre
 
 The default value of this option is 5.
 
-#### Option "promregator.scraping.labelEnrichment" (optional)
-Specifies if [label enrichment](./enrichment.md) for metrics shall take place, if **Single Target Scraping is being used**.
-
-Due to compatibility reasons, the default value of this options is "true".
-
-This configuration options does *not* have any influence on scraping, if Single **Endpoint** Scraping is used (this is due to the fact that label enrichment must take place for Single Endpoint Scraping, as otherwise the metrics could overwrite each other). 
-
-If this option is set to "true" and Single Target Scraping is used, then - even though the necessary information is available via the "file_sd_configs" metadata - label enrichment takes place for all metrics returned by Promregator. Due to compatibility reasons this is necessary.
-
-If this option is set to "false" and Single Target Scraping is used, then label enrichment does not take place for any metric returned by Promregator (for the scraping endpoints). Note that with Prometheus' feature of label rewriting, it is still possible to have labels in place. For recommendations on this refer the [enrichment's documentation](./enrichment.md).
-
-Note that the metrics generated by Promregator itself are not affected by this setting. They still will be enriched by its labels accordingly.
-
 #### Subsubgroup "promregator.scraping.proxy"
 
 ##### Option "promregator.scraping.proxy.host" (optional)
@@ -598,8 +644,6 @@ This option became available starting with version 0.6.4 and 0.7.0.
 If you want to make the system establish the connection to the application (containers) using an HTTP (sorry, HTTPS not supported yet) proxy, enter the IP address or the hostname of this server here. If a hostname is given, it must be resolvable locally (i.e. by Promregator).
 
 Please also make sure that you set "promregator.scraping.proxy.port", too, as otherwise proxy support will be disabled.
-
-Note: In contrast to the deprecated option `cf.proxyHost`, this configuration option will *not* be used for accessing the API host (Cloud Foundry Controller) in any case.
 
 ##### Option "promregator.scraping.proxy.port" (optional)
 This option became available starting with version 0.6.4 and 0.7.0.
@@ -664,29 +708,6 @@ Example:
 export PROMREGATOR_AUTHENTICATOR_BASIC_PASSWORD=myPassword
 java -Dspring.config.location=file:/path/to/your/myconfig.yaml -jar promregator-0.0.1-SNAPSHOT.jar
 ```
-
-#### Option "promregator.authenticator.oauth2xsuaa.tokenServiceURL" (mandatory, if using promregator.authenticator.type=OAuth2XSUAA, *deprecated*)
-Specifies the URL of the OAuth2 endpoint, which contains the token service of your authorization server in case of global authentication. Typically, this is the endpoint with the path `/oauth/token`, as Promregator will try to perform to establish a ["Client Credentials"-based authentication](https://www.digitalocean.com/community/tutorials/an-introduction-to-oauth-2#grant-type-client-credentials). Deprecated, please use `promregator.authenticator.oauth2xsuaaBasic.tokenServiceURL` instead.
-
-#### Option "promregator.authenticator.oauth2xsuaa.client_id" (mandatory, if using promregator.authenticator.type=OAuth2XSUAA, *deprecated*)
-Specifies the client identifier (a.k.a. "client_id") which shall be used during the OAuth2 request based on the Grant Type Client Credentials flow in case of global authentication. Deprecated, please use `promregator.authenticator.oauth2xsuaaBasic.client_id` instead.
-
-#### Option "promregator.authenticator.oauth2xsuaa.client_secret" (mandatory, if using promregator.authenticator.type=OAuth2XSUAA, *deprecated*)
-Specifies the client secret (a.k.a. "client_secret") which shall be used during the OAuth2 request based on the Grant Type Client Credentials flow in case of global authentication. Deprecated, please use `promregator.authenticator.oauth2xsuaaBasic.client_secret` instead.
-
-*WARNING!*
-Due to security reasons, it is *neither* recommended to store this value in your YAML file, nor to put it into the command line when starting Promregator.
-Instead it is suggested to set the corresponding environment variables `PROMREGATOR_AUTHENTICATOR_OAUTH2XSUAA_CLIENT_SECRET` when starting the application.
-
-Example:
-
-```bash
-export PROMREGATOR_AUTHENTICATOR_OAUTH2XSUAA_CLIENT_SECRET=myClientSecret
-java -Dspring.config.location=file:/path/to/your/myconfig.yaml -jar promregator-0.0.1-SNAPSHOT.jar
-```
-
-#### Option "promregator.authenticator.oauth2xsuaa.scopes" (optional, only available if using promregator.authenticator.type=OAuth2XSUAA, *deprecated*)
-Specifies the set of scopes/authorities (format itself is a comma-separated string of explicit scopes, see also https://www.oauth.com/oauth2-servers/access-tokens/client-credentials/), which shall be requested from the OAuth2 server when using the Grant Type Client Credentials flow in case of global authentication.  Deprecated, please use `promregator.authenticator.oauth2xsuaaBasic.scopes` instead.
 
 #### Option "promregator.authenticator.oauth2xsuaaBasic.tokenServiceURL" (mandatory, if using promregator.authenticator.type=OAuth2XSUAABasic)
 Specifies the URL of the OAuth2 endpoint, which contains the token service of your authorization server in case of global authentication. Typically, this is the endpoint with the path `/oauth/token`, as Promregator will try to perform to establish a ["Client Credentials"-based authentication](https://www.digitalocean.com/community/tutorials/an-introduction-to-oauth-2#grant-type-client-credentials).

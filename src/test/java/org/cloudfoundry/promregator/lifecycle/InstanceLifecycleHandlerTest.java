@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcherMetrics;
+import org.cloudfoundry.promregator.messagebus.MessageBusTopic;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.scanner.Instance;
@@ -17,16 +18,15 @@ import org.junit.jupiter.api.Test;
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.CollectorRegistry;
 
-class InstanceLifecycleHandlerTest {
+public class InstanceLifecycleHandlerTest {
 
 	@AfterAll
-	static void cleanUp() {
+	static public void cleanUp() {
 		JUnitTestUtils.cleanUpAll();
 	}
 	
 	@Test
-	void testReceiverCleansUpProperly() {
-		InstanceLifecycleHandler subject = new InstanceLifecycleHandler();
+	public void testReceiverCleansUpProperly() {
 		
 		ResolvedTarget rt = new ResolvedTarget();
 		
@@ -54,8 +54,9 @@ class InstanceLifecycleHandlerTest {
 		mfm.getLatencyRequest().observe(42.0);
 		mfm.getRequestSize().observe(2000);
 		
+		InstanceLifecycleHandler subject = new InstanceLifecycleHandler();
 		// trigger cleanup now
-		subject.receiver(i);
+		subject.receiveMessage(MessageBusTopic.DISCOVERER_INSTANCE_REMOVED, i);
 		
 		Enumeration<MetricFamilySamples> mfs = CollectorRegistry.defaultRegistry.metricFamilySamples();
 		

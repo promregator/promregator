@@ -10,7 +10,7 @@ import io.prometheus.client.Collector.MetricFamilySamples;
 
 public abstract class AbstractMetricFamilySamplesEnricher {
 
-	public AbstractMetricFamilySamplesEnricher() {
+	protected AbstractMetricFamilySamplesEnricher() {
 		super();
 	}
 

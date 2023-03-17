@@ -2,8 +2,8 @@
 <suppressions
 	xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
 
-	<!--  Note: on the format of this file, please read https://jeremylong.github.io/DependencyCheck/general/suppression.html
-	carefully! -->
+	<!-- Note: on the format of this file, please read https://jeremylong.github.io/DependencyCheck/general/suppression.html 
+		carefully! -->
 
 	<suppress>
 		<notes><![CDATA[
@@ -343,15 +343,17 @@
 	   file name: netty-incubator-codec-classes-quic-0.0.24.Final.jar
 	   Misdetected as "general netty", but is a specific vector
 	   ]]></notes>
-		<filePath regex="true">.*/netty-incubator-codec-classes-quic-0\.0\.24\.Final\.jar</filePath>
+		<filePath regex="true">.*/netty-incubator-codec-classes-quic-0\.0\.24\.Final\.jar
+		</filePath>
 		<cpe>cpe:/a:netty:netty</cpe>
 	</suppress>
-	
+
 	<suppress>
 		<notes><![CDATA[
 	   Misdetected as "general netty", but is a specific vector
 	   ]]></notes>
-		<filePath regex="true">.*/netty-incubator-codec-native-quic-0\.0\.24\.Final-linux-x86_64\.jar</filePath>
+		<filePath regex="true">.*/netty-incubator-codec-native-quic-0\.0\.24\.Final-linux-x86_64\.jar
+		</filePath>
 		<cpe>cpe:/a:netty:netty</cpe>
 	</suppress>
 
@@ -360,19 +362,20 @@
 	   file name: netty-tcnative-classes-2.0.46.Final.jar
 	   Misdetected as "general netty", but is a specific vector
 	   ]]></notes>
-		<filePath regex="true">.*/netty-tcnative-classes-2\.0\.46\.Final\.jar</filePath>
+		<filePath regex="true">.*/netty-tcnative-classes-2\.0\.46\.Final\.jar
+		</filePath>
 		<cpe>cpe:/a:netty:netty</cpe>
 	</suppress>
-	
+
 	<suppress>
-	   <notes><![CDATA[
+		<notes><![CDATA[
 	   file name: wire-runtime-2.2.0.jar
 	   Misdetected as an iOS library
 	   ]]></notes>
-	   <filePath regex="true">.*/wire-runtime-2\.2\.0\.jar</filePath>
-	   <cpe>cpe:/a:wire:wire</cpe>
+		<filePath regex="true">.*/wire-runtime-2\.2\.0\.jar</filePath>
+		<cpe>cpe:/a:wire:wire</cpe>
 	</suppress>
-	
+
 	<suppress>
 		<notes><![CDATA[
 		   file name: log4j-to-slf4j-2.17.0.jar
@@ -381,7 +384,7 @@
 		<filePath regex="true">.*/log4j-to-slf4j-2\.17\.0\.jar</filePath>
 		<cpe>cpe:/a:apache:log4j</cpe>
 	</suppress>
-	
+
 	<suppress>
 		<notes><![CDATA[
 		   file name: log4j-api-2.17.0.jar
@@ -389,5 +392,229 @@
 		   ]]></notes>
 		<filePath regex="true">.*/log4j-api-2\.17\.0\.jar</filePath>
 		<cpe>cpe:/a:apache:log4j</cpe>
+	</suppress>
+	<suppress>
+		<notes><![CDATA[
+	   file name: commons-compress-1.21.jar
+	   SecScan tools misdetects this object via CPE as being vulnerable. However, only commons-net tools are affected (but not commons-compress)
+	   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.apache\.commons/commons\-compress@.*$
+		</packageUrl>
+		<cve>CVE-2021-37533</cve>
+	</suppress>
+	<suppress>
+		<notes><![CDATA[
+	   file name: commons-codec-1.15.jar
+	   SecScan tools misdetects this object via CPE as being vulnerable. However, only commons-net tools are affected (but not commons-codec)
+	   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/commons\-codec/commons\-codec@.*$
+		</packageUrl>
+		<cve>CVE-2021-37533</cve>
+	</suppress>
+	<suppress>
+		<notes><![CDATA[
+	   file name: jcl-over-slf4j-1.7.36.jar
+	   SecScan tools misdetects this object via CPE as being vulnerable. However, only commons-net tools are affected (but not jcl-over-sllf4j)
+	   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.slf4j/jcl\-over\-slf4j@.*$
+		</packageUrl>
+		<cve>CVE-2021-37533</cve>
+	</suppress>
+	<suppress>
+		<notes><![CDATA[
+	   file name: netty-incubator-codec-classes-quic-0.0.34.Final.jar
+	   SecScan tools misdetects this object via CPE as being vulnerable. This is an incubator project's part and not the main package.
+	   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/io\.netty\.incubator/netty\-incubator\-codec\-classes\-quic@.*$
+		</packageUrl>
+		<cve>CVE-2014-3488</cve>
+	</suppress>
+	<suppress>
+		<notes><![CDATA[
+	   file name: netty-incubator-codec-classes-quic-0.0.34.Final.jar
+	   SecScan tools misdetects this object via CPE as being vulnerable. This is an incubator project's part and not the main package.
+	   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/io\.netty\.incubator/netty\-incubator\-codec\-classes\-quic@.*$
+		</packageUrl>
+		<cve>CVE-2019-16869</cve>
+	</suppress>
+	<suppress>
+		<notes><![CDATA[
+	   file name: netty-incubator-codec-classes-quic-0.0.34.Final.jar
+	   SecScan tools misdetects this object via CPE as being vulnerable. This is an incubator project's part and not the main package.
+	   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/io\.netty\.incubator/netty\-incubator\-codec\-classes\-quic@.*$
+		</packageUrl>
+		<cve>CVE-2019-20444</cve>
+	</suppress>
+	<suppress>
+		<notes><![CDATA[
+	   file name: netty-incubator-codec-classes-quic-0.0.34.Final.jar
+	   SecScan tools misdetects this object via CPE as being vulnerable. This is an incubator project's part and not the main package.
+	   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/io\.netty\.incubator/netty\-incubator\-codec\-classes\-quic@.*$
+		</packageUrl>
+		<cve>CVE-2019-20445</cve>
+	</suppress>
+	<suppress>
+		<notes><![CDATA[
+	   file name: netty-incubator-codec-classes-quic-0.0.34.Final.jar
+	   SecScan tools misdetects this object via CPE as being vulnerable. This is an incubator project's part and not the main package.
+	   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/io\.netty\.incubator/netty\-incubator\-codec\-classes\-quic@.*$
+		</packageUrl>
+		<cve>CVE-2021-21290</cve>
+	</suppress>
+	<suppress>
+		<notes><![CDATA[
+	   file name: netty-incubator-codec-classes-quic-0.0.34.Final.jar
+	   SecScan tools misdetects this object via CPE as being vulnerable. This is an incubator project's part and not the main package.
+	   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/io\.netty\.incubator/netty\-incubator\-codec\-classes\-quic@.*$
+		</packageUrl>
+		<cve>CVE-2021-21295</cve>
+	</suppress>
+	<suppress>
+		<notes><![CDATA[
+	   file name: netty-incubator-codec-classes-quic-0.0.34.Final.jar
+	   SecScan tools misdetects this object via CPE as being vulnerable. This is an incubator project's part and not the main package.
+	   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/io\.netty\.incubator/netty\-incubator\-codec\-classes\-quic@.*$
+		</packageUrl>
+		<cve>CVE-2021-21409</cve>
+	</suppress>
+	<suppress>
+		<notes><![CDATA[
+	   file name: netty-incubator-codec-classes-quic-0.0.34.Final.jar
+	   SecScan tools misdetects this object via CPE as being vulnerable. This is an incubator project's part and not the main package.
+	   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/io\.netty\.incubator/netty\-incubator\-codec\-classes\-quic@.*$
+		</packageUrl>
+		<cve>CVE-2021-37136</cve>
+	</suppress>
+	<suppress>
+		<notes><![CDATA[
+	   file name: netty-incubator-codec-classes-quic-0.0.34.Final.jar
+	   SecScan tools misdetects this object via CPE as being vulnerable. This is an incubator project's part and not the main package.
+	   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/io\.netty\.incubator/netty\-incubator\-codec\-classes\-quic@.*$
+		</packageUrl>
+		<cve>CVE-2021-37137</cve>
+	</suppress>
+	<suppress>
+		<notes><![CDATA[
+	   file name: netty-incubator-codec-classes-quic-0.0.34.Final.jar
+	   SecScan tools misdetects this object via CPE as being vulnerable. This is an incubator project's part and not the main package.
+	   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/io\.netty\.incubator/netty\-incubator\-codec\-classes\-quic@.*$
+		</packageUrl>
+		<cve>CVE-2022-24823</cve>
+	</suppress>
+	<suppress>
+		<notes><![CDATA[
+	   file name: netty-incubator-codec-classes-quic-0.0.34.Final.jar
+	   SecScan tools misdetects this object via CPE as being vulnerable. This is an incubator project's part and not the main package.
+	   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/io\.netty\.incubator/netty\-incubator\-codec\-classes\-quic@.*$
+		</packageUrl>
+		<cve>CVE-2022-41881</cve>
+	</suppress>
+	<suppress>
+		<notes><![CDATA[
+	   file name: netty-incubator-codec-classes-quic-0.0.34.Final.jar
+	   SecScan tools misdetects this object via CPE as being vulnerable. This is an incubator project's part and not the main package.
+	   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/io\.netty\.incubator/netty\-incubator\-codec\-classes\-quic@.*$
+		</packageUrl>
+		<cve>CVE-2022-41915</cve>
+	</suppress>
+
+	<suppress>
+		<notes><![CDATA[
+	   file name: spring-boot-starter-security-2.7.7.jar
+	   Misdection: Vulnerability only applicable to lower version than used.
+	   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.springframework\.boot/spring\-boot\-starter\-security@.*$
+		</packageUrl>
+		<cve>CVE-2022-22976</cve>
+	</suppress>
+	<suppress>
+		<notes><![CDATA[
+	   file name: spring-boot-starter-security-2.7.7.jar
+	   Misdection: Vulnerability only applicable to lower version than used.
+	   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.springframework\.boot/spring\-boot\-starter\-security@.*$
+		</packageUrl>
+		<cve>CVE-2022-22978</cve>
+	</suppress>
+	<suppress>
+		<notes><![CDATA[
+	   file name: spring-core-5.3.24.jar
+	   Misdection: CVE states that issue is only applicable up to 5.3.16
+	   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.springframework/spring\-core@.*$
+		</packageUrl>
+		<cve>CVE-2016-1000027</cve>
+	</suppress>
+	<suppress>
+		<notes><![CDATA[
+	   file name: spring-security-crypto-5.7.6.jar
+	   Misdection: CVE states that the issue is only applicable up to 5.3.x
+	   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring\-security\-crypto@.*$
+		</packageUrl>
+		<vulnerabilityName>CVE-2020-5408</vulnerabilityName>
+	</suppress>
+	<suppress>
+		<notes><![CDATA[
+	   file name: spring-security-rsa-1.0.11.RELEASE.jar
+	   Misdection: wrong GAV identified because of a prefix match.
+	   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring\-security\-rsa@.*$
+		</packageUrl>
+		<cve>CVE-2022-22976</cve>
+	</suppress>
+	<suppress>
+		<notes><![CDATA[
+	   file name: spring-security-rsa-1.0.11.RELEASE.jar
+	   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring\-security\-rsa@.*$
+		</packageUrl>
+		<cve>CVE-2022-22978</cve>
+	</suppress>
+	<suppress>
+		<notes><![CDATA[
+	   file name: spring-web-5.3.24.jar
+	   Misdetection: CVE states that the issue is only applicable up to 5.3.16
+	   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.springframework/spring\-web@.*$
+		</packageUrl>
+		<vulnerabilityName>CVE-2016-1000027</vulnerabilityName>
+	</suppress>
+	<suppress>
+		<notes><![CDATA[
+	   file name: zipkin-2.23.2.jar
+	   Misdection of two different projects
+	   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/io\.zipkin\.zipkin2/zipkin@.*$
+		</packageUrl>
+		<cpe>cpe:/a:pki-core_project:pki-core</cpe>
+	</suppress>
+	<suppress>
+		<notes><![CDATA[
+	   file name: zipkin-reporter-2.16.3.jar
+	   Misdection of two different projects
+	   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/io\.zipkin\.reporter2/zipkin\-reporter@.*$
+		</packageUrl>
+		<cpe>cpe:/a:pki-core_project:pki-core</cpe>
+	</suppress>
+	<suppress>
+	   <notes><![CDATA[
+	   file name: activemq-broker-5.16.5.jar
+	   Misdetection of GAV: Artemis isn't activemq.
+	   ]]></notes>
+	   <packageUrl regex="true">^pkg:maven/org\.apache\.activemq/activemq\-broker@.*$</packageUrl>
+	   <vulnerabilityName>CVE-2015-3208</vulnerabilityName>
 	</suppress>
 </suppressions>

@@ -4,7 +4,15 @@ promregator:
   
   authenticator:
     type: none
-    
+  
+  authentication:
+    basic:
+      username: integrationtest
+      password: 1ntegrat1ontest
+      
+  discovery:
+    auth: BASIC
+  
   scraping:
     labelEnrichment: false
   

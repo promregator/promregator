@@ -17,7 +17,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @SpringBootTest(classes = CFAccessorCacheCaffeineSpringApplication.class)
 @TestPropertySource(locations="../default.properties")
 @DirtiesContext(classMode=ClassMode.AFTER_CLASS)
-class CFAccessorCacheCaffeineInvalidationTest {
+public class CFAccessorCacheCaffeineInvalidationTest {
 	
 	/*
 	 * Warning! Do not try to merge with CFAccessorCacheCaffeineTest
@@ -34,10 +34,12 @@ class CFAccessorCacheCaffeineInvalidationTest {
 	
 	@BeforeEach
 	public void invalidateCaches() {
-		this.subject.invalidateCacheApplications();
+		this.subject.invalidateCacheApplication();
 		this.subject.invalidateCacheSpace();
 		this.subject.invalidateCacheOrg();
 		this.subject.invalidateCacheDomain();
+		this.subject.invalidateCacheRoute();
+		this.subject.invalidateCacheProcess();
 	}
 	
 	@AfterAll
@@ -47,46 +49,92 @@ class CFAccessorCacheCaffeineInvalidationTest {
 	
 	@Test
 	void testInvalidateCacheApplications() {
-		subject.retrieveSpaceSummary("dummy");
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveSpaceSummary("dummy");
+		subject.retrieveAllApplicationsInSpaceV3("dummy1", "dummy2");
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllApplicationsInSpaceV3("dummy1", "dummy2");
 		
-		subject.invalidateCacheApplications();
+		subject.invalidateCacheApplication();
 
-		subject.retrieveSpaceSummary("dummy");
-		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveSpaceSummary("dummy");
+		subject.retrieveAllApplicationsInSpaceV3("dummy1", "dummy2");
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveAllApplicationsInSpaceV3("dummy1", "dummy2");
 	}
 
 	@Test
 	void testInvalidateCacheSpace() {
-		subject.retrieveSpaceId("dummy1", "dummy2");
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveSpaceId("dummy1", "dummy2");
+		subject.retrieveSpaceIdV3("dummy1", "dummy2");
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveSpaceIdV3("dummy1", "dummy2");
 		
 		subject.invalidateCacheSpace();
 		
-		subject.retrieveSpaceId("dummy1", "dummy2");
-		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveSpaceId("dummy1", "dummy2");
+		subject.retrieveSpaceIdV3("dummy1", "dummy2");
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveSpaceIdV3("dummy1", "dummy2");
 	}
 
 	@Test
+	void testInvalidateCacheSpaceInOrgCache() {
+		subject.retrieveSpaceIdsInOrgV3("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveSpaceIdsInOrgV3("dummy");
+		
+		subject.invalidateCacheSpace();
+		
+		subject.retrieveSpaceIdsInOrgV3("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveSpaceIdsInOrgV3("dummy");
+	}
+	
+	@Test
 	void testInvalidateCacheOrg() {
-		subject.retrieveOrgId("dummy");
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveOrgId("dummy");
+		subject.retrieveOrgIdV3("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveOrgIdV3("dummy");
 		
 		subject.invalidateCacheOrg();
 		
-		subject.retrieveOrgId("dummy");
-		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveOrgId("dummy");
+		subject.retrieveOrgIdV3("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveOrgIdV3("dummy");
 	}
 
 	@Test
+	void testInvalidateCacheOrgAllOrgCache() {
+		subject.retrieveAllOrgIdsV3();
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllOrgIdsV3();
+		
+		subject.invalidateCacheOrg();
+		
+		subject.retrieveAllOrgIdsV3();
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveAllOrgIdsV3();
+	}
+
+	
+	@Test
 	void testInvalidateCacheDomain() {
-		subject.retrieveAllDomains("dummy");
-		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllDomains("dummy");
+		subject.retrieveAllDomainsV3("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(1)).retrieveAllDomainsV3("dummy");
 		
 		subject.invalidateCacheDomain();
 		
-		subject.retrieveAllDomains("dummy");
-		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveAllDomains("dummy");
+		subject.retrieveAllDomainsV3("dummy");
+		Mockito.verify(this.parentMock, Mockito.times(2)).retrieveAllDomainsV3("dummy");
+	}
+	
+	@Test
+	void testInvalidateCacheRoute() {
+		subject.retrieveRoutesForAppId("dummy");
+		Mockito.verify(this.parentMock, Mockito.timeout(500).times(1)).retrieveRoutesForAppIds(Mockito.anySet());
+		
+		subject.invalidateCacheRoute();
+		
+		subject.retrieveRoutesForAppId("dummy");
+		Mockito.verify(this.parentMock, Mockito.timeout(500).times(2)).retrieveRoutesForAppIds(Mockito.anySet());
 	}
 
+	@Test
+	void testInvalidateCacheProcess() {
+		subject.retrieveWebProcessesForAppId("dummy");
+		Mockito.verify(this.parentMock, Mockito.timeout(500).times(1)).retrieveWebProcessesForAppIds(Mockito.anySet());
+		
+		subject.invalidateCacheProcess();
+		
+		subject.retrieveWebProcessesForAppId("dummy");
+		Mockito.verify(this.parentMock, Mockito.timeout(500).times(2)).retrieveWebProcessesForAppIds(Mockito.anySet());
+	}
+
+	
 }

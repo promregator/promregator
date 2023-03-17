@@ -1,7 +1,7 @@
 package org.cloudfoundry.promregator.endpoint;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
-import org.cloudfoundry.promregator.cfaccessor.CFAccessorCacheClassic;
+import org.cloudfoundry.promregator.cfaccessor.CFAccessorCacheCaffeine;
 import org.cloudfoundry.promregator.endpoint.MockedAppInstanceScannerEndpointSpringApplication.MockedCFAccessorCache;
 import org.cloudfoundry.promregator.endpoint.MockedAppInstanceScannerEndpointSpringApplication.MockedCachingTargetResolver;
 import org.cloudfoundry.promregator.scanner.TargetResolver;
@@ -19,7 +19,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = MockedAppInstanceScannerEndpointSpringApplication.class)
 @TestPropertySource(locations="default.properties")
-class InvalidateCacheEndpointTest {
+public class InvalidateCacheEndpointTest {
 
 	@AfterAll
 	static void cleanupEnvironment() {
@@ -31,7 +31,7 @@ class InvalidateCacheEndpointTest {
 	private InvalidateCacheEndpoint subject;
 	
 	@Autowired
-	private CFAccessorCacheClassic cfAccessorCache;
+	private CFAccessorCacheCaffeine cfAccessorCache;
 	
 	@Autowired
 	private TargetResolver targetResolver;
@@ -40,7 +40,7 @@ class InvalidateCacheEndpointTest {
 	void testInvalidateCacheAll() {
 		Assertions.assertNotNull(subject);
 		
-		ResponseEntity<String> response = subject.invalidateCache(true, true, true, true);
+		ResponseEntity<String> response = subject.invalidateCache(true, true, true, true, true, true, true);
 		
 		Assertions.assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
 		
@@ -48,6 +48,9 @@ class InvalidateCacheEndpointTest {
 		Assertions.assertTrue(cfa.isApplicationCache());
 		Assertions.assertTrue(cfa.isOrgCache());
 		Assertions.assertTrue(cfa.isSpaceCache());
+		Assertions.assertTrue(cfa.isDomainCache());
+		Assertions.assertTrue(cfa.isRouteCache());
+		Assertions.assertTrue(cfa.isProcessCache());
 		
 		MockedCachingTargetResolver tr = (MockedCachingTargetResolver) this.targetResolver;
 		Assertions.assertTrue(tr.isResolverCache());

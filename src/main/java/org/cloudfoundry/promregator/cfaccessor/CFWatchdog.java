@@ -3,8 +3,8 @@ package org.cloudfoundry.promregator.cfaccessor;
 import java.time.Duration;
 import java.util.Optional;
 
-import org.cloudfoundry.client.v2.info.GetInfoResponse;
 import org.cloudfoundry.promregator.ExitCodes;
+import org.cloudfoundry.promregator.cfaccessor.client.InfoV3;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +17,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 public class CFWatchdog {
 	private static final Logger log = LoggerFactory.getLogger(CFWatchdog.class);
 	
-	private static final GetInfoResponse ERRONEOUS_GET_INFO_RESPONSE = GetInfoResponse.builder().apiVersion("FAILED").build();
+	private static final InfoV3 ERRONEOUS_GET_INFO_RESPONSE = new InfoV3();
 	
 	@Autowired
 	private CFAccessor mainCFAccessor;

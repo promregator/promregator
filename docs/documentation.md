@@ -152,17 +152,9 @@ Moreover, it may be worth mentioning that querying the `/discovery` endpoint sig
 
 #### Label Rewriting
 
-By default, Promegator (still) performs [label enrichment](./enrichment.md) if used with Single Target Scraping mode. Single Target Scraping mode permits that label enrichment may be done by Prometheus. This allows to comply to Prometheus' recommended approach of handling labels which is using [rewriting rules](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config). 
+Promregator V1 expects that label enrichment will be done by Prometheus. This is in line with Prometheus' recommended approach of handling labels which is using [rewriting rules](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config). 
 
-As Prometheus does not permit targets to set the value of label `instance` (which is used to indicate a single endpoint from where you scraped your metrics), you should use Prometheus' feature of rewrite labels to update that label. The recommended configurationeven if label enrichment is enabled in Single Target Scraping mode is:
-
-```yaml
-    relabel_configs:
-     - source_labels: [__meta_promregator_target_instanceId]
-       target_label: instance
-```
-
-To enable full label rewriting to be performed by Prometheus only, set the [configuration option](./config.md) `promregator.scraping.labelEnrichment` to `false`. In your configuration of Prometheus you then may specify `relabel_configs` which you may adjust to your own needs. For that Promregator's discovery service provides the following meta labels:
+In your configuration of Prometheus you then may specify `relabel_configs`, which you may adjust to your own needs. For that, Promregator's discovery service provides the following meta labels:
 
 | Label name | Meaning | Example(s) |
 |------------|---------|------------|
@@ -173,7 +165,7 @@ To enable full label rewriting to be performed by Prometheus only, set the [conf
 | `__meta_promregator_target_instanceNumber` | the instance number of the CF app instance which is being scraped| `0` or `2` |
 | `__meta_promregator_target_instanceId` | the instance identifier of the CF app instance which is being scraped| `5d49f9b0-8ac7-46b3-8945-1f500be8b96a:0` |
 
-If you want to have the same labels provided as Promregator does during classical label enrichment (e.g. adding `org_name`, `app_name` and so forth), you may use the following configuration snippet:
+If you want to have the labels provided in the canonical way (e.g. adding `org_name`, `app_name` and so forth), you may use the following configuration snippet:
 
 ```yaml
     relabel_configs:
@@ -196,7 +188,6 @@ If you want to have the same labels provided as Promregator does during classica
        target_label: cf_instance_number
 ```
 
-Users of Promregator version 0.4.x and earlier should be aware of the page ["Rewriting Rule For __metrics_path__ No Longer Required for Promregator 0.5.0 and Later"](https://github.com/promregator/promregator/wiki/Rewriting-Rule-For-__metrics_path__-No-Longer-Required-for-Promregator-0.5.0-and-Later).
 
 
 #### Summary
@@ -229,7 +220,6 @@ Summarizing the suggestions for the Prometheus' configuration, it is recommended
        target_label: cf_instance_number
 ```
 
-If you follow the approach above, make sure that in your Promregator's configuration the configuration option `promregator.scraping.labelEnrichment` is set to `false`.
 
 ### Common to both Scraping Modes
 

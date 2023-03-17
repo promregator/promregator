@@ -8,12 +8,9 @@ import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.cloudfoundry.client.v2.applications.ApplicationResource;
-import org.cloudfoundry.client.v2.applications.ListApplicationsResponse;
-import org.cloudfoundry.client.v2.organizations.ListOrganizationsResponse;
-import org.cloudfoundry.client.v2.organizations.OrganizationResource;
-import org.cloudfoundry.client.v2.spaces.ListSpacesResponse;
-import org.cloudfoundry.client.v2.spaces.SpaceResource;
+import org.cloudfoundry.client.v3.applications.ApplicationResource;
+import org.cloudfoundry.client.v3.applications.ApplicationState;
+import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.config.Target;
 import org.slf4j.Logger;
@@ -64,27 +61,27 @@ public class ReactiveTargetResolver implements TargetResolver {
 
 		public ResolvedTarget toResolvedTarget() {
 			if (getResolvedOrgId() == null) {
-				log.error(String.format("Target '%s' created a ResolvedTarget without resolved org id", getConfigTarget()));
+				log.error("Target '{}' created a ResolvedTarget without resolved org id", getConfigTarget());
 			}
 
 			if (getResolvedSpaceId() == null) {
-				log.error(String.format("Target '%s' created a ResolvedTarget without resolved space id", getConfigTarget()));
+				log.error("Target '{}' created a ResolvedTarget without resolved space id", getConfigTarget());
 			}
 
 			if (getResolvedApplicationId() == null) {
-				log.error(String.format("Target '%s' created a ResolvedTarget without resolved application id", getConfigTarget()));
+				log.error("Target '{}' created a ResolvedTarget without resolved application id", getConfigTarget());
 			}
 
 			if (getResolvedOrgName() == null) {
-				log.error(String.format("Target '%s' created a ResolvedTarget without resolved org name", getConfigTarget()));
+				log.error("Target '{}' created a ResolvedTarget without resolved org name", getConfigTarget());
 			}
 
 			if (getResolvedSpaceName() == null) {
-				log.error(String.format("Target '%s' created a ResolvedTarget without resolved space name", getConfigTarget()));
+				log.error("Target '{}' created a ResolvedTarget without resolved space name", getConfigTarget());
 			}
 
 			if (getResolvedApplicationName() == null) {
-				log.error(String.format("Target '%s' created a ResolvedTarget without resolved application name", getConfigTarget()));
+				log.error("Target '{}' created a ResolvedTarget without resolved application name", getConfigTarget());
 			}
 
 
@@ -257,8 +254,8 @@ public class ReactiveTargetResolver implements TargetResolver {
 		
 		if (it.getConfigTarget().getOrgRegex() == null && it.getConfigTarget().getOrgName() != null) {
 			// Case 3: we have the orgName, but we also need its id
-			Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveOrgId(it.getConfigTarget().getOrgName())
-					.map(ListOrganizationsResponse::getResources)
+			Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveOrgIdV3(it.getConfigTarget().getOrgName())
+					.map(org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse::getResources)
 					.flatMap(resList -> {
 						if (resList == null || resList.isEmpty()) {
 							return Mono.empty();
@@ -267,20 +264,20 @@ public class ReactiveTargetResolver implements TargetResolver {
 						return Mono.just(resList.get(0));
 					})
 					.map(res -> {
-						it.setResolvedOrgName(res.getEntity().getName());
-						it.setResolvedOrgId(res.getMetadata().getId());
+						it.setResolvedOrgName(res.getName());
+						it.setResolvedOrgId(res.getId());
 						return it;
 					})
-					.doOnError(e -> log.warn(String.format("Error on retrieving org id for org '%s'", it.getConfigTarget().getOrgName()), e))
+					.doOnError(e -> log.warn("Error on retrieving org id for org '{}'", it.getConfigTarget().getOrgName(), e))
 					.onErrorResume(__ -> Mono.empty());
 			
 			return itMono.flux();
 		}
 		
 		// Case 1 & 2: Get all orgs from the platform
-		Mono<ListOrganizationsResponse> responseMono = this.cfAccessor.retrieveAllOrgIds();
+		Mono<org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse> responseMono = this.cfAccessor.retrieveAllOrgIdsV3();
 
-		Flux<OrganizationResource> orgResFlux = responseMono.map(ListOrganizationsResponse::getResources)
+		Flux<org.cloudfoundry.client.v3.organizations.OrganizationResource> orgResFlux = responseMono.map(org.cloudfoundry.client.v3.organizations.ListOrganizationsResponse::getResources)
 			.flatMapMany(Flux::fromIterable);
 		
 		if (it.getConfigTarget().getOrgRegex() != null) {
@@ -288,15 +285,15 @@ public class ReactiveTargetResolver implements TargetResolver {
 			final Pattern filterPattern = Pattern.compile(it.getConfigTarget().getOrgRegex(), Pattern.CASE_INSENSITIVE);
 			
 			orgResFlux = orgResFlux.filter(orgRes -> {
-				Matcher m = filterPattern.matcher(orgRes.getEntity().getName());
+				Matcher m = filterPattern.matcher(orgRes.getName());
 				return m.matches();
 			});
 		}
 		
 		return orgResFlux.map(orgRes -> {
 			IntermediateTarget itnew = new IntermediateTarget(it);
-			itnew.setResolvedOrgId(orgRes.getMetadata().getId());
-			itnew.setResolvedOrgName(orgRes.getEntity().getName());
+			itnew.setResolvedOrgId(orgRes.getId());
+			itnew.setResolvedOrgName(orgRes.getName());
 			
 			return itnew;
 		});
@@ -312,8 +309,8 @@ public class ReactiveTargetResolver implements TargetResolver {
 		
 		if (it.getConfigTarget().getSpaceRegex() == null && it.getConfigTarget().getSpaceName() != null) {
 			// Case 3: we have the spaceName, but we also need its id
-			Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveSpaceId(it.getResolvedOrgId(), it.getConfigTarget().getSpaceName())
-					.map(ListSpacesResponse::getResources)
+			Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveSpaceIdV3(it.getResolvedOrgId(), it.getConfigTarget().getSpaceName())
+					.map(org.cloudfoundry.client.v3.spaces.ListSpacesResponse::getResources)
 					.flatMap(resList -> {
 						if (resList == null || resList.isEmpty()) {
 							return Mono.empty();
@@ -322,19 +319,19 @@ public class ReactiveTargetResolver implements TargetResolver {
 						return Mono.just(resList.get(0));
 					})
 					.map(res -> {
-						it.setResolvedSpaceName(res.getEntity().getName());
-						it.setResolvedSpaceId(res.getMetadata().getId());
+						it.setResolvedSpaceName(res.getName());
+						it.setResolvedSpaceId(res.getId());
 						return it;
-					}).doOnError(e -> log.warn(String.format("Error on retrieving space id for org '%s' and space '%s'", it.getResolvedOrgName(), it.getConfigTarget().getSpaceName()), e))
+					}).doOnError(e -> log.warn("Error on retrieving space id for org '{}' and space '{}'", it.getResolvedOrgName(), it.getConfigTarget().getSpaceName(), e))
 					.onErrorResume(__ -> Mono.empty());
 			
 			return itMono.flux();
 		}
 		
 		// Case 1 & 2: Get all spaces in the current org
-		Mono<ListSpacesResponse> responseMono = this.cfAccessor.retrieveSpaceIdsInOrg(it.getResolvedOrgId());
+		Mono<org.cloudfoundry.client.v3.spaces.ListSpacesResponse> responseMono = this.cfAccessor.retrieveSpaceIdsInOrgV3(it.getResolvedOrgId());
 
-		Flux<SpaceResource> spaceResFlux = responseMono.map(ListSpacesResponse::getResources)
+		Flux<org.cloudfoundry.client.v3.spaces.SpaceResource> spaceResFlux = responseMono.map(org.cloudfoundry.client.v3.spaces.ListSpacesResponse::getResources)
 			.flatMapMany(Flux::fromIterable);
 		
 		if (it.getConfigTarget().getSpaceRegex() != null) {
@@ -342,15 +339,15 @@ public class ReactiveTargetResolver implements TargetResolver {
 			final Pattern filterPattern = Pattern.compile(it.getConfigTarget().getSpaceRegex(), Pattern.CASE_INSENSITIVE);
 			
 			spaceResFlux = spaceResFlux.filter(spaceRes -> {
-				Matcher m = filterPattern.matcher(spaceRes.getEntity().getName());
+				Matcher m = filterPattern.matcher(spaceRes.getName());
 				return m.matches();
 			});
 		}
 		
 		return spaceResFlux.map(spaceRes -> {
 			IntermediateTarget itnew = new IntermediateTarget(it);
-			itnew.setResolvedSpaceId(spaceRes.getMetadata().getId());
-			itnew.setResolvedSpaceName(spaceRes.getEntity().getName());
+			itnew.setResolvedSpaceId(spaceRes.getId());
+			itnew.setResolvedSpaceName(spaceRes.getName());
 			
 			return itnew;
 		});
@@ -369,24 +366,24 @@ public class ReactiveTargetResolver implements TargetResolver {
 			
 			String appNameToSearchFor = it.getConfigTarget().getApplicationName().toLowerCase(Locale.ENGLISH);
 			
-			Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveAllApplicationIdsInSpace(it.getResolvedOrgId(), it.getResolvedSpaceId())
+			Mono<IntermediateTarget> itMono = this.cfAccessor.retrieveAllApplicationsInSpaceV3(it.getResolvedOrgId(), it.getResolvedSpaceId())
 					.map(ListApplicationsResponse::getResources)
 					.flatMapMany(Flux::fromIterable)
-					.filter(appResource -> appNameToSearchFor.equals(appResource.getEntity().getName().toLowerCase(Locale.ENGLISH)))
+					.filter(appResource -> appNameToSearchFor.equals(appResource.getName().toLowerCase(Locale.ENGLISH)))
 					.single()
 					.doOnError(e -> {
 						if (e instanceof NoSuchElementException) {
-							logEmptyTarget.warn(String.format("Application id could not be found for org '%s', space '%s' and application '%s'. Check your configuration of targets; skipping it for now; this message may be muted by setting the log level of the emitting logger accordingly!", it.getResolvedOrgName(), it.getResolvedSpaceName(), it.getConfigTarget().getApplicationName()));
+							logEmptyTarget.warn("Application id could not be found for org '{}', space '{}' and application '{}'. Check your configuration of targets; skipping it for now; this message may be muted by setting the log level of the emitting logger accordingly!", it.getResolvedOrgName(), it.getResolvedSpaceName(), it.getConfigTarget().getApplicationName());
 						}
 					})
 					.onErrorResume(e -> Mono.empty())
-					.filter( res -> this.isApplicationInScrapableState(res.getEntity().getState()))
+					.filter( res -> this.isApplicationInScrapableState(res.getState()))
 					.map(res -> {
-						it.setResolvedApplicationName(res.getEntity().getName());
-						it.setResolvedApplicationId(res.getMetadata().getId());
+						it.setResolvedApplicationName(res.getName());
+						it.setResolvedApplicationId(res.getId());
 						return it;
 					}).doOnError(e ->
-						log.warn(String.format("Error on retrieving application id for org '%s', space '%s' and application '%s'", it.getResolvedOrgName(), it.getResolvedSpaceName(), it.getConfigTarget().getApplicationName()), e)
+						log.warn("Error on retrieving application id for org '{}', space '{}' and application '{}'", it.getResolvedOrgName(), it.getResolvedSpaceName(), it.getConfigTarget().getApplicationName(), e)
 					)
 					.onErrorResume(__ -> Mono.empty());
 			
@@ -394,12 +391,11 @@ public class ReactiveTargetResolver implements TargetResolver {
 		}
 		
 		// Case 1 & 2: Get all applications in the current space
-		Mono<ListApplicationsResponse> responseMono = this.cfAccessor.retrieveAllApplicationIdsInSpace(it.getResolvedOrgId(), it.getResolvedSpaceId());
+		Mono<ListApplicationsResponse> responseMono = this.cfAccessor.retrieveAllApplicationsInSpaceV3(it.getResolvedOrgId(), it.getResolvedSpaceId());
 
 		Flux<ApplicationResource> appResFlux = responseMono.map(ListApplicationsResponse::getResources)
 			.flatMapMany(Flux::fromIterable)
-			.doOnError(e ->
-				log.warn(String.format("Error on retrieving list of applications in org '%s' and space '%s'", it.getResolvedOrgName(), it.getResolvedSpaceName()), e))
+			.doOnError(e -> log.warn("Error on retrieving list of applications in org '{}' and space '{}'", it.getResolvedOrgName(), it.getResolvedSpaceName(), e))
 			.onErrorResume(__ -> Flux.empty());
 		
 		if (it.getConfigTarget().getApplicationRegex() != null) {
@@ -407,18 +403,18 @@ public class ReactiveTargetResolver implements TargetResolver {
 			final Pattern filterPattern = Pattern.compile(it.getConfigTarget().getApplicationRegex(), Pattern.CASE_INSENSITIVE);
 			
 			appResFlux = appResFlux.filter(appRes -> {
-				Matcher m = filterPattern.matcher(appRes.getEntity().getName());
+				Matcher m = filterPattern.matcher(appRes.getName());
 				return m.matches();
 			});
 		}
 		
 		Flux<ApplicationResource> scrapableFlux = appResFlux.filter(appRes ->
-				this.isApplicationInScrapableState(appRes.getEntity().getState()));
+				this.isApplicationInScrapableState(appRes.getState()));
 		
 		return scrapableFlux.map(appRes -> {
 			IntermediateTarget itnew = new IntermediateTarget(it);
-			itnew.setResolvedApplicationId(appRes.getMetadata().getId());
-			itnew.setResolvedApplicationName(appRes.getEntity().getName());
+			itnew.setResolvedApplicationId(appRes.getId());
+			itnew.setResolvedApplicationName(appRes.getName());
 			
 			return itnew;
 		});
@@ -426,40 +422,35 @@ public class ReactiveTargetResolver implements TargetResolver {
 
 	private Flux<IntermediateTarget> resolveAnnotations(IntermediateTarget it) {
 		if (Boolean.TRUE.equals(it.getConfigTarget().getKubernetesAnnotations())) {
-			Mono<org.cloudfoundry.client.v3.applications.ListApplicationsResponse> response = this.cfAccessor
+			Mono<ListApplicationsResponse> response = this.cfAccessor
 				.retrieveAllApplicationsInSpaceV3(it.getResolvedOrgId(), it.getResolvedSpaceId());
 
 			return response.flatMap(res -> {
 				if (res == null || INVALID_APPLICATIONS_RESPONSE == res) {
-					logEmptyTarget
-						.debug("Your foundation does not support V3 APIs, yet you have enabled Kubernetes Annotation filtering. Ignoring annotation filtering.");
+					logEmptyTarget.debug("Your foundation does not support V3 APIs, yet you have enabled Kubernetes Annotation filtering. Ignoring annotation filtering.");
 					return Mono.just(it);
 				}
 
 				return res.getResources().stream()
-						  .filter(app -> it.getResolvedApplicationName()
-										   .equals(app.getName().toLowerCase(Locale.ENGLISH)))
-						  .filter(app -> this.isApplicationInScrapableState(app.getState().toString()))
-						  .filter(app -> app.getMetadata() != null)
-						  .filter(app -> app.getMetadata().getAnnotations() != null)
-						  .filter(app -> app.getMetadata().getAnnotations()
-											.getOrDefault(PROMETHEUS_IO_SCRAPE, "false")
-											.equals("true"))
-						  .map(app -> {
-							  it.setResolvedMetricsPath(app.getMetadata().getAnnotations()
-														   .getOrDefault(PROMETHEUS_IO_PATH, null));
-							  return Mono.just(it);
-						  }).findFirst().orElseGet(Mono::empty);
+						.filter(app -> it.getResolvedApplicationName().equals(app.getName().toLowerCase(Locale.ENGLISH)))
+						.filter(app -> this.isApplicationInScrapableState(app.getState()))
+						.filter(app -> app.getMetadata() != null)
+						.filter(app -> app.getMetadata().getAnnotations() != null)
+						.filter(app -> app.getMetadata().getAnnotations().getOrDefault(PROMETHEUS_IO_SCRAPE, "false").equals("true"))
+						.map(app -> {
+							it.setResolvedMetricsPath(app.getMetadata().getAnnotations().getOrDefault(PROMETHEUS_IO_PATH, null));
+							return Mono.just(it);
+						}).findFirst().orElseGet(Mono::empty);
 			}).doOnError(e ->
-				 log.warn(String.format("Error on retrieving application annotations for org '%s', space '%s' and application '%s'.",
-										it.getResolvedOrgName(), it.getResolvedSpaceName(), it.getConfigTarget().getApplicationName()), e)).flux();
+				 log.warn("Error on retrieving application annotations for org '{}', space '{}' and application '{}'.",
+						it.getResolvedOrgName(), it.getResolvedSpaceName(), it.getConfigTarget().getApplicationName(), e)).flux();
 		}
 
 		return Mono.just(it).flux();
 	}
 
-	private boolean isApplicationInScrapableState(String state) {
-		if ("STARTED".equals(state)) {
+	private boolean isApplicationInScrapableState(ApplicationState applicationState) {
+		if (applicationState == ApplicationState.STARTED) {
 			return true;
 		}
 		

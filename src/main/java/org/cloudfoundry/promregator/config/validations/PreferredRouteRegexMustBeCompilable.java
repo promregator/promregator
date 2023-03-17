@@ -29,7 +29,7 @@ public class PreferredRouteRegexMustBeCompilable implements ConfigurationValidat
 				try {
 					Pattern.compile(regex);
 				} catch (PatternSyntaxException e) {
-					log.error(String.format("There is a preferredRouteRegex which cannot be compiled: %s; please fix and restart", regex), e);
+					log.error("There is a preferredRouteRegex which cannot be compiled: {}; please fix and restart", regex, e);
 					failed = true;
 				}
 			}

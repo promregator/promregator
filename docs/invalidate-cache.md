@@ -2,13 +2,16 @@
 
 ## Available Caches
 
-Promregator has several caches build-in, which mainly serve the purpose to buffer the layout of your landscape on Cloud Foundry. As of now, Promregator knows about the following caches:
+Promregator has several caches built in, which mainly serve the purpose to buffer the layout of your landscape on Cloud Foundry. As of now, Promregator knows about the following caches:
 
 | Name of Cache | Purpose |
 |---------------|---------|
 | Org Cache     | Caches the metadata of Cloud Foundry Organizations, especially the mapping between human-readable names and internal CF Org Ids |
 | Space Cache   | Caches the metadata of Cloud Foundry Spaces within Organizations, especially the mapping between human-readable names and internal CF Space Ids |
-| Application Cache | Caches the metadata of Cloud Foundry Applications within Organizations and Spaces, especially the mapping between human-readable names and internal CF Org/Space Ids. It also caches routes, hostnames, and domains. |
+| Application Cache | Caches the metadata of Cloud Foundry Applications within Organizations and Spaces, especially the mapping between human-readable names and internal CF Org/Space Ids. |
+| Domain Cache | Caches the metadata of Cloud Foundry Domains based on their CF Organizations |
+| Route Cache | Caches the metadata of Cloud Foundry Routes (including hostnames and URLs) |
+| Process Cache | Caches the metadata of Cloud Foundry Processes (limited to "web"-typed processes only) |
 | Resolver Cache | Caches the mapping between targets in the configuration and the resolution into Cloud Foundry Organizations (names), Cloud Foundry Space (names) and Cloud Foundry Application (names) |
 
 The application cache also is used in cases that you have not specified the application name in a target and thus *all* applications within a space are requested to be scraped.
@@ -17,7 +20,7 @@ The application cache also is used in cases that you have not specified the appl
 
 Caches are automatically refreshed after a certain refresh timeout. Each cache has a corresponding (default) refresh timeout. Refresh timeouts can be configured. See the sections `cf.cache.timeout.*` in our [configuration page](./config.md).
 
-Caches also have an expiry timeout. Entries in the cache, which have not been *used* for the duration of the expiry timeout, will be deleted.  Each cache has a corresponding (default) expiry timeout. Expiry timeouts can be configured. See the sections `cf.cache.expiry.*` in our [configuration page](./config.md).
+Caches also have an expiry timeout. Entries in the cache, which have not been *used* for the duration of the expiry timeout, will be deleted. Each cache has a corresponding (default) expiry timeout. Expiry timeouts can be configured. See the sections `cf.cache.expiry.*` in our [configuration page](./config.md).
 
 A detailed explanation on the caching concept can also be found in [a comment by eaglerainbow at issue #67](https://github.com/promregator/promregator/issues/67#issuecomment-424098535) (called the "new caching approach" there).
 
@@ -33,6 +36,9 @@ The HTTP REST endpoint allows to specify which caches shall be flushed by using 
 | Org Cache     | `org`        |
 | Space Cache   | `space`      |
 | Application Cache | `application` |
+| Domain Cache | `domain` |
+| Route Cache | `route` |
+| Process Cache | `process` |
 | Resolver Cache | `resolver` |
 
 Not specifying any of these parameters will lead to no cache to be flushed. On completion of any request, the HTTP status code of the request will be 204 ("no content").
@@ -47,4 +53,4 @@ Sending the request
 http://promregator:8080/cache/invalidate?org=1&application=true
 ```
 
-will invalidate the Org Cache and the Application Cache, but will leave the Space Cache and the Resolver Cache untouched.
+will invalidate the Org Cache and the Application Cache, but will leave all other caches (including Space Cache and the Resolver Cache) untouched.

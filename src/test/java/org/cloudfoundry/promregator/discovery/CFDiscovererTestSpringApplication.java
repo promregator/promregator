@@ -8,17 +8,15 @@ import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorMock;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
+import org.cloudfoundry.promregator.messagebus.MessageBus;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.ReactiveAppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.TargetResolver;
-import org.cloudfoundry.promregator.springconfig.JMSSpringConfiguration;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
 
 @SpringBootApplication
-@Import({JMSSpringConfiguration.class})
 public class CFDiscovererTestSpringApplication {
 	
 	@Bean
@@ -58,4 +56,8 @@ public class CFDiscovererTestSpringApplication {
 		return new CFMultiDiscoverer();
 	}
 	
+	@Bean
+	public MessageBus messageBus() {
+		return new MessageBus();
+	}
 }

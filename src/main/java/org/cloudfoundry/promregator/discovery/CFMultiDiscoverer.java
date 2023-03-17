@@ -14,7 +14,8 @@ import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
-import org.cloudfoundry.promregator.messagebus.MessageBusDestination;
+import org.cloudfoundry.promregator.messagebus.MessageBus;
+import org.cloudfoundry.promregator.messagebus.MessageBusTopic;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
@@ -23,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.jms.core.JmsTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 
 public class CFMultiDiscoverer implements CFDiscoverer {
@@ -39,8 +39,7 @@ public class CFMultiDiscoverer implements CFDiscoverer {
 	private PromregatorConfiguration promregatorConfiguration;
 
 	@Autowired
-	private JmsTemplate jmsTemplate;
-	
+	private MessageBus messageBus;
 
 	@Autowired
 	private Clock clock;
@@ -58,22 +57,23 @@ public class CFMultiDiscoverer implements CFDiscoverer {
 	 * @return the list of Instances which were discovered (and registered).
 	 */
 	@Nullable
+	@Override
 	public List<Instance> discover(@Nullable Predicate<? super String> applicationIdFilter, @Nullable Predicate<? super Instance> instanceFilter) {
-		log.debug(String.format("We have %d targets configured", this.promregatorConfiguration.getTargets().size()));
+		log.debug("We have {} targets configured", this.promregatorConfiguration.getTargets().size());
 		
 		List<ResolvedTarget> resolvedTargets = this.targetResolver.resolveTargets(this.promregatorConfiguration.getTargets());
 		if (resolvedTargets == null) {
 			log.warn("Target resolved was unable to resolve configured targets");
 			return Collections.emptyList();
 		}
-		log.debug(String.format("Raw list contains %d resolved targets", resolvedTargets.size()));
+		log.debug("Raw list contains {} resolved targets", resolvedTargets.size());
 		
 		List<Instance> instanceList = this.appInstanceScanner.determineInstancesFromTargets(resolvedTargets, applicationIdFilter, instanceFilter);
 		if (instanceList == null) {
 			log.warn("Instance Scanner unable to determine instances from provided targets");
 			return Collections.emptyList();
 		}
-		log.debug(String.format("Raw list contains %d instances", instanceList.size()));
+		log.debug("Raw list contains {} instances", instanceList.size());
 
 		// ensure that the instances are registered / touched properly
 		for (Instance instance : instanceList) {
@@ -118,10 +118,10 @@ public class CFMultiDiscoverer implements CFDiscoverer {
 				continue;
 			}
 			
-			log.info(String.format("Instance %s has timed out; cleaning up", entry.getKey()));
+			log.info("Instance {} has timed out; cleaning up", entry.getKey());
 			
 			// broadcast event to JMS topic, that the instance is to be deleted
-			this.jmsTemplate.convertAndSend(MessageBusDestination.DISCOVERER_INSTANCE_REMOVED, entry.getKey());
+			this.messageBus.notifyEvent(MessageBusTopic.DISCOVERER_INSTANCE_REMOVED, entry.getKey());
 			
 			it.remove();
 		}

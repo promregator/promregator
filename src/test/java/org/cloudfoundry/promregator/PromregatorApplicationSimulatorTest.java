@@ -28,7 +28,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ActiveProfiles(profiles = {"simulation"})
 
 @DirtiesContext(classMode=ClassMode.AFTER_CLASS)
-class PromregatorApplicationSimulatorTest {
+public class PromregatorApplicationSimulatorTest {
 
 	@Test
 	void contextLoads() {
@@ -42,7 +42,7 @@ class PromregatorApplicationSimulatorTest {
 	void testDiscoveryWorks() {
 		@Nullable
 		List<Instance> actual = this.cfDiscoverer.discover(null, null);
-		assertThat(200).isEqualTo(actual.size());
+		assertThat(actual).hasSize(200);
 	}
 	
 	@Test

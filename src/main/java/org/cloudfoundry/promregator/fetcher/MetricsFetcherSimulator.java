@@ -4,26 +4,22 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.Random;
 
 import org.apache.http.client.methods.HttpGet;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
-import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
-import org.cloudfoundry.promregator.textformat004.Parser;
-
-import io.prometheus.client.Collector.MetricFamilySamples;
-import io.prometheus.client.Gauge;
-import io.prometheus.client.Histogram.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.prometheus.client.Gauge;
+import io.prometheus.client.Histogram.Timer;
+import io.prometheus.client.exporter.common.TextFormat;
 
 public class MetricsFetcherSimulator implements MetricsFetcher {
 	private static final Logger log = LoggerFactory.getLogger(MetricsFetcherSimulator.class);
 	
 	private String accessURL;
 	private AuthenticationEnricher ae;
-	private AbstractMetricFamilySamplesEnricher mfse;
 	private MetricsFetcherMetrics mfm;
 	private Gauge.Child up;
 	
@@ -63,17 +59,16 @@ public class MetricsFetcherSimulator implements MetricsFetcher {
 	}
 	
 	public MetricsFetcherSimulator(String accessURL, AuthenticationEnricher ae,
-			AbstractMetricFamilySamplesEnricher mfse, MetricsFetcherMetrics mfm, Gauge.Child up) {
+			MetricsFetcherMetrics mfm, Gauge.Child up) {
 				this.accessURL = accessURL;
 				this.ae = ae;
-				this.mfse = mfse;
 				this.mfm = mfm;
 				this.up = up;
 		
 	}
 
 	@Override
-	public HashMap<String, MetricFamilySamples> call() throws Exception {
+	public FetchResult call() throws Exception {
 		Timer timer = null;
 		if (this.mfm.getLatencyRequest() != null) {
 			timer = this.mfm.getLatencyRequest().startTimer();
@@ -85,16 +80,9 @@ public class MetricsFetcherSimulator implements MetricsFetcher {
 			this.ae.enrichWithAuthentication(httpget);
 		}
 		
-		String result = SIM_TEXT004;
-		
-		Parser parser = new Parser(result);
-		HashMap<String, MetricFamilySamples> emfs = parser.parse();
-		
-		emfs = this.mfse.determineEnumerationOfMetricFamilySamples(emfs);
-		
 		int latency = this.randomLatency.nextInt(300);
 		
-		log.info(String.format("Simulating scraping at %s with latency of %d ms", this.accessURL, latency));
+		log.info("Simulating scraping at {} with latency of {} ms", this.accessURL, latency);
 		Thread.sleep(latency);
 		
 		this.up.set(1.0);
@@ -103,7 +91,7 @@ public class MetricsFetcherSimulator implements MetricsFetcher {
 			timer.observeDuration();
 		}
 		
-		return emfs;
+		return new FetchResult(SIM_TEXT004, TextFormat.CONTENT_TYPE_004);
 	}
 
 }

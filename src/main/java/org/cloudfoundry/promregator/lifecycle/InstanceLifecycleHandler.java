@@ -3,27 +3,40 @@ package org.cloudfoundry.promregator.lifecycle;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+
 import org.cloudfoundry.promregator.fetcher.MetricsFetcherMetrics;
-import org.cloudfoundry.promregator.messagebus.MessageBusDestination;
+import org.cloudfoundry.promregator.messagebus.MessageBus;
+import org.cloudfoundry.promregator.messagebus.MessageBusTopic;
+import org.cloudfoundry.promregator.messagebus.MessageSubscriber;
 import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.scanner.Instance;
-import org.cloudfoundry.promregator.springconfig.JMSSpringConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.jms.annotation.JmsListener;
+import org.springframework.beans.factory.annotation.Autowired;
 
-public class InstanceLifecycleHandler {
+public class InstanceLifecycleHandler implements MessageSubscriber {
 	private static final Logger log = LoggerFactory.getLogger(InstanceLifecycleHandler.class);
 	
-	@JmsListener(destination=MessageBusDestination.DISCOVERER_INSTANCE_REMOVED, containerFactory=JMSSpringConfiguration.BEAN_NAME_JMS_LISTENER_CONTAINER_FACTORY)
-	public void receiver(Instance instance) {
+	@Autowired
+	private MessageBus messageBus;
+	
+	@PostConstruct
+	public void registerAtMessageBus() {
+		this.messageBus.subscribe(MessageBusTopic.DISCOVERER_INSTANCE_REMOVED, this);
+	}
+	
+	@Override
+	public void receiveMessage(String topic, Object message) {
+		Instance instance = (Instance) message;
+		
 		this.deregisterMetricsSamples(instance);
 		
 	}
 
 	private void deregisterMetricsSamples(Instance instance) {
-		log.info(String.format("De-registering metrics samples for instance %s", instance));
+		log.info("De-registering metrics samples for instance {}", instance);
 		
 		String orgName = instance.getTarget().getOrgName();
 		String spaceName = instance.getTarget().getSpaceName();
@@ -38,4 +51,5 @@ public class InstanceLifecycleHandler {
 		
 		mfm.deregisterSamplesFromRegistry();
 	}
+
 }

@@ -1,12 +1,12 @@
 package org.cloudfoundry.promregator.cfaccessor.client;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import java.util.Map;
+
 import org.cloudfoundry.reactor.ConnectionContext;
 import org.cloudfoundry.reactor.TokenProvider;
 import org.cloudfoundry.reactor.client.v3.AbstractClientV3Operations;
-import reactor.core.publisher.Mono;
 
-import java.util.Map;
+import reactor.core.publisher.Mono;
 
 /**
  * Call the v3 info API and returns a JsonNode. Since we do not care about the actual response (other than errors), we do not need to
@@ -19,8 +19,8 @@ public class ReactorInfoV3 extends AbstractClientV3Operations {
 		super(connectionContext, root, tokenProvider, requestTags);
 	}
 
-	public Mono<JsonNode> get() {
-		return get("", JsonNode.class, builder -> builder.pathSegment("info"))
+	public Mono<InfoV3> get() {
+		return get("", InfoV3.class, builder -> builder.pathSegment("info"))
 			.checkpoint();
 	}
 }

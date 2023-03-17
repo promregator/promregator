@@ -25,12 +25,10 @@ public class OAuth2ServiceConfig implements OAuth2ServiceConfiguration {
 
 	public OAuth2ServiceConfig(AbstractOAuth2XSUAAAuthenticationConfiguration config) {
 		properties.put(CLIENT_ID, config.getClient_id());
-		if (config instanceof OAuth2XSUAABasicAuthenticationConfiguration) {
-			OAuth2XSUAABasicAuthenticationConfiguration c = (OAuth2XSUAABasicAuthenticationConfiguration) config;
+		if (config instanceof OAuth2XSUAABasicAuthenticationConfiguration c) {
 			properties.put(CLIENT_SECRET, c.getClient_secret());
 			properties.put(URL, c.getTokenServiceURL());
-		} else if (config instanceof OAuth2XSUAACertificateAuthenticationConfiguration) {
-			OAuth2XSUAACertificateAuthenticationConfiguration c = (OAuth2XSUAACertificateAuthenticationConfiguration) config;
+		} else if (config instanceof OAuth2XSUAACertificateAuthenticationConfiguration c) {
 			properties.put(CERTIFICATE, c.getClient_certificates());
 			properties.put(KEY, c.getClient_key());
 			properties.put(CERT_URL, c.getTokenServiceCertURL());
@@ -66,7 +64,7 @@ public class OAuth2ServiceConfig implements OAuth2ServiceConfiguration {
 
 	@Override
 	public Map<String, String> getProperties() {
-		return new HashMap<String, String>(properties);
+		return new HashMap<>(properties);
 	}
 
 	@Override

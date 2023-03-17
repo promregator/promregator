@@ -3,7 +3,6 @@ package org.cloudfoundry.promregator;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
-import org.cloudfoundry.promregator.endpoint.TestableMetricsEndpoint;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,12 +23,11 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @BootstrapWith(value=SpringBootTestContextBootstrapper.class)
 @ComponentScan(excludeFilters = { @Filter(type = FilterType.CUSTOM, classes = { TypeExcludeFilter.class }),
 		@Filter(type = FilterType.CUSTOM, classes = { AutoConfigurationExcludeFilter.class }),
-		@Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {  TestableMetricsEndpoint.class })
 		// NB: TestableMetricsEndpoint would break here everything
 })
 @TestPropertySource(locations="default.properties")
 @DirtiesContext(classMode=ClassMode.AFTER_CLASS)
-class PromregatorApplicationTest {
+public class PromregatorApplicationTest {
 
 	@Autowired
 	private CFAccessor cfAccessor;

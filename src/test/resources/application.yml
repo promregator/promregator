@@ -1,5 +1,5 @@
 
-spring.profiles: springBootLoadPropertiesForTesting
+spring.config.activate.on-profile: springBootLoadPropertiesForTesting
 
 # Required since spring-boot 2.1, as our testing depends on overriding existing beans
 spring:
@@ -13,7 +13,7 @@ secret:
 
 ---
 
-spring.profiles: springBootLoadPropertiesForTestingOtherKey
+spring.config.activate.on-profile: springBootLoadPropertiesForTestingOtherKey
 
 # Required since spring-boot 2.1, as our testing depends on overriding existing beans
 spring:
@@ -29,7 +29,7 @@ secret:
 
 ---
 
-spring.profiles: simulation
+spring.config.activate.on-profile: simulation
 
 # Required since spring-boot 2.1, as our testing depends on overriding existing beans
 spring:

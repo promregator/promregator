@@ -6,7 +6,6 @@ public final class EndpointConstants {
 	}
 	
 	public static final String ENDPOINT_PATH_DISCOVERY = "/discovery";
-	public static final String ENDPOINT_PATH_SINGLE_ENDPOINT_SCRAPING = "/metrics";
 	public static final String ENDPOINT_PATH_SINGLE_TARGET_SCRAPING = "/singleTargetMetrics";
 	public static final String ENDPOINT_PATH_PROMREGATOR_METRICS = "/promregatorMetrics";
 	public static final String ENDPOINT_PATH_CACHE_INVALIDATION = "/cache/invalidate";

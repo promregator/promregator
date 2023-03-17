@@ -14,6 +14,7 @@ public class MetricsFetcherMetrics {
 	
 	private static Histogram requestLatency = Histogram.build("promregator_request_latency", "The latency, which the targets of the promregator produce")
 			.labelNames(CFAllLabelsMetricFamilySamplesEnricher.getEnrichingLabelNames())
+			.unit("milliseconds")
 			.register();
 	private boolean requestLatencyEnabled;
 	
@@ -23,6 +24,7 @@ public class MetricsFetcherMetrics {
 	
 	private static Histogram requestSize = Histogram.build("promregator_request_size", "The size in bytes of the document, which the scraped targets sent to promregator")
 			.labelNames(CFAllLabelsMetricFamilySamplesEnricher.getEnrichingLabelNames())
+			.unit("bytes")
 			.exponentialBuckets(100, 1.5, 16)
 			.register();
 

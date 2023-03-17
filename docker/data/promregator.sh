@@ -6,7 +6,7 @@ if [ "$JAVACMD" == "" ]; then
 fi
 
 if [ "$JAVA_MEM_OPTS" == "" ]; then
-	JAVA_MEM_OPTS="-XX:+PrintFlagsFinal -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Xss600k -XX:ReservedCodeCacheSize=256m -XX:MaxMetaspaceSize=300m"
+	JAVA_MEM_OPTS="-XX:+PrintFlagsFinal -Xss600k -XX:ReservedCodeCacheSize=256m -XX:MaxMetaspaceSize=300m"
 fi
 
 if [ "$JAVA_OPTS" == "" ]; then

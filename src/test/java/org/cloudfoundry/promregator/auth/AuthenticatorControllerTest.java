@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.config.Target;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = AuthenticatorControllerSpringApplication.class)
 @TestPropertySource(locations="default.properties")
-class AuthenticatorControllerTest {
+public class AuthenticatorControllerTest {
 
 	@Autowired
 	private AuthenticatorController subject;
@@ -43,13 +44,13 @@ class AuthenticatorControllerTest {
 		List<Target> targets = this.promregatorConfiguration.getTargets();
 		Target target0 = targets.get(0);
 		
-		assertThat("testapp").isEqualTo(target0.getApplicationName()); // only as safety for this test (not really a test subject)
-		assertThat(auth0).isEqualTo(subject.getAuthenticationEnricherByTarget(target0));
+		Assertions.assertEquals("testapp",target0.getApplicationName()); // only as safety for this test (not really a test subject)
+		Assertions.assertEquals(auth0, subject.getAuthenticationEnricherByTarget(target0));
 		
 		Target target1 = targets.get(1);
 		
-		assertThat("testapp2").isEqualTo(target1.getApplicationName()); // only as safety for this test (not really a test subject)
-		assertThat(auth1).isEqualTo(subject.getAuthenticationEnricherByTarget(target1));
+		Assertions.assertEquals("testapp2", target1.getApplicationName()); // only as safety for this test (not really a test subject)
+		Assertions.assertEquals(auth1, subject.getAuthenticationEnricherByTarget(target1));
 		
 		assertThat(subject.getAuthenticationEnricherByTarget(new Target())).isInstanceOf(NullEnricher.class);
 		assertThat(subject.getAuthenticationEnricherByTarget(null)).isInstanceOf(NullEnricher.class);

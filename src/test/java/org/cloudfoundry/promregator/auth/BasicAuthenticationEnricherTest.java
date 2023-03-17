@@ -10,7 +10,7 @@ import org.mockito.Mockito;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class BasicAuthenticationEnricherTest {
+public class BasicAuthenticationEnricherTest {
 
 	@AfterAll
 	public static void cleanupEnvironment() {
@@ -33,10 +33,10 @@ class BasicAuthenticationEnricherTest {
 		ArgumentCaptor<String> valueCaptor = ArgumentCaptor.forClass(String.class);
 		Mockito.verify(mockGet).setHeader(keyCaptor.capture(), valueCaptor.capture());
 		String value = valueCaptor.getValue();
-		assertThat("Basic ZHVtbXl1c2VyOnVuaXR0ZXN0cGFzc3dvcmQ=").isEqualTo(value);
+		assertThat(value).isEqualTo("Basic ZHVtbXl1c2VyOnVuaXR0ZXN0cGFzc3dvcmQ=");
 		
 		String key = keyCaptor.getValue();
-		assertThat("Authorization").isEqualTo(key);
+		assertThat(key).isEqualTo("Authorization");
 
 	}
 

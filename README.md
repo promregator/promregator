@@ -4,8 +4,6 @@
 
 # Status
 
-[![Total alerts](https://img.shields.io/lgtm/alerts/g/promregator/promregator.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/promregator/promregator/alerts/) [![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/promregator/promregator.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/promregator/promregator/context:java)
-
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=promregator&metric=alert_status)](https://sonarcloud.io/dashboard?id=promregator) [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=promregator&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=promregator) [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=promregator&metric=bugs)](https://sonarcloud.io/dashboard?id=promregator) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=promregator&metric=coverage)](https://sonarcloud.io/dashboard?id=promregator) [![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=promregator&metric=ncloc)](https://sonarcloud.io/dashboard?id=promregator)
 
 # Promregator Project
@@ -56,10 +54,9 @@ Here is the list of major features provided by Promregator:
 * **Configuration using standard Spring properties** as defined by the Spring Framework (e.g. using `application.yml` file).
 * *(>= 0.6.0)* Support for [**encrypted passwords in configuration files**](./docs/passwords-in-config.md) including providing the encryption key via **Docker Secrets**
 * Simple **HTTP proxy support** is available for contacting CF app endpoints.
-* All metrics provided from the Cloud Foundry applications are **automatically [enriched with additional labels](docs/enrichment.md)**, indicating their origin (similar to the `job` and `instance` labels [created by Prometheus](https://prometheus.io/docs/concepts/jobs_instances/)).
 * [Additional metrics are provided](docs/enrichment.md) supporting you to **monitor Promregator** and the **communication to the Cloud Foundry applications**.
 * *(>= 0.4.0)* **[Cache Invalidation](docs/invalidate-cache.md)** is possible via an (optionally auth-protected) HTTP REST endpoint.
-* Promregator's endpoints (e.g. `/metrics`, `/promregatorMetrics`, `/discovery`) support **GZIP compression**, if the clients indicates to accept it.
+* Promregator's endpoints (e.g. `/promregatorMetrics`, `/discovery`) support **GZIP compression**, if the clients indicates to accept it.
 * *(>= 0.9.0)* [Filtering by annotations](docs/annotation-driven.md) and using annotations to specify the metrics path.
 
 
@@ -73,13 +70,37 @@ For further details on the architecture of Promregator, please look at the [arch
 
 During the course of action, we came across several other implementation alternatives. Due to one or the other reason they were not implemented. You may find a detailed discussion about these approaches on our [discarded ideas page](docs/discarded-ideas.md).
 
+## Differences on Major Versions
+Promregator is currently preparing to provide a new major version. Here are the main differences from a user perspective between the two versions:
+
+| Aspect                                              | Version 1.x.x                                  | Version 0.x.x                                                                               |
+|-----------------------------------------------------|------------------------------------------------|---------------------------------------------------------------------------------------------|
+| Java Runtime Version                                | JRE 17 or higher                               | JRE 8 or higher                                                                             |
+| CFCC API Version                                    | V3 only                                        | V2 only (special cases with V3)                                                             |
+| Classic Cache                                       | no longer supported                            | default, available in all minor versions                                                    |
+| Caffeine Cache                                      | default                                        | optional, starting with 0.7.x                                                               |
+| OAuth2XSUAA Authenticator with Basic Authentication | Only `OAuth2XSUAABasic` supported         | `OAuth2XSUAA` (old one) and `OAuth2XSUAABasic` supported (available since v0.10.0) |
+| Scraping Method                                     | Single Target Scraping supported               | Single Endpoint Scraping and Single Target Scraping supported                               |
+| Label Enrichment                                    | not supported                                  | supported (for Single Target Scraping)                                                      |
+| Support for metrics formats at scraping targets     | text/plain;version=0.0.4 and OpenMetrics 1.0.0 | text/plain;version=0.0.4 only                                                               |
+| Support for INFO-typed metrics                      | supported (pass-through)                       | not supported (in some cases passed-through)                                                |
+| Support for STATESET-typed metrics                  | supported (pass-through)                       | not supported                                                                               |
+| Support for UNIT metric descriptor                  | supported (pass-through)                       | not supported                                                                               |
+| Returned format to scraping callers                 | pass-through as scraped                        | text/plain;version=0.0.4 (parsed and reformatted)                                           |
+
+It is recommended that you upgrade to the new major version on next occasion. 
+An upgrade guide is provided [here](docs/upgrade.md).
+
 ## Prerequisites
 
-Running Promregator requires:
-* JRE8 or higher
+Running Promregator V1 requires:
+* JRE17 or higher
+
+If you cannot fulfill this requirement, you may still use Promregator V0, which requires JRE8 or higher.
 
 Compiling Promregator additionally requires:
-* JDK8 or higher
+* JDK17 or higher (for Promregator V1)
+* JDK8 or higher (for Promregator V0)
 * Maven 3.3.0 or higher
 
 Further dependencies required are automatically loaded when building the software. An internet connection to [Maven Central](https://search.maven.org/) is necessary for that.

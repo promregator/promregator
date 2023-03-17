@@ -1,7 +1,6 @@
 package org.cloudfoundry.promregator;
 
 import java.time.Clock;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -12,7 +11,6 @@ import org.cloudfoundry.promregator.cfaccessor.AccessorCacheType;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorCache;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorCacheCaffeine;
-import org.cloudfoundry.promregator.cfaccessor.CFAccessorCacheClassic;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorSimulator;
 import org.cloudfoundry.promregator.cfaccessor.CFWatchdog;
 import org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl;
@@ -20,6 +18,7 @@ import org.cloudfoundry.promregator.config.ConfigurationValidations;
 import org.cloudfoundry.promregator.discovery.CFMultiDiscoverer;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.cloudfoundry.promregator.lifecycle.InstanceLifecycleHandler;
+import org.cloudfoundry.promregator.messagebus.MessageBus;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.CachingTargetResolver;
 import org.cloudfoundry.promregator.scanner.ReactiveAppInstanceScanner;
@@ -28,7 +27,6 @@ import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.cloudfoundry.promregator.springconfig.AuthenticatorSpringConfiguration;
 import org.cloudfoundry.promregator.springconfig.BasicAuthenticationSpringConfiguration;
 import org.cloudfoundry.promregator.springconfig.ErrorSpringConfiguration;
-import org.cloudfoundry.promregator.springconfig.JMSSpringConfiguration;
 import org.cloudfoundry.promregator.websecurity.SecurityConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +50,7 @@ import reactor.core.publisher.Hooks;
 // Warning! This implies @ComponentScan - and we really must have that in place, e.g. due to JMS :(
 
 @EnableScheduling
-@Import({ BasicAuthenticationSpringConfiguration.class, SecurityConfig.class, ErrorSpringConfiguration.class, JMSSpringConfiguration.class, AuthenticatorSpringConfiguration.class })
+@Import({ BasicAuthenticationSpringConfiguration.class, SecurityConfig.class, ErrorSpringConfiguration.class, AuthenticatorSpringConfiguration.class })
 @EnableAsync
 public class PromregatorApplication {
 	private static final Logger log = LoggerFactory.getLogger(PromregatorApplication.class);
@@ -69,7 +67,7 @@ public class PromregatorApplication {
 	@Value("${promregator.workaround.dnscache.timeout:-1}")
 	private int javaDnsCacheWorkaroundTimeout;
 
-	@Value("${cf.cache.type:CLASSIC}")
+	@Value("${cf.cache.type:CAFFEINE}")
 	// NB: Spring supports configuration values for enums to be both upper- and lowercased
 	private AccessorCacheType cacheType;
 	
@@ -109,9 +107,7 @@ public class PromregatorApplication {
 	
 	@Bean
 	public CFAccessorCache cfAccessorCache(@Qualifier("mainCFAccessor") CFAccessor cfMainAccessor) {
-		if (this.cacheType == AccessorCacheType.CLASSIC) {
-			return new CFAccessorCacheClassic(cfMainAccessor);
-		} else if (this.cacheType == AccessorCacheType.CAFFEINE) {
+		if (this.cacheType == AccessorCacheType.CAFFEINE) {
 			return new CFAccessorCacheCaffeine(cfMainAccessor);
 		} else {
 			throw new UnknownCacheTypeError("Unknown CF Accessor Cache selected: "+this.cacheType);
@@ -183,43 +179,19 @@ public class PromregatorApplication {
 
 	/**
 	 * The number of threads of the scraping thread pool.
-	 * The value is coming from the deprecated configuration option <pre>promregator.endpoint.threads</pre>.
-	 * Use threadPoolSize instead
-	 * @deprecated
 	 */
-	@Value("${promregator.endpoint.threads:#{null}}")
-	@Deprecated
-	private Optional<Integer> threadPoolSizeOld;
-
 	@Value("${promregator.scraping.threads:5}")
 	private int threadPoolSize;
 	
-	@PostConstruct
-	public void warnOnDeprecatedThreadValue() {
-		if (this.threadPoolSizeOld.isPresent()) {
-			log.warn("You are still using the deprecated option promregator.endpoint.threads. "
-					+ "Please switch to promregator.scraping.threads (same meaning) instead and remove the old one.");
-		}
-	}
 	
 	@Bean
 	public ExecutorService metricsFetcherPool() {
-		log.info(String.format("Thread Pool size is set to %d", this.getThreadPoolSize()));
+		log.info("Thread Pool size is set to {}", this.getThreadPoolSize());
 		return Executors.newFixedThreadPool(this.threadPoolSize);
 	}
 	
 	private int getThreadPoolSize() {
-		if (this.threadPoolSize != 5) {
-			// different value than the default, so someone must have set it explicitly.
-			return this.threadPoolSize;
-		}
-		
-		if (this.threadPoolSizeOld.isPresent()) {
-			// the deprecated value still is set; use that one
-			return this.threadPoolSizeOld.get();
-		}
-		
-		return this.threadPoolSize; // which means: 5
+		return this.threadPoolSize;
 	}
 
 	/* see also https://github.com/promregator/promregator/issues/54 */
@@ -240,12 +212,17 @@ public class PromregatorApplication {
 		return UUID.randomUUID();
 	}
 	
+	@Bean
+	public MessageBus messageBus() {
+		return new MessageBus();
+	}
+	
 	@PostConstruct
 	public void javaDnsCacheWorkaroundTimeout() {
 		if (this.javaDnsCacheWorkaroundTimeout != -1) {
 			// see also https://docs.aws.amazon.com/de_de/sdk-for-java/v1/developer-guide/java-dg-jvm-ttl.html
 			// and https://github.com/promregator/promregator/issues/84
-			log.info(String.format("Enabling JVM DNS Cache Workaround with TTL value %d", this.javaDnsCacheWorkaroundTimeout));
+			log.info("Enabling JVM DNS Cache Workaround with TTL value {}", this.javaDnsCacheWorkaroundTimeout);
 			java.security.Security.setProperty("networkaddress.cache.ttl", this.javaDnsCacheWorkaroundTimeout+"");
 		}
 	}

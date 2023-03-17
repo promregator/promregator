@@ -34,6 +34,7 @@ public class MetricsEndpointMockServerTLS {
 		InetSocketAddress bindAddress = new InetSocketAddress("127.0.0.1", this.port);
 		this.server = HttpsServer.create(bindAddress, 0);
 		this.server.setHttpsConfigurator(new HttpsConfigurator(this.createSslContext()) {
+			@Override
 			public void configure(HttpsParameters params) {
 				SSLContext c = getSSLContext();
 				params.setSSLParameters(c.getDefaultSSLParameters());
@@ -55,7 +56,7 @@ public class MetricsEndpointMockServerTLS {
 			Assertions.fail("Unable to set up JKS Keystore");
 		}
 		try {
-			ks.load(this.getClass().getResourceAsStream("selfsigned.jks"), passphrase);
+			ks.load(MetricsEndpointMockServerTLS.class.getResourceAsStream("selfsigned.jks"), passphrase);
 		} catch (NoSuchAlgorithmException | CertificateException | IOException e) {
 			Assertions.fail("Unable to load selfsigned keystore");
 		}
