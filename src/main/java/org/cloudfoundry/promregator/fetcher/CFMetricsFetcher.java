@@ -221,10 +221,13 @@ public class CFMetricsFetcher implements MetricsFetcher {
 		
 		final Matcher matcherOpenMetric100WrongVersion = CONTENT_TYPE_OPENMETRIC_100_WRONG_VERSION.matcher(contentTypeValue);
 		if (matcherOpenMetric100WrongVersion.find()) {
-			logWrongVersion.warn("The implementation at {} and instance {} returned an invalid content type by specifying an invalid version identifier {} of the OpenMetric format. "
-					+ "Promregator is guessing that you mean version 1.0.0. Please fix your Prometheus client library! "
-					+ "See also https://github.com/promregator/promregator/wiki/Invalid-Version-In-Content-Type-of-OpenMetrics-Endpoints", 
-					this.endpointUrl, this.instanceId, matcherOpenMetric100WrongVersion.group(1), logWrongVersion.getName());
+			if (logWrongVersion.isWarnEnabled()) {
+				final String versionIdentifierProvided = matcherOpenMetric100WrongVersion.group(1);
+				logWrongVersion.warn("The implementation at {} and instance {} returned an invalid content type by specifying an invalid version identifier {} of the OpenMetric format. "
+						+ "Promregator is guessing that you mean version 1.0.0. Please fix your Prometheus client library! "
+						+ "See also https://github.com/promregator/promregator/wiki/Invalid-Version-In-Content-Type-of-OpenMetrics-Endpoints", 
+						this.endpointUrl, this.instanceId, versionIdentifierProvided, logWrongVersion.getName());
+			}
 			return TextFormat.CONTENT_TYPE_OPENMETRICS_100;
 		}
 		
