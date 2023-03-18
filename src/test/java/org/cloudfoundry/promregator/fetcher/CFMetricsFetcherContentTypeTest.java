@@ -239,4 +239,37 @@ class CFMetricsFetcherContentTypeTest {
 		Assertions.assertNull(result);
 	}
 	
+	@Test
+	void testOpenMetricsWithWrongFormatIdentifier() throws Exception {
+		
+		CFMetricsFetcherConfig config = Mockito.mock(CFMetricsFetcherConfig.class);
+		Mockito.when(config.getPromregatorInstanceIdentifier()).thenReturn(UUID.randomUUID());
+		
+		MetricsFetcherMetrics mfm = Mockito.mock(MetricsFetcherMetrics.class);
+		Mockito.when(config.getMetricsFetcherMetrics()).thenReturn(mfm);
+		
+		final TestableCFMetricsFetcher subject = new TestableCFMetricsFetcher("dummy", "dummy", config, false);
+		
+		CloseableHttpResponse response = Mockito.mock(CloseableHttpResponse.class);
+		Mockito.when(response.getStatusLine()).thenReturn(new BasicStatusLine(new ProtocolVersion("http", 1, 1), 200, "OK"));
+		
+		// that's the trick
+		Header contentTypeHeader = Mockito.mock(Header.class);
+		Mockito.when(contentTypeHeader.getValue()).thenReturn("application/openmetrics-text; version=0.0.42; charset=utf-8");
+		Mockito.when(response.getFirstHeader(HttpHeaders.CONTENT_TYPE)).thenReturn(contentTypeHeader);
+		
+		HttpEntity httpEntity = Mockito.mock(HttpEntity.class);
+		Mockito.when(httpEntity.getContentLength()).thenReturn((long) DUMMY_METRICS_LIST_BYTE_ARRAY.length);
+		Mockito.when(httpEntity.getContent()).thenReturn(new ByteArrayInputStream(DUMMY_METRICS_LIST_BYTE_ARRAY));
+		Mockito.when(response.getEntity()).thenReturn(httpEntity);
+		
+		Mockito.when(subject.getMockedCloseableHttpClient().execute(Mockito.any())).thenReturn(response);
+		
+		FetchResult result = subject.call();
+		
+		Assertions.assertNotNull(result);
+		Assertions.assertEquals(TextFormat.CONTENT_TYPE_OPENMETRICS_100, result.contentType());
+		ParserCompareUtils.compareFetchResult(result, DUMMY_METRICS_LIST);
+	}
+	
 }
