@@ -157,13 +157,9 @@ public class PromregatorApplication {
 		return new InstanceLifecycleHandler();
 	}
 	
-	@Bean
-	public CollectorRegistry collectorRegistry() {
-		CollectorRegistry cr = CollectorRegistry.defaultRegistry;
-		
+	@PostConstruct
+	public void registerDefaultExportsAsCollectorRegistry() {
 		DefaultExports.initialize();
-		
-		return cr;
 	}
 	
 	@Bean
