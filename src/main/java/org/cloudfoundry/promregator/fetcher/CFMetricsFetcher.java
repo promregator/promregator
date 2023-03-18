@@ -44,8 +44,8 @@ public class CFMetricsFetcher implements MetricsFetcher {
 	private static final Logger log = LoggerFactory.getLogger(CFMetricsFetcher.class);
 	private static final Logger logWrongVersion = LoggerFactory.getLogger(CFMetricsFetcher.class.toString()+".wrongVersion");
 	
-	private static final Pattern CONTENT_TYPE_OPENMETRIC_100 = Pattern.compile("^application/openmetrics-text; *version=1\\.[0-9]++\\.[0-9]++; *charset=utf-8");
-	private static final Pattern CONTENT_TYPE_OPENMETRIC_100_WRONG_VERSION = Pattern.compile("^application/openmetrics-text; *version=(0\\.[0-9]++\\.[0-9]++)");
+	private static final Pattern CONTENT_TYPE_OPENMETRIC_100 = Pattern.compile("^application/openmetrics-text; *version=1\\.\\d++\\.\\d++; *charset=utf-8");
+	private static final Pattern CONTENT_TYPE_OPENMETRIC_100_WRONG_VERSION = Pattern.compile("^application/openmetrics-text; *version=(0\\.\\d++\\.\\d++)");
 	private static final Pattern CONTENT_TYPE_TEXT_004 = Pattern.compile("^text/plain; *version=0\\.0\\.4; *charset=utf-8");
 	
 	private String endpointUrl;
