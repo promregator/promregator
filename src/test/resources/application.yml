@@ -36,6 +36,12 @@ spring:
   main:
     allow-bean-definition-overriding: true
 
+  # see also https://stackoverflow.com/a/72973229 - otherwise spring cloud config
+  # is enabled by default and any bootup without spring cloud config configured will fail
+  # with an exception org.springframework.cloud.commons.ConfigDataMissingEnvironmentPostProcessor$ImportException: No spring.config.import set
+  cloud:
+    config:
+      enabled: false
 
 cf:
   api_host: dummy.api.host.bogus

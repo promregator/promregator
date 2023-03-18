@@ -19,6 +19,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ContextConfiguration(initializers = { ConfigDataApplicationContextInitializer.class })
 @ActiveProfiles(profiles= {"springBootLoadPropertiesForTesting", "springBootLoadPropertiesForEncryptionTesting"})
 @TestPropertySource(properties = "encrypt.key=mySecretKey")
+@TestPropertySource(properties = "spring.cloud.config.enabled=false")
 public class SpringBootLoadPropertiesForTesting {
 
 	@Autowired
@@ -41,3 +42,4 @@ public class SpringBootLoadPropertiesForTesting {
 		Assertions.assertEquals("mysecret", secretValue);
 	}
 }
+

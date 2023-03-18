@@ -20,6 +20,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ContextConfiguration(initializers = { ConfigDataApplicationContextInitializer.class })
 @ActiveProfiles(profiles= {"springBootLoadPropertiesForTestingOtherKey", "springBootLoadPropertiesForEncryptionTesting"})
 @TestPropertySource(properties = "encrypt.key=someotherkey")
+@TestPropertySource(properties = "spring.cloud.config.enabled=false")
 public class SpringBootLoadPropertiesForTestingOtherKey {
 
 	@Autowired

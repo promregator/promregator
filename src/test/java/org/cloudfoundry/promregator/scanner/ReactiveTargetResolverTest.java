@@ -15,10 +15,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = MockedReactiveTargetResolverSpringApplication.class)
+@TestPropertySource(properties = "spring.cloud.config.enabled=false")
 public class ReactiveTargetResolverTest {
 	@AfterAll
 	static void cleanupEnvironment() {
