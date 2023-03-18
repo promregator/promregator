@@ -1,7 +1,3 @@
-<p style="font-size:large">Statement on <a href="https://github.com/promregator/promregator/wiki/Statement-on-Promregator-and-CVE-2021-44228">CVE-2021-44228</a>!</p>
-
-
-
 # Status
 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=promregator&metric=alert_status)](https://sonarcloud.io/dashboard?id=promregator) [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=promregator&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=promregator) [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=promregator&metric=bugs)](https://sonarcloud.io/dashboard?id=promregator) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=promregator&metric=coverage)](https://sonarcloud.io/dashboard?id=promregator) [![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=promregator&metric=ncloc)](https://sonarcloud.io/dashboard?id=promregator) [![CodeQL](https://github.com/promregator/promregator/actions/workflows/codeql.yml/badge.svg)](https://github.com/promregator/promregator/actions/workflows/codeql.yml)
