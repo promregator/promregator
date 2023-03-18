@@ -237,13 +237,6 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 			MDC.put("AutoRefreshingCacheMap", this.map.getName());
 			log.debug(String.format("Starting checks for this AutoRefreshingCacheMap; expiry: %dms, refresh: %dms", this.map.expiryDuration.toMillis(), this.map.refreshInterval.toMillis()));
 			while (this.shouldRun) {
-				try {
-					this.refreshMap();
-				} catch (Exception e) {
-					log.warn("Unexpected exception was raised in Refresher Thread for AutoRefreshingCacheMap", e);
-					// fall-through is expected!
-				}
-				
 				final long sleepDuration = Math.min(500, Math.min(this.map.expiryDuration.toMillis(), this.map.refreshInterval.toMillis()));
 				try {
 					Thread.sleep(sleepDuration);
@@ -251,6 +244,13 @@ public class AutoRefreshingCacheMap<K, V> extends AbstractMapDecorator<K, V> {
 					// received signal; check if something has to be done
 					log.info("Stopping RefresherThread");
 					Thread.currentThread().interrupt();
+				}
+				
+				try {
+					this.refreshMap();
+				} catch (Exception e) {
+					log.warn("Unexpected exception was raised in Refresher Thread for AutoRefreshingCacheMap", e);
+					// fall-through is expected!
 				}
 			}
 			log.debug("Refresher Thread for this AutoRefreshingCacheMap has shut down");
