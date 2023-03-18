@@ -617,4 +617,14 @@
 	   <packageUrl regex="true">^pkg:maven/org\.apache\.activemq/activemq\-broker@.*$</packageUrl>
 	   <vulnerabilityName>CVE-2015-3208</vulnerabilityName>
 	</suppress>
+	<suppress>
+		<notes><![CDATA[
+	      file name: json-20230227.jar
+	      Issue has been fixed with 20230227 as of https://github.com/stleary/JSON-java/pull/720#issuecomment-1447947410,
+	      but NVD is lagging behind.
+	      ]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.json/json@.*$
+		</packageUrl>
+		<cve>CVE-2022-45688</cve>
+	</suppress>
 </suppressions>
