@@ -42,7 +42,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.hotspot.DefaultExports;
 import reactor.core.publisher.Hooks;
 
