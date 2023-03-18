@@ -165,7 +165,7 @@ def springCloudConfigServerTest(params) {
 		sh """
 			mvn -B clean package -DskipTests
 			
-			java -jar spring-cloud-config-integration-test-0.0.1-SNAPSHOT.jar &
+			java -jar target/spring-cloud-config-integration-test-0.0.1-SNAPSHOT.jar &
 			
 			echo -n \$! >configserver.pid
 			CONFIGSERVERPID=`cat configserver.pid`
