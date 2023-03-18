@@ -148,7 +148,7 @@ def springCloudConfigServerTest(params) {
 		
 		// add credentials
 		sh """
-			cp ../build/test/integration/springCloudCliPassword/bluemix.yaml application.yaml
+			cp ../build/test/integration/springCloudConfig/bluemix.yaml application.yaml
 		"""
 	
 		withCredentials([usernamePassword(credentialsId: 'bluemix-ibm-cf-platform', passwordVariable: 'CFPASSWORD', usernameVariable: 'CFUSER')]) {

@@ -1,0 +1,70 @@
+promregator:
+  metrics:
+    internal: true
+  
+  authenticator:
+    type: none
+  
+  authentication:
+    basic:
+      username: integrationtest
+      password: 1ntegrat1ontest
+      
+  discovery:
+    auth: BASIC
+  
+  scraping:
+    labelEnrichment: false
+  
+  resolver:
+    logging:
+      empty:
+        target: false
+
+  reactor:
+    debug: true
+  
+  targets:
+    - orgName: ibm@schmoigl-online.de
+      spaceRegex: .*
+      applicationName: testapp2
+      path: /metrics
+      kubernetesAnnotations: true
+
+cf:
+  api_host: api.eu-gb.bluemix.net
+  username: ibm@schmoigl-online.de
+  password: '%%CRYPTEDPASSWORD%%'
+  
+  cache:
+    type: caffeine
+    timeout:
+      org: 30
+      space: 30
+      application: 30
+      resolver: 30
+
+spring:
+  # see also https://stackoverflow.com/a/72973229 - otherwise spring cloud config
+  # is enabled by default and any bootup without spring cloud config configured will fail
+  # with an exception org.springframework.cloud.commons.ConfigDataMissingEnvironmentPostProcessor$ImportException: No spring.config.import set
+  # We don't want to test spring cloud config integration here, though.
+  # Note that the application.yaml in the src/main/resources does not work here,
+  # as we are executing all this with --spring.config.name=bluemix
+  cloud:
+    config:
+      enabled: false
+
+
+logging:
+  level:
+    org:
+      cloudfoundry:
+        promregator:
+          cfaccessor: DEBUG
+          cache: 
+            AutoRefreshingCacheMap: DEBUG
+
+    cloudfoundry-client:
+      request: DEBUG
+      response: DEBUG
