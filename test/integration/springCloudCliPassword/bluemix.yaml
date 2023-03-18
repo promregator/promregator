@@ -44,6 +44,17 @@ cf:
       application: 30
       resolver: 30
 
+spring:
+  # see also https://stackoverflow.com/a/72973229 - otherwise spring cloud config
+  # is enabled by default and any bootup without spring cloud config configured will fail
+  # with an exception org.springframework.cloud.commons.ConfigDataMissingEnvironmentPostProcessor$ImportException: No spring.config.import set
+  # We don't want to test spring cloud config integration here, though.
+  # Note that the application.yaml in the src/main/resources does not work here,
+  # as we are executing all this with --spring.config.name=bluemix
+  cloud:
+    config:
+      enabled: false
+
 
 logging:
   level:
