@@ -30,7 +30,8 @@ public class PromregatorMetricsEndpoint {
 
 	@GetMapping(produces = TextFormat.CONTENT_TYPE_004)
 	public ResponseEntity<String> getMetrics004() {
-		return ResponseEntity.badRequest().body("text/plain;version=0.0.4 is no longer supported after Prometheus library simpleclient has dropped supported in version 0.10.0");
+		return ResponseEntity.badRequest().body("text/plain;version=0.0.4 is no longer supported after Prometheus library simpleclient has dropped supported in version 0.10.0. "
+				+ "Using the command line, you may get the metrics using the new format for example by calling \"curl -H 'Accept: application/openmetrics-text; version=1.0.0; charset=utf-8' http://localhost:8080"+ EndpointConstants.ENDPOINT_PATH_PROMREGATOR_METRICS + "\"");
 	}
 	
 	@GetMapping(produces = TextFormat.CONTENT_TYPE_OPENMETRICS_100)
