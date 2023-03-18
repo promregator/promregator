@@ -189,7 +189,7 @@ def springCloudConfigServerTest(params) {
 	sh """#!/bin/bash -xe
 		ls -al .
 	
-		java -jar target/promregator-${params.currentVersion}.jar &
+		java -Dspring.cloud.config.enabled=true -jar target/promregator-${params.currentVersion}.jar &
 		
 		export PROMREGATOR_PID=\$!
 		
