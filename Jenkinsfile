@@ -135,6 +135,7 @@ def springCloudCliPasswordTest(params) {
 def springCloudConfigServerTest(params) {
 	assert params.currentVersion != null : "Current Version at springCloudConfigServerTest not set"
 
+	def repoDir
 	dir("../springCloudConfigServerRepo") {
 		// prepare repository
 		sh """
@@ -142,6 +143,9 @@ def springCloudConfigServerTest(params) {
 			git config user.email "nobody@integration.test.bogus"
 			git config user.name "Integration Test"
 		"""
+		
+		repoDir = pwd()
+		
 		// add credentials
 		sh """
 			cp ../build/test/integration/springCloudCliPassword/bluemix.yaml application.yaml
@@ -165,7 +169,7 @@ def springCloudConfigServerTest(params) {
 		sh """
 			mvn -B clean package -DskipTests
 			
-			java -jar target/spring-cloud-config-integration-test-0.0.1-SNAPSHOT.jar &
+			java "-Dspring.cloud.config.server.git.uri=file:///${repoDir}" -jar target/spring-cloud-config-integration-test-0.0.1-SNAPSHOT.jar &
 			
 			echo -n \$! >configserver.pid
 			CONFIGSERVERPID=`cat configserver.pid`
