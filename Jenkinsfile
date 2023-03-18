@@ -139,6 +139,8 @@ def springCloudConfigServerTest(params) {
 		// prepare repository
 		sh """
 			git init .
+			git config user.email "nobody@integration.test.bogus"
+			git config user.name "Integration Test"
 		"""
 		// add credentials
 		sh """
