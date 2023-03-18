@@ -35,9 +35,7 @@ class PromregatorMetricsEndpointTest {
 	void getMetricsTextFormat100() {
 		PromregatorMetricsEndpoint subject = new PromregatorMetricsEndpoint();
 		
-		CollectorRegistry registry = new CollectorRegistry();
-		registry.register(new Collector() {
-
+		final Collector collector = new Collector() {
 			@Override
 			public List<MetricFamilySamples> collect() {
 				Sample sample = new Sample("test", List.of(), List.of(), 1.0);
@@ -45,9 +43,16 @@ class PromregatorMetricsEndpointTest {
 				return List.of(mfs);
 			}
 			
-		});
+		};
 		
-		String response = subject.getMetricsOpenMetrics100(registry);
+		CollectorRegistry.defaultRegistry.register(collector);
+		
+		final String response;
+		try {
+			response = subject.getMetricsOpenMetrics100();
+		} finally {
+			CollectorRegistry.defaultRegistry.unregister(collector);
+		}
 		
 		Assertions.assertTrue(Pattern.compile("^promregator_test 1.0", Pattern.MULTILINE).matcher(response).find());
 	}
