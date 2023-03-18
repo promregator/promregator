@@ -35,8 +35,8 @@ public class PromregatorMetricsEndpoint {
 	}
 	
 	@GetMapping(produces = TextFormat.CONTENT_TYPE_OPENMETRICS_100)
-	public String getMetricsOpenMetrics100(CollectorRegistry collectorRegistry) {
-		HashMap<String, MetricFamilySamples> mfsMap = this.gmfspr.determineEnumerationOfMetricFamilySamples(collectorRegistry);
+	public String getMetricsOpenMetrics100() {
+		HashMap<String, MetricFamilySamples> mfsMap = this.gmfspr.determineEnumerationOfMetricFamilySamples(CollectorRegistry.defaultRegistry);
 
 		Writer writer = new StringWriter();
 		try {
