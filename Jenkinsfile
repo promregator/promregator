@@ -132,6 +132,96 @@ def springCloudCliPasswordTest(params) {
 	}
 }
 
+def springCloudConfigServerTest(params) {
+	assert params.currentVersion != null : "Current Version at springCloudConfigServerTest not set"
+
+	dir("../springCloudConfigServerRepo") {
+		// prepare repository
+		sh """
+			git init .
+		"""
+		// add credentials
+		sh """
+			cp ../build/test/integration/springCloudCliPassword/bluemix.yaml application.yaml
+		"""
+	
+		withCredentials([usernamePassword(credentialsId: 'bluemix-ibm-cf-platform', passwordVariable: 'CFPASSWORD', usernameVariable: 'CFUSER')]) {
+			sh """#!/bin/bash -xe
+				sed -i -e "s/%%CRYPTEDPASSWORD%%/\$CFPASSWORD/g" application.yaml
+			"""
+		}
+		
+		sh """
+			git add application.yaml
+			git commit -m "Initial test commit"
+		"""
+	}
+	
+	def configServerPid
+	
+	dir("test/integration/springCloudConfig/server") {
+		sh """
+			mvn clean package -DskipTests
+			
+			java -jar spring-cloud-config-integration-test-0.0.1-SNAPSHOT.jar &
+			
+			echo -n \$! >configserver.pid
+			CONFIGSERVERPID=`cat configserver.pid`
+			
+			echo "Config Server is running on \$CONFIGSERVERPID; giving it 15 seconds to start up"
+			
+			sleep 15
+		"""
+		
+		configServerPid = readFile file: "configserver.pid"
+	}
+	
+	println "ConfigServer Pid was set to ${configServerPid}"
+	
+	assert configServerPid != null && configServerPid != 0 : "springCloudConfigServerTest: configServerPid isn't set"
+	
+	/*
+	This currently still requires our bluemix. Bluemix will be discontinued on June 2023.
+	Alternative idea: local CF installation: https://bbv.ch/cloud-foundry-lokal-installieren/
+	*/
+	
+	// Run Test itself
+	sh """#!/bin/bash -xe
+		ls -al .
+	
+		java -jar target/promregator-${params.currentVersion}.jar &
+		
+		export PROMREGATOR_PID=\$!
+		
+		echo "Promregator is running on \$PROMREGATOR_PID; giving it 30 seconds to start up"
+		
+		sleep 30
+		
+		curl -m 10 -u 'integrationtest:1ntegrat1ontest' http://localhost:8080/discovery > discovery.json
+		cat discovery.json
+
+		kill \$PROMREGATOR_PID
+	"""
+	
+	// Shut down Config server
+	sh """
+		kill ${configServerPid}
+	"""
+	
+	// verify that the expected app could be discovered (i.e. the discovery file isn't empty)
+	sh """#!/bin/bash -xe
+		CHECKRESULT=`jq -r '.[] | select(.labels.__meta_promregator_target_applicationName=="testapp2") | .labels.__meta_promregator_target_applicationName' discovery.json`
+		if [ "\$CHECKRESULT" != "testapp2" ]; then
+			echo "Test has failed: Discovery response does not include the expected application name 'testapp2'"
+			exit 1
+		fi
+	"""
+	
+	sh """
+		rm -rf ../springCloudConfigServerRepo
+	"""
+}
+
 timestamps {
 	node("slave") {
 		def checkoutBranchName = env.BRANCH_NAME // see also https://stackoverflow.com/a/36332154
@@ -200,7 +290,11 @@ timestamps {
 			}
 			
 			stage("Integration Test") {
+				println "Running Spring Cloud CLI password test"
 				springCloudCliPasswordTest currentVersion: currentVersion
+				
+				println "Running Spring Cloud Config Server test"
+				springCloudConfigServerTest currentVersion: currentVersion
 			}
 			
 			stage("SecDependency Scan") {
