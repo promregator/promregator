@@ -191,7 +191,7 @@ def springCloudConfigServerTest(params) {
 	sh """#!/bin/bash -xe
 		ls -al .
 	
-		java -Dspring.cloud.config.enabled=true -jar target/promregator-${params.currentVersion}.jar &
+		java -Dspring.cloud.config.enabled=true -Dspring.config.import=configserver: -jar target/promregator-${params.currentVersion}.jar &
 		
 		export PROMREGATOR_PID=\$!
 		
