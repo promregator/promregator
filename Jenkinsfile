@@ -163,7 +163,7 @@ def springCloudConfigServerTest(params) {
 	
 	dir("test/integration/springCloudConfig/server") {
 		sh """
-			mvn clean package -DskipTests
+			mvn -B clean package -DskipTests
 			
 			java -jar spring-cloud-config-integration-test-0.0.1-SNAPSHOT.jar &
 			
