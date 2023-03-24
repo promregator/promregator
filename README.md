@@ -72,7 +72,7 @@ Promregator is currently preparing to provide a new major version. Here are the 
 | Aspect                                              | Version 1.x.x                                  | Version 0.x.x                                                                               |
 |-----------------------------------------------------|------------------------------------------------|---------------------------------------------------------------------------------------------|
 | Java Runtime Version                                | JRE 17 or higher                               | JRE 8 or higher                                                                             |
-| CFCC API Version                                    | V3 only                                        | V2 only (special cases with V3)                                                             |
+| CF CC API Version                                   | V3 only (3.84.0 or higher required)            | V2 only (special cases with V3)                                                             |
 | Classic Cache                                       | no longer supported                            | default, available in all minor versions                                                    |
 | Caffeine Cache                                      | default                                        | optional, starting with 0.7.x                                                               |
 | OAuth2XSUAA Authenticator with Basic Authentication | Only `OAuth2XSUAABasic` supported         | `OAuth2XSUAA` (old one) and `OAuth2XSUAABasic` supported (available since v0.10.0) |
@@ -91,8 +91,9 @@ An upgrade guide is provided [here](docs/upgrade.md).
 
 Running Promregator V1 requires:
 * JRE17 or higher
+* A Cloud Foundry platform supporting the Cloud Foundry API Version 3.84.0 or higher (release in June 2020). 
 
-If you cannot fulfill this requirement, you may still use Promregator V0, which requires JRE8 or higher.
+If you cannot fulfill these requirements, you may still use Promregator V0, which requires JRE8 or higher and supprts Cloud Foundry API version 2.x. 
 
 Compiling Promregator additionally requires:
 * JDK17 or higher (for Promregator V1)

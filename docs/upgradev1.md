@@ -43,6 +43,55 @@ If your platform supports that API, you will see a JSON file like this:
 
 Note that you cannot upgrade to Promregator V1 (or later), if your platform does not support API V3 (or later).
 
+
+## Checking minimal CFCC V3 version supported
+
+Besides support for V3 in general, Promregator needs some features that are only available in API V3 version 3.84.0. You may check which V3 version is available at your platform by calling
+
+```bash
+$ cf api
+```
+
+or alternatively by GETting the endpoint
+
+``` 
+https://<your api url of the platform>/
+```
+
+for example by calling
+
+```bash
+$ curl https://<your api url of the platform>/
+```
+
+You will receive a JSON document like this:
+
+```json
+{
+  "links": {
+    "self": {
+      "href": "https://<your api url of the platform>"
+    },
+    "cloud_controller_v2": {
+      "href": "https://<your api url of the platform>/v2",
+      "meta": {
+        "version": "2.197.0"
+      }
+    },
+    "cloud_controller_v3": {
+      "href": "https://<your api url of the platform>/v3",
+      "meta": {
+        "version": "3.132.0"
+      }
+    },
+    ...
+}
+```
+Verify that in `links.cloud_controller_v3.meta.version` a version equal or higher to 3.84.0 is specified.
+
+If this is not the case, you cannot upgrade to Promregator V1.
+
+
 ## Switch to new Proxy Nomenclature
 
 Check, if you still use the old `cf.proxyHost` or `cf.proxyPort` configuration options. They are deprecated since long.
