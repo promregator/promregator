@@ -205,6 +205,7 @@ then comes to your rescue.
 3. Start a container using the following command:
    ```bash
    $ docker run --name prometheus -v `pwd`/prometheus.yml:/etc/prometheus/prometheus.yml \
+     -v `pwd`/discovery.json:/etc/promregator/discovery.json \
      -p 127.0.0.1:9090:9090 --link promregator \
      prom/prometheus:latest
    ```
