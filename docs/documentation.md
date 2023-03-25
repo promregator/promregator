@@ -12,17 +12,13 @@ A quickstart guide using docker images is availabe at our [quickstart page](quic
 
 A detailed analysis of Promregator's architecture is described in the [architecture page](architecture.md). Please refer to this page for further details.
 
-## Single Endpoint Scraping or Single Target Scraping
+## How Promregator Integrates with Prometheus
 
-Since version 0.2.0, Promregator supports two modes on how it allows to integrate with Prometheus:
+Since version 1.0.0, Promregator supports (only) the following mode on how integrates with Prometheus:
 
-* **Single Endpoint Scraping Mode**: This is the default mode. Promregator provides only one single endpoint (`/metrics`), which handles both the discovery of CF App instances on the Cloud Foundry platform, the scraping of the metrics from these instances and the merging of the metric samples which have been scraped. Prometheus only needs to scrape one single (static) target and thus only needs to send a single request for retrieving all metrics of all CF App instances at once. However, this comes at a cost of flexibility on labeling / relabeling in Prometheus and does not scale well, if you have a larger number of Cloud Foundry apps to scrape. Yet, it is quite easy to configure.
+Service discovery (determining which CF App instances are subject to scraping) is separated in an own endpoint (`/discovery`). It provides a JSON-formatted downloadable file, which can be used with the `file_sd_configs` service discovery method of Prometheus. The file includes an own target for each CF app instance to be scraped, for which Promregator serves as proxy. Therefore, Prometheus will send multiple scraping requests to Promregator (at the endpoint starting with path `/singleTargetMetrics`), which redirects them to the corresponding CF app instances. This approach allows to scale to hundreds of apps to be scraped, as control over the point of time for scraping is handled properly by Prometheus. Moreover, it supports flexibility on rewriting using Prometheus. 
 
-* **Single Target Scraping Mode**: Service discovery (determining which CF App instances are subject to scraping) is separated in an own endpoint (`/discovery`). It provides a JSON-formatted downloadable file, which can be used with the `file_sd_configs` service discovery method of Prometheus. The file includes an own target for each CF app instance to be scraped, for which Promregator serves as proxy. Therefore, Prometheus will send multiple scraping requests to Promregator (at the endpoint starting with path `/singleTargetMetrics`), which redirects them to the corresponding CF app instances. This approach allows to also scale to hundreds of apps to be scraped, as control over the point of time for scraping is handled properly by Prometheus. Moreover, it gives you additional flexibility on rewriting. However, all this also makes the mode more complex to configure and to maintain.
-
-In general, consumers are free to choose between these two modes. For a start, we recommend to set up the Single Endpoint Scraping mode, and switch to the Single Target Scraping mode, if the number of CF apps increase and scalability becomes an issue. For a detailed discussion on that refer to our [Single Target Scraping mode page](singleTargetScraping.md).
-
-Note that Promregator is capable of running in both modes at the same point in time. That is to say: You may switch the mode on the fly - even without restarting Promregator. The major difference only is, what you need to do in Prometheus' configuration to make it talk to Promregator.
+For getting to know more about the rationale of how Promregator scrapes its targets, see also [this page](singleTargetScraping.md).
 
 An overview on the endpoints provided by Promregator can be found at the [endpoint's page](endpoint.md).
 
