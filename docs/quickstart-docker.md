@@ -175,24 +175,24 @@ then comes to your rescue.
         - files:
            - /etc/promregator/discovery.json
          
-        relabel_configs:
-          - source_labels: [__meta_promregator_target_instanceId]
-            target_label: instance
-            
-          - source_labels: [__meta_promregator_target_instanceId]
-            target_label: cf_instance_id
-            
-          - source_labels: [__meta_promregator_target_orgName]
+       relabel_configs:
+         - source_labels: [__meta_promregator_target_instanceId]
+           target_label: instance
+           
+         - source_labels: [__meta_promregator_target_instanceId]
+           target_label: cf_instance_id
+           
+         - source_labels: [__meta_promregator_target_orgName]
             target_label: org_name
-            
-          - source_labels: [__meta_promregator_target_spaceName]
-            target_label: space_name
-            
-          - source_labels: [__meta_promregator_target_applicationName]
-            target_label: app_name
-            
-          - source_labels: [__meta_promregator_target_instanceNumber]
-            target_label: cf_instance_number
+           
+         - source_labels: [__meta_promregator_target_spaceName]
+           target_label: space_name
+           
+         - source_labels: [__meta_promregator_target_applicationName]
+           target_label: app_name
+           
+         - source_labels: [__meta_promregator_target_instanceNumber]
+           target_label: cf_instance_number
    ```
    
    Again, please be reminded to use tabs for indentation - not tabs.
