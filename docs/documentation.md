@@ -101,26 +101,6 @@ The current knowledge about memory configuration for Promregator can be found at
 
 ## Configuration of Prometheus Server
 
-As there are two modes of how Prometheus may talk to Promregator (Single Endpoint Scraping Mode and Single Target Scraping Mode, see also above), the suggested configuration of Prometheus depends on the mode you want to use.
-
-### Configuration using Single Endpoint Scraping Mode (easy to configure; recommended for starting)
-
-From the perspective of Prometheus, Promregator behaves like any other (single) target. Thus, you may use a static scraping configuration to connect Prometheus to Promregator. You may set up a scraping job for example like this:
-
-```yaml
-[...]
-scrape_configs:
-  - job_name: 'prometheus'
-    scheme: http
-    static_configs:
-      - targets: ['hostname-of-promregator:8080']
-```
-
-Note that the option `honor_labels: true` is **not** required. 
-
-
-### Configuration using Single Target Scraping Mode
-
 From the perspective of Prometheus, Promregator behaves like both a service discovery tool and a service which contains several scraping targets. 
 
 #### Service Discovery
@@ -221,7 +201,7 @@ Summarizing the suggestions for the Prometheus' configuration, it is recommended
 ```
 
 
-### Common to both Scraping Modes
+### Enabling Basic Authentication Between Promehteus and Promregator
 
 Basic Authentication available starting with version 0.2.0 of Promregator.
 
@@ -268,11 +248,7 @@ scrape_configs:
       password: somepassword
 ```
 
-## Limitations
 
-The following limitations of Promregator are known:
-
-* In Single Endpoint Scraping mode, target instances which expose metrics that have conflicting metric types will cause that some metrics values must be dropped. For a discussion of this case (and suggested solutions), please refer to [this wiki page](https://github.com/promregator/promregator/wiki/Multiple-Type-Declarations-of-a-Metric-Cause-a-Collision-in-Single-Endpoint-Scraping-Mode).
 
 
 ## Logging

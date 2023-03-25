@@ -25,8 +25,6 @@ If Promregator is running on the same platform as the applications which you int
         protocol: https
         path: /promregatorMetrics
   ```
-  Note that setting the path is very important, as otherwise scraping will fail badly, as you would be trying to
-  scrape not just Promregator's own metrics, but all metrics (you get a fallback to Single Endpoint Scraping mode), which would lead to an endless recursive loop.
 
 By this, Promregator's own metrics will be scraped like all the metrics provided by the other applications. This also implies that the `promregator_*` metrics will be enriched with the labels of its scraping origin, i.e. each Promregator metric will also have `orgName`, `spaceName`, `applicationName` and -- most important -- `instanceId` assigned. By using the `instanceId` you are able to determine from which instance of Promregator the metrics are coming from. (As usual) special care has to be taken, if you are aggregating across multiple `instanceId`s.
 
