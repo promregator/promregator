@@ -1,5 +1,9 @@
 # Documentation of Promregator
 
+## Note Before You Start
+
+This is the documentation for Promregator V0.x. If you are interested in reading the documentation of the most recent version of Promregator V1.0 (and higher), please refer to [this page](https://github.com/promregator/promregator/blob/master/docs/documentation.md).
+
 ## Quickstart Guide
 
 A quickstart guide using docker images is availabe at our [quickstart page](quickstart-docker.md).
