@@ -495,7 +495,7 @@ Defaults to `/metrics`, as this is the value which is suggested by Prometheus.
 Note that there may be frameworks out there, which expose their metrics in a different format using the same path `/metrics`, though.
 Note that setting `promregator.targets[].kubernetesAnnotations` to `true` will cause that any value set to this parameter is ignored by applications that have annotation `prometheus.io/path` set.
 
-### Item property "promregator.targets[].overrideRouteAndPath" (optional)
+#### Item property "promregator.targets[].overrideRouteAndPath" (optional)
 This option became available starting with version 0.11.0.
 
 Specifies the route (and path) to a metric endpoint which is in front of the service metrics endpoint. For example, if the service endpoint is protected with a tool like Ory oathkeeper. In that case, it is not possible to call the service endpoint from promregator, because ORY oathkeeper blocks any access to the service endpoint with no authorization token. Promregator needs to call ORY oathkeeper with this override definition and with a valid token so that oathkeeper forwards the request to the service metrics endpoint. The authorization token could be retrieved with `promregator.authenticator.oauth2xsuaaBasic` for example.
