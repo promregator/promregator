@@ -1,21 +1,17 @@
 package org.cloudfoundry.promregator.fetcher;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.mockServer.MetricsEndpointMockServerTLS;
-import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
+import org.cloudfoundry.promregator.rewrite.OwnMetricsEnrichmentLabelVector;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import io.prometheus.client.Collector.MetricFamilySamples;
 
 public class MetricsFetcherTestTLSPKIX {
 
@@ -43,26 +39,14 @@ public class MetricsFetcherTestTLSPKIX {
 		JUnitTestUtils.cleanUpAll();
 	}
 	
-	private static class NullMetricFamilySamplesEnricher extends CFAllLabelsMetricFamilySamplesEnricher {
-
-		public NullMetricFamilySamplesEnricher(String orgName, String spaceName, String appName, String instance) {
-			super(orgName, spaceName, appName, instance);
-		}
-
-		@Override
-		public HashMap<String, MetricFamilySamples> determineEnumerationOfMetricFamilySamples(HashMap<String, MetricFamilySamples> mfs) {
-			return mfs;
-		}
-	}
-	
 	@Test
 	void testPKIXErrorOnSelfSignedCertificateInDefaultMode() throws Exception {
 		String instanceId = "abcd:4";
-		NullMetricFamilySamplesEnricher dummymfse = new NullMetricFamilySamplesEnricher("dummy", "dummy", "dummy", "dummy:0");
-		List<String> labelValues = dummymfse.getEnrichedLabelValues(new LinkedList<>());
+		OwnMetricsEnrichmentLabelVector omelv = new OwnMetricsEnrichmentLabelVector(null, "dummy", "dummy", "dummy", "dummy:0");
+		List<String> labelValues = omelv.getEnrichedLabelValues();
 		String[] ownTelemetryLabelValues = labelValues.toArray(new String[0]);
 		
-		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, false);
+		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, false, omelv);
 		UUID currentUUID = UUID.randomUUID();
 		
 		CFMetricsFetcherConfig config = new CFMetricsFetcherConfig();

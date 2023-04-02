@@ -4,44 +4,49 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-/**
- * A MetricFamilySamplesEnricher which enriches the labels of metrics by 
- * - org_name
- * - space_name
- * - app_name
- * - cf_instance_id
- * 
- */
-public class CFAllLabelsMetricFamilySamplesEnricher extends AbstractMetricFamilySamplesEnricher {
+public class OwnMetricsEnrichmentLabelVector {
 	public static final String LABELNAME_ORGNAME = "org_name";
 	public static final String LABELNAME_SPACENAME = "space_name";
 	public static final String LABELNAME_APPNAME = "app_name";
 	public static final String LABELNAME_INSTANCEID = "cf_instance_id";
-	
+
 	/* still required for backward-compatibility
 	 * Note that LABELNAME_INSTANCE is the better approach
 	 */
 	public static final String LABELNAME_INSTANCE_NUMBER = "cf_instance_number";
+
 	
-	private static String[] labelNames = new String[] { LABELNAME_ORGNAME, LABELNAME_SPACENAME, LABELNAME_APPNAME, LABELNAME_INSTANCEID, LABELNAME_INSTANCE_NUMBER };
-	
-	public static String[] getEnrichingLabelNames() {
-		return labelNames.clone();
-	}
+	private String[] labelNames;
 	
 	private String orgName;
 	private String spaceName;
 	private String appName;
 	private String instanceId;
 
-	public CFAllLabelsMetricFamilySamplesEnricher(String orgName, String spaceName, String appName, String instanceId) {
+	public OwnMetricsEnrichmentLabelVector(String labelNamePrefix, String orgName, String spaceName, String appName, String instanceId) {
 		this.instanceId = instanceId;
 		this.spaceName = spaceName;
 		this.appName = appName;
 		this.orgName = orgName;
+		
+		if (labelNamePrefix == null) {
+			this.labelNames = new String[] { LABELNAME_ORGNAME, LABELNAME_SPACENAME, LABELNAME_APPNAME, LABELNAME_INSTANCEID, LABELNAME_INSTANCE_NUMBER };
+		} else {
+			this.labelNames = new String[] { 
+					labelNamePrefix + LABELNAME_ORGNAME, 
+					labelNamePrefix + LABELNAME_SPACENAME, 
+					labelNamePrefix + LABELNAME_APPNAME, 
+					labelNamePrefix + LABELNAME_INSTANCEID, 
+					labelNamePrefix + LABELNAME_INSTANCE_NUMBER 
+			};
+		}
 	}
+
 	
-	@Override
+	public String[] getEnrichingLabelNames() {
+		return labelNames.clone();
+	}
+
 	protected List<String> getEnrichedLabelNames(List<String> original) {
 		List<String> clone = new LinkedList<>(original);
 		Collections.addAll(clone, labelNames);
@@ -49,7 +54,10 @@ public class CFAllLabelsMetricFamilySamplesEnricher extends AbstractMetricFamily
 		return clone;
 	}
 	
-	@Override
+	public List<String> getEnrichedLabelValues() {
+		return this.getEnrichedLabelValues(Collections.emptyList());
+	}
+	
 	public List<String> getEnrichedLabelValues(List<String> original) {
 		List<String> clone = new LinkedList<>(original);
 		
@@ -72,4 +80,5 @@ public class CFAllLabelsMetricFamilySamplesEnricher extends AbstractMetricFamily
 		
 		return instanceId.substring(pos+1);
 	}
+	
 }

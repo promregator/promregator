@@ -1,6 +1,6 @@
 package org.cloudfoundry.promregator.fetcher;
 
-import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
+import org.cloudfoundry.promregator.rewrite.OwnMetricsEnrichmentLabelVector;
 
 import io.prometheus.client.Counter;
 import io.prometheus.client.Histogram;
@@ -12,29 +12,48 @@ import io.prometheus.client.Histogram;
 public class MetricsFetcherMetrics {
 	/* references to metrics which we create and expose by our own */
 	
-	private static Histogram requestLatency = Histogram.build("promregator_request_latency", "The latency, which the targets of the promregator produce")
-			.labelNames(CFAllLabelsMetricFamilySamplesEnricher.getEnrichingLabelNames())
-			.unit("milliseconds")
-			.register();
+	private static final Object SETUP_SEMAPHORE = new Object();
+	
+	private static Histogram requestLatency;
 	private boolean requestLatencyEnabled;
 	
-	private static Counter failedRequests = Counter.build("promregator_request_failure", "Requests, which responded, but the HTTP code indicated an error or the connection dropped/timed out")
-			.labelNames(CFAllLabelsMetricFamilySamplesEnricher.getEnrichingLabelNames())
-			.register();
+	private static Counter failedRequests;
 	
-	private static Histogram requestSize = Histogram.build("promregator_request_size", "The size in bytes of the document, which the scraped targets sent to promregator")
-			.labelNames(CFAllLabelsMetricFamilySamplesEnricher.getEnrichingLabelNames())
-			.unit("bytes")
-			.exponentialBuckets(100, 1.5, 16)
-			.register();
+	private static Histogram requestSize;
 
 	private String[] ownTelemetryLabels;
 
-	public MetricsFetcherMetrics(String[] ownTelemetryLabels, boolean requestLatencyEnabled) {
+	public MetricsFetcherMetrics(String[] ownTelemetryLabels, boolean requestLatencyEnabled, OwnMetricsEnrichmentLabelVector omelv) {
 		super();
+		
+		synchronized (SETUP_SEMAPHORE) {
+			this.ensureMetricsSetup(omelv);
+		}
 		
 		this.ownTelemetryLabels = ownTelemetryLabels.clone();
 		this.requestLatencyEnabled = requestLatencyEnabled;
+	}
+
+	private void ensureMetricsSetup(OwnMetricsEnrichmentLabelVector omelv) {
+		if (requestLatency != null) {
+			// metrics have already been set up
+			return;
+		}
+		
+		requestLatency = Histogram.build("promregator_request_latency", "The latency, which the targets of the promregator produce")
+				.labelNames(omelv.getEnrichingLabelNames())
+				.unit("milliseconds")
+				.register();
+		
+		failedRequests = Counter.build("promregator_request_failure", "Requests, which responded, but the HTTP code indicated an error or the connection dropped/timed out")
+				.labelNames(omelv.getEnrichingLabelNames())
+				.register();
+		
+		requestSize = Histogram.build("promregator_request_size", "The size in bytes of the document, which the scraped targets sent to promregator")
+				.labelNames(omelv.getEnrichingLabelNames())
+				.unit("bytes")
+				.exponentialBuckets(100, 1.5, 16)
+				.register();
 	}
 
 	public String[] getOwnTelemetryLabels() {

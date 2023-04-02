@@ -656,7 +656,7 @@ Please also make sure that you set "promregator.scraping.proxy.host", too, as ot
 Configures the way how the promregator shall expose its own-generated metrics via the endpoints `/metrics` and `/promregatorMetrics`.
 
 #### Option "promregator.metrics.auth" (optional)
-Specifies the way how authentication shall be verified, if a request reaches the endpoint `/promregatorMetrics`. Note that the authentication verification of `/metrics` is controlled by `promregator.endpoint.auth`. Valid values for this option are:
+Specifies the way how authentication shall be verified, if a request reaches the endpoint `/promregatorMetrics`. Valid values for this option are:
 
 * *NONE*: no authentication verification is required (default)
 * *BASIC*: an authentication verification using HTTP Basic Authentication is performed. Valid credentials are taken from `promregator.authentication.basic.username` and `promregator.authentication.basic.password`.
@@ -674,6 +674,19 @@ Specifies, if additional internal metrics shall be exposed describing the intern
 The default value of this option is `false`, which disables the exposure. 
 
 Note that these metrics are not meant for productive usage. As they are primarily meant for facilitating debugging issues in Promregator, their naming and labels may change at any point in time without further notice.
+
+#### Option "promregator.metrics.labelNamePrefix" (optional)
+Specifies a prefix for label names of own-generated metrics. The prefix will be added to the label names
+
+* `org_name`
+* `space_name`
+* `app_name`
+* `cf_instance_id` and
+* `cf_instance_number`
+
+Usually, if specified, you want to have the value of this configuration option end with an underscore (`_`).
+
+If you specify this configuration option as `target_`, then `org_name` would become `target_org_name`.
 
 
 ### Subgroup "promregator.authenticator"

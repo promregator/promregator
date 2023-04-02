@@ -1,8 +1,6 @@
 package org.cloudfoundry.promregator.fetcher;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -11,15 +9,13 @@ import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.endpoint.EndpointConstants;
 import org.cloudfoundry.promregator.mockServer.MetricsEndpointMockServer;
-import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
+import org.cloudfoundry.promregator.rewrite.OwnMetricsEnrichmentLabelVector;
 import org.cloudfoundry.promregator.textformat004.ParserCompareUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import io.prometheus.client.Collector.MetricFamilySamples;
 
 public class MetricsFetcherTest {
 
@@ -47,26 +43,15 @@ public class MetricsFetcherTest {
 		JUnitTestUtils.cleanUpAll();
 	}
 	
-	private static class NullMetricFamilySamplesEnricher extends CFAllLabelsMetricFamilySamplesEnricher {
-
-		public NullMetricFamilySamplesEnricher(String orgName, String spaceName, String appName, String instance) {
-			super(orgName, spaceName, appName, instance);
-		}
-
-		@Override
-		public HashMap<String, MetricFamilySamples> determineEnumerationOfMetricFamilySamples(HashMap<String, MetricFamilySamples> mfs) {
-			return mfs;
-		}
-	}
-	
 	@Test
 	void testStraightForward() throws Exception {
 		String instanceId = "abcd:4";
-		NullMetricFamilySamplesEnricher dummymfse = new NullMetricFamilySamplesEnricher("dummy", "dummy", "dummy", "dummy:0");
-		List<String> labelValues = dummymfse.getEnrichedLabelValues(new LinkedList<>());
+		
+		OwnMetricsEnrichmentLabelVector omelv = new OwnMetricsEnrichmentLabelVector(null, "dummy", "dummy", "dummy", "dummy:0");
+		List<String> labelValues = omelv.getEnrichedLabelValues();
 		String[] ownTelemetryLabelValues = labelValues.toArray(new String[0]);
 		
-		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, false);
+		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, false, omelv);
 		UUID currentUUID = UUID.randomUUID();
 		
 		CFMetricsFetcherConfig config = new CFMetricsFetcherConfig();
@@ -89,11 +74,11 @@ public class MetricsFetcherTest {
 	@Test
 	void testStraightForwardInternalRoute() throws Exception {
 		String instanceId = "abcd:4";
-		NullMetricFamilySamplesEnricher dummymfse = new NullMetricFamilySamplesEnricher("dummy", "dummy", "dummy", "dummy:0");
-		List<String> labelValues = dummymfse.getEnrichedLabelValues(new LinkedList<>());
+		OwnMetricsEnrichmentLabelVector omelv = new OwnMetricsEnrichmentLabelVector(null, "dummy", "dummy", "dummy", "dummy:0");
+		List<String> labelValues = omelv.getEnrichedLabelValues();
 		String[] ownTelemetryLabelValues = labelValues.toArray(new String[0]);
 		
-		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, false);
+		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, false, omelv);
 		UUID currentUUID = UUID.randomUUID();
 		
 		CFMetricsFetcherConfig config = new CFMetricsFetcherConfig();
@@ -134,11 +119,11 @@ public class MetricsFetcherTest {
 	void testAEIsCalled() throws Exception {
 		String instanceId = "abcd:2";
 		TestAuthenticationEnricher ae = new TestAuthenticationEnricher();
-		NullMetricFamilySamplesEnricher dummymfse = new NullMetricFamilySamplesEnricher("dummy", "dummy", "dummy", "dummy:0");
-		List<String> labelValues = dummymfse.getEnrichedLabelValues(new LinkedList<>());
+		OwnMetricsEnrichmentLabelVector omelv = new OwnMetricsEnrichmentLabelVector(null, "dummy", "dummy", "dummy", "dummy:0");
+		List<String> labelValues = omelv.getEnrichedLabelValues();
 		String[] ownTelemetryLabelValues = labelValues.toArray(new String[0]);
 		
-		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, false);
+		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, false, omelv);
 		
 		CFMetricsFetcherConfig config = new CFMetricsFetcherConfig();
 		config.setAuthenticationEnricher(ae);
@@ -164,11 +149,11 @@ public class MetricsFetcherTest {
 	@Test
 	void testSocketReadTimeoutTriggered() throws Exception {
 		String instanceId = "abcd:7";
-		NullMetricFamilySamplesEnricher dummymfse = new NullMetricFamilySamplesEnricher("dummy", "dummy", "dummy", "dummy:0");
-		List<String> labelValues = dummymfse.getEnrichedLabelValues(new LinkedList<>());
+		OwnMetricsEnrichmentLabelVector omelv = new OwnMetricsEnrichmentLabelVector(null, "dummy", "dummy", "dummy", "dummy:0");
+		List<String> labelValues = omelv.getEnrichedLabelValues();
 		String[] ownTelemetryLabelValues = labelValues.toArray(new String[0]);
 		
-		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, false);
+		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, false, omelv);
 		UUID currentUUID = UUID.randomUUID();
 		
 		CFMetricsFetcherConfig config = new CFMetricsFetcherConfig();
@@ -190,11 +175,11 @@ public class MetricsFetcherTest {
 	@Test
 	void testInvalidEndpointURL() throws Exception {
 		String instanceId = "abcd:8";
-		NullMetricFamilySamplesEnricher dummymfse = new NullMetricFamilySamplesEnricher("dummy", "dummy", "dummy", "dummy:0");
-		List<String> labelValues = dummymfse.getEnrichedLabelValues(new LinkedList<>());
+		OwnMetricsEnrichmentLabelVector omelv = new OwnMetricsEnrichmentLabelVector(null, "dummy", "dummy", "dummy", "dummy:0");
+		List<String> labelValues = omelv.getEnrichedLabelValues();
 		String[] ownTelemetryLabelValues = labelValues.toArray(new String[0]);
 		
-		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, false);
+		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, false, omelv);
 		UUID currentUUID = UUID.randomUUID();
 		
 		CFMetricsFetcherConfig config = new CFMetricsFetcherConfig();
