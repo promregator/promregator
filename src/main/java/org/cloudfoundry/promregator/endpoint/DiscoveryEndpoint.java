@@ -35,6 +35,9 @@ public class DiscoveryEndpoint {
 	@Value("${promregator.discovery.hostname:#{null}}")
 	private String myHostname;
 	
+	@Value("${promregator.discovery.scheme:#{null}}")
+	private String myScheme;
+
 	@Value("${promregator.discovery.port:0}")
 	private int myPort;
 	
@@ -49,14 +52,16 @@ public class DiscoveryEndpoint {
 		private String applicationId;
 		private String instanceNumber;
 		private String instanceId;
+		private String scheme;
 
-		public DiscoveryLabel(String path) {
+		public DiscoveryLabel(String path, String scheme) {
 			super();
 			this.targetPath = path;
+			this.scheme = scheme;
 		}
 		
-		public DiscoveryLabel(String path, Instance instance) {
-			this(path);
+		public DiscoveryLabel(String path, String scheme, Instance instance) {
+			this(path, scheme);
 			
 			this.orgName = instance.getTarget().getOrgName();
 			this.spaceName = instance.getTarget().getSpaceName();
@@ -105,6 +110,11 @@ public class DiscoveryEndpoint {
 		public String getMetricsPath() {
 			return this.targetPath;
 		}
+
+		@JsonGetter("__scheme__")
+		public String getScheme() {
+			return this.scheme;
+		}
 	}
 	
 	public static class DiscoveryResponse {
@@ -138,6 +148,9 @@ public class DiscoveryEndpoint {
 		
 		String localHostname = this.myHostname != null ? this.myHostname : request.getLocalName();
 		int localPort = this.myPort != 0 ? this.myPort : request.getLocalPort();
+
+		//Default __scheme__ to https if promregator.discovery.port:443
+		String localScheme = (this.myScheme == null && this.myPort == 443) ? "https" : this.myScheme;
 		final String[] targets = { String.format("%s:%d", localHostname, localPort) };
 		
 		log.info("Using scraping target {} in discovery response", targets[0]);
@@ -146,7 +159,7 @@ public class DiscoveryEndpoint {
 		for (Instance instance : instances) {
 			
 			String path = String.format(EndpointConstants.ENDPOINT_PATH_SINGLE_TARGET_SCRAPING+"/%s/%s", instance.getApplicationId(), instance.getInstanceNumber());
-			DiscoveryLabel dl = new DiscoveryLabel(path, instance);
+			DiscoveryLabel dl = new DiscoveryLabel(path, localScheme, instance);
 			
 			DiscoveryResponse dr = new DiscoveryResponse(targets, dl);
 			result.add(dr);
@@ -154,7 +167,7 @@ public class DiscoveryEndpoint {
 		
 		if (this.promregatorMetricsEndpoint) {
 			// finally, also add our own metrics endpoint
-			DiscoveryLabel dl = new DiscoveryLabel(EndpointConstants.ENDPOINT_PATH_PROMREGATOR_METRICS);
+			DiscoveryLabel dl = new DiscoveryLabel(EndpointConstants.ENDPOINT_PATH_PROMREGATOR_METRICS, localScheme);
 			result.add(new DiscoveryResponse(targets, dl));
 		}
 		

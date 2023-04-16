@@ -556,6 +556,11 @@ Specifies the port number of the host (or the IP address) which shall be used fo
 
 Setting this option is optional. If not specified, Promregator tries to auto-detect this value based on the configuration of the underlying operating system and the request, which triggered the service discovery.
 
+#### Option "promregator.discovery.scheme" (optional)
+Specifies the scheme (`http|https`) of the host (or the IP address) which shall be used for specifying the target during discovery. As a rule of thumb, this name should always be the scheme under which Prometheus is capable of reaching Promregator.
+
+Setting this option is optional. If not specified, and `promregator.discovery.port` is set to `443`, Promregator sets this to `https`. This is output as `__scheme__` in the target labels. 
+
 #### Option "promregator.discovery.auth" (optional)
 Specifies the way how authentication shall be verified, if a request reaches the endpoint. Valid values are:
 
