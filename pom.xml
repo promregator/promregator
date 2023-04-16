@@ -493,7 +493,7 @@
 					<plugin>
 						<groupId>com.github.spotbugs</groupId>
 						<artifactId>spotbugs-maven-plugin</artifactId>
-						<version>4.7.3.0</version>
+						<version>4.7.3.4</version>
 						<executions>
 							<execution>
 								<phase>verify</phase>
@@ -507,7 +507,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-pmd-plugin</artifactId>
-						<version>3.19.0</version>
+						<version>3.20.0</version>
 						<configuration>
 							<linkXRef>false</linkXRef> <!-- see also https://stackoverflow.com/a/18390459 -->
 							<!-- see also https://stackoverflow.com/a/38958480 -->
