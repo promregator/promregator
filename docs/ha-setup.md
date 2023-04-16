@@ -28,6 +28,15 @@ If Promregator is running on the same platform as the applications which you int
 
 By this, Promregator's own metrics will be scraped like all the metrics provided by the other applications. This also implies that the `promregator_*` metrics will be enriched with the labels of its scraping origin, i.e. each Promregator metric will also have `orgName`, `spaceName`, `applicationName` and -- most important -- `instanceId` assigned. By using the `instanceId` you are able to determine from which instance of Promregator the metrics are coming from. (As usual) special care has to be taken, if you are aggregating across multiple `instanceId`s.
 
+It may happen that the label names of the self-scraped metrics overlap with the attributes provided by discovery at Prometheus' side (see also [Issue #235](https://github.com/promregator/promregator/issues/235)). This may lead to error messages at Prometheus' log like
+
+> label name "app_name" is not unique: invalid sample
+
+You have two options to resolve this:
+
+* Use the configuration option [`honor_labels` provided by Prometheus](https://prometheus.io/docs/prometheus/latest/configuration/configuration/), setting it to `true`. This will add skip label enrichment by Prometheus for colliding labels (i.e. Promregator's values will be taken).
+* Set Promregator's configuration option `promregator.metrics.labelNamePrefix` to a non-empty value. This will prefix all label names created by Promregator with the string configured, which will resolve the conflict.
+
 Note that if you protect your `/promregatorMetrics` (e.g. via `promregator.metrics.auth`) it is necessary to add an `authenticatorId` attribute to your target mentioned above. Promregator behaves here like any other target. So, for details you may refer to the [outbound authentication page](./outbound-authentication.md)
 
 
