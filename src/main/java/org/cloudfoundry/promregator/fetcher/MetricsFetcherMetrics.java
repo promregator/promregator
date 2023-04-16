@@ -40,17 +40,19 @@ public class MetricsFetcherMetrics {
 			return;
 		}
 		
+		final String[] labelNames = omelv.getEnrichingLabelNames();
+		
 		requestLatency = Histogram.build("promregator_request_latency", "The latency, which the targets of the promregator produce")
-				.labelNames(omelv.getEnrichingLabelNames())
+				.labelNames(labelNames)
 				.unit("milliseconds")
 				.register();
 		
 		failedRequests = Counter.build("promregator_request_failure", "Requests, which responded, but the HTTP code indicated an error or the connection dropped/timed out")
-				.labelNames(omelv.getEnrichingLabelNames())
+				.labelNames(labelNames)
 				.register();
 		
 		requestSize = Histogram.build("promregator_request_size", "The size in bytes of the document, which the scraped targets sent to promregator")
-				.labelNames(omelv.getEnrichingLabelNames())
+				.labelNames(labelNames)
 				.unit("bytes")
 				.exponentialBuckets(100, 1.5, 16)
 				.register();

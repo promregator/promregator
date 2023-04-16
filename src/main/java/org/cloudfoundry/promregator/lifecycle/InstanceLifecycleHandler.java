@@ -21,7 +21,7 @@ public class InstanceLifecycleHandler implements MessageSubscriber {
 	@Autowired
 	private MessageBus messageBus;
 	
-	@Value("${promregator.metrics.labelNamePrefix:@null}")
+	@Value("${promregator.metrics.labelNamePrefix:#{null}}")
 	private String ownMetricsLabelNamePrefix;
 	
 	@PostConstruct

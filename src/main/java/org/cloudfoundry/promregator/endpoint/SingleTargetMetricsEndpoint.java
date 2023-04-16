@@ -95,7 +95,7 @@ public class SingleTargetMetricsEndpoint {
 	@Value("${promregator.scraping.socketReadTimeout:5000}")
 	private int fetcherSocketReadTimeout;
 	
-	@Value("${promregator.metrics.labelNamePrefix:@null}")
+	@Value("${promregator.metrics.labelNamePrefix:#{null}}")
 	private String ownMetricsLabelNamePrefix;
 	
 	@Autowired
