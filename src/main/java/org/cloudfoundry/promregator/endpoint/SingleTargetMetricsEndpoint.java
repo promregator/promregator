@@ -7,7 +7,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
@@ -28,10 +27,9 @@ import org.cloudfoundry.promregator.fetcher.FetchResult;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcher;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcherMetrics;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcherSimulator;
-import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
-import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
 import org.cloudfoundry.promregator.rewrite.GenericMetricFamilySamplesPrefixRewriter;
 import org.cloudfoundry.promregator.rewrite.MetricSetMerger;
+import org.cloudfoundry.promregator.rewrite.OwnMetricsEnrichmentLabelVector;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
 import org.slf4j.Logger;
@@ -96,6 +94,9 @@ public class SingleTargetMetricsEndpoint {
 
 	@Value("${promregator.scraping.socketReadTimeout:5000}")
 	private int fetcherSocketReadTimeout;
+	
+	@Value("${promregator.metrics.labelNamePrefix:#{null}}")
+	private String ownMetricsLabelNamePrefix;
 	
 	@Autowired
 	private UUID promregatorInstanceIdentifier;
@@ -227,8 +228,10 @@ public class SingleTargetMetricsEndpoint {
 			return null;
 		}
 		
-		String[] ownTelemetryLabelValues = this.determineOwnTelemetryLabelValues(orgName, spaceName, appName, instance.getInstanceId());
-		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, this.recordRequestLatency);
+		OwnMetricsEnrichmentLabelVector omelv = new OwnMetricsEnrichmentLabelVector(this.ownMetricsLabelNamePrefix, orgName, spaceName, appName, instance.getInstanceId());
+		List<String> labelValues = omelv.getEnrichedLabelValues();
+		String[] ownTelemetryLabelValues = labelValues.toArray(new String[0]);
+		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, this.recordRequestLatency, omelv);
 		
 		/*
 		 * Warning! the gauge "up" is a very special beast!
@@ -290,13 +293,6 @@ public class SingleTargetMetricsEndpoint {
 		return new MetricSetMerger(fetchResult, writer.toString()).merge();
 	}
 
-	
-	private String[] determineOwnTelemetryLabelValues(String orgName, String spaceName, String appName, String instanceId) {
-		AbstractMetricFamilySamplesEnricher mfse = new CFAllLabelsMetricFamilySamplesEnricher(orgName, spaceName, appName, instanceId);
-		List<String> labelValues = mfse.getEnrichedLabelValues(new LinkedList<>());
-		
-		return labelValues.toArray(new String[0]);
-	}
 	
 	private void provideProxyConfiguration(CFMetricsFetcherConfig cfmfConfig) {
 		String effectiveProxyHost = this.proxyHost;

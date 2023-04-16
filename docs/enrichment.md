@@ -50,6 +50,8 @@ promregator_request_latency_count 1.0
 promregator_request_latency_sum 0.21851916
 ```
 
+Under certain circumstances (i.e. [HA Setup](./ha-setup.md)) label enrichment (e.g. for label names `orgName`, `spaceName`, `appName`) may collide with Prometheus' Relabeling. In that case, you may make Promregato prefix all its label names for internal metrics by using configuration option `promregator.metrics.labelNamePrefix`.
+
 
 ## Additional Metrics Measuring Promregator Itself
 
