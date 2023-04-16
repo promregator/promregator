@@ -27,14 +27,14 @@ public class MetricsFetcherMetrics {
 		super();
 		
 		synchronized (SETUP_SEMAPHORE) {
-			this.ensureMetricsSetup(omelv);
+			ensureMetricsSetup(omelv);
 		}
 		
 		this.ownTelemetryLabels = ownTelemetryLabels.clone();
 		this.requestLatencyEnabled = requestLatencyEnabled;
 	}
 
-	private void ensureMetricsSetup(OwnMetricsEnrichmentLabelVector omelv) {
+	private static void ensureMetricsSetup(OwnMetricsEnrichmentLabelVector omelv) {
 		if (requestLatency != null) {
 			// metrics have already been set up
 			return;
