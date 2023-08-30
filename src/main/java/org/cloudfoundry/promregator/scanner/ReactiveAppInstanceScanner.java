@@ -230,6 +230,10 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			final List<ProcessResource> list = lapr.getResources();
 			if (list.size() > 1) {
 				log.error("Application Id {} with application name {} in org {} and space {} returned multiple web processes via CF API V3 Processes; Promregator does not know how to handle this. Provide your use case to the developers to understand how this shall be handled properly.", rt.getApplicationId(), rt.getApplicationName(), rt.getOrgName(), rt.getSpaceName());
+				StringBuffer sb = new StringBuffer();
+				sb.append(String.format("The following non-unique instances (count: %d) were detected:\n", list.size()));
+				list.forEach(pr -> sb.append(pr.toString()+ "\n"));
+				log.info(sb.toString());
 				return Mono.empty();
 			}
 			
