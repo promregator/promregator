@@ -38,7 +38,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.0.5</version> <!-- see also https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-parent -->
+		<version>3.0.10</version> <!-- see also https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-parent -->
 		<!-- Warning! On bumping also check guava-version below! -->
 		<!-- Note! If you bump this version here, also check the spring-boot CLI version 
 		in our integration tests (see Jenkinsfile) -->
@@ -72,7 +72,7 @@
 
 		<!-- Warning! This should be in line to what spring-framework uses. Unfortunately, 
 			there is no global constant provided by spring-boot for the version. -->
-		<guava-version>32.0.0-jre</guava-version>
+		<guava-version>32.1.2-jre</guava-version>
 	</properties>
 
 	<dependencies>
