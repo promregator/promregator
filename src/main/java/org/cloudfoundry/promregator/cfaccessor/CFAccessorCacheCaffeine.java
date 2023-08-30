@@ -2,7 +2,6 @@ package org.cloudfoundry.promregator.cfaccessor;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -189,8 +188,8 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 		}
 
 		@Override
-		protected Mono<ListRoutesResponse> sendRequest(List<String> block) {
-			return parent.retrieveRoutesForAppIds(new HashSet<>(block));
+		protected Mono<ListRoutesResponse> sendRequest(Set<String> block) {
+			return parent.retrieveRoutesForAppIds(block);
 		}
 
 		@Override
@@ -243,8 +242,8 @@ public class CFAccessorCacheCaffeine implements CFAccessorCache {
 		}
 
 		@Override
-		protected Mono<ListProcessesResponse> sendRequest(List<String> block) {
-			return parent.retrieveWebProcessesForAppIds(new HashSet<>(block));
+		protected Mono<ListProcessesResponse> sendRequest(Set<String> block) {
+			return parent.retrieveWebProcessesForAppIds(block);
 		}
 
 		@Override

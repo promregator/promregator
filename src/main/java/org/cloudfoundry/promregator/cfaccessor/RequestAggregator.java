@@ -1,9 +1,9 @@
 package org.cloudfoundry.promregator.cfaccessor;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
@@ -74,18 +74,18 @@ public abstract class RequestAggregator<K, V> {
 				log.debug("Woke up with {} items in the queue", queue.size());
 				
 				// there is something in the queue which needs to be handled now
-				final ArrayList<K> block = new ArrayList<>(maxBlockSize);
+				final HashSet<K> blockSet = new HashSet<>(maxBlockSize);
 				final HashMap<K, CompletableFuture<V>> map = new HashMap<>();
 				
-				while (block.size() < maxBlockSize && !queue.isEmpty()) {
-					QueueItem<K,V> queueItem = queue.poll();
+				while (blockSet.size() < maxBlockSize && !queue.isEmpty()) {
+					final QueueItem<K,V> queueItem = queue.poll();
 					map.put(queueItem.requestItem(), queueItem.future());
 					
-					block.add(queueItem.requestItem());
+					blockSet.add(queueItem.requestItem());
 				}
 				
-				log.debug("Sending a request with a block of {} items", block.size());
-				Mono<V> responseMono = sendRequest(block);
+				log.debug("Sending a request with a block of {} items", blockSet.size());
+				final Mono<V> responseMono = sendRequest(blockSet);
 				
 				responseMono.doOnNext(response -> {
 					log.debug("Received response {}", response);
@@ -153,7 +153,7 @@ public abstract class RequestAggregator<K, V> {
 	 * @param block the block of requests which shall be sent
 	 * @return a Mono with the response of the request sent
 	 */
-	protected abstract Mono<V> sendRequest(List<K> block);
+	protected abstract Mono<V> sendRequest(Set<K> block);
 	
 	/**
 	 * converts the response into a map, whose key is the request identifier of the block. The values are
