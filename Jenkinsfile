@@ -65,7 +65,7 @@ def springCloudCliPasswordTest(params) {
 		def springCloudCLIVersion = "3.1.1"
 	
 		sh """
-			wget -nv https://repo.spring.io/release/org/springframework/boot/spring-boot-cli/${springBootCLIVersion}/spring-boot-cli-${springBootCLIVersion}-bin.tar.gz
+			wget -nv https://repo.maven.apache.org/maven2/org/springframework/boot/spring-boot-cli/${springBootCLIVersion}/spring-boot-cli-${springBootCLIVersion}-bin.tar.gz
 			tar xzvf spring-boot-cli-${springBootCLIVersion}-bin.tar.gz
 			rm -f spring-boot-cli-${springBootCLIVersion}-bin.tar.gz
 			cd spring-${springBootCLIVersion}/bin
