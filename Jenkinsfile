@@ -73,7 +73,7 @@ def springCloudCliPasswordTest(params) {
 			./spring install org.springframework.cloud:spring-cloud-cli:${springCloudCLIVersion}
 		"""
 		
-		withCredentials([usernamePassword(credentialsId: 'bluemix-ibm-cf-platform', passwordVariable: 'CFPASSWORD', usernameVariable: 'CFUSER')]) {
+		withCredentials([usernamePassword(credentialsId: 'bosh-lite-cf-platform', passwordVariable: 'CFPASSWORD', usernameVariable: 'CFUSER')]) {
 			sh """#!/bin/bash -xe
 				spring-${springBootCLIVersion}/bin/spring encrypt '${CFPASSWORD}' --key somekey > encrypted.txt
 				
