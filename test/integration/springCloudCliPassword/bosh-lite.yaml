@@ -32,6 +32,7 @@ promregator:
 
 cf:
   api_host: api.bosh-lite.com
+  skipSslValidation: true
   username: admin
   password: '{cipher}%%CRYPTEDPASSWORD%%'
   
