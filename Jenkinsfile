@@ -82,12 +82,12 @@ def springCloudCliPasswordTest(params) {
 		
 		// prepare configuration file
 		sh """
-			cp ../build/test/integration/springCloudCliPassword/bluemix.yaml .
+			cp ../build/test/integration/springCloudCliPassword/bosh-lite.yaml .
 		"""
 		
 		sh """#!/bin/bash +xe
 			CFPASSWORDENC=`cat encrypted.txt`
-			sed -i -e "s/%%CRYPTEDPASSWORD%%/\$CFPASSWORDENC/g" bluemix.yaml
+			sed -i -e "s/%%CRYPTEDPASSWORD%%/\$CFPASSWORDENC/g" bosh-lite.yaml
 		"""
 		
 		sh """
