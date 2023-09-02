@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -24,7 +25,7 @@ class RequestAggregatorTest {
 		}
 
 		@Override
-		protected Mono<String> sendRequest(List<Integer> block) {
+		protected Mono<String> sendRequest(Set<Integer> block) {
 			List<String> stringList = block.stream().map(i -> i+"").toList();
 			
 			return Mono.just(String.join(",", stringList));
@@ -106,7 +107,7 @@ class RequestAggregatorTest {
 		}
 
 		@Override
-		protected Mono<String> sendRequest(List<Integer> block) {
+		protected Mono<String> sendRequest(Set<Integer> block) {
 			List<String> stringList = block.stream().map(i -> i+"").toList();
 			
 			return Mono.just(String.join(",", stringList));
@@ -159,7 +160,7 @@ class RequestAggregatorTest {
 		}
 
 		@Override
-		protected Mono<String> sendRequest(List<Integer> block) {
+		protected Mono<String> sendRequest(Set<Integer> block) {
 			return Mono.error(new Exception("Did not work"));
 		}
 
