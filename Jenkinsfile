@@ -116,9 +116,9 @@ def springCloudCliPasswordTest(params) {
 		
 		// verify that the expected app could be discovered (i.e. the discovery file isn't empty)
 		sh """#!/bin/bash -xe
-			CHECKRESULT=`jq -r '.[] | select(.labels.__meta_promregator_target_applicationName=="testapp2") | .labels.__meta_promregator_target_applicationName' discovery.json`
-			if [ "\$CHECKRESULT" != "testapp2" ]; then
-				echo "Test has failed: Discovery response does not include the expected application name 'testapp2'"
+			CHECKRESULT=`jq -r '.[] | select(.labels.__meta_promregator_target_applicationName=="testapp") | .labels.__meta_promregator_target_applicationName' discovery.json`
+			if [ "\$CHECKRESULT" != "testapp" ]; then
+				echo "Test has failed: Discovery response does not include the expected application name 'testapp'"
 				exit 1
 			fi
 			
