@@ -3,6 +3,7 @@ package org.cloudfoundry.promregator.cfaccessor;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Duration;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collector;
@@ -18,6 +19,7 @@ import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v3.processes.ListProcessesRequest;
 import org.cloudfoundry.client.v3.processes.ListProcessesResponse;
+import org.cloudfoundry.client.v3.processes.ProcessResource;
 import org.cloudfoundry.client.v3.routes.ListRoutesRequest;
 import org.cloudfoundry.client.v3.routes.ListRoutesResponse;
 import org.cloudfoundry.promregator.cfaccessor.client.InfoV3;
@@ -369,9 +371,9 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		
 		PaginatedResponseGeneratorFunctionV3<org.cloudfoundry.client.v3.processes.ProcessResource, ListProcessesResponse> responseGenerator = (list, numberOfPages) -> {
 			if (log.isDebugEnabled()) {
-				log.debug("Received process page with {} items - total number of pages: {}", list.size(), numberOfPages);
+				log.debug("Received process page in responseGenerator with {} items - total number of pages: {}", list.size(), numberOfPages);
 				final boolean duplicateEntryDetected = list.stream().distinct().collect(Collectors.toList()).size() == list.size();
-				log.debug("Detection of duplicate entries: {}", Boolean.valueOf(duplicateEntryDetected).toString());
+				log.debug("Detection of duplicate entries in responseGenerator: {}", Boolean.valueOf(duplicateEntryDetected).toString());
 			}
 			return ListProcessesResponse.builder()
 			.addAllResources(list)
@@ -380,7 +382,18 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		};
 		
 		return this.paginatedRequestFetcher.performGenericPagedRetrievalV3(RequestType.PROCESSES, applicationId, requestGenerator, 
-				r -> this.cloudFoundryClient.processes().list(r), this.requestTimeoutProcess, 
+				r -> { 
+					Mono<ListProcessesResponse> monoResponse = this.cloudFoundryClient.processes().list(r);
+					if (log.isDebugEnabled()) {
+						monoResponse = monoResponse.doOnNext(e -> {
+							final List<ProcessResource> list = e.getResources();
+							log.debug("Received process page in requestFunction with {} items", list.size());
+							final boolean duplicateEntryDetected = list.stream().distinct().collect(Collectors.toList()).size() == list.size();
+							log.debug("Detection of duplicate entries in requestFunction: {}", Boolean.valueOf(duplicateEntryDetected).toString());
+						});
+					}
+					return monoResponse;
+				}, this.requestTimeoutProcess,
 				responseGenerator);
 		
 	}
