@@ -5,6 +5,8 @@ import java.net.UnknownHostException;
 import java.time.Duration;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
@@ -365,11 +367,17 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 				.type(CF_API_V3_PROCESS_TYPE_WEB)
 				.build();
 		
-		PaginatedResponseGeneratorFunctionV3<org.cloudfoundry.client.v3.processes.ProcessResource, ListProcessesResponse> responseGenerator = (list, numberOfPages) -> 
-			ListProcessesResponse.builder()
+		PaginatedResponseGeneratorFunctionV3<org.cloudfoundry.client.v3.processes.ProcessResource, ListProcessesResponse> responseGenerator = (list, numberOfPages) -> {
+			if (log.isDebugEnabled()) {
+				log.debug("Received process page with {} items - total number of pages: {}", list.size(), numberOfPages);
+				final boolean duplicateEntryDetected = list.stream().distinct().collect(Collectors.toList()).size() == list.size();
+				log.debug("Detection of duplicate entries: {}", Boolean.valueOf(duplicateEntryDetected).toString());
+			}
+			return ListProcessesResponse.builder()
 			.addAllResources(list)
 			.pagination(Pagination.builder().totalPages(numberOfPages).totalResults(list.size()).build())
 			.build();
+		};
 		
 		return this.paginatedRequestFetcher.performGenericPagedRetrievalV3(RequestType.PROCESSES, applicationId, requestGenerator, 
 				r -> this.cloudFoundryClient.processes().list(r), this.requestTimeoutProcess, 
