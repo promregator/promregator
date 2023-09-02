@@ -94,17 +94,12 @@ def springCloudCliPasswordTest(params) {
 			rm -f encrypted.txt
 		"""
 		
-		/*
-		This currently still requires our bluemix. Bluemix will be discontinued on June 2023.
-		Alternative idea: local CF installation: https://bbv.ch/cloud-foundry-lokal-installieren/
-		*/
-		
 		// Run Test itself
 		sh """#!/bin/bash -xe
 			ls -al .
 		
 			# see also https://docs.spring.io/spring-boot/docs/2.0.5.RELEASE/reference/html/boot-features-external-config.html
-			ENCRYPT_KEY=somekey java -jar ../build/target/promregator-${params.currentVersion}.jar --spring.config.name=bluemix &
+			ENCRYPT_KEY=somekey java -jar ../build/target/promregator-${params.currentVersion}.jar --spring.config.name=bosh-lite &
 			# on ENCRYPT_KEY see also https://cloud.spring.io/spring-cloud-config/reference/html/#_key_management
 			
 			export PROMREGATOR_PID=\$!
@@ -127,7 +122,7 @@ def springCloudCliPasswordTest(params) {
 				exit 1
 			fi
 			
-			rm -f discovery.json bluemix.yaml
+			rm -f discovery.json bosh-lite.yaml
 		"""
 	}
 }
