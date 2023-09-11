@@ -1,11 +1,11 @@
 package org.cloudfoundry.promregator.auth;
 
-import static com.sap.cloud.security.config.cf.CFConstants.CERTIFICATE;
-import static com.sap.cloud.security.config.cf.CFConstants.CLIENT_ID;
-import static com.sap.cloud.security.config.cf.CFConstants.CLIENT_SECRET;
-import static com.sap.cloud.security.config.cf.CFConstants.KEY;
-import static com.sap.cloud.security.config.cf.CFConstants.URL;
-import static com.sap.cloud.security.config.cf.CFConstants.XSUAA.CERT_URL;
+import static com.sap.cloud.security.config.ServiceConstants.CERTIFICATE;
+import static com.sap.cloud.security.config.ServiceConstants.CLIENT_ID;
+import static com.sap.cloud.security.config.ServiceConstants.CLIENT_SECRET;
+import static com.sap.cloud.security.config.ServiceConstants.KEY;
+import static com.sap.cloud.security.config.ServiceConstants.URL;
+import static com.sap.cloud.security.config.ServiceConstants.XSUAA.CERT_URL;
 
 import java.net.URI;
 import java.net.URISyntaxException;
