@@ -3,7 +3,7 @@ package org.cloudfoundry.promregator.auth;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-import org.apache.http.client.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.cloudfoundry.promregator.config.BasicAuthenticationConfiguration;
 
 public class BasicAuthenticationEnricher implements AuthenticationEnricher {

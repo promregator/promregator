@@ -9,6 +9,7 @@ import io.prometheus.client.Gauge;
 public class CFMetricsFetcherConfig {
 	private AuthenticationEnricher authenticationEnricher;
 	private MetricsFetcherMetrics metricsFetcherMetrics;
+	private CFMetricsFetcherConnManager cfMetricsFetcherConnManager;
 	
 	private String proxyHost;
 	private int proxyPort;
@@ -16,9 +17,6 @@ public class CFMetricsFetcherConfig {
 	private Gauge.Child upChild;
 	
 	private UUID promregatorInstanceIdentifier;
-	
-	private int connectionTimeoutInMillis;
-	private int socketReadTimeoutInMillis;
 	
 	public CFMetricsFetcherConfig() {
 		super();
@@ -50,6 +48,20 @@ public class CFMetricsFetcherConfig {
 	 */
 	public void setMetricsFetcherMetrics(MetricsFetcherMetrics metricsFetcherMetrics) {
 		this.metricsFetcherMetrics = metricsFetcherMetrics;
+	}
+
+	/**
+	 * @return the cfMetricsFetcherConnManager
+	 */
+	public CFMetricsFetcherConnManager getCfMetricsFetcherConnManager() {
+		return cfMetricsFetcherConnManager;
+	}
+
+	/**
+	 * @param cfMetricsFetcherConnManager the cfMetricsFetcherConnManager to set
+	 */
+	public void setCfMetricsFetcherConnManager(CFMetricsFetcherConnManager cfMetricsFetcherConnManager) {
+		this.cfMetricsFetcherConnManager = cfMetricsFetcherConnManager;
 	}
 
 	/**
@@ -107,34 +119,7 @@ public class CFMetricsFetcherConfig {
 	public void setPromregatorInstanceIdentifier(UUID promregatorInstanceIdentifier) {
 		this.promregatorInstanceIdentifier = promregatorInstanceIdentifier;
 	}
-
-	/**
-	 * @return the connectionTimeoutInMillis
-	 */
-	public int getConnectionTimeoutInMillis() {
-		return connectionTimeoutInMillis;
-	}
-
-	/**
-	 * @param connectionTimeoutInMillis the connectionTimeoutInMillis to set
-	 */
-	public void setConnectionTimeoutInMillis(int connectionTimeoutInMillis) {
-		this.connectionTimeoutInMillis = connectionTimeoutInMillis;
-	}
-
-	/**
-	 * @return the socketReadTimeoutInMillis
-	 */
-	public int getSocketReadTimeoutInMillis() {
-		return socketReadTimeoutInMillis;
-	}
-
-	/**
-	 * @param socketReadTimeoutInMillis the socketReadTimeoutInMillis to set
-	 */
-	public void setSocketReadTimeoutInMillis(int socketReadTimeoutInMillis) {
-		this.socketReadTimeoutInMillis = socketReadTimeoutInMillis;
-	}
+	
 	
 	
 }

@@ -6,7 +6,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
 
-import org.apache.http.client.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

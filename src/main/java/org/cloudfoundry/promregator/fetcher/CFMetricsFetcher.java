@@ -6,18 +6,15 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.http.Header;
-import org.apache.http.HttpHost;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.config.RequestConfig.Builder;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.conn.ConnectTimeoutException;
-import org.apache.http.conn.HttpHostConnectException;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.ClientProtocolException;
+import org.apache.hc.client5.http.ConnectTimeoutException;
+import org.apache.hc.client5.http.HttpHostConnectException;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.config.RequestConfig.Builder;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.endpoint.EndpointConstants;
 import org.slf4j.Logger;
@@ -56,13 +53,11 @@ public class CFMetricsFetcher implements MetricsFetcher {
 	
 	private Gauge.Child up;
 	
-	static final CloseableHttpClient globalHttpclient = HttpClients.createSystem();
-	
-	private CloseableHttpClient localHttpClient;
-	
 	private MetricsFetcherMetrics mfm;
 
 	private UUID promregatorUUID;
+
+	private CloseableHttpClient httpClient;
 
 	/**
 	 * creates a new Metrics Fetcher by defining the target endpoint where the metrics can be read, the instance identifier
@@ -75,6 +70,8 @@ public class CFMetricsFetcher implements MetricsFetcher {
 	public CFMetricsFetcher(String endpointUrl, String instanceId, CFMetricsFetcherConfig config, boolean withInternalRouting) {
 		this.endpointUrl = endpointUrl;
 		this.instanceId = instanceId;
+		this.httpClient = config.getCfMetricsFetcherConnManager().getHttpclient();
+		
 		this.ae = config.getAuthenticationEnricher();
 		this.mfm = config.getMetricsFetcherMetrics();
 		this.withInternalRouting = withInternalRouting;
@@ -85,13 +82,7 @@ public class CFMetricsFetcher implements MetricsFetcher {
 		Builder requestConfigBuilder = RequestConfig.custom()
 			.setRedirectsEnabled(true)
 			.setCircularRedirectsAllowed(false)
-			.setMaxRedirects(10)
-			.setSocketTimeout(config.getSocketReadTimeoutInMillis())
-			.setConnectTimeout(config.getConnectionTimeoutInMillis());
-		
-		if (config.getProxyHost() != null && config.getProxyPort() != 0) {
-			requestConfigBuilder = requestConfigBuilder.setProxy(new HttpHost(config.getProxyHost(), config.getProxyPort(), "http"));
-		}
+			.setMaxRedirects(10);
 		
 		this.config = requestConfigBuilder.build();
 	}
@@ -141,8 +132,6 @@ public class CFMetricsFetcher implements MetricsFetcher {
 	}
 	
 	private FetchResult performRequest(HttpGet httpget) {
-		CloseableHttpResponse response = null;
-		
 		Timer timer = null;
 		if (this.mfm.getLatencyRequest() != null) {
 			timer = this.mfm.getLatencyRequest().startTimer();
@@ -153,30 +142,30 @@ public class CFMetricsFetcher implements MetricsFetcher {
 		FetchResult result = null;
 		try {
 			@SuppressWarnings("resource") // there is no closing necessary here - we are just choosing the "right" client here.
-			final CloseableHttpClient httpClient = this.localHttpClient != null ? this.localHttpClient : globalHttpclient;
-			response = httpClient.execute(httpget);
-
-			if (response.getStatusLine().getStatusCode() != 200) {
-				log.warn("Target server at '{}' and instance '{}' responded with a non-200 status code: {}", this.endpointUrl, this.instanceId, response.getStatusLine().getStatusCode());
-				return null;
-			}
-			
-			final Header contentTypeHeader = response.getFirstHeader(HttpHeaders.CONTENT_TYPE);
-			final String contentType = this.determineTextFormat(contentTypeHeader);
-			if (contentType == null) {
-				return null;
-			}
-			
-			result = new FetchResult(EntityUtils.toString(response.getEntity()), contentType);
+			final CloseableHttpClient httpClient = this.httpClient;
+			result = httpClient.execute(httpget, response -> {
+				if (response.getCode() != 200) {
+					log.warn("Target server at '{}' and instance '{}' responded with a non-200 status code: {}", this.endpointUrl, this.instanceId, response.getCode());
+					return null;
+				}
+				
+				final Header contentTypeHeader = response.getFirstHeader(HttpHeaders.CONTENT_TYPE);
+				final String contentType = this.determineTextFormat(contentTypeHeader);
+				if (contentType == null) {
+					return null;
+				}
+				
+				return new FetchResult(EntityUtils.toString(response.getEntity()), contentType);
+			});
 			available = true;
 		} catch (HttpHostConnectException hhce) {
 			log.warn("Unable to connect to server trying to fetch metrics from {}, instance {}", this.endpointUrl, this.instanceId, hhce);
 			return null;
-		} catch (SocketTimeoutException ste) {
-			log.warn("Read timeout for data from socket while trying to fetch metrics from {}, instance {}", this.endpointUrl, this.instanceId, ste);
-			return null;
 		} catch (ConnectTimeoutException cte) {
 			log.warn("Timeout while trying to connect to {}, instance {} for fetching metrics", this.endpointUrl, this.instanceId, cte);
+			return null;
+		} catch (SocketTimeoutException ste) {
+			log.warn("Read timeout for data from socket while trying to fetch metrics from {}, instance {}", this.endpointUrl, this.instanceId, ste);
 			return null;
 		} catch (ClientProtocolException e) {
 			log.warn("Client communication error while fetching metrics from target server", e);
@@ -187,15 +176,6 @@ public class CFMetricsFetcher implements MetricsFetcher {
 		} finally {
 			if (timer != null) {
 				timer.observeDuration();
-			}
-
-			if (response != null) {
-				try {
-					response.close();
-				} catch (IOException e) {
-					log.info("Unable to properly close Metrics fetch HTTP connection", e);
-					// bad luck!
-				}
 			}
 			
 			countSuccessOrFailure(available);
@@ -250,13 +230,5 @@ public class CFMetricsFetcher implements MetricsFetcher {
 		}
 	}
 	
-
-	/**
-	 * shall only be used by unit tests!
-	 * @param localHttpClient the localHttpClient to set
-	 */
-	protected void setLocalHttpClient(CloseableHttpClient localHttpClient) {
-		this.localHttpClient = localHttpClient;
-	}
 
 }

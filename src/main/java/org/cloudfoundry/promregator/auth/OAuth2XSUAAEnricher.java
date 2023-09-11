@@ -4,7 +4,7 @@ import java.io.Closeable;
 import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.cloudfoundry.promregator.config.AbstractOAuth2XSUAAAuthenticationConfiguration;
 import org.slf4j.Logger;

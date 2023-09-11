@@ -16,6 +16,7 @@ import org.cloudfoundry.promregator.cfaccessor.CFWatchdog;
 import org.cloudfoundry.promregator.cfaccessor.ReactiveCFAccessorImpl;
 import org.cloudfoundry.promregator.config.ConfigurationValidations;
 import org.cloudfoundry.promregator.discovery.CFMultiDiscoverer;
+import org.cloudfoundry.promregator.fetcher.CFMetricsFetcherConnManager;
 import org.cloudfoundry.promregator.internalmetrics.InternalMetrics;
 import org.cloudfoundry.promregator.lifecycle.InstanceLifecycleHandler;
 import org.cloudfoundry.promregator.messagebus.MessageBus;
@@ -149,6 +150,16 @@ public class PromregatorApplication {
 	@Bean
 	public CFMultiDiscoverer cfDiscoverer() {
 		return new CFMultiDiscoverer();
+	}
+	
+	@Bean
+	public CFMetricsFetcherConnManager cfMetricsFetcherConnManager(@Value("${promregator.scraping.connectionTimeout:5000}") int fetcherConnectionTimeout,
+			@Value("${promregator.scraping.socketReadTimeout:5000}") int fetcherSocketReadTimeout,
+			@Value("${promregator.scraping.maxProcessingTime:5000}") int maxProcessingTime,
+			@Value("${promregator.scraping.proxy.host:@null}") String proxyHost,
+			@Value("${promregator.scraping.proxy.port:0}") int proxyPort
+			) {
+		return new CFMetricsFetcherConnManager(fetcherSocketReadTimeout, fetcherSocketReadTimeout, maxProcessingTime, proxyHost, proxyPort);
 	}
 	
 	@Bean

@@ -1,6 +1,6 @@
 package org.cloudfoundry.promregator.auth;
 
-import org.apache.http.client.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
 
 /**
  * The NullEnricher is an AuthenticationEnricher, which does not enrich 

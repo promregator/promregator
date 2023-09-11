@@ -23,6 +23,7 @@ import org.cloudfoundry.promregator.auth.AuthenticatorController;
 import org.cloudfoundry.promregator.discovery.CFMultiDiscoverer;
 import org.cloudfoundry.promregator.fetcher.CFMetricsFetcher;
 import org.cloudfoundry.promregator.fetcher.CFMetricsFetcherConfig;
+import org.cloudfoundry.promregator.fetcher.CFMetricsFetcherConnManager;
 import org.cloudfoundry.promregator.fetcher.FetchResult;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcher;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcherMetrics;
@@ -73,12 +74,6 @@ public class SingleTargetMetricsEndpoint {
 
 	@Autowired
 	private AuthenticatorController authenticatorController;
-	
-	@Value("${promregator.scraping.proxy.host:@null}")
-	private String proxyHost;
-	
-	@Value("${promregator.scraping.proxy.port:0}")
-	private int proxyPort;
 
 	/**
 	 * The maximal processing time permitted for Scraping (in milliseconds).
@@ -88,15 +83,12 @@ public class SingleTargetMetricsEndpoint {
 	
 	@Value("${promregator.metrics.requestLatency:false}")
 	private boolean recordRequestLatency;
-	
-	@Value("${promregator.scraping.connectionTimeout:5000}")
-	private int fetcherConnectionTimeout;
 
-	@Value("${promregator.scraping.socketReadTimeout:5000}")
-	private int fetcherSocketReadTimeout;
-	
 	@Value("${promregator.metrics.labelNamePrefix:#{null}}")
 	private String ownMetricsLabelNamePrefix;
+
+	@Autowired
+	private CFMetricsFetcherConnManager cfMetricsFetcherConnManager;
 	
 	@Autowired
 	private UUID promregatorInstanceIdentifier;
@@ -119,23 +111,6 @@ public class SingleTargetMetricsEndpoint {
 		Builder builder = Gauge.build("promregator_up", "Indicator, whether the target of promregator is available");
 		
 		this.up = builder.register(this.requestRegistry);
-	}
-	
-	@PostConstruct
-	public void validateAndFixFetcherTimeouts() {
-		long localMaxProcessingTime = this.maxProcessingTime;
-		
-		if (this.fetcherConnectionTimeout > localMaxProcessingTime) {
-			log.warn("Fetcher's Connection Timeout is longer than the configured Maximal Processing Time of all fetchers; shortening timeout value to that value, as this does not make sense. "+
-					"Check your configured values for configuration options promregator.scraping.connectionTimeout and promregator.scraping.maxProcessingTime");
-			this.fetcherConnectionTimeout = (int) localMaxProcessingTime;
-		}
-		
-		if (this.fetcherSocketReadTimeout > localMaxProcessingTime) {
-			log.warn("Fetcher's Socket Read Timeout is longer than the configured Maximal Processing Time of all fetchers; shortening timeout value to that value, as this does not make sense. "+
-					"Check your configured values for configuration options promregator.scraping.socketReadTimeout and promregator.scraping.maxProcessingTime");
-			this.fetcherSocketReadTimeout = (int) localMaxProcessingTime;
-		}
 	}
 	
 	// protected due to unit tests!
@@ -253,9 +228,7 @@ public class SingleTargetMetricsEndpoint {
 			cfmfConfig.setMetricsFetcherMetrics(mfm);
 			cfmfConfig.setUpChild(upChild);
 			cfmfConfig.setPromregatorInstanceIdentifier(this.promregatorInstanceIdentifier);
-			cfmfConfig.setConnectionTimeoutInMillis(this.fetcherConnectionTimeout);
-			cfmfConfig.setSocketReadTimeoutInMillis(this.fetcherSocketReadTimeout);
-			this.provideProxyConfiguration(cfmfConfig);
+			cfmfConfig.setCfMetricsFetcherConnManager(cfMetricsFetcherConnManager);
 			
 			mf = new CFMetricsFetcher(accessURL, instance.getInstanceId(), cfmfConfig, instance.isInternal());
 		}
@@ -293,17 +266,6 @@ public class SingleTargetMetricsEndpoint {
 		return new MetricSetMerger(fetchResult, writer.toString()).merge();
 	}
 
-	
-	private void provideProxyConfiguration(CFMetricsFetcherConfig cfmfConfig) {
-		String effectiveProxyHost = this.proxyHost;
-		int effectiveProxyPort = this.proxyPort;
-		
-		if (effectiveProxyHost != null && effectiveProxyPort != 0) {
-			cfmfConfig.setProxyHost(effectiveProxyHost);
-			cfmfConfig.setProxyPort(effectiveProxyPort);
-		}
-	}
-	
 	/**
 	 * verifies if the current HTTP request is coming from the same Promregator instance 
 	 * (and thus we would have a loopback / recursive scraping request). This situation needs to be prohibited
