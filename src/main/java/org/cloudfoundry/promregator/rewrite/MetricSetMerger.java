@@ -43,7 +43,13 @@ public class MetricSetMerger {
 		metricSetData = trimEOF(metricSetData);
 		additionalMetrics = trimEOF(additionalMetrics);
 		
-		metricSetData = String.format("%s%n%s%n%s%n", metricSetData, additionalMetrics, EOF_MARKER);
+		/* Warning! Must be \n and not %n!
+		 * Otherwise under Windows newlines with carriage return 
+		 * are generated. 
+		 * The specification at https://github.com/OpenObservability/OpenMetrics/blob/1386544931307dff279688f332890c31b6c5de36/specification/OpenMetrics.md#overall-structure, 
+		 * however, explicitly states that no carriage return may be added.
+		 */
+		metricSetData = String.format("%s\n%s\n%s\n", metricSetData, additionalMetrics, EOF_MARKER);
 		
 		return metricSetData;
 	}

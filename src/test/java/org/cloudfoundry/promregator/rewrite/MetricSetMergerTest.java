@@ -159,12 +159,13 @@ class MetricSetMergerTest {
 		
 		String actual = subject.merge();
 		
-		Assertions.assertEquals("""
-				# TYPE test COUNTER
-				test 2.0
-				# TYPE test2 COUNTER
-				test2 4.0
-				# EOF
-				""", actual);
+		final String expected = """
+			# TYPE test COUNTER
+			test 2.0
+			# TYPE test2 COUNTER
+			test2 4.0
+			# EOF
+			""";
+		Assertions.assertEquals(expected, actual);
 	}
 }
