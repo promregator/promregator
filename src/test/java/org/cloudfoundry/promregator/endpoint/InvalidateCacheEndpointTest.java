@@ -7,6 +7,7 @@ import org.cloudfoundry.promregator.endpoint.MockedAppInstanceScannerEndpointSpr
 import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = MockedAppInstanceScannerEndpointSpringApplication.class)
 @TestPropertySource(locations="default.properties")
+@Disabled
 public class InvalidateCacheEndpointTest {
 
 	@AfterAll

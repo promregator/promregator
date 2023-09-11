@@ -10,13 +10,13 @@ import java.util.concurrent.Executors;
 import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
-import jakarta.servlet.http.HttpServletRequest;
 
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.auth.AuthenticatorController;
 import org.cloudfoundry.promregator.auth.NullEnricher;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.discovery.CFMultiDiscoverer;
+import org.cloudfoundry.promregator.fetcher.CFMetricsFetcherConnManager;
 import org.cloudfoundry.promregator.messagebus.MessageBus;
 import org.cloudfoundry.promregator.scanner.AppInstanceScanner;
 import org.cloudfoundry.promregator.scanner.Instance;
@@ -34,6 +34,7 @@ import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 
 import io.prometheus.client.CollectorRegistry;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Configuration
 @EnableAutoConfiguration
@@ -146,4 +147,10 @@ public class MockedMetricsEndpointSpringApplication {
 	public MessageBus messageBus() {
 		return new MessageBus();
 	}
+	
+	@Bean
+	public CFMetricsFetcherConnManager cfMetricsFetcherConnManager() {
+		return new CFMetricsFetcherConnManager(5000, 5000, 10000, null, 0);
+	}
+
 }

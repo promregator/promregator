@@ -2,6 +2,7 @@ package org.cloudfoundry.promregator.auth;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
@@ -45,7 +46,10 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher, Closeable {
 			this.tokenClient = new XsuaaTokenFlows(new DefaultOAuth2TokenService(this.httpClient),
 					new PromregatorOAuth2ServiceEndpointsProvider(c), c.getClientIdentity()).clientCredentialsTokenFlow();
 		}
-		this.tokenClient.scopes(config.getScopes().toArray(new String[0]));
+		
+		final Set<String> scopesSet = config.getScopes();
+		final String[] scopesArray = scopesSet.toArray(new String[0]);
+		this.tokenClient.scopes(scopesArray);
 
 		// Ensure getting the web token works (fail-fast)
 		// We don't raise an exception, but we log the failure.

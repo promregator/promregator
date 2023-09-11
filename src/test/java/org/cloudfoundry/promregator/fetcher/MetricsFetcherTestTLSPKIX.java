@@ -52,8 +52,9 @@ public class MetricsFetcherTestTLSPKIX {
 		CFMetricsFetcherConfig config = new CFMetricsFetcherConfig();
 		config.setMetricsFetcherMetrics(mfm);
 		config.setPromregatorInstanceIdentifier(currentUUID);
-		config.setConnectionTimeoutInMillis(5000);
-		config.setSocketReadTimeoutInMillis(5000);
+		
+		final CFMetricsFetcherConnManager connManager = new CFMetricsFetcherConnManager(5000, 5000, 10000, null, 0);
+		config.setCfMetricsFetcherConnManager(connManager);
 		
 		CFMetricsFetcher subject = new CFMetricsFetcher("https://localhost:9003/metrics", instanceId, config, false);
 		

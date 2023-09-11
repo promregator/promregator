@@ -1,14 +1,14 @@
 package org.cloudfoundry.promregator.auth;
 
-import org.apache.http.client.methods.HttpGet;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.config.BasicAuthenticationConfiguration;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class BasicAuthenticationEnricherTest {
 

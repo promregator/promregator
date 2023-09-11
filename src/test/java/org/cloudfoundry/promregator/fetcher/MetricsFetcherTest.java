@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
-import org.apache.http.client.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.endpoint.EndpointConstants;
@@ -57,8 +57,9 @@ public class MetricsFetcherTest {
 		CFMetricsFetcherConfig config = new CFMetricsFetcherConfig();
 		config.setMetricsFetcherMetrics(mfm);
 		config.setPromregatorInstanceIdentifier(currentUUID);
-		config.setConnectionTimeoutInMillis(5000);
-		config.setSocketReadTimeoutInMillis(5000);
+		
+		final CFMetricsFetcherConnManager connManager = new CFMetricsFetcherConnManager(5000, 5000, 10000, null, 0);
+		config.setCfMetricsFetcherConnManager(connManager);
 		
 		CFMetricsFetcher subject = new CFMetricsFetcher("http://localhost:9002/metrics", instanceId, config, false);
 		
@@ -84,8 +85,8 @@ public class MetricsFetcherTest {
 		CFMetricsFetcherConfig config = new CFMetricsFetcherConfig();
 		config.setMetricsFetcherMetrics(mfm);
 		config.setPromregatorInstanceIdentifier(currentUUID);
-		config.setConnectionTimeoutInMillis(5000);
-		config.setSocketReadTimeoutInMillis(5000);
+		final CFMetricsFetcherConnManager connManager = new CFMetricsFetcherConnManager(5000, 5000, 10000, null, 0);
+		config.setCfMetricsFetcherConnManager(connManager);
 		
 		CFMetricsFetcher subject = new CFMetricsFetcher("http://localhost:9002/metrics", instanceId, config, true);
 		
@@ -105,7 +106,7 @@ public class MetricsFetcherTest {
 		public void enrichWithAuthentication(HttpGet httpget) {
 			this.called = true;
 			
-			Assertions.assertEquals("/metrics", httpget.getURI().getPath());
+			Assertions.assertEquals("/metrics", httpget.getPath());
 			
 			httpget.addHeader("Authentication", "Bearer abc");
 		}
@@ -129,9 +130,9 @@ public class MetricsFetcherTest {
 		config.setAuthenticationEnricher(ae);
 		config.setMetricsFetcherMetrics(mfm);
 		config.setPromregatorInstanceIdentifier(UUID.randomUUID());
-		config.setConnectionTimeoutInMillis(5000);
-		config.setSocketReadTimeoutInMillis(5000);
-
+		
+		final CFMetricsFetcherConnManager connManager = new CFMetricsFetcherConnManager(5000, 5000, 10000, null, 0);
+		config.setCfMetricsFetcherConnManager(connManager);
 		
 		CFMetricsFetcher subject = new CFMetricsFetcher("http://localhost:9002/metrics", instanceId, config, false);
 		
@@ -159,8 +160,9 @@ public class MetricsFetcherTest {
 		CFMetricsFetcherConfig config = new CFMetricsFetcherConfig();
 		config.setMetricsFetcherMetrics(mfm);
 		config.setPromregatorInstanceIdentifier(currentUUID);
-		config.setConnectionTimeoutInMillis(5000);
-		config.setSocketReadTimeoutInMillis(10); // Note that this is way too strict
+		
+		final CFMetricsFetcherConnManager connManager = new CFMetricsFetcherConnManager(10 /* Note that this is way too strict */, 5000, 10000, null, 0);
+		config.setCfMetricsFetcherConnManager(connManager);
 		
 		CFMetricsFetcher subject = new CFMetricsFetcher("http://localhost:9002/metrics", instanceId, config, false);
 		
@@ -185,8 +187,8 @@ public class MetricsFetcherTest {
 		CFMetricsFetcherConfig config = new CFMetricsFetcherConfig();
 		config.setMetricsFetcherMetrics(mfm);
 		config.setPromregatorInstanceIdentifier(currentUUID);
-		config.setConnectionTimeoutInMillis(5000);
-		config.setSocketReadTimeoutInMillis(5000); // Note that this is very strict
+		final CFMetricsFetcherConnManager connManager = new CFMetricsFetcherConnManager(5000, 5000, 10000, null, 0);
+		config.setCfMetricsFetcherConnManager(connManager);
 		
 		CFMetricsFetcher subject = new CFMetricsFetcher("http://localhost:9042/metrics", instanceId, config, false);
 		
