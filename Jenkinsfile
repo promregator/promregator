@@ -195,7 +195,7 @@ timestamps {
 			}
 			
 			stage("Integration Test") {
-				// springCloudCliPasswordTest currentVersion: currentVersion
+				springCloudCliPasswordTest currentVersion: currentVersion
 			}
 			
 			stage("SecDependency Scan") {
