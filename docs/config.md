@@ -26,17 +26,19 @@ Note that this compliant to how [cf-exporter](https://github.com/bosh-prometheus
 *NOTE*
 Specify the hostname only here. Do not prefix it with `https://` or similar. Promregator will always try to connect to the API host of the Cloud Foundry platform using the HTTPS protocol (HTTP-only currently is not supported). This holds true, even if you only have an HTTP proxy as mentioned below.
 
-### Option "cf.username" (mandatory)
-Specifies the username, which shall be used when connecting to the API server. This is your "standard" username - the same one, which you also may use
-for connecting to Cloud Foundry, e.g. when issuing `cf login`.
+### Option "cf.username" (optional, but often mandatory)
+Specifies the username, which shall be used when connecting to the API server. This is your "standard" username - the same one, which you also may use for connecting to Cloud Foundry, e.g. when issuing `cf login`.
 
 Note that this compliant to how [cf-exporter](https://github.com/bosh-prometheus/cf_exporter) is being configured.
 
-### Option "cf.password" (mandatory)
-Specifies the password, which shall be used when connecting to the API server. This your "standard" password - the same one, which you also may use
-for connecting to Cloud Foundry, e.g. when issuing `cf login`.
+This option is optional, if a Promregator extension is provided, which implements fetching username/passwords otherwise (see `org.cloudfoundry.promregator.cfaccessor.CFApiCredentials`). If this is not the case (and this is the default), then this option becomes mandatory.
+
+### Option "cf.password" (optional, but often mandatory)
+Specifies the password, which shall be used when connecting to the API server. This your "standard" password - the same one, which you also may use for connecting to Cloud Foundry, e.g. when issuing `cf login`.
 
 Note that this compliant to how [cf-exporter](https://github.com/bosh-prometheus/cf_exporter) is being configured.
+
+This option is optional, if a Promregator extension is provided, which implements fetching username/passwords otherwise (see `org.cloudfoundry.promregator.cfaccessor.CFApiCredentials`). If this is not the case (and this is the default), then this option becomes mandatory.
 
 *WARNING!* 
 Due to security reasons, it is recommended *not* to store this value in your YAML file, but instead set the special environment variable `CF_PASSWORD` when starting the application. Note that the environment variable `CF_EXPORTER_CF_PASSWORD`, which [cf-exporter](https://github.com/bosh-prometheus/cf_exporter) uses, is **not** supported by Promregator.
