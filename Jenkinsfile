@@ -108,6 +108,16 @@ def springCloudCliPasswordTest(params) {
 			
 			sleep 30
 			
+			echo "Triggering initial warm up request"
+			
+			curl -u 'integrationtest:1ntegrat1ontest' http://localhost:8080/discovery
+			
+			echo "Waiting another 10 seconds to allow Promregator to warm up"
+			
+			sleep 10
+			
+			echo "Doing integration test call"
+			
 			curl -m 10 -u 'integrationtest:1ntegrat1ontest' http://localhost:8080/discovery > discovery.json
 			cat discovery.json
 
