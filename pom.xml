@@ -560,7 +560,7 @@
 						<extensions>true</extensions>
 						<configuration>
 							<serverId>ossrh</serverId>
-							<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+							<nexusUrl>https://s01.oss.sonatype.org/</nexusUrl><!-- see also https://issues.sonatype.org/browse/OSSRH-51097?focusedId=1168991&page=com.atlassian.jira.plugin.system.issuetabpanels%3Acomment-tabpanel#comment-1168991 -->
 							<autoReleaseAfterClose>true</autoReleaseAfterClose>
 							<stagingProgressTimeoutMinutes>15</stagingProgressTimeoutMinutes>
 						</configuration>
