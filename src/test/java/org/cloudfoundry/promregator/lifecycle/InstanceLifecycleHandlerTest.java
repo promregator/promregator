@@ -1,14 +1,12 @@
 package org.cloudfoundry.promregator.lifecycle;
 
 import java.util.Enumeration;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.fetcher.MetricsFetcherMetrics;
 import org.cloudfoundry.promregator.messagebus.MessageBusTopic;
-import org.cloudfoundry.promregator.rewrite.AbstractMetricFamilySamplesEnricher;
-import org.cloudfoundry.promregator.rewrite.CFAllLabelsMetricFamilySamplesEnricher;
+import org.cloudfoundry.promregator.rewrite.OwnMetricsEnrichmentLabelVector;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.cloudfoundry.promregator.scanner.ResolvedTarget;
 import org.junit.jupiter.api.AfterAll;
@@ -45,11 +43,11 @@ public class InstanceLifecycleHandlerTest {
 		String spaceName = i.getTarget().getSpaceName();
 		String appName = i.getTarget().getApplicationName();
 		
-		AbstractMetricFamilySamplesEnricher mfse = new CFAllLabelsMetricFamilySamplesEnricher(orgName, spaceName, appName, i.getInstanceId());
-		List<String> labelValues = mfse.getEnrichedLabelValues(new LinkedList<>());
+		OwnMetricsEnrichmentLabelVector omelv = new OwnMetricsEnrichmentLabelVector(null, orgName, spaceName, appName, i.getInstanceId());
+		List<String> labelValues = omelv.getEnrichedLabelValues();
 		String[] ownTelemetryLabelValues = labelValues.toArray(new String[0]);
 		
-		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, true);
+		MetricsFetcherMetrics mfm = new MetricsFetcherMetrics(ownTelemetryLabelValues, true, omelv);
 		mfm.getFailedRequests().inc();
 		mfm.getLatencyRequest().observe(42.0);
 		mfm.getRequestSize().observe(2000);

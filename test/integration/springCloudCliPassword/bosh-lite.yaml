@@ -25,15 +25,15 @@ promregator:
     debug: true
   
   targets:
-    - orgName: ibm@schmoigl-online.de
+    - orgName: test
       spaceRegex: .*
-      applicationName: testapp2
+      applicationName: testapp
       path: /metrics
-      kubernetesAnnotations: true
 
 cf:
-  api_host: api.eu-gb.bluemix.net
-  username: ibm@schmoigl-online.de
+  api_host: api.bosh-lite.com
+  skipSslValidation: true
+  username: admin
   password: '{cipher}%%CRYPTEDPASSWORD%%'
   
   cache:

@@ -57,15 +57,15 @@ def springCloudCliPasswordTest(params) {
 	assert params.currentVersion != null : "Current Version at springCloudCliPasswordTest not set"
 
 	dir("../springCloudTest") {
-		// For most recent version look at https://repo.spring.io/release/org/springframework/boot/spring-boot-cli/
-		def springBootCLIVersion = "2.7.7"
+		// For most recent version look at https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-cli
+		def springBootCLIVersion = "2.7.15"
 		// Warning! Bumping this to 3.0.x requires JDK19 or higher!
 		
 		// For most recent version see also https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-cli
 		def springCloudCLIVersion = "3.1.1"
 	
 		sh """
-			wget -nv https://repo.spring.io/release/org/springframework/boot/spring-boot-cli/${springBootCLIVersion}/spring-boot-cli-${springBootCLIVersion}-bin.tar.gz
+			wget -nv https://repo.maven.apache.org/maven2/org/springframework/boot/spring-boot-cli/${springBootCLIVersion}/spring-boot-cli-${springBootCLIVersion}-bin.tar.gz
 			tar xzvf spring-boot-cli-${springBootCLIVersion}-bin.tar.gz
 			rm -f spring-boot-cli-${springBootCLIVersion}-bin.tar.gz
 			cd spring-${springBootCLIVersion}/bin
@@ -73,7 +73,7 @@ def springCloudCliPasswordTest(params) {
 			./spring install org.springframework.cloud:spring-cloud-cli:${springCloudCLIVersion}
 		"""
 		
-		withCredentials([usernamePassword(credentialsId: 'bluemix-ibm-cf-platform', passwordVariable: 'CFPASSWORD', usernameVariable: 'CFUSER')]) {
+		withCredentials([usernamePassword(credentialsId: 'bosh-lite-cf-platform', passwordVariable: 'CFPASSWORD', usernameVariable: 'CFUSER')]) {
 			sh """#!/bin/bash -xe
 				spring-${springBootCLIVersion}/bin/spring encrypt '${CFPASSWORD}' --key somekey > encrypted.txt
 				
@@ -82,29 +82,24 @@ def springCloudCliPasswordTest(params) {
 		
 		// prepare configuration file
 		sh """
-			cp ../build/test/integration/springCloudCliPassword/bluemix.yaml .
+			cp ../build/test/integration/springCloudCliPassword/bosh-lite.yaml .
 		"""
 		
 		sh """#!/bin/bash +xe
 			CFPASSWORDENC=`cat encrypted.txt`
-			sed -i -e "s/%%CRYPTEDPASSWORD%%/\$CFPASSWORDENC/g" bluemix.yaml
+			sed -i -e "s/%%CRYPTEDPASSWORD%%/\$CFPASSWORDENC/g" bosh-lite.yaml
 		"""
 		
 		sh """
 			rm -f encrypted.txt
 		"""
 		
-		/*
-		This currently still requires our bluemix. Bluemix will be discontinued on June 2023.
-		Alternative idea: local CF installation: https://bbv.ch/cloud-foundry-lokal-installieren/
-		*/
-		
 		// Run Test itself
 		sh """#!/bin/bash -xe
 			ls -al .
 		
 			# see also https://docs.spring.io/spring-boot/docs/2.0.5.RELEASE/reference/html/boot-features-external-config.html
-			ENCRYPT_KEY=somekey java -jar ../build/target/promregator-${params.currentVersion}.jar --spring.config.name=bluemix &
+			ENCRYPT_KEY=somekey java -jar ../build/target/promregator-${params.currentVersion}.jar --spring.config.name=bosh-lite &
 			# on ENCRYPT_KEY see also https://cloud.spring.io/spring-cloud-config/reference/html/#_key_management
 			
 			export PROMREGATOR_PID=\$!
@@ -121,13 +116,13 @@ def springCloudCliPasswordTest(params) {
 		
 		// verify that the expected app could be discovered (i.e. the discovery file isn't empty)
 		sh """#!/bin/bash -xe
-			CHECKRESULT=`jq -r '.[] | select(.labels.__meta_promregator_target_applicationName=="testapp2") | .labels.__meta_promregator_target_applicationName' discovery.json`
-			if [ "\$CHECKRESULT" != "testapp2" ]; then
-				echo "Test has failed: Discovery response does not include the expected application name 'testapp2'"
+			CHECKRESULT=`jq -r '.[] | select(.labels.__meta_promregator_target_applicationName=="testapp") | .labels.__meta_promregator_target_applicationName' discovery.json`
+			if [ "\$CHECKRESULT" != "testapp" ]; then
+				echo "Test has failed: Discovery response does not include the expected application name 'testapp'"
 				exit 1
 			fi
 			
-			rm -f discovery.json bluemix.yaml
+			rm -f discovery.json bosh-lite.yaml
 		"""
 	}
 }

@@ -1,10 +1,6 @@
-<p style="font-size:large">Statement on <a href="https://github.com/promregator/promregator/wiki/Statement-on-Promregator-and-CVE-2021-44228">CVE-2021-44228</a>!</p>
-
-
-
 # Status
 
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=promregator&metric=alert_status)](https://sonarcloud.io/dashboard?id=promregator) [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=promregator&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=promregator) [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=promregator&metric=bugs)](https://sonarcloud.io/dashboard?id=promregator) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=promregator&metric=coverage)](https://sonarcloud.io/dashboard?id=promregator) [![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=promregator&metric=ncloc)](https://sonarcloud.io/dashboard?id=promregator)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=promregator&metric=alert_status)](https://sonarcloud.io/dashboard?id=promregator) [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=promregator&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=promregator) [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=promregator&metric=bugs)](https://sonarcloud.io/dashboard?id=promregator) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=promregator&metric=coverage)](https://sonarcloud.io/dashboard?id=promregator) [![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=promregator&metric=ncloc)](https://sonarcloud.io/dashboard?id=promregator) [![CodeQL](https://github.com/promregator/promregator/actions/workflows/codeql.yml/badge.svg)](https://github.com/promregator/promregator/actions/workflows/codeql.yml)
 
 # Promregator Project
 
@@ -76,7 +72,7 @@ Promregator is currently preparing to provide a new major version. Here are the 
 | Aspect                                              | Version 1.x.x                                  | Version 0.x.x                                                                               |
 |-----------------------------------------------------|------------------------------------------------|---------------------------------------------------------------------------------------------|
 | Java Runtime Version                                | JRE 17 or higher                               | JRE 8 or higher                                                                             |
-| CFCC API Version                                    | V3 only                                        | V2 only (special cases with V3)                                                             |
+| CF CC API Version                                   | V3 only (3.84.0 or higher required)            | V2 only (special cases with V3)                                                             |
 | Classic Cache                                       | no longer supported                            | default, available in all minor versions                                                    |
 | Caffeine Cache                                      | default                                        | optional, starting with 0.7.x                                                               |
 | OAuth2XSUAA Authenticator with Basic Authentication | Only `OAuth2XSUAABasic` supported         | `OAuth2XSUAA` (old one) and `OAuth2XSUAABasic` supported (available since v0.10.0) |
@@ -95,8 +91,9 @@ An upgrade guide is provided [here](docs/upgrade.md).
 
 Running Promregator V1 requires:
 * JRE17 or higher
+* A Cloud Foundry platform supporting the Cloud Foundry API Version 3.84.0 or higher (release in June 2020). 
 
-If you cannot fulfill this requirement, you may still use Promregator V0, which requires JRE8 or higher.
+If you cannot fulfill these requirements, you may still use Promregator V0, which requires JRE8 or higher and supprts Cloud Foundry API version 2.x. 
 
 Compiling Promregator additionally requires:
 * JDK17 or higher (for Promregator V1)

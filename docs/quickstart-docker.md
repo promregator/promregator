@@ -57,6 +57,9 @@ For this purpose, we will use multiple Docker images, as this greatly relieves y
    promregator:
      authenticator:
        type: none
+       
+     discovery:
+      hostname: promregator
    
      targets:
        - orgName: <hereGoesYourOrg>
@@ -90,19 +93,65 @@ For this purpose, we will use multiple Docker images, as this greatly relieves y
 
 3. Retrieve the Docker image of promregator by calling
    ```bash
-   $ docker pull promregator/promregator:0.11.0
+   $ docker pull promregator/promregator:1.0.1
    ```
 
 4. Start a container using the following command:
    ```bash
    $ docker run -d --name promregator -m 600m --env CF_PASSWORD=<yourCFPassword> \
      -v `pwd`/promregator.yaml:/etc/promregator/promregator.yml \
-     -p 127.0.0.1:56710:8080 promregator/promregator:0.8.0
+     -p 127.0.0.1:56710:8080 promregator/promregator:1.0.1
    ```
    
    Again note, that you have to replace `<yourCFPassword>`, with the password which you had used for logging on to the Cloud Foundry platform (the password needs to fit to `<yourCFUsername>`).
 
-5. Verify that your setup is okay by opening the url `http://localhost:56710` in your browser (`curl` or `wget` is okay again, too). Again, you should see a similar text file as before.
+5. Verify that your setup is okay by opening the URL `http://localhost:56710/discovery` in your browser (`curl` or `wget` is okay again, too). You should get a response that looks similar like this:
+
+   ```json
+   [
+    {
+      "targets": [
+        "promregator:56710"
+      ],
+      "labels": {
+        "__meta_promregator_target_path": "/singleTargetMetrics/6460bea4-c300-46a2-a6c2-3aa2fb271c86/0",
+        "__meta_promregator_target_orgName": "<hereGoesYourOrg>",
+        "__meta_promregator_target_spaceName": "<hereGoesYourSpace>",
+        "__meta_promregator_target_applicationName": "testapp",
+        "__meta_promregator_target_applicationId": "6460bea4-c300-46a2-a6c2-3aa2fb271c86",
+        "__meta_promregator_target_instanceNumber": "0",
+        "__meta_promregator_target_instanceId": "6460bea4-c300-46a2-a6c2-3aa2fb271c86:0",
+        "__metrics_path__": "/singleTargetMetrics/6460bea4-c300-46a2-a6c2-3aa2fb271c86/0"
+      }
+    }, ...
+   ```
+
+   In the first block, copy the path that is mentioned as value of `__metrics_path__`. It should start with `/singleTargetMetrics/` and is followed then by a GUID. 
+   If you have only a single instance in the JSON document and the `__metrics_path__`'s value starts with `/promregatorMetrics`, then something went wrong with the configuration above: Promregator could not fetch your application's metadata from Cloud Foundry. Check your configuration. Further hints may be found in Promregator's log, which you can read from
+  
+   ```bash
+   $ docker logs promregator
+   ```
+
+6. Create a copy of the content of the JSON document above and store it as `discovery.json` locally. Using `curl` you may do so like this:
+
+   ```bash
+   $ curl -o discovery.json http://localhost:56710/discovery 
+   ```
+
+6. Create a URL like this: `http://localhost:56710/<yourmetricspath>` where `<yourmetricspath>` is replaced by the value of `__metrics_path__`. It then will read something like `http://localhost:56710/singleTargetMetrics/6460bea4-c300-46a2-a6c2-3aa2fb271c86/0`.
+   Use an HTTP tool again (such as CURL) to send a request to this endpoint. Note that you have to provide a special header line like this:
+   
+   ```
+   Accept: application/openmetrics-text; version=1.0.0; charset=utf-8
+   ```
+   
+   Using `curl` the command to achieve this would be something like this:
+   
+   ```bash
+   $ curl -H "Accept: application/openmetrics-text; version=1.0.0; charset=utf-8" http://localhost:56710/singleTargetMetrics/6460bea4-c300-46a2-a6c2-3aa2fb271c86/0
+   ```
+   Once executed, you should see a similar text file containing the metrics of the application as above.
 
 ### Hint
 If you made a mistake with setting up the container, you might get a broken container, which may cause troubles on getting rid of again.
@@ -122,9 +171,28 @@ then comes to your rescue.
    
    scrape_configs:
      - job_name: 'promregator'
-       scheme: http
-       static_configs:
-         - targets: ['promregator:8080']
+       file_sd_configs:
+        - files:
+           - /etc/promregator/discovery.json
+         
+       relabel_configs:
+         - source_labels: [__meta_promregator_target_instanceId]
+           target_label: instance
+           
+         - source_labels: [__meta_promregator_target_instanceId]
+           target_label: cf_instance_id
+           
+         - source_labels: [__meta_promregator_target_orgName]
+            target_label: org_name
+           
+         - source_labels: [__meta_promregator_target_spaceName]
+           target_label: space_name
+           
+         - source_labels: [__meta_promregator_target_applicationName]
+           target_label: app_name
+           
+         - source_labels: [__meta_promregator_target_instanceNumber]
+           target_label: cf_instance_number
    ```
    
    Again, please be reminded to use tabs for indentation - not tabs.
@@ -137,6 +205,7 @@ then comes to your rescue.
 3. Start a container using the following command:
    ```bash
    $ docker run --name prometheus -v `pwd`/prometheus.yml:/etc/prometheus/prometheus.yml \
+     -v `pwd`/discovery.json:/etc/promregator/discovery.json \
      -p 127.0.0.1:9090:9090 --link promregator \
      prom/prometheus:latest
    ```

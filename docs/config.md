@@ -495,7 +495,7 @@ Defaults to `/metrics`, as this is the value which is suggested by Prometheus.
 Note that there may be frameworks out there, which expose their metrics in a different format using the same path `/metrics`, though.
 Note that setting `promregator.targets[].kubernetesAnnotations` to `true` will cause that any value set to this parameter is ignored by applications that have annotation `prometheus.io/path` set.
 
-### Item property "promregator.targets[].overrideRouteAndPath" (optional)
+#### Item property "promregator.targets[].overrideRouteAndPath" (optional)
 This option became available starting with version 0.11.0.
 
 Specifies the route (and path) to a metric endpoint which is in front of the service metrics endpoint. For example, if the service endpoint is protected with a tool like Ory oathkeeper. In that case, it is not possible to call the service endpoint from promregator, because ORY oathkeeper blocks any access to the service endpoint with no authorization token. Promregator needs to call ORY oathkeeper with this override definition and with a valid token so that oathkeeper forwards the request to the service metrics endpoint. The authorization token could be retrieved with `promregator.authenticator.oauth2xsuaaBasic` for example.
@@ -555,6 +555,11 @@ Note that in various situations, this auto-detection mechanism may fail (e.g. wh
 Specifies the port number of the host (or the IP address) which shall be used for specifying the target during discovery. As a rule of thumb, this name should always be the port under which Prometheus is capable of reaching Promregator.
 
 Setting this option is optional. If not specified, Promregator tries to auto-detect this value based on the configuration of the underlying operating system and the request, which triggered the service discovery.
+
+#### Option "promregator.discovery.scheme" (optional)
+Specifies the scheme (`http|https`) of the host (or the IP address) which shall be used for specifying the target during discovery. As a rule of thumb, this name should always be the scheme under which Prometheus is capable of reaching Promregator.
+
+Setting this option is optional. If not specified, and `promregator.discovery.port` is set to `443`, Promregator sets this to `https`. This is output as `__scheme__` in the target labels. 
 
 #### Option "promregator.discovery.auth" (optional)
 Specifies the way how authentication shall be verified, if a request reaches the endpoint. Valid values are:
@@ -656,7 +661,7 @@ Please also make sure that you set "promregator.scraping.proxy.host", too, as ot
 Configures the way how the promregator shall expose its own-generated metrics via the endpoints `/metrics` and `/promregatorMetrics`.
 
 #### Option "promregator.metrics.auth" (optional)
-Specifies the way how authentication shall be verified, if a request reaches the endpoint `/promregatorMetrics`. Note that the authentication verification of `/metrics` is controlled by `promregator.endpoint.auth`. Valid values for this option are:
+Specifies the way how authentication shall be verified, if a request reaches the endpoint `/promregatorMetrics`. Valid values for this option are:
 
 * *NONE*: no authentication verification is required (default)
 * *BASIC*: an authentication verification using HTTP Basic Authentication is performed. Valid credentials are taken from `promregator.authentication.basic.username` and `promregator.authentication.basic.password`.
@@ -674,6 +679,19 @@ Specifies, if additional internal metrics shall be exposed describing the intern
 The default value of this option is `false`, which disables the exposure. 
 
 Note that these metrics are not meant for productive usage. As they are primarily meant for facilitating debugging issues in Promregator, their naming and labels may change at any point in time without further notice.
+
+#### Option "promregator.metrics.labelNamePrefix" (optional)
+Specifies a prefix for label names of own-generated metrics. The prefix will be added to the label names
+
+* `org_name`
+* `space_name`
+* `app_name`
+* `cf_instance_id` and
+* `cf_instance_number`
+
+Usually, if specified, you want to have the value of this configuration option end with an underscore (`_`).
+
+If you specify this configuration option as `target_`, then `org_name` would become `target_org_name`.
 
 
 ### Subgroup "promregator.authenticator"

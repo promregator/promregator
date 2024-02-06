@@ -344,6 +344,8 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 			ListRoutesRequest.builder()
 				.addAllApplicationIds(appIds)
 				.perPage(MAXIMAL_NUMBER_OF_ROUTES_PER_CAPI_REQUEST)
+				.page(pageNumber)
+				.perPage(resultsPerPage)
 				.build();
 		
 		PaginatedResponseGeneratorFunctionV3<org.cloudfoundry.client.v3.routes.RouteResource, ListRoutesResponse> responseGenerator = (list, numberOfPages) -> 
@@ -363,6 +365,8 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 			ListProcessesRequest.builder()
 				.applicationId(applicationId)
 				.type(CF_API_V3_PROCESS_TYPE_WEB)
+				.page(pageNumber)
+				.perPage(resultsPerPage)
 				.build();
 		
 		PaginatedResponseGeneratorFunctionV3<org.cloudfoundry.client.v3.processes.ProcessResource, ListProcessesResponse> responseGenerator = (list, numberOfPages) -> 
@@ -383,6 +387,8 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		ListProcessesRequest.builder()
 			.addAllApplicationIds(applicationIds)
 			.type(CF_API_V3_PROCESS_TYPE_WEB)
+			.page(pageNumber)
+			.perPage(resultsPerPage)
 			.build();
 	
 		PaginatedResponseGeneratorFunctionV3<org.cloudfoundry.client.v3.processes.ProcessResource, ListProcessesResponse> responseGenerator = (list, numberOfPages) -> 
