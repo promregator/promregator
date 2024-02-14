@@ -227,7 +227,10 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			final ResolvedTarget rt = osaVector.getTarget();
 			final ListProcessesResponse lapr = tuple.getT2();
 			
-			final List<ProcessResource> list = lapr.getResources();
+			final List<ProcessResource> list = lapr.getResources().stream()
+				.filter(processResource -> processResource.getType().equals("web"))
+				.toList();
+
 			if (list.size() > 1) {
 				log.error("Application Id {} with application name {} in org {} and space {} returned multiple web processes via CF API V3 Processes; Promregator does not know how to handle this. Provide your use case to the developers to understand how this shall be handled properly.", rt.getApplicationId(), rt.getApplicationName(), rt.getOrgName(), rt.getSpaceName());
 				return Mono.empty();
