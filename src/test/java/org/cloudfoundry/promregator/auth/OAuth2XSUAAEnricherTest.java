@@ -5,6 +5,7 @@ import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.HttpGet;
@@ -29,13 +30,15 @@ public class OAuth2XSUAAEnricherTest {
 	 * TODO: This implementation of unit tests may benefit from using 
 	 * https://github.com/SAP/cloud-security-xsuaa-integration/tree/1c133ee17b629b07d58a7aec512daf98b067c031/java-security-test 
 	 */
-	private String oAuthServer200Response = "{\n" +
-			"    \"access_token\": \"someAccessToken\",\n" + 
-			"    \"token_type\": \"bearer\",\n" + 
-			"    \"expires_in\": 43199,\n" + 
-			"    \"scope\": \"dummyScope.AdminOnboarding uaa.resource\",\n" + 
-			"    \"jti\": \"01234567890\"\n" + 
-			"}";
+	private String oAuthServer200Response = """
+			{
+			    "access_token": "someAccessToken",
+			    "token_type": "bearer",
+			    "expires_in": 43199,
+			    "scope": "dummyScope.AdminOnboarding uaa.resource",
+			    "jti": "01234567890"
+			}\
+			""";
 
 	private String oAuthServer401Response = "{\"error\":\"unauthorized\",\"error_description\":\"Bad credentials\"}";
 	private AuthenticationMockServer ams;
@@ -116,21 +119,26 @@ public class OAuth2XSUAAEnricherTest {
 	@Test
 	void testAuthorizationHeaderAddedWhenTokenRetrieved() throws Exception {
 		ClientCredentialsTokenFlow tokenClientMock = Mockito.mock(ClientCredentialsTokenFlow.class);
-		Mockito.when(tokenClientMock.execute())
-				.thenReturn(new OAuth2TokenResponse("someAccessToken", 42l, "someRefreshToken"));
+		Mockito.when(tokenClientMock.execute()).thenReturn(new OAuth2TokenResponse("someAccessToken", 42l, "someRefreshToken"));
 
-		ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+		ArgumentCaptor<String[]> captor = ArgumentCaptor.forClass(String[].class);
 
 		HttpGet get = new HttpGet();
 		assertThat(get.getAllHeaders()).isEmpty();
 		
-		try (OAuth2XSUAAEnricher subject = new OAuth2XSUAAEnricher(getConfig("aScope anotherScope"), tokenClientMock)) {
+		final OAuth2XSUAABasicAuthenticationConfiguration config = getConfig("aScope anotherScope");
+		try (OAuth2XSUAAEnricher subject = new OAuth2XSUAAEnricher(config, tokenClientMock)) {
 			subject.enrichWithAuthentication(get);
 		}
 
 		Mockito.verify(tokenClientMock).scopes(captor.capture());
-		assertThat(captor.getAllValues()).contains("aScope", "anotherScope");
-		assertThat(captor.getAllValues()).hasSize(2);
+		final List<String[]> capturedValues = captor.getAllValues();
+		assertThat(capturedValues.size()).isEqualTo(1);
+		String[] capturedValue = capturedValues.get(0);
+		
+		assertThat(capturedValue.length).isEqualTo(2);
+		
+		assertThat(capturedValue).contains("aScope", "anotherScope");
 
 		assertThat(get.getHeaders("Authorization")[0].getValue()).isEqualTo("Bearer someAccessToken");
 	}

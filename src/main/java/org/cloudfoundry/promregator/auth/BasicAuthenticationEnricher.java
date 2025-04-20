@@ -16,7 +16,7 @@ public class BasicAuthenticationEnricher implements AuthenticationEnricher {
 	}
 
 	private String getBase64EncodedUsernamePassword() {
-		String b64encoding = String.format("%s:%s", this.authenticatorConfig.getUsername(), this.authenticatorConfig.getPassword());
+		String b64encoding = "%s:%s".formatted(this.authenticatorConfig.getUsername(), this.authenticatorConfig.getPassword());
 		
 		byte[] encodedBytes = null;
 		encodedBytes = b64encoding.getBytes(StandardCharsets.UTF_8);
@@ -27,7 +27,7 @@ public class BasicAuthenticationEnricher implements AuthenticationEnricher {
 	public void enrichWithAuthentication(HttpGet httpget) {
 		String b64usernamepassword = this.getBase64EncodedUsernamePassword();
 		
-		httpget.setHeader("Authorization", String.format("Basic %s", b64usernamepassword));
+		httpget.setHeader("Authorization", "Basic %s".formatted(b64usernamepassword));
 	}
 
 }

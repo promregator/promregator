@@ -8,15 +8,12 @@ import org.cloudfoundry.promregator.scanner.TargetResolver;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = MockedAppInstanceScannerEndpointSpringApplication.class)
 @TestPropertySource(locations="default.properties")
 public class InvalidateCacheEndpointTest {

@@ -95,7 +95,7 @@ public class ResolvedTarget {
 		if ("http".equals(protocol) || "https".equals(protocol)) {
 			this.protocol = protocol;
 		} else {
-			throw new InvalidTargetProtocolSpecifiedError(String.format("Invalid configuration: Target attempted to be configured with non-http(s) protocol: %s", protocol));
+			throw new InvalidTargetProtocolSpecifiedError("Invalid configuration: Target attempted to be configured with non-http(s) protocol: %s".formatted(protocol));
 		}
 	}
 

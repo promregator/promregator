@@ -15,9 +15,10 @@ import org.junit.jupiter.api.Test;
 
 public class MetricsFetcherTestTLSPKIX {
 
-	private static final String DUMMY_METRICS_LIST = "# HELP dummy This is a dummy metric\n"+
-			"# TYPE dummy counter\n"+
-			"dummy 42 1395066363000";
+	private static final String DUMMY_METRICS_LIST = """
+			# HELP dummy This is a dummy metric
+			# TYPE dummy counter
+			dummy 42 1395066363000""";
 	private MetricsEndpointMockServerTLS mems;
 	
 	public MetricsFetcherTestTLSPKIX() {

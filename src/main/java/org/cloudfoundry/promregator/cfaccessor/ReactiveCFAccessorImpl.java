@@ -164,7 +164,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 					InetAddress ia = InetAddress.getByName(effectiveProxyHost);
 					proxyIP = ia.getHostAddress();
 				} catch (UnknownHostException e) {
-					throw new ConfigurationException(String.format("The proxy host '%s' cannot be resolved to an IP address; is there a typo in your configuration?", effectiveProxyHost), e);
+					throw new ConfigurationException("The proxy host '%s' cannot be resolved to an IP address; is there a typo in your configuration?".formatted(effectiveProxyHost), e);
 				}
 			} else {
 				// the address specified is already an IP address
@@ -274,7 +274,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		// Note: even though we use the List request here, the number of values returned is either zero or one
 		// ==> No need for a paged request.
 
-		String key = String.format("%s|%s", orgId, spaceName);
+		String key = "%s|%s".formatted(orgId, spaceName);
 
 		org.cloudfoundry.client.v3.spaces.ListSpacesRequest spacesRequest = org.cloudfoundry.client.v3.spaces.ListSpacesRequest.builder().organizationId(orgId).name(spaceName).build();
 
@@ -304,7 +304,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 
 	@Override
 	public Mono<ListApplicationsResponse> retrieveAllApplicationsInSpaceV3(String orgId, String spaceId) {
-		String key = String.format("%s|%s", orgId, spaceId);
+		String key = "%s|%s".formatted(orgId, spaceId);
 
 		PaginatedRequestGeneratorFunctionV3<org.cloudfoundry.client.v3.applications.ListApplicationsRequest> requestGenerator = (resultsPerPage, pageNumber) ->
 			org.cloudfoundry.client.v3.applications.ListApplicationsRequest.builder()

@@ -3,7 +3,7 @@ package org.cloudfoundry.promregator.scanner;
 import java.util.List;
 import java.util.function.Predicate;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 
 public interface AppInstanceScanner {
 

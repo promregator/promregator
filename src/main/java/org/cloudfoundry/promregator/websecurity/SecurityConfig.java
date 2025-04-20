@@ -1,5 +1,7 @@
 package org.cloudfoundry.promregator.websecurity;
 
+import static org.springframework.security.config.Customizer.withDefaults;
+
 import java.util.UUID;
 
 import org.cloudfoundry.promregator.config.InboundAuthorizationMode;
@@ -94,7 +96,7 @@ public class SecurityConfig {
 
 			// NB: Logging does not work here properly yet; better use stderr
 			System.err.println();
-			System.err.println(String.format("Using generated password for user %s: %s", this.basicAuthUsername, password));
+			System.err.println("Using generated password for user %s: %s".formatted(this.basicAuthUsername, password));
 			System.err.println();
 		}
 
@@ -110,10 +112,10 @@ public class SecurityConfig {
 
 		HttpSecurity sec = secInitial;
 		if (iam == InboundAuthorizationMode.BASIC) {
-			System.err.println(String.format("Endpoint %s is BASIC authentication protected", endpoint));
-			sec = sec.authorizeHttpRequests().requestMatchers(endpoint).authenticated().and();
+			System.err.println("Endpoint %s is BASIC authentication protected".formatted(endpoint));
+			sec = sec.authorizeHttpRequests(requests -> requests.requestMatchers(endpoint).authenticated());
 		} else {
-			sec = sec.authorizeHttpRequests().requestMatchers(endpoint).permitAll().and();
+			sec = sec.authorizeHttpRequests(requests -> requests.requestMatchers(endpoint).permitAll());
 		}
 		return sec;
 	}
@@ -121,7 +123,7 @@ public class SecurityConfig {
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		if (!this.isInboundAuthSecurityEnabled()) {
-			http.httpBasic().disable();
+			http.httpBasic(basic -> basic.disable());
 			return http.build();
 		}
 
@@ -132,10 +134,10 @@ public class SecurityConfig {
 		sec = this.determineHttpSecurityForEndpoint(sec, EndpointConstants.ENDPOINT_PATH_CACHE_INVALIDATION, this.cacheInvalidateAuth);
 
 		// see also https://github.com/spring-projects/spring-security/issues/4242
-		http.requestCache().requestCache(this.newHttpSessionRequestCache());
+		http.requestCache(cache -> cache.requestCache(this.newHttpSessionRequestCache()));
 
 		// see also https://www.boraji.com/spring-security-4-http-basic-authentication-example
-		sec.httpBasic();
+		sec.httpBasic(withDefaults());
 		
 		return http.build();
 	}
@@ -150,6 +152,7 @@ public class SecurityConfig {
 	 */
 	private RequestCache newHttpSessionRequestCache() {
 		HttpSessionRequestCache httpSessionRequestCache = new HttpSessionRequestCache();
+		httpSessionRequestCache.setMatchingRequestParameterName("continue");
 		httpSessionRequestCache.setCreateSessionAllowed(false);
 		return httpSessionRequestCache;
 	}

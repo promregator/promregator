@@ -23,9 +23,10 @@ import io.prometheus.client.exporter.common.TextFormat;
 
 class CFMetricsFetcherContentTypeTest {
 
-	private static final String DUMMY_METRICS_LIST = "# HELP dummy This is a dummy metric\n"+
-			"# TYPE dummy counter\n"+
-			"dummy 42 1395066363000";
+	private static final String DUMMY_METRICS_LIST = """
+			# HELP dummy This is a dummy metric
+			# TYPE dummy counter
+			dummy 42 1395066363000""";
 	private static final byte[] DUMMY_METRICS_LIST_BYTE_ARRAY = DUMMY_METRICS_LIST.getBytes(Charset.defaultCharset());
 	
 	private class TestableCFMetricsFetcher extends CFMetricsFetcher {

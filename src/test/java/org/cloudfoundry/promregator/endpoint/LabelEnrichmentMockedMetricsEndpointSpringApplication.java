@@ -8,8 +8,7 @@ import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Predicate;
-
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;

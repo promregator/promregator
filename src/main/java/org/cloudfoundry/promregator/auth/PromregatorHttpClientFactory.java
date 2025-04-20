@@ -49,7 +49,7 @@ public class PromregatorHttpClientFactory implements com.sap.cloud.security.clie
 				sslContext = SSLContextFactory.getInstance().create(clientIdentity);
 			} catch (IOException | GeneralSecurityException e) {
 				throw new HttpClientException(
-						String.format("Couldn't set up https client for service provider. %s.", e.getMessage()));
+						"Couldn't set up https client for service provider. %s.".formatted(e.getMessage()));
 			}
 			SSLConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(sslContext);
 			httpClientBuilder.setSSLContext(sslContext).setSSLSocketFactory(socketFactory);
