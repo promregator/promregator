@@ -6,7 +6,7 @@ import java.time.Duration;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import org.apache.http.conn.util.InetAddressUtils;
 import org.apache.logging.log4j.util.Strings;
