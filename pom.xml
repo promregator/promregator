@@ -64,7 +64,7 @@
 		<httpclient4.version>4.5.14</httpclient4.version>
 
 		<!-- https://mvnrepository.com/artifact/org.cloudfoundry/cloudfoundry-client-reactor -->
-		<cloudfoundry.client.version>5.10.0.RELEASE</cloudfoundry.client.version>
+		<cloudfoundry.client.version>5.12.2.RELEASE</cloudfoundry.client.version>
 		<!-- see also https://github.com/cloudfoundry/cf-java-client -->
 		
 		<sonar.projectKey>promregator</sonar.projectKey>
