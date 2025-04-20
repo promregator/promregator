@@ -315,6 +315,13 @@
 			<artifactId>guava</artifactId>
 			<version>${guava-version}</version>
 		</dependency>
+		
+		<!-- required to remove CVE-2025-29908; if a higher version gets available, may be removed -->
+		<dependency>
+			<groupId>io.netty.incubator</groupId>
+			<artifactId>netty-incubator-codec-native-quic</artifactId>
+			<version>0.0.71.Final</version>
+		</dependency>
 	</dependencies>
 
 	<dependencyManagement>
