@@ -195,7 +195,7 @@
 			<version>${cloudfoundry.client.version}</version>
 		</dependency>
 
-		<!-- should be omitted here, as implicitly provided by cloudfoundry-client-reactor -->
+		<!-- version should be omitted here, as implicitly provided by cloudfoundry-client-reactor -->
 		<dependency>
 			<groupId>io.projectreactor.netty</groupId>
 			<artifactId>reactor-netty</artifactId>
