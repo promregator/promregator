@@ -58,7 +58,7 @@ def springCloudCliPasswordTest(params) {
 
 	dir("../springCloudTest") {
 		// For most recent version look at https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-cli
-		def springBootCLIVersion = "2.7.15"
+		def springBootCLIVersion = "2.7.18"
 		// Warning! Bumping this to 3.0.x requires JDK19 or higher!
 		
 		// For most recent version see also https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-cli
