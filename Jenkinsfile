@@ -233,7 +233,7 @@ timestamps {
 						String settingsXML = """<settings>
   <servers>
     <server>
-      <id>ossrh</id>
+      <id>central</id>
       <username>${jiraUsername}</username>
       <password>${jiraPassword}</password>
     </server>
@@ -257,7 +257,7 @@ timestamps {
 					try {
 						runWithGPG() {
 							sh """
-								mvn --settings ./settings.xml -U -B -DskipTests -Prelease -PwithDeploy package org.apache.maven.plugins:maven-gpg-plugin:sign org.sonatype.plugins:nexus-staging-maven-plugin:deploy
+								mvn --settings ./settings.xml -U -B -DskipTests -Prelease -PwithDeploy package org.apache.maven.plugins:maven-gpg-plugin:sign org.sonatype.central:central-publishing-maven-plugin:deploy
 							"""
 						}
 					} finally {
