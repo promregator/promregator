@@ -218,12 +218,20 @@ timestamps {
 			
 			stage("Official Build / OSSRH") {
 				if (!currentVersion.endsWith("-SNAPSHOT")) {
-					// Problem: org.apache.maven.plugins:maven-gpg-plugin:sign org.sonatype.plugins:nexus-staging-maven-plugin:deploy
+					/* Link to documentation of publishing plugin:
+					 * https://central.sonatype.org/publish/publish-portal-maven/
+					 */
+				
+					// Problem: org.apache.maven.plugins:maven-gpg-plugin:sign and org.sonatype.central:central-publishing-maven-plugin
 					// must be run within the same "package" call. Otherwise they don't do their job.
 					// This means that we have to run a new build process. This build process will create
 					// other CRC values than before. Unfortunately, we can't prevent this.
 					// Yet, at the same time, we want to make sure that we will use the very same version
 					// for building the docker image than for the version that we ship as jar (via github release page).
+					
+					/*
+					 * Password management see https://central.sonatype.org/publish/generate-portal-token/
+					 */
 					withCredentials([usernamePassword(credentialsId: 'JIRA_SONARTYPE', passwordVariable: 'JIRA_PASSWORD', usernameVariable: 'JIRA_USERNAME')]) {
 						jiraUsername = XmlUtil.escapeXml("${JIRA_USERNAME}")
 						jiraPassword = XmlUtil.escapeXml("${JIRA_PASSWORD}")
@@ -257,6 +265,7 @@ timestamps {
 					try {
 						runWithGPG() {
 							sh """
+								echo "Publishing of component can be followed at https://central.sonatype.com/publishing/deployments"
 								mvn --settings ./settings.xml -U -B -DskipTests -Prelease -PwithDeploy package org.apache.maven.plugins:maven-gpg-plugin:sign org.sonatype.central:central-publishing-maven-plugin:publish
 							"""
 						}
