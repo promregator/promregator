@@ -5,7 +5,7 @@
 # Ownership will be adjusted by this script, though
 
 # we use the JDK as foundation.
-FROM openjdk:17-jdk
+FROM openjdk:21-jdk
 
 ARG uid=1000
 ARG gid=1000
