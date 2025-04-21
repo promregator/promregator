@@ -24,7 +24,9 @@ RUN groupadd --gid $gid promregator && useradd --gid $gid --uid $uid promregator
 # Setup folder et al.
 RUN mkdir -p /opt/promregator && \
 	chown -R promregator.promregator /opt/promregator && \
-	chmod 0750 /opt/promregator 
+	chmod 0750 /opt/promregator && \
+	cd /etc/pki/ca-trust/extracted/java && \
+	keytool -list -cacerts -storepass changeit
 
 # for the idea, see also https://stackoverflow.com/a/53398981
 COPY --chown=promregator:promregator data/* /opt/promregator/
