@@ -45,7 +45,8 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher, Closeable {
 			this.tokenClient = new XsuaaTokenFlows(new DefaultOAuth2TokenService(this.httpClient),
 					new PromregatorOAuth2ServiceEndpointsProvider(c), c.getClientIdentity()).clientCredentialsTokenFlow();
 		}
-		this.tokenClient.scopes(config.getScopes().toArray(new String[0]));
+		final String[] scopeArray = config.getScopes().toArray(new String[0]);
+		this.tokenClient.scopes(scopeArray);
 
 		// Ensure getting the web token works (fail-fast)
 		// We don't raise an exception, but we log the failure.
@@ -68,7 +69,7 @@ public class OAuth2XSUAAEnricher implements AuthenticationEnricher, Closeable {
 			log.error("Unable to enrich request with JWT");
 			return;
 		}
-		httpget.setHeader("Authorization", String.format("Bearer %s", jwt));
+		httpget.setHeader("Authorization", "Bearer %s".formatted(jwt));
 	}
 
 	private final String getJWTAndCatchExceptions() {

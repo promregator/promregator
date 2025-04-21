@@ -43,7 +43,12 @@ public class MetricSetMerger {
 		metricSetData = trimEOF(metricSetData);
 		additionalMetrics = trimEOF(additionalMetrics);
 		
-		metricSetData = String.format("%s%n%s%n%s%n", metricSetData, additionalMetrics, EOF_MARKER);
+		/* 
+		 * Note that we have to use \n here and not %s, as 
+		 * https://github.com/prometheus/docs/blob/cbe12c5575f3c699ad322ba098ec05b8d5f81850/content/docs/instrumenting/exposition_formats.md 
+		 * specifies that line endings are \n and not \r\n
+		 */
+		metricSetData = "%s\n%s\n%s\n".formatted(metricSetData, additionalMetrics, EOF_MARKER);
 		
 		return metricSetData;
 	}

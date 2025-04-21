@@ -3,6 +3,7 @@ package org.cloudfoundry.promregator.fetcher;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -132,7 +133,7 @@ public class CFMetricsFetcher implements MetricsFetcher {
 		// provided for recursive scraping / loopback detection
 		httpget.setHeader(EndpointConstants.HTTP_HEADER_PROMREGATOR_INSTANCE_IDENTIFIER, this.promregatorUUID.toString());
 		
-		httpget.setHeader(HttpHeaders.ACCEPT, String.format("%s, %s;q=0.9", TextFormat.CONTENT_TYPE_OPENMETRICS_100, TextFormat.CONTENT_TYPE_004));
+		httpget.setHeader(HttpHeaders.ACCEPT, "%s, %s;q=0.9".formatted(TextFormat.CONTENT_TYPE_OPENMETRICS_100, TextFormat.CONTENT_TYPE_004));
 		
 		if (this.ae != null) {
 			this.ae.enrichWithAuthentication(httpget);

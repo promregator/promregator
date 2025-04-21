@@ -3,7 +3,7 @@ package org.cloudfoundry.promregator.auth;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import org.cloudfoundry.promregator.config.AuthenticatorConfiguration;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;

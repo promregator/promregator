@@ -1,6 +1,6 @@
 package org.cloudfoundry.promregator.config;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import org.cloudfoundry.promregator.config.validations.ConfigurationValidation;
 import org.springframework.beans.factory.annotation.Autowired;

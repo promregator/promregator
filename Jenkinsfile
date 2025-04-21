@@ -58,7 +58,7 @@ def springCloudCliPasswordTest(params) {
 
 	dir("../springCloudTest") {
 		// For most recent version look at https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-cli
-		def springBootCLIVersion = "2.7.15"
+		def springBootCLIVersion = "2.7.18"
 		// Warning! Bumping this to 3.0.x requires JDK19 or higher!
 		
 		// For most recent version see also https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-cli
@@ -200,7 +200,7 @@ timestamps {
 			
 			stage("SecDependency Scan") {
 				sh """
-					mvn -B -DsuppressionFiles=./secscan/owasp-suppression.xml org.owasp:dependency-check-maven:8.1.2:check
+					mvn -B -DsuppressionFiles=./secscan/owasp-suppression.xml org.owasp:dependency-check-maven:12.1.1:check
 				"""
 				
 				archiveArtifacts "target/dependency-check-report.html"

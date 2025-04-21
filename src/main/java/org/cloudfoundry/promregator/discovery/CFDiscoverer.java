@@ -3,8 +3,7 @@ package org.cloudfoundry.promregator.discovery;
 import java.util.List;
 import java.util.function.Predicate;
 
-import javax.annotation.Nullable;
-
+import jakarta.annotation.Nullable;
 import org.cloudfoundry.promregator.scanner.Instance;
 
 public interface CFDiscoverer {

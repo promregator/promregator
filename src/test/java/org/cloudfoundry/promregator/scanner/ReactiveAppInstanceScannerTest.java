@@ -14,13 +14,10 @@ import org.cloudfoundry.promregator.JUnitTestUtils;
 import org.cloudfoundry.promregator.config.Target;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = MockedReactiveAppInstanceScannerSpringApplication.class)
 @TestPropertySource(locations="default.properties")
 public class ReactiveAppInstanceScannerTest {

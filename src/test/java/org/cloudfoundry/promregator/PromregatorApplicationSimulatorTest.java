@@ -4,22 +4,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
-import javax.annotation.Nullable;
-
+import jakarta.annotation.Nullable;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessorSimulator;
 import org.cloudfoundry.promregator.discovery.CFDiscoverer;
 import org.cloudfoundry.promregator.scanner.Instance;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = { PromregatorApplication.class })
 // Note that adding @ComponentScan(excludeFilters ... ) here does not make sense
 // as PromregatorApplication will anyhow override it!

@@ -11,8 +11,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
-import javax.annotation.Nullable;
-
+import jakarta.annotation.Nullable;
 import org.cloudfoundry.promregator.config.PromregatorConfiguration;
 import org.cloudfoundry.promregator.messagebus.MessageBus;
 import org.cloudfoundry.promregator.messagebus.MessageBusTopic;

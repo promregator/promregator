@@ -2,7 +2,7 @@ package org.cloudfoundry.promregator.lifecycle;
 
 import java.util.List;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import org.cloudfoundry.promregator.fetcher.MetricsFetcherMetrics;
 import org.cloudfoundry.promregator.messagebus.MessageBus;

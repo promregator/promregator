@@ -23,7 +23,7 @@ import reactor.core.scheduler.Schedulers;
 
 public class ReactiveTargetResolver implements TargetResolver {
 	private static final Logger log = LoggerFactory.getLogger(ReactiveTargetResolver.class);
-	private static final Logger logEmptyTarget = LoggerFactory.getLogger(String.format("%s.EmptyTarget", ReactiveTargetResolver.class.getName()));
+	private static final Logger logEmptyTarget = LoggerFactory.getLogger("%s.EmptyTarget".formatted(ReactiveTargetResolver.class.getName()));
 	public static final String PROMETHEUS_IO_SCRAPE = "prometheus.io/scrape";
 	public static final String PROMETHEUS_IO_PATH = "prometheus.io/path";
 

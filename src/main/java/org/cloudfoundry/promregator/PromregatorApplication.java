@@ -5,7 +5,7 @@ import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import org.cloudfoundry.promregator.cfaccessor.AccessorCacheType;
 import org.cloudfoundry.promregator.cfaccessor.CFAccessor;

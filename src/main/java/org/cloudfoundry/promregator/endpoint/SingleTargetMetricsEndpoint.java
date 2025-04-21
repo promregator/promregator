@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import org.cloudfoundry.promregator.auth.AuthenticationEnricher;
 import org.cloudfoundry.promregator.auth.AuthenticatorController;
@@ -269,13 +269,13 @@ public class SingleTargetMetricsEndpoint {
 		HashMap<String, MetricFamilySamples> mapMFS = this.gmfspr.determineEnumerationOfMetricFamilySamples(this.requestRegistry);
 		
 		for (String metricName : mapMFS.keySet()) {
-			Pattern pType = Pattern.compile(String.format("^# TYPE +%s +", metricName));
+			Pattern pType = Pattern.compile("^# TYPE +%s +".formatted(metricName));
 			if (pType.matcher(fetchData).find()) {
 				log.warn("Instance {} of application {} emitted a metric {}, which is reserved by Promregator. Skipping adding Promregator's metrics", instanceId, applicationId, metricName);
 				return fetchData;
 			}
 			
-			Pattern pMetric = Pattern.compile(String.format("^%s *\\{", metricName));
+			Pattern pMetric = Pattern.compile("^%s *\\{".formatted(metricName));
 			if (pMetric.matcher(fetchData).find()) {
 				log.warn("Instance {} of application {} emitted a sample with name {}, which is reserved by Promregator. Skipping adding Promregator's metrics", instanceId, applicationId, metricName);
 				return fetchData;
@@ -362,7 +362,7 @@ public class SingleTargetMetricsEndpoint {
 			return precheckResults;
 		}
 		
-		final String instanceId = String.format("%s:%s", applicationId, instanceNumber);
+		final String instanceId = "%s:%s".formatted(applicationId, instanceNumber);
 		
 		FetchResult response = null;
 		try {

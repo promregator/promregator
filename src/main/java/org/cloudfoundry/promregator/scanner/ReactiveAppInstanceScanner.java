@@ -7,8 +7,7 @@ import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.Nullable;
-
+import jakarta.annotation.Nullable;
 import org.apache.logging.log4j.util.Strings;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.cloudfoundry.client.v3.domains.DomainResource;
@@ -316,7 +315,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 		Flux<Instance> instancesFlux = osaVectorDomainApplicationFlux.flatMapSequential(v -> {
 			final List<Instance> instances = new ArrayList<>(v.getNumberOfInstances());
 			for (int i = 0; i < v.numberOfInstances; i++) {
-				final Instance inst = new Instance(v.getTarget(), String.format("%s:%d", v.getApplicationId(), i), v.getAccessURL(), v.isInternal());
+				final Instance inst = new Instance(v.getTarget(), "%s:%d".formatted(v.getApplicationId(), i), v.getAccessURL(), v.isInternal());
 
 				if (useOverrideRouteAndPath(v)) {
 					inst.setAccessUrl(this.formatAccessURL(v.getTarget().getProtocol(), v.getTarget().getOriginalTarget().getOverrideRouteAndPath(), v.getTarget().getPath()));
@@ -401,7 +400,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 	}
 
 	private String formatAccessURL(final String protocol, final String hostnameDomain, final String path) {
-		final String applicationUrl = String.format("%s://%s", protocol, hostnameDomain);
+		final String applicationUrl = "%s://%s".formatted(protocol, hostnameDomain);
 		log.debug("Using Application URL: '{}'", applicationUrl);
 
 		String applUrl = applicationUrl;
@@ -423,7 +422,7 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			port = defaultInternalRoutePort;
 		}
 		
-		String internalURL = String.format("%s.%s:%s", instanceId, hostnameDomain, port);
+		String internalURL = "%s.%s:%s".formatted(instanceId, hostnameDomain, port);
 		log.debug("Using internal Application URL: '{}'", internalURL);
 
 		return formatAccessURL("http", internalURL, path);

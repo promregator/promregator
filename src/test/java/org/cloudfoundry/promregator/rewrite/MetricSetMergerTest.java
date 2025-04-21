@@ -7,7 +7,11 @@ import org.junit.jupiter.api.Test;
 import io.prometheus.client.exporter.common.TextFormat;
 
 class MetricSetMergerTest {
-
+	/*
+	 * Warning! Be careful with """ notation here!
+	 * The usage of \n and not \r\n is significant here!
+	 */
+	
 	@Test
 	void testTextFormat004() {
 		FetchResult fetchResult = new FetchResult("# TYPE test COUNTER\n"
@@ -147,24 +151,25 @@ class MetricSetMergerTest {
 	
 	@Test
 	void testOpenMetricsWithBothEOF() {
-		FetchResult fetchResult = new FetchResult("# TYPE test COUNTER\n"
+		final FetchResult fetchResult = new FetchResult("# TYPE test COUNTER\n"
 				+ "test 2.0\n"
 				+ "# EOF\n\r\n", TextFormat.CONTENT_TYPE_OPENMETRICS_100);
 		
-		String additionalMetrics = "# TYPE test2 COUNTER\n"
+		final String additionalMetrics = "# TYPE test2 COUNTER\n"
 				+ "test2 4.0\n"
 				+ "# EOF\n\r\n";
 		
-		MetricSetMerger subject = new MetricSetMerger(fetchResult, additionalMetrics);
+		final MetricSetMerger subject = new MetricSetMerger(fetchResult, additionalMetrics);
 		
-		String actual = subject.merge();
+		final String actual = subject.merge();
 		
-		Assertions.assertEquals("""
+		final String expected = """
 				# TYPE test COUNTER
 				test 2.0
 				# TYPE test2 COUNTER
 				test2 4.0
 				# EOF
-				""", actual);
+				""";
+		Assertions.assertEquals(expected, actual);
 	}
 }

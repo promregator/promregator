@@ -151,7 +151,7 @@ public class DiscoveryEndpoint {
 
 		//Default __scheme__ to https if promregator.discovery.port:443
 		String localScheme = (this.myScheme == null && this.myPort == 443) ? "https" : this.myScheme;
-		final String[] targets = { String.format("%s:%d", localHostname, localPort) };
+		final String[] targets = { "%s:%d".formatted(localHostname, localPort) };
 		
 		log.info("Using scraping target {} in discovery response", targets[0]);
 		

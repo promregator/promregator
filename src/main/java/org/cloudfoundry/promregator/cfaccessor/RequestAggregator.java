@@ -50,7 +50,7 @@ public abstract class RequestAggregator<K, V> {
 		private final Logger log = LoggerFactory.getLogger(Processor.class);
 
 		public Processor(Class<K> typeOfK, Class<V> typeOfV) {
-			super(String.format("Processor for ReactiveCFAccesor requests %s -> %s", typeOfK.toString(), typeOfV.toString()));
+			super("Processor for ReactiveCFAccesor requests %s -> %s".formatted(typeOfK.toString(), typeOfV.toString()));
 		}
 		
 		private boolean shouldRun = true;

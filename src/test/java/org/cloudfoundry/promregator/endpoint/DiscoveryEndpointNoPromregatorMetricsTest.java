@@ -8,16 +8,13 @@ import org.cloudfoundry.promregator.endpoint.DiscoveryEndpoint.DiscoveryResponse
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 
-@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = MockedMetricsEndpointSpringApplication.class)
 @TestPropertySource(locations="no_promregator_metrics.properties")
 public class DiscoveryEndpointNoPromregatorMetricsTest {

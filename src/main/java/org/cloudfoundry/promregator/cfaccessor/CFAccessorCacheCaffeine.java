@@ -11,7 +11,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.cloudfoundry.client.v3.applications.ListApplicationsResponse;

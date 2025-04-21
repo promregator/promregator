@@ -10,14 +10,11 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = LabelEnrichmentMockedMetricsEndpointSpringApplication.class)
 @TestPropertySource(locations="disabledLabelEnrichment.properties")
 public class DisabledEnrichmentSingleTargetMetricsEndpointTest {
@@ -28,9 +25,10 @@ public class DisabledEnrichmentSingleTargetMetricsEndpointTest {
 	static void startMockedTargetMetricsEndpoint() throws IOException {
 		mockServer = new MetricsEndpointMockServer();
 		DefaultMetricsEndpointHttpHandler meh = mockServer.getMetricsEndpointHandler();
-		meh.setResponse("# HELP dummy This is a dummy metric\n"+
-				"# TYPE dummy counter\n"+
-				"dummy{label=\"xyz\"} 42 1395066363000");
+		meh.setResponse("""
+				# HELP dummy This is a dummy metric
+				# TYPE dummy counter
+				dummy{label="xyz"} 42 1395066363000""");
 		
 		mockServer.start();
 	}

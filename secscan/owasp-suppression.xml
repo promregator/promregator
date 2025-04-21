@@ -627,4 +627,34 @@
 		</packageUrl>
 		<cve>CVE-2022-45688</cve>
 	</suppress>
+
+	<suppress>
+		<notes><![CDATA[
+	   file name: json-20240303.jar
+	   Issue has been fixed with 20230618, but tool does not detect version properly.
+	   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.json/json@.*$
+		</packageUrl>
+		<cve>CVE-2023-5072</cve>
+	</suppress>
+
+	<suppress>
+		<notes><![CDATA[
+	   file name: wire-runtime-jvm-4.9.1.jar
+	   Wire-server is not in use
+	   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/com\.squareup\.wire/wire\-runtime\-jvm@.*$
+		</packageUrl>
+		<cve>CVE-2023-22737</cve>
+	</suppress>
+	
+	<suppress>
+	   <notes><![CDATA[
+	   file name: wire-runtime-jvm-4.9.1.jar
+	   Not used in an Android context
+	   ]]></notes>
+	   <packageUrl regex="true">^pkg:maven/com\.squareup\.wire/wire\-runtime\-jvm@.*$</packageUrl>
+	   <cve>CVE-2018-8909</cve>
+	</suppress>
+	
 </suppressions>

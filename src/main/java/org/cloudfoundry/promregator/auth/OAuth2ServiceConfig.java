@@ -33,7 +33,7 @@ public class OAuth2ServiceConfig implements OAuth2ServiceConfiguration {
 			properties.put(KEY, c.getClient_key());
 			properties.put(CERT_URL, c.getTokenServiceCertURL());
 		} else {
-			throw new IllegalArgumentException(String.format("Invalid authentication configuration type '%s'", config.getClass().getName()));
+			throw new IllegalArgumentException("Invalid authentication configuration type '%s'".formatted(config.getClass().getName()));
 		}
 	}
 

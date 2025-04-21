@@ -44,15 +44,6 @@ cf:
       application: 30
       resolver: 30
 
-  request:
-    timeout:
-      org: 3000
-      space: 3000
-      domain: 3000
-      route: 3000
-      process: 3000
-      appInSpace: 3000
-
 logging:
   level:
     org:
