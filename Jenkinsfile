@@ -257,7 +257,7 @@ timestamps {
 					try {
 						runWithGPG() {
 							sh """
-								mvn --settings ./settings.xml -U -B -DskipTests -Prelease -PwithDeploy package org.apache.maven.plugins:maven-gpg-plugin:sign org.sonatype.central:central-publishing-maven-plugin:deploy
+								mvn --settings ./settings.xml -U -B -DskipTests -Prelease -PwithDeploy package org.apache.maven.plugins:maven-gpg-plugin:sign org.sonatype.central:central-publishing-maven-plugin:publish
 							"""
 						}
 					} finally {
