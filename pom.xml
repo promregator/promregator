@@ -338,6 +338,25 @@
 
 	<build>
 		<plugins>
+			<!-- We want to build both the standard spring-boot artifact
+			with spring-boot loader and a promregator-library artifact.
+			With this plugin, we are building the latter.
+			Note that this section must come before the other spring-boot-maven-plugin 
+			commands as they are run in the same maven build phase. 
+			See also https://github.com/promregator/promregator/pull/202/files#r658954135 -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>library-jar</id>
+						<goals><goal>jar</goal></goals>
+						<configuration>
+							<classifier>library</classifier>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>

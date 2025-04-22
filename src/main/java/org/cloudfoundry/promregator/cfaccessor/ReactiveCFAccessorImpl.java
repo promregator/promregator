@@ -48,12 +48,6 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	@Value("${cf.api_host}")
 	private String apiHost;
 
-	@Value("${cf.username}")
-	private String username;
-	
-	@Value("${cf.password}")
-	private String password;
-	
 	@Value("${cf.skipSslValidation:false}")
 	private boolean skipSSLValidation;
 
@@ -105,6 +99,8 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	@Autowired
 	private InternalMetrics internalMetrics;
 
+	@Autowired
+	private CFApiCredentials cfApiCredentials;
 	
 	private static final Pattern PATTERN_HTTP_BASED_PROTOCOL_PREFIX = Pattern.compile("^https?://", Pattern.CASE_INSENSITIVE);
 	
@@ -136,7 +132,7 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 	}
 
 	private PasswordGrantTokenProvider tokenProvider() {
-		return PasswordGrantTokenProvider.builder().password(this.password).username(this.username).build();
+		return PasswordGrantTokenProvider.builder().password(this.cfApiCredentials.getPassword()).username(this.cfApiCredentials.getUsername()).build();
 	}
 
 	private ProxyConfiguration proxyConfiguration() throws ConfigurationException {
