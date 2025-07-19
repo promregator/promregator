@@ -149,14 +149,14 @@ timestamps {
 					boolean withSigning = !currentVersion.endsWith("-SNAPSHOT")
 				
 					if (checkoutBranchName.equals("master")) {
-						//withCredentials([string(credentialsId: 'promregator_sonarcloud', variable: 'sonarlogin')]) {
-						//	sh """#!/bin/bash -xe
-						//		export CF_PASSWORD=dummypassword
-						//		mvn -U -B -PwithTests -Prelease '-Dsonar.login=${sonarlogin}' \
-						//			clean verify sonar:sonar
+						withCredentials([string(credentialsId: 'promregator_sonarcloud', variable: 'sonarlogin')]) {
+							sh """#!/bin/bash -xe
+								export CF_PASSWORD=dummypassword
+								mvn -U -B -PwithTests -Prelease '-Dsonar.login=${sonarlogin}' \
+									clean verify # sonar:sonar
 		
-						//	"""
-						//}
+							"""
+						}
 					} else {
 						sh """#!/bin/bash -xe
 							export CF_PASSWORD=dummypassword
@@ -166,7 +166,7 @@ timestamps {
 
 
 				} finally {
-					//junit 'target/surefire-reports/*.xml'
+					junit 'target/surefire-reports/*.xml'
 				}
 			}
 			
