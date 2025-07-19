@@ -38,7 +38,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.3.10</version> <!-- see also https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-parent -->
+		<version>3.5.3</version> <!-- see also https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-parent -->
 		<!-- Warning! On bumping also check guava-version below! -->
 		<!-- Note! If you bump this version here, also check the spring-boot CLI version 
 		in our integration tests (see Jenkinsfile) -->
@@ -53,7 +53,7 @@
 		<!-- note: spring-boot.run.fork=false does not work in spring3+ anymore!
 		Use spring-boot.run.jvmArguments=-D.... instead! -->
 
-		<spring-cloud.version>2023.0.5</spring-cloud.version>
+		<spring-cloud.version>2025.0.0</spring-cloud.version>
 		<!--  For release information see also https://spring.io/projects/spring-cloud
 		and https://github.com/spring-cloud/spring-cloud-release/wiki/Spring-Cloud-2021.0-Release-Notes
 		and https://github.com/spring-cloud/spring-cloud-release/wiki/Spring-Cloud-2022.0-Release-Notes
@@ -61,10 +61,11 @@
 		
 		<prometheus.version>0.16.0</prometheus.version>
 		
+		<!-- see also https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
 		<httpclient4.version>4.5.14</httpclient4.version>
 
 		<!-- https://mvnrepository.com/artifact/org.cloudfoundry/cloudfoundry-client-reactor -->
-		<cloudfoundry.client.version>5.12.2.RELEASE</cloudfoundry.client.version>
+		<cloudfoundry.client.version>5.14.0.RELEASE</cloudfoundry.client.version>
 		<!-- see also https://github.com/cloudfoundry/cf-java-client -->
 		
 		<sonar.projectKey>promregator</sonar.projectKey>
@@ -74,7 +75,7 @@
 
 		<!-- Warning! This should be in line to what spring-framework uses. Unfortunately, 
 			there is no global constant provided by spring-boot for the version. -->
-		<guava-version>32.1.2-jre</guava-version>
+		<guava-version>33.4.8-jre</guava-version>
 	</properties>
 
 	<dependencies>
@@ -211,7 +212,7 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-collections4</artifactId>
-			<version>4.4</version>
+			<version>4.5.0</version>
 		</dependency>
 
 		<!-- see also https://github.com/google/guava/issues/2350#issuecomment-169097253 
@@ -317,10 +318,11 @@
 		</dependency>
 		
 		<!-- required to remove CVE-2025-29908; if a higher version gets available, may be removed -->
+		<!-- https://mvnrepository.com/artifact/io.netty.incubator/netty-incubator-codec-native-quic -->
 		<dependency>
 			<groupId>io.netty.incubator</groupId>
 			<artifactId>netty-incubator-codec-native-quic</artifactId>
-			<version>0.0.71.Final</version>
+			<version>0.0.73.Final</version>
 		</dependency>
 	</dependencies>
 
