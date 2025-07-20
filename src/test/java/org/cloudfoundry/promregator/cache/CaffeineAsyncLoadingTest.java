@@ -7,11 +7,11 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.NonNull;
 
 import com.github.benmanes.caffeine.cache.AsyncCacheLoader;
 import com.github.benmanes.caffeine.cache.AsyncLoadingCache;
@@ -201,7 +201,6 @@ public class CaffeineAsyncLoadingTest {
 				.refreshAfterWrite(120, TimeUnit.SECONDS)
 				.buildAsync(loader);
 		
-		@NonNull
 		CompletableFuture<Integer> future1 = subject.get("a");
 		future1.get(1000L, TimeUnit.SECONDS);
 		Assertions.assertEquals(1, loader.getCounter());

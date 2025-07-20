@@ -7,9 +7,7 @@ import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import jakarta.annotation.Nullable;
 import org.apache.logging.log4j.util.Strings;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.cloudfoundry.client.v3.domains.DomainResource;
 import org.cloudfoundry.client.v3.organizations.ListOrganizationDomainsResponse;
 import org.cloudfoundry.client.v3.processes.ListProcessesResponse;
@@ -23,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.CollectionUtils;
 
+import jakarta.annotation.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -255,7 +254,6 @@ public class ReactiveAppInstanceScanner implements AppInstanceScanner {
 			}
 			
 			final List<String> urls = list.stream().map(RouteResource::getUrl).toList();
-			@NonNull
 			final List<Pattern> preferredRouteRegexPatterns = osaVector.getTarget().getOriginalTarget().getPreferredRouteRegexPatterns();
 			final String url = this.determineApplicationRoute(urls, preferredRouteRegexPatterns);
 			
