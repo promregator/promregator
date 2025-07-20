@@ -152,8 +152,8 @@ timestamps {
 						withCredentials([string(credentialsId: 'promregator_sonarcloud', variable: 'sonarlogin')]) {
 							sh """#!/bin/bash -xe
 								export CF_PASSWORD=dummypassword
-								mvn -U -B -PwithTests -Prelease '-Dsonar.login=${sonarlogin}' \
-									clean verify # sonar:sonar
+								mvn -U -B -PwithTests -Prelease '-Dsonar.token=${sonarlogin}' \
+									clean verify sonar:sonar
 		
 							"""
 						}
