@@ -154,8 +154,11 @@ timestamps {
 								export CF_PASSWORD=dummypassword
 								mvn -U -B -PwithTests -Prelease '-Dsonar.token=${sonarlogin}' \
 									clean verify sonar:sonar
-		
 							"""
+							/*
+							 * For sonarCloud integration approach see also 
+							 * https://docs.sonarsource.com/sonarqube-cloud/advanced-setup/ci-based-analysis/sonarscanner-for-maven/
+							 */
 						}
 					} else {
 						sh """#!/bin/bash -xe
