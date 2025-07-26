@@ -3,10 +3,10 @@ package org.cloudfoundry.promregator.cfaccessor;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Duration;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
-
-import jakarta.annotation.PostConstruct;
 
 import org.apache.http.conn.util.InetAddressUtils;
 import org.apache.logging.log4j.util.Strings;
@@ -34,7 +34,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
+import jakarta.annotation.PostConstruct;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
 
 public class ReactiveCFAccessorImpl implements CFAccessor {
 
@@ -172,7 +174,13 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 			synchronized(connectionContext) {
 				final Mono<String> tokenMono = this.pgtp.getToken(connectionContext);
 				// We really fetch the value of the mono, under the locking condition
-				final String token = tokenMono.block(Duration.ofSeconds(3));
+				final Optional<String> token = tokenMono
+						.doOnError(e -> {
+							log.warn("Fetching Token JWT TokenProvider ended in an exception; invalidating cache and running retry", e);
+							this.pgtp.invalidate(connectionContext);
+						})
+						.retryWhen(Retry.backoff(3, Duration.ofMillis(200)))
+						.blockOptional(Duration.ofSeconds(5));
 				/*
 				 * Note: In 99% of cases, the availability of the value from
 				 * tokenMono is instant, as it will only be reading the access
@@ -191,7 +199,12 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 				 * will resume and will be provided with the cache result again (thus
 				 * responding fast again). 
 				 */
-				return Mono.just(token);
+				
+				if (token.isEmpty()) {
+					log.error("Finally failed getting token for ConnectionContext {}", connectionContext.toString());
+					return Mono.error(new NoSuchElementException("Token could not be retrieved"));
+				}
+				return Mono.just(token.get());
 			}
 		}
 		
