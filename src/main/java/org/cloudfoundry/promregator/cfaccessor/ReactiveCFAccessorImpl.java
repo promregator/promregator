@@ -137,88 +137,10 @@ public class ReactiveCFAccessorImpl implements CFAccessor {
 		return connctx.build();
 	}
 
-	private static class ConcurrencyIssueWorkaroundTokenProvider implements TokenProvider {
-
-		private PasswordGrantTokenProvider pgtp;
-
-		public ConcurrencyIssueWorkaroundTokenProvider(PasswordGrantTokenProvider pgtp) {
-			this.pgtp = pgtp;
-		}
-
-		@Override
-		public Mono<String> getToken(ConnectionContext connectionContext) {
-			/*
-			 * Why this limbo?
-			 * See https://github.com/cloudfoundry/cf-java-client/issues/1146
-			 * 
-			 * Refresh Tokens are cached by the cf-java-client. 
-			 * The main problem is that the coding
-			 * 
-			 * @Override
-			 * public final Mono<String> getToken(ConnectionContext connectionContext) {
-			 *      return this.accessTokens.computeIfAbsent(connectionContext, this::token);
-			 * }
-			 * 
-			 * at https://github.com/cloudfoundry/cf-java-client/blob/00faecff356e082b7ec508fba4bc35510f162121/cloudfoundry-client-reactor/src/main/java/org/cloudfoundry/reactor/tokenprovider/AbstractUaaTokenProvider.java#L114
-			 * does not the token fetching/computation under the cache's lock 
-			 * (of the concurrentMap of this.accessTokens), but locking is only ensured 
-			 * for the time it takes to calculate the Mono for generating it. 
-			 * This means, we need to have a more coarse granular locking mechanism
-			 * in place.
-			 */
-			
-			/* lock granularity connectionContext is okay: Usually, we should only have one,
-			 * but if we had two or more, then each contextContext would have two
-			 * refresh tokens/access token caches.
-			 */
-			synchronized(connectionContext) {
-				final Mono<String> tokenMono = this.pgtp.getToken(connectionContext);
-				// We really fetch the value of the mono, under the locking condition
-				final Optional<String> token = tokenMono
-						.doOnError(e -> {
-							log.warn("Fetching Token JWT TokenProvider ended in an exception; invalidating cache and running retry", e);
-							this.pgtp.invalidate(connectionContext);
-						})
-						.retryWhen(Retry.backoff(3, Duration.ofMillis(200)))
-						.blockOptional(Duration.ofSeconds(5));
-				/*
-				 * Note: In 99% of cases, the availability of the value from
-				 * tokenMono is instant, as it will only be reading the access
-				 * token from the cache inside pgtp.
-				 * However, if there is no token in place, because someone has called
-				 * invalidate() (which may happen, if a business request has
-				 * received an "unauthorized"), multiple threads may enter this method
-				 * With the locking of the connectionContext above, only the first
-				 * thread will enter this section. The blocking will ensure that
-				 * the new JWT has been fetched using the first thread only. 
-				 * The timeout specified is a rough estimate of an upper limit for 
-				 * the duration it takes to the fetch the JWT. 
-				 * Afterwards, the cache inside pgtp will then be updated. The first thread will 
-				 * return, providing the new JWT to the caller.
-				 * All subsequent threads so far waiting for the lock on connectionContext
-				 * will resume and will be provided with the cache result again (thus
-				 * responding fast again). 
-				 */
-				
-				if (token.isEmpty()) {
-					log.error("Finally failed getting token for ConnectionContext {}", connectionContext.toString());
-					return Mono.error(new NoSuchElementException("Token could not be retrieved"));
-				}
-				return Mono.just(token.get());
-			}
-		}
-		
-		@Override
-		public void invalidate(ConnectionContext connectionContext) {
-			this.pgtp.invalidate(connectionContext);
-		}
-		
-	}
-	
 	private TokenProvider tokenProvider() {
 		final PasswordGrantTokenProvider pgtp = PasswordGrantTokenProvider.builder().password(this.password).username(this.username).build();
 		
-		return new ConcurrencyIssueWorkaroundTokenProvider(pgtp);
+		return pgtp;
 	}
 
 	private ProxyConfiguration proxyConfiguration() throws ConfigurationException {
