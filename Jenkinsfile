@@ -152,6 +152,11 @@ timestamps {
 					// The 'git' step will clone the repository if the directory is empty or update it if present.
 					git url: 'https://github.com/eaglerainbow/cf-java-client.git', branch: 'dgarnier/fix-1146'
 					
+					sh """
+						git submodule init
+						git submodule update
+					"""
+
 					// Build and install into local Maven repository (skip tests for CI speed)
 					sh '''
 						mvn -B -DskipTests clean install
