@@ -6,7 +6,7 @@
 
 	<groupId>com.github.promregator</groupId>
 	<artifactId>promregator</artifactId>
-	<version>1.1.6-SNAPSHOT</version>
+	<version>1.1.6-fix-1146-1</version>
 	<packaging>jar</packaging>
 
 	<name>Promregator</name>
@@ -64,7 +64,7 @@
 		<httpclient4.version>4.5.14</httpclient4.version>
 
 		<!-- https://mvnrepository.com/artifact/org.cloudfoundry/cloudfoundry-client-reactor -->
-		<cloudfoundry.client.version>5.12.2.RELEASE</cloudfoundry.client.version>
+		<cloudfoundry.client.version>5.14.0.BUILD-fix-1146</cloudfoundry.client.version>
 		<!-- see also https://github.com/cloudfoundry/cf-java-client -->
 		
 		<sonar.projectKey>promregator</sonar.projectKey>

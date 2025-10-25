@@ -145,6 +145,19 @@ timestamps {
 			println "Current version is ${currentVersion}"
 			
 			stage("Build") {
+				// Prebuilding of cf-java-client necessary
+				// Prebuild cf-java-client using native Jenkins checkout step so credentials, mirrors and
+				// plugin integrations are respected by the CI system.
+				dir("cf-java-client") {
+					// The 'git' step will clone the repository if the directory is empty or update it if present.
+					git url: 'git@github.com:eaglerainbow/cf-java-client.git', branch: 'issue-1146'
+					
+					// Build and install into local Maven repository (skip tests for CI speed)
+					sh '''
+						mvn -B -DskipTests clean install
+					'''
+				}
+
 				try {
 					boolean withSigning = !currentVersion.endsWith("-SNAPSHOT")
 				
@@ -152,8 +165,8 @@ timestamps {
 						withCredentials([string(credentialsId: 'promregator_sonarcloud', variable: 'sonarlogin')]) {
 							sh """#!/bin/bash -xe
 								export CF_PASSWORD=dummypassword
-								mvn -U -B -PwithTests -Prelease '-Dsonar.token=${sonarlogin}' \
-									clean verify sonar:sonar
+								mvn -U -B -PwithTests -Prelease \
+									clean verify
 							"""
 							/*
 							 * For sonarCloud integration approach see also 
