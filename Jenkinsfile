@@ -150,7 +150,7 @@ timestamps {
 				// plugin integrations are respected by the CI system.
 				dir("cf-java-client") {
 					// The 'git' step will clone the repository if the directory is empty or update it if present.
-					git url: 'git@github.com:eaglerainbow/cf-java-client.git', branch: 'issue-1146'
+					git url: 'https://github.com/eaglerainbow/cf-java-client.git', branch: 'issue-1146'
 					
 					// Build and install into local Maven repository (skip tests for CI speed)
 					sh '''
