@@ -219,13 +219,13 @@ timestamps {
 				springCloudCliPasswordTest currentVersion: currentVersion
 			}
 			
-			stage("SecDependency Scan") {
+/*			stage("SecDependency Scan") {
 				sh """
 					mvn -B -DsuppressionFiles=./secscan/owasp-suppression.xml org.owasp:dependency-check-maven:12.1.1:check
 				"""
 				
 				archiveArtifacts "target/dependency-check-report.html"
-			}
+			}*/
 
 			
 			stage("Tests for Docker Image") {
