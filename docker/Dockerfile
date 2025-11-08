@@ -5,7 +5,7 @@
 # Ownership will be adjusted by this script, though
 
 # we use the JDK as foundation.
-FROM openjdk:21-jdk
+FROM sapmachine:21.0.9-jdk-headless-ubuntu-noble
 
 ARG uid=2000
 ARG gid=2000
