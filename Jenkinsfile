@@ -210,6 +210,7 @@ timestamps {
 				sh """
 					mvn -B -DsuppressionFiles=./secscan/owasp-suppression.xml -DossindexAnalyzerEnabled=false org.owasp:dependency-check-maven:12.1.1:check
 				"""
+				// see also https://rieckpil.de/fix-sonatype-oss-index-errors-for-owasp-maven-plugin/
 				
 				archiveArtifacts "target/dependency-check-report.html"
 			}
