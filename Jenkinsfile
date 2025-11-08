@@ -158,6 +158,11 @@ timestamps {
 							/*
 							 * For sonarCloud integration approach see also 
 							 * https://docs.sonarsource.com/sonarqube-cloud/advanced-setup/ci-based-analysis/sonarscanner-for-maven/
+							 *
+							 * Warning! Since August 2025, the token at sonarcloud automatically expires after 60 days
+							 * of inactivity!
+							 * Create a new token at https://sonarcloud.io/account/security and store the credential at
+							 * http://router1:8081/manage/credentials/store/system/domain/_/credential/promregator_sonarcloud/
 							 */
 						}
 					} else {
