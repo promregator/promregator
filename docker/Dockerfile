@@ -7,8 +7,8 @@
 # we use the JDK as foundation.
 FROM sapmachine:21.0.9-jdk-headless-ubuntu-noble
 
-ARG uid=1000
-ARG gid=1000
+ARG uid=2000
+ARG gid=2000
 
 USER root
 
