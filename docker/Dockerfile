@@ -7,8 +7,8 @@
 # we use the JDK as foundation.
 FROM openjdk:21-jdk
 
-ARG uid=1000
-ARG gid=1000
+ARG uid=2000
+ARG gid=2000
 
 USER root
 
