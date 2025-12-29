@@ -19,7 +19,7 @@ RUN groupadd --gid $gid promregator && useradd --gid $gid --uid $uid promregator
 	chmod 0700 /home/promregator && \
 	mkdir -p /etc/promregator && \
 	chmod 0750 /etc/promregator && \
-	chown -R promregator.promregator /etc/promregator 
+	chown -R promregator:promregator /etc/promregator 
 
 # Setup folder et al.
 RUN mkdir -p /opt/promregator && \
