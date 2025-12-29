@@ -53,7 +53,7 @@
 		<!-- note: spring-boot.run.fork=false does not work in spring3+ anymore!
 		Use spring-boot.run.jvmArguments=-D.... instead! -->
 
-		<spring-cloud.version>2025.0.0</spring-cloud.version>
+		<spring-cloud.version>2025.1.0</spring-cloud.version>
 		<!--  For release information see also https://spring.io/projects/spring-cloud
 		and https://github.com/spring-cloud/spring-cloud-release/wiki/Spring-Cloud-2021.0-Release-Notes
 		and https://github.com/spring-cloud/spring-cloud-release/wiki/Spring-Cloud-2022.0-Release-Notes
