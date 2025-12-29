@@ -75,7 +75,7 @@
 
 		<!-- Warning! This should be in line to what spring-framework uses. Unfortunately, 
 			there is no global constant provided by spring-boot for the version. -->
-		<guava-version>33.4.8-jre</guava-version>
+		<guava-version>33.5.0-jre</guava-version>
 	</properties>
 
 	<dependencies>
