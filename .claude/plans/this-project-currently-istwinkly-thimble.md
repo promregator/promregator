@@ -55,38 +55,54 @@ This project is currently on Spring Boot 3.5.9 and needs to migrate to Spring Bo
 
 #### 1.1 Dependency Changes (POM) - HIGH PRIORITY
 
+**Codebase Analysis - What's Actually Used:**
+- `spring-boot-starter-web` → **USED** (controllers, REST endpoints)
+- `spring-boot-starter-security` → **USED** (SecurityFilterChain, @EnableWebSecurity, method security)
+- `spring-boot-starter-thymeleaf` → **USED** (error pages)
+- `spring-boot-starter-test` → **USED** (test scope, 15+ @SpringBootTest classes)
+- `spring-cloud-starter` → **UNUSED** (no Spring Cloud annotations/imports anywhere - REMOVE)
+- `spring-boot-configuration-processor` → **USED** (@ConfigurationProperties)
+- `spring-boot-starter-actuator` → **NOT USED** (uses io.prometheus:simpleclient directly)
+
 | Current | Spring Boot 4.0 Replacement |
 |---------|----------------------------|
-| `spring-boot-starter-web` | `spring-boot-starter-webmvc` (classic: `spring-boot-starter-classic`) |
-| `spring-boot-starter-test` | Remove - use technology-specific test starters |
-| `spring-cloud-starter` | Update to Spring Cloud 2025.x compatible with SB 4.x |
-| `spring-boot-starter-security` | Keep (but test → `spring-boot-starter-security-test`) |
+| `spring-boot-starter-web` | `spring-boot-starter-webmvc` |
+| `spring-boot-starter-test` | Replace with modular test starters |
+| `spring-cloud-starter` | **REMOVE** (unused dependency) |
+| `spring-boot-starter-security` | Keep |
+| `spring-boot-starter-thymeleaf` | Keep |
+| `spring-boot-configuration-processor` | Keep (optional) |
 
-**New starters needed based on usage:**
-- `spring-boot-starter-webmvc` (replaces web)
-- `spring-boot-starter-thymeleaf` (keep)
-- `spring-boot-starter-actuator` (for metrics/health)
+**New starters needed (direct modular - no classic):**
+- `spring-boot-starter-webmvc` (replaces spring-boot-starter-web)
+- `spring-boot-starter-jackson` (NEW - for Jackson 3)
 - `spring-boot-starter-security` (keep)
-- `spring-boot-starter-jackson` (for Jackson 3 - NEW in 4.0)
-- `spring-boot-starter-validation` (if using Jakarta Validation)
+- `spring-boot-starter-thymeleaf` (keep)
 
-**Test starters:**
-- `spring-boot-starter-webmvc-test` (replaces spring-boot-starter-test for web tests)
-- `spring-boot-starter-security-test` (for @WithMockUser, etc.)
-- `spring-boot-starter-jackson-test` (for Jackson tests)
+**Test starters (modular):**
+- `spring-boot-starter-security-test` (for future @WithMockUser, @WithAnonymousUser, SecurityMockMvcRequestPostProcessors - NOT used currently)
+- `spring-boot-starter-jackson-test` (for future Jackson tests - NOT used currently)
+- **NOT NEEDED**: `spring-boot-starter-webmvc-test` (tests don't use MockMvc, WebTestClient, or TestRestTemplate - they test controllers directly via @Autowired)
 
-**Classic starter option (easier initial migration):**
-- Add `spring-boot-starter-classic` and `spring-boot-starter-test-classic` as interim step
-- Then gradually migrate to modular starters
-
-#### 1.2 Spring Cloud Version
-- Current: 2025.0.1
-- Need: Spring Cloud 2025.x compatible with Spring Boot 4.x
-- Check https://github.com/spring-cloud/spring-cloud-release/wiki/Supported-Versions
+#### 1.2 Spring Cloud - MINIMAL KEEP (spring-cloud-config-client only)
+- Current: 2025.0.1 declared in properties + spring-cloud-starter + spring-cloud-dependencies BOM
+- **Action**: Replace with minimal `spring-cloud-config-client` dependency only
+- **Rationale**: Tests in `SpringBootLoadPropertiesForTesting.java` and `SpringBootLoadPropertiesForTestingOtherKey.java` verify encrypted property decryption using Spring Cloud Config's `{cipher}` format with `encrypt.key` property. This feature requires `spring-cloud-config-client` which provides the `TextEncryptor` bean and environment post-processor for automatic decryption. The full `spring-cloud-starter` is NOT needed - no other Spring Cloud features (Discovery, Feign, LoadBalancer, CircuitBreaker, Config Server client) are used.
+- **Verification done**: 
+  - No `@EnableDiscoveryClient`, `@FeignClient`, `@LoadBalanced`, `@RefreshScope`, `@ServiceConnection`, `@EnableCircuitBreaker` anywhere
+  - No `org.springframework.cloud.*` imports in main source files
+  - CF client manually configured via explicit properties (`cf.api_host`, `cf.username`, `cf.password`, etc.) in `ReactiveCFAccessorImpl.java`
+  - Only VCAP reference: `System.getenv("VCAP_APPLICATION")` for OOM restart detection (line 175 of ReactiveCFPaginatedRequestFetcher.java)
+  - `cloudfoundry-client-reactor` and `cloudfoundry-operations` are standalone CF Java client libraries (NOT Spring Cloud)
+- **Changes**:
+  - Remove `spring-cloud-starter` dependency
+  - Add `spring-cloud-config-client` dependency (for `{cipher}` decryption in tests)
+  - Remove `spring-cloud.version` property
+  - Remove `spring-cloud-dependencies` dependencyManagement import (SB 4.x BOM manages Spring Cloud 2025.1)
 
 #### 1.3 Java Version
 - Already on Java 17 ✓ (SB 4.0 requires Java 17+)
-- Consider upgrading to Java 21 (LTS)
+- Stay on Java 17 for migration; upgrade to Java 21 as post-migration step (Dockerfile already uses Java 21)
 
 #### 1.4 Kotlin Version
 - Current: managed by SB 3.5
@@ -97,72 +113,63 @@ This project is currently on Spring Boot 3.5.9 and needs to migrate to Spring Bo
 - ❌ Undertow (not used - using Tomcat)
 - ❌ Pulsar Reactive (not used)
 - ❌ Embedded launch scripts (not used)
-- ❌ Spring Session Hazelcast/MongoDB (not used)
+- ❌ Spring Session Hazelcast/MongoDB (not used - no session dependencies)
 - ❌ Spock (not used - using JUnit 5)
+- ❌ Spring Data MongoDB (not used)
+- ❌ Spring Data Redis (not used)
+- ❌ Spring Boot Actuator (not used - uses Prometheus client directly)
 - ✅ spring-boot-starter-web → deprecated, use webmvc
+- ✅ spring-cloud-starter → deprecated, REMOVE (unused)
 
-#### 1.6 Package/Import Changes
-- `EnvironmentPostProcessor`: `org.springframework.boot.env` → `org.springframework.boot`
-- `BootstrapRegistry`: `org.springframework.boot` → `org.springframework.boot.bootstrap`
-- `Jackson2ObjectMapperBuilderCustomizer` → `JsonMapperBuilderCustomizer`
-- `@JsonComponent` → `@JacksonComponent`
-- `@JsonMixin` → `@JacksonMixin`
+#### 1.6 Package/Import Changes (Applicable to this codebase)
+- `Jackson2ObjectMapperBuilderCustomizer` → `JsonMapperBuilderCustomizer` (**NOT USED** in codebase)
+- `@JsonComponent` → `@JacksonComponent` (**NOT USED** in codebase)
+- `@JsonMixin` → `@JacksonMixin` (**NOT USED** in codebase)
+- **Note**: No `EnvironmentPostProcessor`, `BootstrapRegistry`, or custom `ObjectMapper` beans found
+- **Note**: PR #226 (Spring Cloud Config Server support) is NOT merged yet. Only current `{cipher}` decryption for tests needs support.
 
-#### 1.7 Configuration Property Changes
-- `spring.jackson.read.*` → `spring.jackson.json.read.*`
-- `spring.jackson.write.*` → `spring.jackson.json.write.*`
-- `spring.jackson.parser.*` → `spring.jackson.json.read.*` (or JsonMapperBuilderCustomizer)
-- `server.forward-headers-strategy` no longer works in WAR deployments
-- `spring.session.redis.*` → `spring.session.data.redis.*`
-- `spring.data.mongodb.*` (connection props) → `spring.mongodb.*`
-- `management.health.mongodb.enabled` → `management.health.mongodb.enabled` (renamed)
-- `spring.dao.exceptiontranslation.enabled` → `spring.persistence.exceptiontranslation.enabled`
-- `management.tracing.enabled` → `management.tracing.export.enabled`
+#### 1.7 Configuration Property Changes (Applicable to this codebase)
+- `spring.jackson.read.*` → `spring.jackson.json.read.*` (**NOT USED** in codebase)
+- `spring.jackson.write.*` → `spring.jackson.json.write.*` (**NOT USED** in codebase)
+- `spring.jackson.parser.*` → `spring.jackson.json.read.*` (**NOT USED** in codebase)
+- `spring.dao.exceptiontranslation.enabled` → `spring.persistence.exceptiontranslation.enabled` (**NOT USED**)
+- `management.tracing.enabled` → `management.tracing.export.enabled` (**NOT USED** - no Actuator/tracing)
+- **NOT APPLICABLE**: `spring.session.*`, `spring.data.mongodb.*`, `management.health.mongodb.*` (no Redis/MongoDB/Actuator)
 
 #### 1.8 Web Changes
-- `HttpMessageConverters` deprecated - use `ClientHttpMessageConvertersCustomizer` / `ServerHttpMessageConvertersCustomizer`
-- `@SpringBootTest` no longer provides MockMvc - need `@AutoConfigureMockMvc`
-- `@SpringBootTest` no longer provides WebClient/TestRestTemplate - need `@AutoConfigureTestRestTemplate` or `@AutoConfigureRestTestClient`
+- `HttpMessageConverters` deprecated - **NOT USED** (no custom converters)
+- `@SpringBootTest` no longer provides MockMvc - **NOT APPLICABLE** (tests don't use MockMvc, test controllers directly)
+- `@SpringBootTest` no longer provides WebClient/TestRestTemplate - **NOT APPLICABLE** (no WebClient/RestTemplate in tests)
 
 #### 1.9 Security Changes (Spring Security 7.0)
 - `@MockBean` / `@SpyBean` removed - use `@MockitoBean` / `@MockitoSpyBean`
 - **Good news**: Codebase doesn't use @MockBean/@SpyBean (uses Mockito.mock() directly) ✓
 - `WebSecurityConfigurerAdapter` already not used (using SecurityFilterChain bean) ✓
 
-#### 1.10 Actuator/Health
-- Liveness/readiness probes enabled by default
-- `management.endpoint.health.probes.enabled` to disable if needed
-
-#### 1.11 Build Plugin Changes
+#### 1.10 Build Plugin Changes
 - Maven: Remove `<loaderImplementation>CLASSIC</loaderImplementation>` if present
 - Optional dependencies no longer included in uber jars by default
 
-#### 1.12 Properties Migrator
+#### 1.11 Properties Migrator
 - Add `spring-boot-properties-migrator` as runtime dependency for automatic property migration
 
 ---
 
-### Phase 2: Spring Boot 4.1 Migration (Incremental)
+### Phase 2: Spring Boot 4.1 Migration (now included in Step 2 above)
 
-#### 2.1 Deprecations Removed
-- Derby support deprecated
-- Layertools jar mode removed
-- Dynatrace V1 API properties removed
-- DevTools LiveReload deprecated
-
-#### 2.2 Configuration Changes
-- New properties for OpenTelemetry, Log4j rotation, gRPC, etc.
+**Merged into Step 2** since we're migrating directly to Spring Boot 4.1.1. Key 4.1 changes to be aware of:
+- Deprecations from 4.0 removed (Derby, Layertools, Dynatrace V1, DevTools LiveReload)
+- New properties for OpenTelemetry, Log4j rotation, gRPC
 - `spring.data.jpa.repositories.bootstrap-mode` behavior changes
-
-#### 2.3 Jackson 3 Enhancements
-- General read/write features: `spring.jackson.read.*`, `spring.jackson.write.*`
-- Factory customizers: `JsonFactoryBuilderCustomizer`, etc.
+- Jackson 3 enhancements: `spring.jackson.read.*`, `spring.jackson.write.*` general features, factory customizers
 
 ---
 
-### Phase 3: Jackson 3 Migration
+### Phase 3: Jackson 3 Migration (verified minimal impact)
 
-#### 3.1 Package/Group ID Changes
+**Analysis Result**: The codebase uses ONLY Jackson annotations (`@JsonProperty`, `@JsonGetter`, `@JsonInclude`) from `com.fasterxml.jackson.annotation` package. NO other Jackson APIs are used (no custom serializers, deserializers, ObjectMapper, JsonNode, etc.).
+
+#### 3.1 Package/Group ID Changes (for transitive dependencies)
 
 | Old | New |
 |-----|-----|
@@ -174,11 +181,11 @@ This project is currently on Spring Boot 3.5.9 and needs to migrate to Spring Bo
 
 #### 3.2 Import Changes
 - Replace `com.fasterxml.jackson.` with `tools.jackson.` everywhere
-- **EXCEPT**: `com.fasterxml.jackson.annotation` stays the same
+- **EXCEPT**: `com.fasterxml.jackson.annotation` stays the same (no import changes needed for our 3 files)
 
-#### 3.3 API Changes (Code)
+#### 3.3 API Changes - NOT APPLICABLE (not used in codebase)
 
-**Classes renamed:**
+**Classes NOT USED:**
 - `JsonSerializer` → `ValueSerializer`
 - `JsonDeserializer` → `ValueDeserializer`
 - `JsonSerializable` → `JacksonSerializable`
@@ -188,64 +195,58 @@ This project is currently on Spring Boot 3.5.9 and needs to migrate to Spring Bo
 - `Module` → `JacksonModule`
 - `TextNode` → `StringNode`
 
-**Exceptions renamed:**
+**Exceptions NOT USED:**
 - `JsonProcessingException` → `JacksonException`
 - `JsonMappingException` → `DatabindException`
 - `JsonParseException` → `StreamReadException`
 - `JsonGenerationException` → `StreamWriteException`
 - `JsonEOFException` → `UnexpectedEndOfInputException`
 
-**ObjectMapper/JsonFactory changes:**
-- Now immutable - use Builder pattern
-- `JsonMapper.builder().build()` instead of `new ObjectMapper()`
-- Format-specific mappers mandatory: `JsonMapper`, `XmlMapper`, etc.
-- `copy()` method removed - use `rebuild().build()`
+**ObjectMapper/JsonFactory NOT USED:**
+- No `ObjectMapper` or `JsonMapper` beans defined
+- No builder pattern usage
 
-**Features renamed:**
+**Features NOT USED:**
 - `JsonParser.Feature` → `StreamReadFeature` / `JsonReadFeature`
 - `JsonGenerator.Feature` → `StreamWriteFeature` / `JsonWriteFeature`
-- `DeserializationFeature` / `SerializationFeature` → some moved to `DateTimeFeature`, `EnumFeature`
+- `DeserializationFeature` / `SerializationFeature` not configured
 
-**Default changes:**
-- `FAIL_ON_TRAILING_TOKENS` enabled by default
-- `WRITE_DATES_AS_TIMESTAMPS` disabled by default
-- `SORT_PROPERTIES_ALPHABETICALLY` enabled by default
-- `DEFAULT_VIEW_INCLUSION` disabled by default
-- `FAIL_ON_NULL_FOR_PRIMITIVES` enabled by default
+**Default changes** - handled by Spring Boot auto-configuration
 
-#### 3.4 Spring Boot Jackson Integration
-- `Jackson2ObjectMapperBuilderCustomizer` → `JsonMapperBuilderCustomizer`
-- `@JsonComponent` → `@JacksonComponent`
-- `@JsonMixin` → `@JacksonMixin`
-- Auto-configured mappers: `JsonMapper` (JSON), `XmlMapper` (XML)
-- To replace: define `JsonMapper` bean, not `ObjectMapper`
-- `spring.jackson.use-jackson2-defaults=true` for compatibility mode
-- `spring-boot-jackson2` module available as deprecated stop-gap
+#### 3.4 Spring Boot Jackson Integration - NOT APPLICABLE
+- `Jackson2ObjectMapperBuilderCustomizer` → `JsonMapperBuilderCustomizer` (NOT USED)
+- `@JsonComponent` → `@JacksonComponent` (NOT USED)
+- `@JsonMixin` → `@JacksonMixin` (NOT USED)
+- No custom `ObjectMapper`/`JsonMapper` beans to replace
 
 ---
 
 ## Detailed Action Items
 
-### POM.xml Changes
+### POM.xml Changes (matching migration order)
 
-1. **Update parent to Spring Boot 4.0.x** (4.1.x may not be released yet; start with 4.0.x)
-2. **Update Spring Cloud version** to 2025.1 (managed by Spring Boot 4.x via BOM)
+1. **Update parent to Spring Boot 4.0.x**
+2. **Replace Spring Cloud with minimal config-client:**
+   - Remove `spring-cloud.version` property
+   - Remove `spring-cloud-starter` dependency
+   - Remove `spring-cloud-dependencies` from dependencyManagement
+   - Add `spring-cloud-config-client` dependency (for `{cipher}` decryption in tests)
+   - **Add comment in pom.xml** explaining why spring-cloud-config-client is kept (for encrypted property decryption in tests)
 3. **Update Kotlin version** to 2.2+
-4. **Replace starters (using classic initially):**
-   - Add `spring-boot-starter-classic` (replaces spring-boot-starter-web, etc.)
-   - Add `spring-boot-starter-test-classic` (replaces spring-boot-starter-test)
-   - Keep `spring-boot-starter-thymeleaf`, `spring-boot-starter-security`
+4. **Replace starters (direct modular):**
+   - `spring-boot-starter-web` → `spring-boot-starter-webmvc`
+   - Keep `spring-boot-starter-security`
+   - Keep `spring-boot-starter-thymeleaf`
+   - Keep `spring-boot-configuration-processor` (optional)
    - Add `spring-boot-starter-jackson` (NEW - for Jackson 3)
-5. **Update test dependencies (when moving to modular):**
-   - Remove `spring-boot-starter-test-classic`
-   - Add `spring-boot-starter-webmvc-test`
-   - Add `spring-boot-starter-security-test`
-   - Add `spring-boot-starter-jackson-test`
+5. **Update test dependencies:**
+   - Remove `spring-boot-starter-test`
+   - Add `spring-boot-starter-security-test` (for @WithMockUser etc. if used)
+   - Add `spring-boot-starter-jackson-test` (for Jackson tests if needed)
 6. **Update Jackson dependencies** to `tools.jackson` group IDs (except jackson-annotations)
 7. **Add `spring-boot-properties-migrator`** (runtime scope)
 8. **Update Kotlin plugins** for Kotlin 2.x
-9. **Remove explicit Spring Cloud version** - let Spring Boot 4.x BOM manage it
-10. **Review cloudfoundry-client-reactor version** - ensure compatibility with Spring Cloud 2025.1
+9. **Review cloudfoundry-client-reactor version** - ensure compatibility with Spring Boot 4.x
 
 ### Code Changes
 
@@ -257,13 +258,14 @@ This project is currently on Spring Boot 3.5.9 and needs to migrate to Spring Bo
 **No import changes needed for annotations!** (jackson-annotations unchanged)
 
 #### Spring Boot Configuration
-- Update any `spring.jackson.*` properties to new paths
-- Review actuator/health configuration
+- Update any `spring.jackson.*` properties to new paths (none currently used in application.yml)
+- No actuator/health configuration to review (not using Actuator)
 
 #### Test Changes
-- Add `@AutoConfigureMockMvc` to test classes using MockMvc
-- Add `@AutoConfigureTestRestTemplate` or `@AutoConfigureRestTestClient` where needed
+- **NO MockMvc changes needed** - tests don't use MockMvc (they test controllers directly via @Autowired)
+- **NO WebClient/RestTemplate changes needed** - not used in tests
 - Replace any `@MockBean`/`@SpyBean` with `@MockitoBean`/`@MockitoSpyBean` (not used currently ✓)
+- If `@WithMockUser` or `@WithAnonymousUser` used → need `spring-boot-starter-security-test`
 
 #### Security Config
 - Review SecurityFilterChain bean (already using modern API ✓)
@@ -307,41 +309,39 @@ mvn test -PwithTests
 ### Step 1: Preparation (Safe, Non-breaking) - ON CURRENT 3.5.9
 1. Run `mvn clean compile -PwithTests` to identify deprecation warnings
 2. Fix any deprecation warnings in 3.5 codebase
-3. (Optional) Upgrade Spring Cloud to latest 2025.0.x patch
-4. Stay on Java 17 for now
+3. Stay on Java 17 for now
 
-### Step 2: Spring Boot 4.0 with Classic Starters (Interim)
-1. Change parent to Spring Boot 4.0.x
-2. Add `spring-boot-starter-classic` and `spring-boot-starter-test-classic`
-3. Remove explicit `spring-cloud.version` property - let SB 4.x BOM manage Spring Cloud 2025.1
-4. Update Kotlin to 2.2+ (update kotlin.version property)
-5. Add `spring-boot-starter-jackson` (for Jackson 3)
+### Step 2: Spring Boot 4.1.1 - Direct Modular Starters (NO classic)
+1. Change parent to Spring Boot 4.1.1 (released - see https://mvnrepository.com/artifact/org.springframework.boot/spring-boot/4.1.1)
+   - Note: 4.0.8 is also available but 4.1.1 includes all 4.1 features
+2. **Remove Spring Cloud entirely:**
+   - Remove `spring-cloud.version` property
+   - Remove `spring-cloud-starter` dependency
+   - Remove `spring-cloud-dependencies` from dependencyManagement
+   - Spring Cloud 2025.1 is the first to support Spring Boot 4.x (managed by SB 4.x BOM if needed)
+3. Update Kotlin to 2.2+ (update kotlin.version property)
+4. Replace starters:
+   - `spring-boot-starter-web` → `spring-boot-starter-webmvc`
+   - Keep `spring-boot-starter-security`
+   - Keep `spring-boot-starter-thymeleaf`
+   - Keep `spring-boot-configuration-processor` (optional)
+   - Add `spring-boot-starter-jackson` (NEW - for Jackson 3)
+5. Update test dependencies:
+   - Remove `spring-boot-starter-test`
+   - Add `spring-boot-starter-security-test` (if @WithMockUser etc. used)
+   - Add `spring-boot-starter-jackson-test` (if needed)
 6. Add `spring-boot-properties-migrator` (runtime scope)
-7. Fix compilation errors (imports, removed APIs, package changes)
-8. Run tests with classic starters
+7. Update Jackson dependencies to `tools.jackson` group IDs (except jackson-annotations)
+8. Fix compilation errors (imports, removed APIs, package changes)
+9. Run tests
 
-### Step 3: Jackson 3 Migration (can be done with Step 2 or after)
-1. Update Jackson dependencies to `tools.jackson` group IDs (except jackson-annotations)
-2. Update any Jackson API usage (minimal in this codebase - only annotations used)
-3. Test JSON serialization (discovery endpoints)
-
-### Step 4: Spring Boot 4.1 Upgrade (when available)
-1. Upgrade to Spring Boot 4.1.x
-2. Address any 4.0 deprecations removed in 4.1
-3. Run full test suite
-
-### Step 5: Post-Migration Cleanup (can be done incrementally)
-1. **Modular Starters Migration**: Replace classic starters with modular starters:
-   - `spring-boot-starter-webmvc` (instead of classic)
-   - `spring-boot-starter-actuator` 
-   - `spring-boot-starter-validation` (if needed)
-   - Test starters: `spring-boot-starter-webmvc-test`, `spring-boot-starter-security-test`, `spring-boot-starter-jackson-test`
-2. Remove `spring-boot-properties-migrator`
-3. Update configuration files with migrated properties (from migrator logs)
-4. Upgrade to Java 21 (Dockerfile already uses Java 21)
-5. Update Jenkinsfile: Spring Boot CLI to 3.x+, compatible Spring Cloud CLI
-6. Remove any unused dependencies
-7. Update documentation
+### Step 4: Post-Migration Cleanup (can be done incrementally)
+1. Remove `spring-boot-properties-migrator`
+2. Update configuration files with migrated properties (from migrator logs)
+3. Upgrade to Java 21 (Dockerfile already uses Java 21)
+4. Update Jenkinsfile: Spring Boot CLI to 3.x+, compatible Spring Cloud CLI for encryption test
+5. Remove any unused dependencies
+6. Update documentation
 
 ---
 
@@ -353,9 +353,9 @@ mvn test -PwithTests
 
 3. **Java Version**: Stay on Java 17 for migration; upgrade to Java 21 as post-migration step.
 
-4. **Classic vs Modular Starters**: Use classic starters (`spring-boot-starter-classic`, `spring-boot-starter-test-classic`) initially for easier migration. Mark modular migration as post-migration activity.
+4. **Classic vs Modular Starters**: **Direct modular starters** (no classic) - Spring Boot 4.1.1 is stable and we've verified minimal dependencies. Classic starters not needed.
 
-5. **Test Dependencies - MockMvc**: After reviewing test classes, most tests use `@SpringBootTest` with custom configurations and Mockito.mock() for HttpServletRequest. They don't explicitly use MockMvc. However, any test that relies on MockMvc being auto-configured will need `@AutoConfigureMockMvc`. Current tests appear to test controllers directly via autowired beans, not via MockMvc. **Action**: Add `@AutoConfigureMockMvc` to test classes if they start failing due to missing MockMvc.
+5. **Test Dependencies**: No MockMvc, no @WithMockUser, no @MockBean/@SpyBean. Tests use @SpringBootTest with custom configs and manual Mockito.mock(). No `spring-boot-starter-webmvc-test` needed. `spring-boot-starter-security-test` and `spring-boot-starter-jackson-test` only if needed in future.
 
 6. **Integration Test / Dockerfile / Spring Cloud CLI**: 
    - Dockerfile uses `sapmachine:21.0.9-jdk-headless-ubuntu-noble` (Java 21) - already on Java 21 in container!
@@ -364,12 +364,6 @@ mvn test -PwithTests
    - The encryption format (`{cipher}...`) uses Spring Cloud Config's encrypt/decrypt - this should remain compatible as it's a separate library
    - **Action**: Update Jenkinsfile to use Spring Boot CLI 3.x+ and compatible Spring Cloud CLI version for SB 4.x
 
-7. **spring-boot-starter-web → spring-boot-starter-webmvc**: This is purely a dependency rename. No code changes needed - the web MVC APIs (controllers, @RestController, @GetMapping, etc.) remain the same. The "web" starter was renamed to "webmvc" for clarity in the modular structure.
+7. **spring-boot-starter-web → spring-boot-starter-webmvc**: This is purely a dependency rename. No code changes needed.
 
-8. **Test Starters Needed**: 
-   - `spring-boot-starter-webmvc-test` - provides MockMvc, WebTestClient, TestRestTemplate for web layer tests
-   - `spring-boot-starter-security-test` - provides @WithMockUser, @WithAnonymousUser, SecurityMockMvcRequestPostProcessors
-   - `spring-boot-starter-jackson-test` - provides Jackson test utilities
-   - Since tests use `@SpringBootTest` with custom configs and manual mocking (not MockMvc), `spring-boot-starter-webmvc-test` may not be strictly required but is recommended for any future MockMvc tests.
-
-9. **Spring Boot 3.5 Deprecation Checks**: Yes, run `mvn clean compile -PwithTests` on current 3.5.9 first to identify any deprecation warnings before upgrading.
+8. **Spring Boot 3.5 Deprecation Checks**: Yes, run `mvn clean compile -PwithTests` on current 3.5.9 first to identify any deprecation warnings before upgrading.
