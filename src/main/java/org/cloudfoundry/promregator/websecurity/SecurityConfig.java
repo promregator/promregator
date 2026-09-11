@@ -9,8 +9,9 @@ import org.cloudfoundry.promregator.endpoint.EndpointConstants;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.BeanIds;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -67,18 +68,17 @@ public class SecurityConfig {
 	public BCryptPasswordEncoder bCryptPasswordEncoder() {
 		return new BCryptPasswordEncoder();
 	}
-	
+
 	@Bean(name = BeanIds.AUTHENTICATION_MANAGER)
-	/* 
-	 * see also https://stackoverflow.com/questions/21633555/how-to-inject-authenticationmanager-using-java-configuration-in-a-custom-filter
-	 * and https://www.baeldung.com/spring-deprecated-websecurityconfigureradapter
+	/*
+	 * Modern Spring Security 7 approach: use DaoAuthenticationProvider and ProviderManager
+	 * instead of deprecated AuthenticationManagerBuilder.and().build()
+	 * see also https://docs.spring.io/spring-security/reference/servlet/authentication/passwords/dao.html
 	 */
-	public AuthenticationManager authenticationManagerBean(HttpSecurity http, UserDetailsService userDetailsService, BCryptPasswordEncoder bCryptPasswordEncoder) throws Exception {
-		 return http.getSharedObject(AuthenticationManagerBuilder.class)
-				.userDetailsService(userDetailsService)
-				.passwordEncoder(bCryptPasswordEncoder)
-				.and()
-				.build();
+	public AuthenticationManager authenticationManagerBean(UserDetailsService userDetailsService, BCryptPasswordEncoder bCryptPasswordEncoder) {
+		DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
+		authProvider.setPasswordEncoder(bCryptPasswordEncoder);
+		return new ProviderManager(authProvider);
 	}
 
 	/*
