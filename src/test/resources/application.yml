@@ -35,6 +35,10 @@ spring.config.activate.on-profile: simulation
 spring:
   main:
     allow-bean-definition-overriding: true
+  cloud:
+    config:
+      import-check:
+        enabled: false
 
 
 cf:
