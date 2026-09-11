@@ -38,9 +38,9 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.9</version> <!-- see also https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-parent -->
+		<version>4.1.1</version> <!-- see also https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-parent -->
 		<!-- Warning! On bumping also check guava-version below! -->
-		<!-- Note! If you bump this version here, also check the spring-boot CLI version 
+		<!-- Note! If you bump this version here, also check the spring-boot CLI version
 		in our integration tests (see Jenkinsfile) -->
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
@@ -53,39 +53,37 @@
 		<!-- note: spring-boot.run.fork=false does not work in spring3+ anymore!
 		Use spring-boot.run.jvmArguments=-D.... instead! -->
 
-		<spring-cloud.version>2025.0.1</spring-cloud.version>
-		<!--  For release information see also https://spring.io/projects/spring-cloud
-		and https://github.com/spring-cloud/spring-cloud-release/wiki/Spring-Cloud-2021.0-Release-Notes
-		and https://github.com/spring-cloud/spring-cloud-release/wiki/Spring-Cloud-2022.0-Release-Notes
-		New versions at https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-dependencies -->
-		
+		<!-- Spring Cloud 2025.1 is managed by Spring Boot 4.x BOM -->
+		<!-- spring-cloud-config-client is kept for {cipher} decryption in tests (encrypted property support) -->
+
 		<prometheus.version>0.16.0</prometheus.version>
-		
+
 		<!-- see also https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
 		<httpclient4.version>4.5.14</httpclient4.version>
 
 		<!-- https://mvnrepository.com/artifact/org.cloudfoundry/cloudfoundry-client-reactor -->
 		<cloudfoundry.client.version>5.15.0.RELEASE</cloudfoundry.client.version>
 		<!-- see also https://github.com/cloudfoundry/cf-java-client -->
-		
+
 		<sonar.projectKey>promregator</sonar.projectKey>
 		<sonar.organization>promregator</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 		<sonar.coverage.jacoco.xmlReportPaths>${project.reporting.outputDirectory}/jacoco-ut/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
 
-		<!-- Warning! This should be in line to what spring-framework uses. Unfortunately, 
+		<!-- Warning! This should be in line to what spring-framework uses. Unfortunately,
 			there is no global constant provided by spring-boot for the version. -->
 		<guava-version>33.5.0-jre</guava-version>
 	</properties>
 
 	<dependencies>
+		<!-- spring-cloud-config-client is kept for {cipher} decryption in tests (encrypted property support) -->
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter</artifactId>
+			<artifactId>spring-cloud-config-client</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
+			<artifactId>spring-boot-starter-webmvc</artifactId>
 		</dependency>
 
 		<dependency>
@@ -139,9 +137,22 @@
 			<!--  see also https://mvnrepository.com/artifact/com.sap.cloud.security.xsuaa/token-client -->
 		</dependency>
 
+		<!-- Properties migrator for Spring Boot 4.x migration -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
+			<artifactId>spring-boot-properties-migrator</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
+		<!-- Test dependencies (modular, replacing spring-boot-starter-test) -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-jackson-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 
@@ -149,6 +160,12 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-configuration-processor</artifactId>
 			<optional>true</optional>
+		</dependency>
+
+		<!-- Jackson 3 support -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-jackson</artifactId>
 		</dependency>
 
 		<dependency>
@@ -321,10 +338,11 @@
 
 	<dependencyManagement>
 		<dependencies>
+			<!-- Spring Cloud 2025.1 is managed by Spring Boot 4.x BOM -->
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-dependencies</artifactId>
-				<version>${spring-cloud.version}</version>
+				<version>2025.1.0</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
