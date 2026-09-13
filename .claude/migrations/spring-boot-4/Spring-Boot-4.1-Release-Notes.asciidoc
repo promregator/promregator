@@ -1,0 +1,473 @@
+:boot-docs: https://docs.spring.io/spring-boot/4.1
+:framework-docs: https://docs.spring.io/spring-framework/reference/7.0
+:framework-api-docs: https://docs.spring.io/spring-framework/docs/7.0/javadoc-api/org/springframework
+
+
+
+= Spring Boot 4.1.0 Release Notes
+
+
+
+== Upgrading from Spring Boot 4.0
+
+
+
+=== Deprecations from Spring Boot 4.0
+Classes, methods and properties that were deprecated in Spring Boot 4.0 have been removed in this release.
+Please ensure that you aren't calling deprecated methods before upgrading.
+
+
+
+
+=== Deprecated Derby Support
+The Apache Derby project team has https://db.apache.org/derby/[recently announced] that the project has been retired.
+As a result, the integration in Spring Boot has been deprecated.
+If you are still using Derby, consider migrating to H2 or HSQL.
+
+
+
+=== Layertools Support
+The deprecated layertools jar mode has been removed in this release.
+If you were still using it, please move to `tools` that provides the same features (and more).
+
+
+
+=== Skip Tests and AOT Processing
+You can no longer rely on passing `-DskipTests` to a maven command to skip AOT processing of tests.
+The Spring Boot Maven Plugin now only reacts to the `maven.test.skip` property for consistency with other core plugins.
+
+
+
+=== Spring Data JPA Bootstrap Modes
+
+The `spring.data.jpa.repositories.bootstrap-mode` property has been refined to better align typical application usage.
+
+* If you set the mode to `deferred`, you will now get an exception if a suitable `AsycTaskExecutor` bean cannot be found for use with the auto-configured `LocalContainerEntityManagerFactoryBean` bootstrap executor.
+* If you set the mode to `lazy`, then the auto-configured `LocalContainerEntityManagerFactoryBean` bootstrap executor is no longer set as it's generally not needed.
+
+
+
+=== ReactorClientHttpRequestFactoryBuilder and ReactorClientHttpConnectorBuilder defaults
+
+Defaults for `ReactorClientHttpRequestFactoryBuilder` and `ReactorClientHttpConnectorBuilder` have been updated to align with Spring Framework.
+Specifically, `proxyWithSystemProperties()` is now configured on the underlying `HttpClient`.
+
+If you want different defaults, you can use the `withHttpClientDefaults` method, or the `withoutHttpClientDefaults` method to remove defaults entirely.
+
+
+
+=== Minimum Requirements Changes
+
+
+
+==== jOOQ
+The supported version of jOOQ is now 3.20 which requires Java 21 or later.
+
+
+
+== New and Noteworthy
+TIP: Check link:Spring-Boot-4.1.0-Configuration-Changelog[the configuration changelog] for a complete overview of the changes in configuration.
+
+
+
+=== Spring gRPC Support
+
+Spring Boot 4.1 now provides support for writing and testing gRPC server and client applications.
+You can write both stand-alone servers (backed by Netty) or use Servlet integration and expose gRPC over HTTP/2.
+
+For details please see {boot-docs}/reference/io/grpc.html[the gRPC section of the reference documentation].
+
+NOTE: If you a user of Spring gRPC 1.0, https://github.com/spring-projects/spring-grpc/wiki/Spring-gRPC-1.1-Migration-Guide[the following migration guide] will help you upgrade your application to Spring gRPC 1.1 with Spring Boot 4.1.
+
+
+
+=== Jackson
+
+General Jackson reading and writing features that are common across multiple formats (CBOR, JSON, and XML) can now be auto-configured using `spring.jackson.read.*` and `spring.jackson.write.*` properties respectively. In addition, auto-configured Jackson mappers are now configured with a `HandlerInstantiator` that creates handler instances from beans defined in the application context.
+
+
+
+==== Factory Configuration and Customization
+
+Jackson uses factories to create its readers and writers.
+These factories can now be configured using various `spring.jackson.factory` properties to fine tune Jackson's read and write constraints.
+
+Additionally, for more advanced customization various customizer callbacks are now supported:
+
+- `JsonFactoryBuilderCustomizer` for customization of the `JsonFactoryBuilder` used by the auto-configured `JsonMapper`
+- `CborFactoryBuilderCustomizer` for customization of the `CBORFactoryBuilder` used by the auto-configured `CBORMapper`
+- `XmlFactoryBuilderCustomizer` for customization of the `XmlFactoryBuilder` used by the auto-configured `XmlMapper`
+
+
+=== Specify the Encoding When Importing Configuration Files
+
+When `spring.config.import` is used, it's now possible to specify the encoding. In the past, property files always have been loaded with the ISO-8859-1 encoding (which is still the default). To load them using a different encoding, you can use this syntax:
+
+```properties
+spring.config.import=classpath:import.properties[encoding=utf-8]
+```
+
+
+
+=== HTTP Client Cookie Handling
+
+Cookie handling with `TestRestTemplate` has been updated to align with `RestTemplate`.
+The new `withCookieHandling` method can be used to configure the handling as required.
+
+Similar to `TestRestTemplate`, `RestTemplateBuilder` and `HttpClientSettings` also now allow cookie handling to be configured.
+When using an auto-configured HTTP client, cookie handling can be configured using the new `spring.http.clients.cookie-handling` configuration property.
+
+
+
+=== HTTP Client SSRF Mitigation with InetAddressFilter
+
+Both reactive and blocking HTTP clients can now be configured with an `InetAddressFilter` which can block outgoing requests to specific addresses.
+This feature is useful for hardening your applications against SSRF attacks.
+
+For more details on how to use the `InetAddressFilter` please see the {boot-docs}/reference/io/rest-client.html#io.rest-client.global-configuration.inetaddress-filtering[updated reference documentation].
+
+
+
+=== Observability
+
+
+
+==== Context Propagation of Async methods
+Context can be automatically propagated to methods running on a separate thread using `@Async`.
+See the {boot-docs}/reference/actuator/observability.html#actuator.observability.context-propagation[Reference Guide] for more details.
+
+
+
+==== Auto-configured Conventions
+
+A number of improvements have been made to support for observation conventions:
+
+- `KafkaListenerObservationConvention` beans are now automatically applied to the Kafka container factory.
+- `KafkaTemplateObservationConvention` beans are now automatically applied to the `KafkaTemplate`
+- `RabbitListenerObservationConvention`, `RabbitTemplateObservationConvention`, `RabbitStreamListenerObservationConvention` and `RabbitStreamTemplateObservationConvention` beans are now automatically configured on the Spring AMQP components
+
+Improvements to meter conventions have also been made:
+
+- Any `JvmMemoryMeterConventions` bean is applied to the auto-configured `JvmMemoryMetrics`
+- Any `JvmThreadMeterConventions` bean is applied to the auto-configured `JvmThreadMetrics`
+- Any `JvmClassLoadingMeterConventions` bean is applied to the auto-configured `ClassLoaderMetrics`
+- Any `JvmCpuMeterConventions` bean is applied to the auto-configured `ProcessorMetrics`
+
+
+
+==== OpenTelemetry Enhancements
+
+The new property `management.opentelemetry.enabled` can be used to disable the OpenTelemetry SDK.
+It then uses no-op implementations for the `SdkTracerProvider`,
+`SdkLoggerProvider` and `SdkMeterProvider`, but still configures the propagators.
+Additionally, it doesn't create the tracing and logging beans which would be superfluous for a disabled SDK.
+
+Properties have been added to configure OpenTelemetry's `BatchLogRecordProcessor`, similar to the properties for `BatchSpanProcessor`.
+
+A new property `management.opentelemetry.tracing.sampler` has been added for configuring OpenTelemetry's sampler.
+
+There's also auto-configuration for `SpanLimits` and `LogLimits`, with properties under `management.opentelemetry.tracing.limits.*` and `management.opentelemetry.logging.limits.*` to configure them.
+
+Support for https://opentelemetry.io/docs/specs/otel/metrics/data-model/#exemplars[OTLP exemplars] has been added to Micrometer's `OtlpRegistry`.
+This will automatically be configured if you're using metrics over OTLP and Micrometer Tracing.
+
+SSL bundle support has been added to OTLP logging, metrics and trace exporters.
+
+
+
+==== Environment Variables
+
+Support has been added to read most of the OpenTelemetry environment variables (for example https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/[those], https://opentelemetry.io/docs/specs/otel/protocol/exporter/[those], and https://opentelemetry.io/docs/specs/otel/metrics/sdk_exporters/otlp/[those]).
+
+A complete list of all supported variables and their corresponding Spring Boot configuration property can be found in the https://docs.spring.io/spring-boot/4.1-SNAPSHOT/reference/actuator/observability.html#actuator.observability.opentelemetry.environment-variables[documentation].
+
+
+
+=== SSL Support for RabbitMQ Streams
+
+Auto-configuration of SSL is now supported when using RabbitMQ Streams.
+To enable the support, set `spring.rabbitmq.stream.ssl.enabled` to `true` or use `spring.rabbitmq.stream.ssl.bundle` to configure the SSL bundle to use.
+SSL is also supported when using RabbitMQ Streams with Docker Compose or Testcontainers.
+
+
+
+=== Service Connections to RabbitMQ Streams
+
+Service connections to RabbitMQ Streams are now supported with both Testcontainers and Docker Compose.
+
+When using Testcontainers, a service connection can be made using `@ServiceConnection(type = RabbitStreamConnectionDetails.class)`.
+The `rabbitmq_stream` plugin must also be enabled in the container as shown in the following example:
+
+[source,java]
+----
+private static RabbitMQContainer createRabbitMqStreamContainer() {
+	RabbitMQContainer container = TestImage.container(RabbitMQContainer.class);
+	container.addExposedPorts(RABBITMQ_STREAMS_PORT);
+	String enabledPlugins = "[rabbitmq_stream].";
+	container.withCopyToContainer(Transferable.of(enabledPlugins), "/etc/rabbitmq/enabled_plugins");
+	return container;
+}
+----
+
+When using Docker Compose, the RabbitMQ service must map container port 5552.
+As with Testcontainers, the `rabbitmq_stream` plugin must also be enabled as shown in the following example:
+
+[source,yaml]
+----
+services:
+  rabbitmq:
+    image: '{imageName}'
+    environment:
+      - 'RABBITMQ_DEFAULT_USER=myuser'
+      - 'RABBITMQ_DEFAULT_PASS=secret'
+    configs:
+      - source: plugins
+        target: /etc/rabbitmq/enabled_plugins
+    ports:
+      - '5552'
+configs:
+  plugins:
+    content: "[rabbitmq_stream]."
+----
+
+
+
+=== File Rotation Support for Log4j
+
+Support for configurable file rotation has been added for Log4j, with four strategies:
+
+* size (default): Rolls files based on their size.
+* time: Rolls files based on a time interval.
+* size-and-time: Rolls when both size and time conditions are met.
+* cron: Rolls based on a cron expression schedule.
+
+
+
+=== Embedded LDAP
+
+Auto-configuration of an embedded LDAP server now supports SSL (LDAPS).
+To enable SSL, configure an SSL bundle using the `spring.ldap.embedded.ssl.bundle` property.
+
+
+
+=== SimpleMessageListenerContainer Support
+
+The JMS support has been improved to provide a configurer for `SimpleJmsMessageListener` that is similar to the existing `DefaultJmsListenerContainerFactoryConfigurer`.
+The simple implementation may be more suitable in certain scenarios, check the {framework-docs}/integration/jms/using.html#jms-mdp[Spring Framework Reference Guide] for more details.
+
+
+
+=== Docker Compose
+
+In the event of a failure when it calls `docker compose up` or `docker compose start`, Spring Boot's Docker Compose support will now log the output of `docker compose logs`.
+The log message is output at the level specified by `spring.docker.compose.start.log-level`.
+It defaults to `info`.
+
+
+
+=== OAuth2 Resource Server
+
+Auto-configuration is now provided for extracting authorities from a JWT using one or more SpEL expressions.
+To enable the support, set the `spring.security.oauth2.resourceserver.jwt.authorities-claim-expressions` property.
+It is supported in both Servlet and Reactive applications and is mutually exclusive with the existing
+`spring.security.oauth2.resourceserver.jwt.authorities-claim-name` and `spring.security.oauth2.resourceserver.jwt.authorities-claim-delimiter` properties.
+Set `spring.security.oauth2.resourceserver.jwt.authority-prefix` if the resulting authorities should have a prefix other than the `SCOPE_` default.
+
+
+
+=== MongoDB Support for Spring Batch
+
+Auto-configuration for Spring Batch using MongoDB is provided, alongside a new `spring-boot-batch-data-mongo` starter.
+
+The schema required to run Spring Batch jobs can be created automatically on startup by settings the `spring.batch.data.mongo.schema.initialize` property to `true`.
+By default, the default schema is applied but a custom newline-delimited JSON script can be provided.
+
+
+
+=== Lazy JDBC connection Fetching Support
+
+Added a new `spring.datasource.connection-fetch` property (eager, lazy).
+When set to `lazy`, the auto-configured pooled DataSource is wrapped with {framework-api-docs}/jdbc/datasource/LazyConnectionDataSourceProxy.html[`LazyConnectionDataSourceProxy`] so a physical connection is taken from the pool only when a JDBC statement is actually needed.
+
+
+
+=== @RedisListener Auto-configuration
+
+Add auto-configure for Spring Data Redis’s @RedisListener endpoints.
+
+If the application does not define a RedisMessageListenerContainer, a default container is registered so listener methods can be discovered and invoked without extra wiring.
+See `spring.data.redis.listener.*` for a list of options.
+Applications that need additional containers can use `RedisMessageListenerContainerConfigurer` to apply the same defaults as auto-configuration when building their own RedisMessageListenerContainer beans.
+
+The `spring-boot-starter-data-redis` starter now also declares a dependency on `spring-messaging`, which is required by this feature.
+
+
+
+=== Info Actuator Endpoint
+
+The info endpoint now provides additional information about the process.
+The following fields are now available in the endpoint's response:
+
+- `process.uptime`
+- `process.startTime`
+- `process.currentTime`
+- `process.timezone`
+- `process.locale`
+- `process.workingDirectory`
+
+Refer to the {boot-docs}/api/rest/actuator/info.html#info.retrieving.response-structure.process[endpoint's API documentation] for further details.
+
+
+
+=== Gradle Plugin Updates
+
+
+
+==== BuildImage Task
+
+The Gradle plugin's `bootBuildImage` task now supports specifying environment variables on the command line using `--environment`.
+To specify multiple environment variables, use `--environment` multiple times.
+If an environment variable is configured both on the command line and in a build script, the value of the command line takes precedence.
+
+
+=== BuildInfo Task
+By default, the `BuildInfo` Gradle task now produces a file named `META-INF/build-info.properties` in its configured destination directory.
+Previously, the file was named `build-info.properties`.
+The new `filename` property can be used to customize the name and, if required, restore the previous name.
+
+The `buildInfo` methods on the Spring Boot DSL have been updated to improve the configuration of task inter-dependencies.
+The destination directory of the `bootBuildInfo` task is now configured as a source directory of the main source set's resources.
+This improves the visibility of the generated file in IDEs that do not delegate to Gradle.
+It also provides Gradle with better information about the tasks' interdependencies and the relationship between their inputs and outputs.
+
+
+
+=== Maven Plugin Updates
+
+
+
+==== Load Layers Configuration from the Classpath
+
+It is now possible to load the layers configuration that the Maven plugin should use to repackage the application.
+Custom layers should be placed in `META-INF/spring/layers/<name>.xml` and added as a plugin's dependency.
+
+Review the {boot-docs}/maven-plugin/packaging.html#packaging.layers.configuration[documentation] for more details.
+
+
+
+=== Restoration of Spock Support
+
+This release reintroduces Spock support since we now have a Spock 2.4 release that support Groovy 5.
+
+
+
+=== Dependency Upgrades
+Spring Boot 4.1.0 moves to new versions of several Spring projects:
+
+* https://github.com/micrometer-metrics/micrometer/releases/tag/v1.17.0[Micrometer 1.17.0]
+* https://github.com/micrometer-metrics/tracing/releases/tag/v1.7.0[Micrometer Tracing 1.7.0]
+* https://github.com/reactor/reactor/releases/tag/2025.0.6[Reactor Bom 2025.0.6]
+* https://github.com/spring-projects/spring-amqp/releases/tag/v4.1.0[Spring AMQP 4.1.0]
+* https://github.com/spring-projects/spring-data-bom/releases/tag/2026.0.0[Spring Data Bom 2026.0.0]
+* https://github.com/spring-projects/spring-framework/releases/tag/v7.0.7[Spring Framework 7.0.8]
+* https://github.com/spring-projects/spring-graphql/releases/tag/v2.0.3[Spring GraphQL 2.0.4]
+* https://github.com/spring-projects/spring-grpc/releases/tag/v1.1.0[Spring gRPC 1.1.0]
+* https://github.com/spring-projects/spring-hateoas/releases/tag/3.1.0[Spring HATEOAS 3.1.0]
+* https://github.com/spring-projects/spring-integration/releases/tag/v7.1.0[Spring Integration 7.1.0]
+* https://github.com/spring-projects/spring-kafka/releases/tag/v4.1.0[Spring Kafka 4.1.0]
+* https://github.com/spring-projects/spring-ldap/releases/tag/4.1.0[Spring LDAP 4.1.0]
+* https://github.com/spring-projects/spring-security/releases/tag/7.1.0[Spring Security 7.1.0]
+* https://github.com/spring-projects/spring-session/releases/tag/4.1.0[Spring Session 4.1.0]
+
+Numerous third-party dependencies have been updated, some of the more noteworthy of which are the following:
+
+* https://activemq.apache.org/components/classic/download/classic-06-02-06[ActiveMQ 6.2.6]
+* https://activemq.apache.org/components/artemis/download/release-notes-2.53.0[Artemis 2.53.0]
+* https://github.com/raphw/byte-buddy/releases/tag/byte-buddy-1.18.10[Byte Buddy 1.18.10]
+* https://commons.apache.org/proper/commons-codec/changes.html#a1.21.0[Commons Codec 1.21.0]
+* https://commons.apache.org/proper/commons-dbcp/changes-report.html#a2.14.0[Commons DBCP2 2.14.0]
+* https://commons.apache.org/proper/commons-lang/changes.html#a3.20.0[Commons Lang3 3.20.0]
+* Commons Pool2 2.13.1
+* https://docs.couchbase.com/java-sdk/current/project-docs/sdk-release-notes.html[Couchbase Client 3.11.3]
+* https://github.com/ehcache/ehcache3/releases/tag/v3.12.0[Ehcache3 3.12.0]
+* https://documentation.red-gate.com/flyway/release-notes-and-older-versions/release-notes-for-flyway-engine[Flyway 12.4.0]
+* https://github.com/git-commit-id/git-commit-id-maven-plugin/releases/tag/v9.2.0[Git Commit ID Maven Plugin 9.2.0]
+* https://github.com/grpc/grpc-java/releases/tag/v1.80.0[Grpc Java 1.80.0]
+* https://in.relation.to/2025/11/07/hibernate-validator-9-1-0-Final/[Hibernate Validator 9.1]
+* https://github.com/HtmlUnit/htmlunit/releases/tag/4.21.0[HtmlUnit 4.21.0]
+* HttpClient5 5.6.1
+* HttpCore5 5.4.2
+* https://github.com/infinispan/infinispan/releases/tag/16.1.4[Infinispan 16.1.4]
+* https://github.com/redis/jedis/releases/tag/v7.4.1[Jedis 7.4.1]
+* https://github.com/jOOQ/jOOQ/releases/tag/version-3.21.5[jOOQ 3.21.5]
+* https://github.com/JetBrains/kotlin/releases/tag/v2.3.21[Kotlin 2.3.21]
+* https://github.com/Kotlin/kotlinx.serialization/releases/tag/v1.11.0[Kotlin Serialization 1.11.0]
+* https://github.com/redis/lettuce/releases/tag/7.5.2.RELEASE[Lettuce 7.5.2.RELEASE]
+* https://github.com/apache/maven-assembly-plugin/releases/tag/maven-assembly-plugin-3.8.0[Maven Assembly Plugin 3.8.0]
+* https://github.com/apache/maven-compiler-plugin/releases/tag/maven-compiler-plugin-3.15.0[Maven Compiler Plugin 3.15.0]
+* https://github.com/apache/maven-dependency-plugin/releases/tag/maven-dependency-plugin-3.15.0[Maven Dependency Plugin 3.15.0]
+* https://github.com/apache/maven-jar-plugin/releases/tag/maven-jar-plugin-3.5.0[Maven Jar Plugin 3.5.0]
+* https://github.com/apache/maven-resources-plugin/releases/tag/maven-resources-plugin-3.5.0[Maven Resources Plugin 3.5.0]
+* https://github.com/apache/maven-source-plugin/releases/tag/maven-source-plugin-3.4.0[Maven Source Plugin 3.4.0]
+* https://github.com/apache/maven-war-plugin/releases/tag/maven-war-plugin-3.5.1[Maven War Plugin 3.5.1]
+* https://github.com/mockito/mockito/releases/tag/v5.23.0[Mockito 5.23.0]
+* https://github.com/mongodb/mongo-java-driver/releases/tag/r5.0.0[MongoDB 5.8.0]
+* https://dev.mysql.com/doc/relnotes/connector-j/en/news-9-7-0.html[MySQL 9.7.0]
+* https://github.com/open-telemetry/opentelemetry-java/releases/tag/v1.62.0[OpenTelemetry 1.62.0]
+* Oracle Database 23.26.2.0.0
+* Pooled JMS 3.2.2
+* https://github.com/prometheus/client_java/releases/tag/v1.5.1[Prometheus Client 1.5.1]
+* https://github.com/googleapis/sdk-platform-java/releases/tag/v-2.70.0[Protobuf Common Protos 2.70.0]
+* https://github.com/ascopes/protobuf-maven-plugin/tag/v5.1.4[Protobuf Maven Plugin 5.1.4]
+* https://github.com/googleapis/sdk-platform-java/releases/tag/v-2.70.0[Protobuf Common Protos 2.70.0]
+* https://github.com/rabbitmq/rabbitmq-java-client/releases/tag/v5.30.0[Rabbit AMQP Client 5.30.0]
+* https://github.com/rabbitmq/rabbitmq-stream-java-client/releases/tag/v1.6.0[Rabbit Stream Client 1.6.0]
+* https://github.com/SeleniumHQ/selenium/releases/tag/selenium-4.43.0[Selenium 4.43.0]
+* https://github.com/SeleniumHQ/htmlunit-driver/releases/tag/4.43.0[Selenium HtmlUnit 4.43.0]
+* SnakeYAML 2.6
+* https://github.com/xerial/sqlite-jdbc/releases/tag/3.53.2.0[SQLite JDBC 3.53.2.0]
+* https://github.com/ultraq/thymeleaf-layout-dialect/releases/tag/4.0.1[Thymeleaf Layout Dialect 4.0.1]
+* https://github.com/mojohaus/versions/releases/tag/2.21.0[Versions Maven Plugin 2.21]
+* https://github.com/xmlunit/xmlunit/releases/tag/v2.11.0[XmlUnit2 2.11]
+
+
+
+=== Miscellaneous
+Apart from the changes listed above, there have also been lots of minor tweaks and improvements including:
+
+* The web servers' temporary directories are now deleted when the context is closed.
+* Additional mime types that should be compressed when sending HTTP responses can be configured using `server.compression.additional-mime-types`
+* Application-wide HTML escaping configuration for webflux can be configured using `spring.webflux.default-html-escape`.
+* Value objects now bind `Optional` parameters as `Optional.empty()` rather than `null`.
+  This applies to any `@ConfigurationProperties` that use constructor binding.
+* Empty objects in YAML files are now retained in the resulting `PropertySource`.
+* It's now possible to bind default properties when an empty property is defined (see {boot-docs}/reference/features/external-config.html#features.external-config.typesafe-configuration-properties.constructor-binding.default-values[the updated documentation] for details)
+* `EntityManagerFactoryBuilder` can now add `PersistenceUnitPostProcessor` instances rather than just setting them.
+* A new `FailureAnalyzedException` has been added and can be used when you want to throw an exception that include its own failure analysis.
+* Auto-configuration for Spring Data REST supports a new `spring.data.rest.return-body-on-delete` property.
+* Mustache support consistently uses `Charset` instead of the `String` equivalent.
+* Customizers for `OtlpHttpLogRecordExporterBuilder` and `OtlpGrpcLogRecordExporterBuilder` have been added.
+* Kotlin extensions for `TestEntityManager` have been added.
+* OAuth2 resource servers can now be configured in non-webapps.
+* A new `spring.jpa.bootstrap` property has been added to allow you to configure async background bootstrapping of the `LocalContainerEntityManagerFactoryBean`.
+* Console ANSI support is now enabled by default on Microsoft Windows 11 and later.
+* Add support for configuring `closeTimeout` and `allowNonTransactional` on `KafkaTemplate`.
+* Docker Compose support has been added for `docker.elastic.co/elasticsearch/elasticsearch`.
+* The actuator info endpoint now also returns certificates from the truststore.
+* Compression can now be used when exporting metrics over OTLP.
+  To enable compression set `management.otlp.metrics.export.compression-mode` to `gzip`.
+* `publishMaxGaugeForHistograms` can be configured on the `OTLPRegistry`.
+* The property `management.tracing.exemplars.filter` can be used to exercise more fine-grained support for selecting metric exemplars.
+* Expiry times from certificates in the truststore are now also available as metrics.
+* AssertJ `Assert` implementations now make use of `@CheckReturnValue` when applicable.
+* A new failure analyzer now provides more details when Testcontainers cannot find a suitable Docker environment.
+* Beans defined by `MockRestServiceServiceAutoConfiguration` are now `@ConditionalOnMissingBean`, making them easier to replace if needed.
+* A new `@AutoConfigureWebServer` test annotation has been added allowing you to add the embedded web server factory bean for tests to use.
+
+
+
+== Deprecations in Spring Boot 4.1.0
+
+* `org.springframework.boot.jdbc.DatabaseDriver.DERBY` and `org.springframework.boot.jdbc.EmbeddedDatabaseConnection.DERBY`
+* Properties and classes for configuring the Dynatrace V1 API, in favor of using the V2 API
+* Given its decrease in popularity and support, the LiveReload feature in Devtools is deprecated with no replacement.
