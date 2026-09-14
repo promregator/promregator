@@ -12,8 +12,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
 
 @SpringBootTest(classes = MockedCachingTargetResolverSpringApplication.class)
+@TestPropertySource(locations="default.properties")
 public class CachingTargetResolverTest {
 	@AfterAll
 	static void cleanupEnvironment() {
