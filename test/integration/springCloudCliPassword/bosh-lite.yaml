@@ -31,7 +31,7 @@ promregator:
       path: /metrics
 
 cf:
-  api_host: api.bosh-lite.com
+  api_host: api.cf.schmoigl-online.de
   skipSslValidation: true
   username: admin
   password: '{cipher}%%CRYPTEDPASSWORD%%'
