@@ -16,7 +16,7 @@ import org.springframework.test.context.TestPropertySource;
 @SpringBootTest(classes = { SpringBootLoadPropertiesForTestingSpringApplication.class })
 @ContextConfiguration(initializers = { ConfigDataApplicationContextInitializer.class })
 @ActiveProfiles(profiles= {"springBootLoadPropertiesForTestingOtherKey", "springBootLoadPropertiesForEncryptionTesting"})
-@TestPropertySource(properties = "encrypt.key=someotherkey")
+@TestPropertySource(properties = {"encrypt.key=someotherkey", "spring.cloud.config.import-check.enabled=false" })
 public class SpringBootLoadPropertiesForTestingOtherKey {
 
 	@Autowired

@@ -1,0 +1,505 @@
+Configuration property changes between `4.0.7` and `4.1.0`
+
+
+
+== Default Changed in 4.1.0
+
+|======================
+| Key | Old Default | New Default
+
+| `spring.elasticsearch.socket-keep-alive`
+| `false`
+| `true`
+|======================
+
+
+
+== Deprecated in 4.1.0
+
+|======================
+| Key | Replacement | Reason
+
+| `management.dynatrace.metrics.export.v1.device-id`
+|
+| Dynatrace V1 API is deprecated, use the V2 API instead.
+
+| `management.dynatrace.metrics.export.v1.group`
+|
+| Dynatrace V1 API is deprecated, use the V2 API instead.
+
+| `management.dynatrace.metrics.export.v1.technology-type`
+|
+| Dynatrace V1 API is deprecated, use the V2 API instead.
+
+| `spring.devtools.livereload.enabled`
+|
+| Deprecated with no replacement
+
+| `spring.devtools.livereload.port`
+|
+| Deprecated with no replacement
+|======================
+
+
+
+== Added in 4.1.0
+
+|======================
+| Key | Default value | Description
+
+| `logging.log4j2.rollingpolicy.cron`
+| `0 0 0 * * ?`
+| Cron expression used when the strategy is 'cron'.
+
+| `logging.log4j2.rollingpolicy.file-name-pattern`
+| `${LOG_FILE}.%d{yyyy-MM-dd}.%i.gz`
+| Pattern for rolled-over log file names.
+
+| `logging.log4j2.rollingpolicy.max-file-size`
+| `10MB`
+| Maximum log file size.
+
+| `logging.log4j2.rollingpolicy.max-history`
+| `7`
+| Maximum number of archive log files to keep.
+
+| `logging.log4j2.rollingpolicy.strategy`
+| `size`
+| Rolling policy strategy.
+
+| `logging.log4j2.rollingpolicy.time-interval`
+| `1`
+| Time based triggering interval when the strategy is 'time' or 'size-and-time'.
+
+| `logging.log4j2.rollingpolicy.time-modulate`
+| `false`
+| Whether to align the next rollover time to occur at the top of the interval when the strategy is time based.
+
+| `management.opentelemetry.enabled`
+| `true`
+| Whether OpenTelemetry should be enabled.
+
+| `management.opentelemetry.logging.export.max-batch-size`
+| `512`
+| Maximum batch size for each export.
+
+| `management.opentelemetry.logging.export.max-queue-size`
+| `2048`
+| Maximum number of logs that are kept in the queue before they will be dropped.
+
+| `management.opentelemetry.logging.export.otlp.ssl.bundle`
+|
+| SSL bundle name.
+
+| `management.opentelemetry.logging.export.schedule-delay`
+| `1s`
+| The delay interval between two consecutive exports.
+
+| `management.opentelemetry.logging.export.timeout`
+| `30s`
+| Maximum time an export will be allowed to run before being cancelled.
+
+| `management.opentelemetry.logging.limits.max-attribute-value-length`
+|
+| Maximum number of characters for string attribute values.
+
+| `management.opentelemetry.logging.limits.max-attributes`
+| `128`
+| Maximum number of attributes per log record.
+
+| `management.opentelemetry.map-environment-variables`
+| `true`
+| Whether to map OpenTelemetry SDK environment variables to Spring Boot configuration properties.
+
+| `management.opentelemetry.tracing.export.otlp.ssl.bundle`
+|
+| SSL bundle name.
+
+| `management.opentelemetry.tracing.limits.max-attribute-value-length`
+|
+| Maximum number of characters for string attribute values.
+
+| `management.opentelemetry.tracing.limits.max-attributes`
+| `128`
+| Maximum number of attributes per span.
+
+| `management.opentelemetry.tracing.limits.max-attributes-per-event`
+| `128`
+| Maximum number of attributes per event.
+
+| `management.opentelemetry.tracing.limits.max-attributes-per-link`
+| `128`
+| Maximum number of attributes per link.
+
+| `management.opentelemetry.tracing.limits.max-events`
+| `128`
+| Maximum number of events per span.
+
+| `management.opentelemetry.tracing.limits.max-links`
+| `128`
+| Maximum number of links per span.
+
+| `management.opentelemetry.tracing.sampler`
+| `parent-based-trace-id-ratio`
+| Sampler to use.
+
+| `management.otlp.metrics.export.compression-mode`
+| `none`
+| Compression mode to use when exporting metrics.
+
+| `management.otlp.metrics.export.publish-max-gauge-for-histograms`
+|
+| Whether to publish a separate gauge for the max value of histogram-based meters.
+
+| `management.otlp.metrics.export.ssl.bundle`
+|
+| SSL bundle name.
+
+| `management.tracing.exemplars.include`
+| `sampled-traces`
+| Traces to include as exemplars.
+
+| `server.compression.additional-mime-types`
+| ``
+| Comma-separated list of additional MIME types that should be compressed.
+
+| `spring.batch.data.mongodb.isolation-level-for-create`
+|
+| Transaction isolation level to use when creating job metadata for new jobs.
+
+| `spring.batch.data.mongodb.schema.initialize`
+| `false`
+| Whether to initialize the Spring Batch job repository schema in MongoDB.
+
+| `spring.batch.data.mongodb.schema.location`
+| `org/springframework/batch/core/schema-mongodb.jsonl`
+| Path to the newline-delimited JSON script used to create the Spring Batch job repository collections and indexes in MongoDB.
+
+| `spring.batch.data.mongodb.validate-transaction-state`
+| `true`
+| Whether to validate the transaction state.
+
+| `spring.data.redis.listener.auto-startup`
+| `true`
+| Whether to start the container automatically on startup.
+
+| `spring.data.redis.listener.recovery.delay`
+| `5s`
+| Base delay for a recovery attempt.
+
+| `spring.data.redis.listener.recovery.jitter`
+| `0`
+| Jitter value for the base retry attempt, randomly subtracted or added to the calculated delay, resulting in a value between 'delay - jitter' and 'delay + jitter' but never below the base delay or above the max delay.
+
+| `spring.data.redis.listener.recovery.max-delay`
+| `30s`
+| Maximum delay for any retry attempt, limiting how far jitter and the multiplier can increase the delay.
+
+| `spring.data.redis.listener.recovery.max-retries`
+|
+| Maximum number of recovery attempts.
+
+| `spring.data.redis.listener.recovery.multiplier`
+| `1`
+| Multiplier for a delay for the next retry attempt, applied to the previous delay, starting with the initial delay as well as to the applicable jitter for each attempt.
+
+| `spring.data.redis.listener.subscription-registration-timeout`
+| `2s`
+| Maximum amount of time to wait for the subscription to become active.
+
+| `spring.data.rest.return-body-on-delete`
+|
+| Whether to return a response body after deleting an entity.
+
+| `spring.datasource.connection-fetch`
+| `eager`
+| Whether the auto-configured DataSource should be wrapped in a proxy that fetches JDBC connections as late as possible.
+
+| `spring.datasource.oracleucp.connection-affinity-callback`
+|
+|
+
+| `spring.datasource.oracleucp.connection-creation-consumer`
+|
+|
+
+| `spring.datasource.oracleucp.connection-initialization-callback`
+|
+|
+
+| `spring.datasource.oracleucp.connection-labeling-callback`
+|
+|
+
+| `spring.datasource.oracleucp.password`
+|
+|
+
+| `spring.grpc.client.channel`
+|
+| Map of channels configured by name.
+
+| `spring.grpc.client.channelfactory.enabled`
+| `true`
+| Whether to enable gRPC channel factory bean auto-configuration.
+
+| `spring.grpc.client.enabled`
+| `true`
+| Whether to enable gRPC client auto-configuration.
+
+| `spring.grpc.client.inprocess.enabled`
+| `true`
+| Whether to configure the in-process channel factory.
+
+| `spring.grpc.client.observation.enabled`
+| `true`
+| Whether to enable Observations on the client.
+
+| `spring.grpc.server.address`
+|
+| Network address to which the gRPC server should bind.
+
+| `spring.grpc.server.enabled`
+| `true`
+| Whether to enable gRPC server auto-configuration.
+
+| `spring.grpc.server.factory.enabled`
+| `true`
+| Whether to enable gRPC server factory bean auto-configuration.
+
+| `spring.grpc.server.health.enabled`
+|
+| Whether to auto-configure the Health feature on the gRPC server.
+
+| `spring.grpc.server.health.include-overall-health`
+| `true`
+| Whether to include the overall server health.
+
+| `spring.grpc.server.health.schedule.delay`
+| `5s`
+| Initial delay before updating the health status the very first time.
+
+| `spring.grpc.server.health.schedule.enabled`
+| `true`
+| Whether to schedule updates to gRPC server health based on application health.
+
+| `spring.grpc.server.health.schedule.period`
+| `5s`
+| How often to update the health status.
+
+| `spring.grpc.server.health.service`
+|
+| Service-specific health reporting.
+
+| `spring.grpc.server.health.services.validate-membership`
+| `true`
+| Whether to validate health membership for services on startup.
+
+| `spring.grpc.server.health.status.mapping`
+|
+| Mapping of health statuses to gRPC service status.
+
+| `spring.grpc.server.health.status.order`
+|
+| List of health statuses in order of severity.
+
+| `spring.grpc.server.inbound.message.max-size`
+| `4194304B`
+| Maximum message size allowed to be received by the server.
+
+| `spring.grpc.server.inbound.metadata.max-size`
+| `8192B`
+| Maximum metadata size allowed to be received by the server.
+
+| `spring.grpc.server.inprocess.name`
+|
+| Name of the in-process server or null to not start the in-process server.
+
+| `spring.grpc.server.keepalive.connection.grace-period`
+| `30s`
+| Maximum time for graceful connection termination.
+
+| `spring.grpc.server.keepalive.connection.max-age`
+|
+| Maximum time a connection may exist before being gracefully terminated (infinite if not specified).
+
+| `spring.grpc.server.keepalive.connection.max-idle-time`
+|
+| Maximum time a connection can remain idle before being gracefully terminated (infinite if not specified).
+
+| `spring.grpc.server.keepalive.permit.time`
+| `5m`
+| Maximum keep-alive time clients are permitted to configure.
+
+| `spring.grpc.server.keepalive.permit.without-calls`
+| `false`
+| Whether clients are permitted to send keep alive pings when there are no outstanding RPCs on the connection.
+
+| `spring.grpc.server.keepalive.time`
+| `2h`
+| Duration without read activity before sending a keep alive ping.
+
+| `spring.grpc.server.keepalive.timeout`
+| `20s`
+| Maximum time to wait for read activity after sending a keep alive ping.
+
+| `spring.grpc.server.netty.domain-socket-path`
+|
+| Path of the domain socket that should be used.
+
+| `spring.grpc.server.netty.transport`
+|
+| Transport mechanism used for Netty and Netty Shaded servers.
+
+| `spring.grpc.server.observation.enabled`
+| `true`
+| Whether to enable Observations on the server.
+
+| `spring.grpc.server.port`
+|
+| Port on which the gRPC server should listen.
+
+| `spring.grpc.server.reflection.enabled`
+| `true`
+| Whether to enable Reflection on the gRPC server.
+
+| `spring.grpc.server.security.csrf.enabled`
+| `false`
+| Whether to enable CSRF protection.
+
+| `spring.grpc.server.servlet.enabled`
+| `false`
+| Whether to use a servlet server in a servlet-based web application.
+
+| `spring.grpc.server.servlet.validate-http2`
+| `true`
+| Whether to validate that HTTP/2 is enabled.
+
+| `spring.grpc.server.shutdown.grace-period`
+| `30s`
+| Maximum time to wait for the server to gracefully shutdown.
+
+| `spring.grpc.server.ssl.bundle`
+|
+| SSL bundle name.
+
+| `spring.grpc.server.ssl.client-auth`
+| `none`
+| Client authentication mode.
+
+| `spring.grpc.server.ssl.enabled`
+|
+| Whether to enable SSL support.
+
+| `spring.grpc.server.ssl.secure`
+| `true`
+| Whether client authentication is secure (that is certificates are checked).
+
+| `spring.http.clients.cookie-handling`
+|
+| Handling for HTTP cookies.
+
+| `spring.jackson.factory.constraints.read.max-document-length`
+| `-1`
+| Maximum allowed document length.
+
+| `spring.jackson.factory.constraints.read.max-name-length`
+| `50000`
+| Maximum name length.
+
+| `spring.jackson.factory.constraints.read.max-nesting-depth`
+| `500`
+| Maximum nesting depth.
+
+| `spring.jackson.factory.constraints.read.max-number-length`
+| `1000`
+| Maximum number length.
+
+| `spring.jackson.factory.constraints.read.max-string-length`
+| `100000000`
+| Maximum string length.
+
+| `spring.jackson.factory.constraints.read.max-token-count`
+| `-1`
+| Maximum allowed token count.
+
+| `spring.jackson.factory.constraints.write.max-nesting-depth`
+| `500`
+| Maximum nesting depth.
+
+| `spring.jpa.bootstrap`
+| `default`
+| Bootstrap method to use.
+
+| `spring.kafka.template.allow-non-transactional`
+| `false`
+| Whether to allow sending non-transactional messages.
+
+| `spring.kafka.template.close-timeout`
+| `5s`
+| Maximum time to wait when closing a producer.
+
+| `spring.ldap.embedded.ssl.bundle`
+|
+| SSL bundle name.
+
+| `spring.ldap.embedded.ssl.enabled`
+|
+| Whether to enable SSL support.
+
+| `spring.rabbitmq.stream.ssl.bundle`
+|
+| SSL bundle name.
+
+| `spring.rabbitmq.stream.ssl.enabled`
+|
+| Whether to enable SSL support.
+
+| `spring.security.oauth2.resourceserver.jwt.authorities-claim-expressions`
+|
+| List of expressions to use to extract authorities from a JWT.
+
+| `spring.task.execution.propagate-context`
+| `false`
+| Whether to propagate the current context to task executions.
+
+| `spring.webflux.default-html-escape`
+|
+| Whether default HTML escaping is enabled for the web application.
+|======================
+
+
+
+== Removed in 4.1.0
+
+|======================
+| Key | Replacement | Reason
+
+| `logging.file.clean-history-on-start`
+| `logging.logback.rollingpolicy.clean-history-on-start`
+|
+
+| `logging.file.max-history`
+| `logging.logback.rollingpolicy.max-history`
+|
+
+| `logging.file.max-size`
+| `logging.logback.rollingpolicy.max-file-size`
+|
+
+| `logging.file.total-size-cap`
+| `logging.logback.rollingpolicy.total-size-cap`
+|
+
+| `logging.pattern.rolling-file-name`
+| `logging.logback.rollingpolicy.file-name-pattern`
+|
+
+| `spring.data.redis.lettuce.cluster.refresh.adaptive`
+|
+| All adaptive triggers are enabled by default.
+
+| `spring.datasource.oracleucp.role-name`
+|
+|
+|======================

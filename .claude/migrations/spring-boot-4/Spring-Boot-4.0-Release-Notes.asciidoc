@@ -1,0 +1,278 @@
+:docs-version: 4.0-SNAPSHOT
+:docs: https://docs.spring.io/spring-boot/{docs-version}
+:framework-docs: https://docs.spring.io/spring-framework/reference/7.0-SNAPSHOT
+:framework-api-docs: https://docs.spring.io/spring-framework/docs/7.0.x-SNAPSHOT/javadoc-api/org/springframework
+
+== Upgrading from Spring Boot 3.5
+
+Since this is a major release of Spring Boot, upgrading existing applications can be a little more involved that usual.
+We've put together a link:Spring-Boot-4.0-Migration-Guide[dedicated migration guide] to help you upgrade your existing Spring Boot 3.5 applications.
+
+If you're currently running with an earlier version of Spring Boot, we strongly recommend that you link:Spring-Boot-3.5-Release-Notes[upgrade to Spring Boot 3.5] before migrating to Spring Boot 4.0.
+
+
+
+== New and Noteworthy
+
+TIP: Check link:Spring-Boot-4.0-Configuration-Changelog[the configuration changelog] for a complete overview of the changes in configuration.
+
+
+
+=== Milestones Available from Maven Central
+
+Starting with 4.0.0-M1, all Spring Boot milestones (and release candidates) are now published to Maven Central in addition to https://repo.spring.io.
+This should make it easier to try new milestones in the 4.x line as they become available.
+
+
+
+=== Gradle 9
+
+Gradle 9 is now supported for building Spring Boot applications. Support for Gradle 8.x (8.14 or later) remains.
+
+
+
+=== HTTP Service Clients
+
+Spring Boot now includes auto-configuration support and configuration properties for HTTP Service Clients.
+HTTP Service Clients allow you to annotate plain Java interfaces and have Spring automatically create implementations of them.
+
+For example, the following interface can be used to call an "echo" service:
+
+[source,java]
+----
+@HttpExchange(url = "https://echo.zuplo.io")
+public interface EchoService {
+
+	@PostExchange
+	Map<?, ?> echo(@RequestBody Map<String, String> message);
+
+}
+----
+
+For full details of the feature, please see the {docs}/reference/io/rest-client.html#io.rest-client.httpservice[updated documentation].
+
+
+
+=== API Versioning
+
+Auto-configuration has been added for API Versioning {docs}/reference/web/servlet.html#web.servlet.spring-mvc.api-versioning[with Spring MVC] and {docs}/reference/web/reactive.html#web.reactive.webflux.api-versioning[with Spring WebFlux].
+
+API Versioning can be configured using the `spring.mvc.apiversion.\*` or `spring.webflux.apiversion.*` properties.
+For more advanced control, beans of type `ApiVersionResolver`, `ApiVersionParser` and `ApiVersionDeprecationHandler` can be defined. 
+
+See the reference documentation ({docs}/reference/web/servlet.html#web.servlet.spring-mvc.api-versioning[MVC], {docs}/reference/web/reactive.html#web.reactive.webflux.api-versioning[WebFlux]) for further details.
+
+
+
+=== JmsClient
+
+The auto-configuration for JMS now includes support for the {framework-api-docs}/jms/core/JmsClient.html[new `JmsClient` API].
+The support for `JmsTemplate` and `JmsMessagingTemplate` is left unchanged.
+
+
+
+=== Task Decoration
+
+The auto-configurations for task scheduling and task execution now support multiple `TaskDecorator` beans.
+When the context contains multiple `TaskDecorator` beans, a `CompositeTaskDecorator` that delegates to them is created.
+The individual decorators are called in the ordered defined by `@Order` and `Ordered`.
+
+
+
+=== OpenTelemetry starter
+
+A new starter, `spring-boot-starter-opentelemetry` has been added.
+This starter brings in all necessary dependencies to export metrics and traces over OTLP.
+It will also auto-configure the OpenTelemetry SDK.
+
+
+
+=== Configuration Properties Metadata for External Types
+
+It is now possible for `@ConfigurationProperties`-annotated types to refer to types that are located in a different module.
+To source the metadata from those modules, you should add the annotation processor (if necessary) and flag the type with `@ConfigurationPropertiesSource`.
+
+See the {docs}/specification/configuration-metadata/index.html[reference documentation] for more details.
+
+
+
+=== SSL Info
+
+Support for the certificate validity threshold has been removed from the SSL info contribution.
+A certificate that had a status of `WILL_EXPIRE_SOON` will now appear as `VALID`.
+The information about the start and end of a certificate's validity remains.
+
+
+
+=== SSL Health
+
+Certificate chains that contain one or more certificates that will expire within the configured threshold (`management.health.ssl.certificate-validity-warning-threshold`) are
+now listed in a new `expiringChains` entry in the details of the health response.
+The status `WILL_EXPIRE_SOON` is no longer used and expiring certificates will have a status of `VALID`.
+
+
+
+=== MongoDB Health Indicators
+
+The MongoDB health indicators have been reworked so that they no longer require Spring Data MongoDB. 
+This allows health information to be provided when using the MongoDB Java Driver directly.
+
+As part of this change, the health indicators have moved from `spring-boot-data-mongodb` to `spring-boot-mongodb`. 
+Their packages have also been updated accordingly.
+
+
+
+==== MongoDB Properties
+
+A new property, `spring.data.mongodb.representation.big-decimal`, has been introduced to control how Spring Data MongoDB stores `BigDecimal` (and `BigInteger`) values in MongoDB.
+
+A number of properties have also been renamed. See the link:Spring-Boot-4.0-Migration-Guide[migration guide] for details.
+
+
+
+=== Kotlin Serialization
+
+Spring Boot now ships a new "spring-boot-kotlinx-serialization-json" module and corresponding "spring-boot-starter-kotlin-serialization" for Kotlin Serialization support.
+This will contribute a `Json` bean and configure it with the available `spring.kotlinx.serialization.json.*` properties.
+Note that a `HttpMessageConverter` will be also contributed to the application and will be set ahead of other JSON converters (acting as fallbacks).
+
+
+
+=== RestTestClient
+
+Support for the newly introduced {framework-docs}/testing/resttestclient.html[RestTestClient] has been added.
+
+With a regular `@SpringBootTest` or when `@AutoConfigureMockMvc` is used, you can autowire a `RestTestClient` that operates on the underlying `MockMvc` instance.
+
+For integration tests, i.e. `@SpringBootTest` with either a defined or random port, a `RestTestClient` can be injected to target the running server.
+
+
+
+=== Redis Static Master/Replica
+
+Auto-configuration for Static Master/Replica has been added.
+This feature is only supported by Lettuce.
+
+To use it, provide the list of static nodes using the new `spring.data.redis.masterreplica.nodes` property.
+
+
+
+=== Redis Observability
+
+The Redis auto-configuration has been improved to auto-configure `MicrometerTracing`, rather than `MicrometerCommandLatencyRecorder`.
+The former operates on the Observation API and provides both metrics and spans.
+
+
+
+=== Dependency Upgrades
+
+Spring Boot 4.0 moves to new versions of several Spring projects:
+
+* https://github.com/micrometer-metrics/micrometer/releases/tag/v1.16.0[Micrometer 1.16]
+* https://github.com/micrometer-metrics/tracing/releases/tag/v1.6.0[Micrometer Tracing 1.6]
+* https://github.com/reactor/reactor/releases/tag/2025.0.0[Reactor 2025.0]
+* https://github.com/spring-projects/spring-amqp/releases/tag/v4.0.0[Spring AMQP 4.0]
+* https://github.com/spring-projects/spring-batch/releases/tag/v6.0.0[Spring Batch 6.0]
+* https://github.com/spring-projects/spring-data-bom/releases/tag/2025.1.0[Spring Data 2025.1]
+* https://github.com/spring-projects/spring-framework/releases/tag/v7.0.0[Spring Framework 7.0]
+* https://github.com/spring-projects/spring-graphql/releases/tag/v2.0.0[Spring GraphQL 2.0]
+* https://github.com/spring-projects/spring-hateoas/releases/tag/3.0.0[Spring HATEOAS 3.0]
+* https://github.com/spring-projects/spring-integration/releases/tag/v7.0.0[Spring Integration 7.0]
+* https://github.com/spring-projects/spring-kafka/releases/tag/v4.0.0[Spring for Apache Kafka 4.0]
+* https://github.com/spring-projects/spring-ldap/releases/tag/4.0.0[Spring LDAP 4.0]
+* https://github.com/spring-projects/spring-pulsar/releases/tag/v2.0.0[Spring for Apache Pulsar 2.0]
+* https://github.com/spring-projects/spring-restdocs/releases/tag/v4.0.0[Spring REST Docs 4.0]
+* https://github.com/spring-projects/spring-security/releases/tag/7.0.0[Spring Security 7.0]
+* https://github.com/spring-projects/spring-session/releases/tag/4.0.0[Spring Session 4.0]
+* https://github.com/spring-projects/spring-ws/releases/tag/v5.0.0[Spring WS 5.0]
+
+Numerous third-party dependencies have also been updated, some of the more noteworthy of which are the following:
+
+* https://activemq.apache.org/components/artemis/download/release-notes-2.43.0[Artemis 2.43.0]
+* https://github.com/openzipkin/brave/releases/tag/6.3.0[Brave 6.3]
+* https://commons.apache.org/proper/commons-codec/changes.html#a1.19.0[Commons Codec 1.19]
+* https://commons.apache.org/proper/commons-lang/changes.html#a3.19.0[Commons Lang3 3.19.0]
+* https://docs.couchbase.com/java-sdk/current/project-docs/sdk-release-notes.html[Couchbase Client 3.9]
+* https://github.com/ehcache/ehcache3/releases/tag/v3.11.1[Ehcache3 3.11.1]
+* https://www.elastic.co/docs/release-notes/elasticsearch/clients/java/9-1-0[Elasticsearch Client 9.1]
+* https://documentation.red-gate.com/flyway/release-notes-and-older-versions/release-notes-for-flyway-engine[Flyway 11.11]
+* https://github.com/graphql-java/graphql-java/releases/tag/v25.0.beta-5[GraphQL 24]
+* Groovy 5.0
+* https://github.com/google/gson/releases/tag/gson-parent-2.13.2[Gson 2.13.2]
+* https://github.com/h2database/h2database/releases/tag/version-2.4.240[H2 2.4]
+* https://github.com/hibernate/hibernate-orm/releases/tag/7.1.0[Hibernate 7.1]
+* https://hibernate.org/validator/releases/9.0/#whats-new[Hibernate Validator 9.0]
+* HikariCP 7.0
+* https://github.com/HtmlUnit/htmlunit/releases/tag/4.16.0[HtmlUnit 4.16.0]
+* https://github.com/FasterXML/jackson/wiki/Jackson-Release-3.0.0[Jackson 3.0]
+* Jakarta Annotation 3.0
+* https://github.com/jakartaee/persistence/releases/tag/3.2-3.2.0-RELEASE[Jakarta Persistence 3.2]
+* Jakarta Servlet 6.1
+* https://github.com/jakartaee/validation/releases/tag/3.1.0[Jakarta Validation 3.1]
+* Jakarta WebSocket 2.2
+* Jakarta WS RS 4.0
+* https://github.com/redis/jedis/releases/tag/v6.2.0[Jedis 6.2.0]
+* https://github.com/netplex/json-smart-v2/releases/tag/2.6.0[Json-smart 2.6.0]
+* https://github.com/jetty/jetty.project/releases/tag/jetty-12.1.0[Jetty 12.1]
+* https://downloads.apache.org/kafka/4.1.0/RELEASE_NOTES.html[Kafka 4.1.0]
+* https://github.com/JetBrains/kotlin/releases/tag/v2.2.20[Kotlin 2.2.20]
+* https://github.com/Kotlin/kotlinx.serialization/releases/tag/v1.9.0[Kotlin Serialization 1.9]
+* https://github.com/lettuce-io/lettuce-core/releases/tag/6.8.1.RELEASE[Lettuce 6.8.1.RELEASE]
+* https://github.com/liquibase/liquibase/releases/tag/v5.0.0[Liquibase 5.0]
+* https://github.com/apache/maven-antrun-plugin/releases/tag/maven-antrun-plugin-3.2.0[Maven AntRun Plugin 3.2]
+* https://github.com/apache/maven-javadoc-plugin/releases/tag/maven-javadoc-plugin-3.12.0[Maven Javadoc Plugin 3.12]
+* https://github.com/mockito/mockito/releases/tag/v5.20.0[Mockito 5.20]
+* https://github.com/mongodb/mongo-java-driver/releases/tag/r5.6.0[MongoDB 5.6.0]
+* https://github.com/microsoft/mssql-jdbc/releases/tag/v13.2.0[MSSQL JDBC 13.2]
+* https://github.com/graalvm/native-build-tools/releases/tag/0.11.0[Native Build Tools Plugin 0.11]
+* https://github.com/neo4j/neo4j-java-driver/releases/tag/6.0.1[Neo4j Java Driver 6.0]
+* https://github.com/open-telemetry/opentelemetry-java/releases/tag/v1.54.0[OpenTelemetry 1.54.0]
+* https://pulsar.apache.org/release-notes/versioned/pulsar-4.1.0[Pulsar 4.1.0]
+* https://github.com/r2dbc/r2dbc-h2/releases/tag/v1.1.0.RELEASE[R2DBC H2 1.1]
+* https://github.com/pgjdbc/r2dbc-postgresql/releases/tag/v1.1.0.RELEASE[R2DBC Postgresql 1.1]
+* https://github.com/rabbitmq/rabbitmq-java-client/releases/tag/v5.27.0[Rabbit AMQP Client 5.27]
+* https://github.com/SeleniumHQ/selenium/releases/tag/selenium-4.37.0[Selenium 4.37]
+* https://github.com/SeleniumHQ/htmlunit-driver/releases/tag/4.35.0[Selenium HtmlUnit 4.35]
+* SnakeYAML 2.5
+* https://github.com/testcontainers/testcontainers-java/releases/tag/2.0.0[TestContainers 2.0]
+* https://tomcat.apache.org/tomcat-11.0-doc/changelog.html[Tomcat 11.0]
+* https://github.com/mojohaus/xml-maven-plugin/releases/tag/1.2.0[XML Maven Plugin 1.2]
+
+
+
+=== Miscellaneous
+
+Apart from the changes listed above, there have also been lots of minor tweaks and improvements including:
+
+* The auto-configuration for Micrometer's metrics aspects now enables support for `@MeterTag` on `@Counted` and `@Timed` methods with
+a SpEL-based `ValueExpressionResolver`.
+* `@ServiceConnection` support for MongoDB now supports Testcontainers' `MongoDBAtlasLocalContainer`.
+* Improved error message when configuration property binding fails due to a class not found error.
+* Names of several reactive auto-configuration classes have been updated for consistency.
+* Public members (aside from constants) have been removed from auto-configuration classes. Auto-configurations never have been public API and now this is enforced through Java mechanisms.
+* Auto-configured HTTP clients backed by the JDK `HttpClient` are now configured to use virtual threading when `spring.threads.virtual.enabled` is `true`.
+* A `logging.console.enabled` property has been introduced. Setting it to `false` disables console logging.
+* Log4j Core configuration file detection for Log4j 3 has been improved.
+* Resource lookup in DevTools restart has been optimized.
+* `ScheduledTasksObservabilityAutoConfiguration` has been renamed to `ScheduledTasksObservationAutoConfiguration` for consistency.
+* Authenticating with Elasticsearch using an API key is now supported using the new `spring.elasticsearch.api-key` property.
+* `ConditionalOnEnabledTracing` has been renamed to `ConditionalOnEnabledTracingExport`.
+* The property `management.tracing.enabled` has been renamed to `management.tracing.export.enabled`.
+* `SanitizableData.getKey()` and `SanitizableData.getLowerCaseKey()` never return `null`. Passing a `null` value as a `key` in the `SanitizableData` will now throw an exception. 
+* Specialized interfaces have been introduced in `PropertiesConfigAdapter` for better nullability handling.
+* The property `spring.dao.exceptiontranslation.enabled` has been renamed to `spring.persistence.exceptiontranslation.enabled`.
+* The max size of Tomcat's static cache can now be configured using the `server.tomcat.resource.cache-max-size` property.
+* You can now set `Spring-Boot-Jar-Type` to `development-tool` in your `MANIFEST.MF` to exclude dependencies from uber jars.
+* Amazon Web Services (AWS) Elastic Container Service (ECS) platform is now a recognized `CloudPlatform`.
+* Support for Micrometer's `@ObservationKeyValue` has been added.
+* Public members from configurations imported by auto-configuration classes have been made package-private.
+* HTML Unit `LocalHostWebClient` and `LocalHostWebConnectionHtmlUnitDriver` have been superseded by `UriBuilderFactoryWebClient` and `UriBuilderFactoryWebConnectionHtmlUnitDriver`.
+* A new configuration property can be used to control whether the Elasticsearch Client's sniffer is enabled.
+
+
+
+== Deprecations in Spring Boot 4.0.0
+
+* `OperationMethod(Method method, OperationType operationType)` in favor of `OperationMethod(Method method, OperationType operationType, Predicate<Parameter> optionalParameters)`.
+* Jackson 2 support ships in a deprecated form.
+* `org.springframework.boot.env.EnvironmentPostProcessor` has replaced by `org.springframework.boot.EnvironmentPostProcessor` but the old interface remains in a deprecated form to ease upgrade pain.

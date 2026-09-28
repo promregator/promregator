@@ -4,12 +4,12 @@ server:
     mime-types: application/json,application/xml,text/html,text/xml,text/plain,application/javascript,text/css
 
 # By default, spring configures tomcat-embedded to permit up to 200 worker threads.
-# Our worker threads are "heavy-duty" - and we won't survive 200 parallel requests 
-# in usual configuration environment. 
+# Our worker threads are "heavy-duty" - and we won't survive 200 parallel requests
+# in usual configuration environment.
 # High values here may get especially dangerous if there is something blocking
 # the processing in general and HTTP requests can't be responded on properly.
 # Then we queue up more and more workers (which can't complete), eating up
-# memory. Usually, we then first die on lack of heap memory before 
+# memory. Usually, we then first die on lack of heap memory before
 # worker throttling would kick in.
   tomcat:
     threads.max: 16
@@ -18,6 +18,14 @@ server:
 spring:
   jms:
     pub-sub-domain: true
+
+# Disable Spring Cloud Config import check - makes config server optional
+# Users who want config server can set spring.config.import=configserver: explicitly
+spring:
+  cloud:
+    config:
+      import-check:
+        enabled: false
 
 logging:
   level:
