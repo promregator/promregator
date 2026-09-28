@@ -57,3 +57,12 @@ logging:
     cloudfoundry-client:
       request: DEBUG
       response: DEBUG
+
+
+# Disable Spring Cloud Config import check - makes config server optional
+# Users who want config server can set spring.config.import=configserver: explicitly
+spring:
+  cloud:
+    config:
+      import-check:
+        enabled: false
