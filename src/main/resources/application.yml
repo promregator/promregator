@@ -19,14 +19,6 @@ spring:
   jms:
     pub-sub-domain: true
 
-# Disable Spring Cloud Config import check - makes config server optional
-# Users who want config server can set spring.config.import=configserver: explicitly
-spring:
-  cloud:
-    config:
-      import-check:
-        enabled: false
-
 logging:
   level:
     org:
