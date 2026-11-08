@@ -1,6 +1,7 @@
 package org.cloudfoundry.promregator;
 
 import java.time.Clock;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -71,7 +72,18 @@ public class PromregatorApplication {
 	private AccessorCacheType cacheType;
 	
 	public static void main(String[] args) {
-		SpringApplication.run(PromregatorApplication.class, args);
+		/*
+		 * Spring Cloud Config is optional for Promregator: users who want it declare
+		 * spring.config.import=configserver: themselves. But with spring-cloud-config-client
+		 * on the classpath, startup fails with "No spring.config.import property has been
+		 * defined" unless the import check is disabled. We set it as a default property here,
+		 * not in application.yml, because the Docker launcher runs with
+		 * -Dspring.config.name=promregator, which makes Spring skip application.yml entirely.
+		 * Default properties have the lowest precedence, so any user configuration overrides them.
+		 */
+		SpringApplication application = new SpringApplication(PromregatorApplication.class);
+		application.setDefaultProperties(Map.of("spring.cloud.config.import-check.enabled", "false"));
+		application.run(args);
 	}
 	
 	@PostConstruct
