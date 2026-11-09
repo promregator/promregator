@@ -6,4 +6,4 @@
 |_|   |_|  \___/|_| |_| |_|_|  \___|\__, |\__,_|\__\___/|_|   
                                      __/ |                    
                                     |___/                     
-${application.formatted-version} running on ${spring-boot.formatted-version}
+${application.formatted-version} running on Spring Boot ${spring-boot.formatted-version}
