@@ -38,7 +38,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>4.0.8</version> <!-- see also https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-parent -->
+		<version>4.1.2</version> <!-- see also https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-parent -->
 		<!-- Warning! On bumping also check guava-version below! -->
 		<!-- Note! If you bump this version here, also check the spring-boot CLI version
 		in our integration tests (see Jenkinsfile) -->
@@ -72,7 +72,7 @@
 
 		<!-- Warning! This should be in line to what spring-framework uses. Unfortunately,
 			there is no global constant provided by spring-boot for the version. -->
-		<guava-version>33.5.0-jre</guava-version>
+		<guava-version>33.8.0-jre</guava-version> <!-- see also https://mvnrepository.com/artifact/com.google.guava/guava -->
 	</properties>
 
 	<dependencies>
@@ -229,7 +229,7 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-collections4</artifactId>
-			<version>4.5.0</version>
+			<version>4.6.0</version>
 		</dependency>
 
 		<!-- see also https://github.com/google/guava/issues/2350#issuecomment-169097253 
@@ -342,7 +342,7 @@
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-dependencies</artifactId>
-				<version>2025.1.0</version>
+				<version>2025.1.4</version> <!-- see also https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-dependencies -->
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
