@@ -139,6 +139,7 @@ timestamps {
 				javac -version
 				java -version
 				javadoc --version # Warning! Yes, at javadoc it's a double-hyphen!
+				mvn --version
 			"""
 			
 			def currentVersion = getVersion()
