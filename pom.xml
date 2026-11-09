@@ -524,6 +524,7 @@
 						<groupId>com.github.spotbugs</groupId>
 						<artifactId>spotbugs-maven-plugin</artifactId>
 						<version>4.7.3.4</version>
+						<!-- note that The plugin com.github.spotbugs:spotbugs-maven-plugin:4.10.5.0 requires Maven version 3.8.9 -->
 						<executions>
 							<execution>
 								<phase>verify</phase>
